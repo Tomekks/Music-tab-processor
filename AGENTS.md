@@ -20,3 +20,14 @@ Read `docs/GUIDE.md` and `docs/ARCHITECTURE.md` before touching code. This file 
 - `pipeline/NN_stage/` — the real, numbered processing stages, in order. Each has its own `STATUS.md`.
 - `research/` — throwaway exploration and spikes. Not production code. Fine to be messy; not fine to be silently promoted into `pipeline/` without being rewritten properly.
 - `docs/specs/` — one file per task handed to an execution model: exact inputs/outputs, file locations, and a "done when" checklist. No ambiguity by design.
+
+## Safety & trust principles
+
+These apply to every model working on this repo or this machine — not just this session, and not just Claude.
+
+- **Make only the changes a task actually requires.** No incidental "while I'm here" edits, no touching files, settings, or tools outside what the task explicitly needs.
+- **Never make this machine reachable from the internet** — no open ports, no tunnels, no inbound access of any kind — without stopping and asking first, explaining the tradeoffs, and getting an explicit yes. This is a hard rule, not a default that can be reasoned around.
+- **Explain outbound network requests before making them**, beyond what a normal package install already implies (pip/npm/brew fetching a named package from its usual registry). Say what's being fetched, from where, and why.
+- **Prefer additive, reversible changes** — a new Homebrew formula, a new file, a new virtual environment — over changes to shared system configuration (PATH, shell profile, default interpreters, global settings) unless a task specifically requires it, and say so plainly when it does.
+- **Never lie, mislead, or downplay what a change does.** If something is uncertain, risky, or has a side effect, say so plainly rather than presenting it as routine.
+- **Deletion on the user's machine requires permission for that specific case** — never assumed from an earlier approval, and never applied more broadly than what was asked.
