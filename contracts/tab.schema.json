@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tab.schema.json",
+  "title": "Tab (Contract B: guitar logic -> UI / database)",
+  "description": "String/fret guitar tab data, produced only by guitar-logic modules (e.g. tuttut) from Contract A notes. The UI and database only ever read this shape.",
+  "type": "object",
+  "required": ["schemaVersion", "title", "tuning", "tempoBpm", "notes"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "title": { "type": "string" },
+    "sourceFile": { "type": "string" },
+    "tuning": {
+      "type": "array",
+      "description": "Open-string pitches, low string first, as MIDI note numbers. Standard guitar tuning (E2 A2 D3 G3 B3 E4) is [40, 45, 50, 55, 59, 64].",
+      "items": { "type": "integer", "minimum": 0, "maximum": 127 },
+      "minItems": 1
+    },
+    "tempoBpm": { "type": "number", "exclusiveMinimum": 0 },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["string", "fret", "startTimeSec", "durationSec"],
+        "properties": {
+          "string": { "type": "integer", "minimum": 0, "description": "Index into the tuning array, 0 = lowest string." },
+          "fret": { "type": "integer", "minimum": 0, "maximum": 24 },
+          "startTimeSec": { "type": "number", "minimum": 0 },
+          "durationSec": { "type": "number", "exclusiveMinimum": 0 },
+          "technique": {
+            "type": "string",
+            "enum": ["hammer-on", "pull-off", "slide", "bend", "palm-mute"],
+            "description": "Optional. Absent means a plain picked/plucked note."
+          }
+        }
+      }
+    }
+  }
+}

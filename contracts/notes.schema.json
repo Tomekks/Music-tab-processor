@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "notes.schema.json",
+  "title": "Notes (Contract A: audio processing -> guitar logic)",
+  "description": "Plain musical notes with no guitar-specific concept in them. Any transcription tool that outputs standard MIDI-like data should be expressible in this shape without translation.",
+  "type": "object",
+  "required": ["schemaVersion", "notes"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "sourceFile": { "type": "string", "description": "Path or identifier of the audio this was transcribed from." },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["pitchMidi", "startTimeSec", "durationSec"],
+        "properties": {
+          "pitchMidi": { "type": "integer", "minimum": 0, "maximum": 127, "description": "Standard MIDI note number." },
+          "startTimeSec": { "type": "number", "minimum": 0 },
+          "durationSec": { "type": "number", "exclusiveMinimum": 0 },
+          "velocity": { "type": "number", "minimum": 0, "maximum": 1, "description": "Optional loudness/confidence, 0-1." }
+        }
+      }
+    }
+  }
+}
