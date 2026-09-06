@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+
+# Model weights / caches — redirected to live inside this repo (see docs/DECISIONS.md)
+# so everything the project touches stays under this one folder, but they're still
+# too large and too easy to re-download to belong in git.
+.cache/
+*.pt
+*.onnx
+*.ckpt
+
+# Secrets
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Source/processed audio — personal, often large, not something to version control
+*.mp3
+*.wav
