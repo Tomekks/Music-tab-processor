@@ -6,6 +6,7 @@ Filled in as each checkpoint actually runs — this file is the durable record, 
 - Date: 2026-09-06
 - Result: Pass. `.venv` built from Homebrew `python@3.11` (3.11.16). Installed `demucs==4.1.0`, `basic-pitch==0.4.0` from PyPI (pulls in PyTorch 2.14.0 and dependencies — multi-GB install). Both tools ran without error against one file (Seven Nation Army).
 - Environment note: `basic-pitch`'s dependency `resampy` requires `pkg_resources`, which current PyPI `setuptools` (84.0.0) no longer ships. Fixed by pinning `setuptools<81` (installed 80.10.2). Worth capturing in requirements/setup docs for this venv going forward.
+- Second environment note (hit later, during Checkpoint 2 prep): even with `setuptools<81` pinned, `pkg_resources` also needs `jaraco.text` as a separate package, which isn't pulled in automatically. Fixed with `pip install jaraco.text`.
 - Model cache note: Demucs 4.1.0 fetches pretrained weights via **Hugging Face Hub**, not the old `TORCH_HOME`/torch-hub mechanism, so the `TORCH_HOME` redirect into `.cache/torch` (per the task spec) did not take effect. Weights (~89MB, model `adefossez/HTDemucs`) landed in the default `~/.cache/huggingface` instead. Per the spec's own guidance, this is treated as an acceptable best-effort exception rather than something to fight — noted here, not fixed.
 
 ## Checkpoint 1 — separation quality, by ear
@@ -32,10 +33,12 @@ Follow-up test on a third song — Chet Atkins' "Mister Sandman," fully acoustic
 **Decision (2026-09-07): scope down for now.** Rather than chasing better results on full-band/distorted songs immediately (MT3/MR-MT3, riff-trimming), treat simpler/acoustic songs as the realistic near-term target and revisit harder songs later, once the rest of the pipeline (tab generation, app) is proven end-to-end. See `docs/DECISIONS.md`.
 
 ## Checkpoint 3 — tab quality (tuttut)
-- 
+Installed `tuttut` (needed a workaround — its exact pinned dependencies, e.g. `matplotlib==3.5.3`, don't build on this setup; installed with `--no-deps` against modern versions instead, which worked fine at runtime). Ran it on the Mister Sandman transcription (the one song that transcribed cleanly). Its default dense ASCII output was hard to read; an early "chronological list" reformat made it worse by breaking the standard left-to-right-per-string convention tabs are actually read in. Settled on: a proper 6-line ASCII tab (chords shown as stacked frets in the same column, single notes alone, fixed-width aligned columns, wrapped into readable rows), with a toggle for string order (standard "thin e on top" vs. "thick E on top" matching how the neck physically sits), and no per-note timing — order alone is enough, timing/feel is the human's job. Also produced a simple machine-readable JSON of the same ordered steps. Script: `research/00_spike/tuttut_clean_tab.py`.
+
+Backlogged from this checkpoint: audible playback with a visual note-highlight cue (see `DECISIONS.md`), and richer display modes (fretboard diagrams) as later opt-in layers on top of the same data.
 
 ## Checkpoint 4 — does trimming to just the riff help?
-- 
+Deferred (2026-09-07) — see `docs/DECISIONS.md`. Building toward an end-to-end MVP using Mister Sandman first; revisit this once that exists.
 
 ## Checkpoint 5 — second data point (Friction, full comparison)
-- 
+Deferred (2026-09-07) — see `docs/DECISIONS.md`. Same reasoning as Checkpoint 4.

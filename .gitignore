@@ -33,3 +33,7 @@ node_modules/
 # and stay tracked — they describe findings, they don't reproduce any song.
 research/00_spike/audio/
 research/00_spike/output/
+
+# Reference/inspiration images (at least one third-party-sourced, e.g. watermarked)
+# -- kept local for browsing, not something to republish.
+research/00_spike/fretboard/
