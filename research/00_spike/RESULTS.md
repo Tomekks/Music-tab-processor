@@ -35,6 +35,10 @@ Follow-up test on a third song — Chet Atkins' "Mister Sandman," fully acoustic
 ## Checkpoint 3 — tab quality (tuttut)
 Installed `tuttut` (needed a workaround — its exact pinned dependencies, e.g. `matplotlib==3.5.3`, don't build on this setup; installed with `--no-deps` against modern versions instead, which worked fine at runtime). Ran it on the Mister Sandman transcription (the one song that transcribed cleanly). Its default dense ASCII output was hard to read; an early "chronological list" reformat made it worse by breaking the standard left-to-right-per-string convention tabs are actually read in. Settled on: a proper 6-line ASCII tab (chords shown as stacked frets in the same column, single notes alone, fixed-width aligned columns, wrapped into readable rows), with a toggle for string order (standard "thin e on top" vs. "thick E on top" matching how the neck physically sits), and no per-note timing — order alone is enough, timing/feel is the human's job. Also produced a simple machine-readable JSON of the same ordered steps. Script: `research/00_spike/tuttut_clean_tab.py`.
 
+A real published tab for this song (Ultimate Guitar/Cifra Club) uses noticeably different fret/string choices than ours — expected to some degree, since the same pitch can usually be played in several places on the neck and `tuttut`'s algorithm picks based on generic playability, not the original performer's actual fingering. Checked that our output isn't simply missing open strings (it isn't — 20% of notes are fret 0, consistent even in the opening bars).
+
+**Deferred fine-tuning check (2026-09-07):** whether Basic Pitch's transcribed pitches actually match the real Mister Sandman melody note-for-note (vs. just fret-choice differences from tuttut's generic fingering algorithm) — worth checking once the MVP exists, not before.
+
 Backlogged from this checkpoint: audible playback with a visual note-highlight cue (see `DECISIONS.md`), and richer display modes (fretboard diagrams) as later opt-in layers on top of the same data.
 
 ## Checkpoint 4 — does trimming to just the riff help?
