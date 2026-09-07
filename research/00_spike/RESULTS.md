@@ -21,6 +21,9 @@ Filled in as each checkpoint actually runs — this file is the durable record, 
 - Preference going forward: plain `htdemucs`, not `htdemucs_6s`, unless a later comparison changes this.
 - Next comparison planned: `mlx-demucs` (Apple-Silicon-native build of the same weights) vs. plain `htdemucs`, to see if the MLX build produces different (not just faster) output.
 
+## Checkpoint 1c — mlx-demucs vs. htdemucs
+Tested `mlx-demucs` (an Apple-Silicon version of the same tool) against the regular `htdemucs` on both songs. By ear, no noticeable quality difference. Processing time was actually a little *slower* with mlx-demucs (17.5s and 21.4s per song) than regular htdemucs (15s and 17s per song) — not the speed improvement expected. Decision: keep using plain `htdemucs` going forward.
+
 ## Checkpoint 2 — transcription quality (Basic Pitch)
 - 
 
