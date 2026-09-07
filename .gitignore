@@ -26,3 +26,10 @@ node_modules/
 *.mp3
 *.wav
 *.m4a
+
+# Phase 0 spike: source songs and all generated output (stems, MIDI, anything
+# derived from a copyrighted recording) — local-only, never published. The
+# text docs in this folder (RESULTS.md, README.md) are NOT covered by this
+# and stay tracked — they describe findings, they don't reproduce any song.
+research/00_spike/audio/
+research/00_spike/output/

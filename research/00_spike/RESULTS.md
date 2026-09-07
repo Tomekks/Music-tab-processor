@@ -25,7 +25,11 @@ Filled in as each checkpoint actually runs — this file is the durable record, 
 Tested `mlx-demucs` (an Apple-Silicon version of the same tool) against the regular `htdemucs` on both songs. By ear, no noticeable quality difference. Processing time was actually a little *slower* with mlx-demucs (17.5s and 21.4s per song) than regular htdemucs (15s and 17s per song) — not the speed improvement expected. Decision: keep using plain `htdemucs` going forward.
 
 ## Checkpoint 2 — transcription quality (Basic Pitch)
-- 
+Tested Basic Pitch on both the separated "other" stem and the full original mix, for both songs. Full-mix transcription sounded noticeably better for Seven Nation Army and slightly better for Friction than the separated version — separation seems to remove some useful signal (other instruments reinforcing the same notes) even while removing interference. Both versions broke down in sections where all instruments play together — a known limitation of Basic Pitch as a general-purpose transcriber, not something separation quality alone fixes.
+
+Follow-up test on a third song — Chet Atkins' "Mister Sandman," fully acoustic solo guitar, lossless WAV — transcribed very well with no separation needed. Since the original two songs are already high-quality 320kbps AAC, this rules out source audio quality as the bottleneck. The real driver is song complexity/genre: dense, distorted, multi-instrument recordings are hard for Basic Pitch; simple acoustic solo-guitar content is not.
+
+**Decision (2026-09-07): scope down for now.** Rather than chasing better results on full-band/distorted songs immediately (MT3/MR-MT3, riff-trimming), treat simpler/acoustic songs as the realistic near-term target and revisit harder songs later, once the rest of the pipeline (tab generation, app) is proven end-to-end. See `docs/DECISIONS.md`.
 
 ## Checkpoint 3 — tab quality (tuttut)
 - 
