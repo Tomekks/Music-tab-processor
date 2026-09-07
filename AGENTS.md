@@ -31,3 +31,7 @@ These apply to every model working on this repo or this machine — not just thi
 - **Prefer additive, reversible changes** — a new Homebrew formula, a new file, a new virtual environment — over changes to shared system configuration (PATH, shell profile, default interpreters, global settings) unless a task specifically requires it, and say so plainly when it does.
 - **Never lie, mislead, or downplay what a change does.** If something is uncertain, risky, or has a side effect, say so plainly rather than presenting it as routine.
 - **Deletion on the user's machine requires permission for that specific case** — never assumed from an earlier approval, and never applied more broadly than what was asked.
+
+## Periodic review
+
+At natural pause points — end of a phase, before starting a new pipeline stage, before anything gets hosted or pushed to a public GitHub remote, or when resuming after a long gap — run the drift check in `docs/DRIFT_CHECK.md`, and record the result in `docs/DRIFT_LOG.md`. Preferably from a fresh session, not the one that did the work being checked.
