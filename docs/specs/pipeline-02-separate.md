@@ -17,8 +17,10 @@ Take a run directory set up by `s01_ingest` and separate its source audio into s
 - **On testing an ML stage:** per `AGENTS.md`'s reliability toolkit, an ML pipeline stage's test is a structural/golden-file check, not exact-output comparison — real model output can vary slightly across library versions/hardware, so the test verifies *shape* (4 stem files exist, non-empty, correct sample rate, duration matches input) rather than byte-exact audio content.
 
 ## Done when
-- [ ] `pipeline/s02_separate/separate.py` exists with a callable `separate(run_dir)` function (loadable via `importlib`, same pattern as `s01_ingest` — "s02_separate" has the same digit-first naming issue) plus a CLI entry point.
-- [ ] Running it against the Mister Sandman run directory (from `s01_ingest`) produces correct `stems/*.wav` files and a correct `separation.json`.
-- [ ] Running it against a run directory with no `source.*` file fails clearly.
-- [ ] A test exists (`pipeline/s02_separate/test_separate.py`, pytest) using a short synthetic audio fixture, checking the 4 stem files exist/are non-empty/have matching sample rate and duration. Test passes.
-- [ ] `pipeline/s02_separate/STATUS.md` updated.
+- [x] `pipeline/s02_separate/separate.py` exists with a callable `separate(run_dir)` function (loadable via `importlib`, same pattern as `s01_ingest` for consistency) plus a CLI entry point.
+- [x] Running it against the Mister Sandman run directory (from `s01_ingest`) produces correct `stems/*.wav` files and a correct `separation.json`.
+- [x] Running it against a run directory with no `source.*` file fails clearly.
+- [x] A test exists (`pipeline/s02_separate/test_separate.py`, pytest) using a short synthetic audio fixture, checking the 4 stem files exist/are non-empty/have matching sample rate and duration. 2/2 pass.
+- [x] `pipeline/s02_separate/STATUS.md` updated.
+
+**Gotcha found during implementation, not anticipated in the original spec:** `demucs` is a `.venv`-local binary, not on the system `PATH` like `ffmpeg`/`ffprobe` are — a bare `subprocess.run(["demucs", ...])` failed with `FileNotFoundError`. Fixed by resolving the binary path relative to `sys.executable`.
