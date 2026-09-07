@@ -1,5 +1,7 @@
 # Guide
 
+If you're an AI agent with no memory of this project, the real entry point is [`START_HERE.md`](../START_HERE.md) at the repo root, not this file — it will send you here next, among other places.
+
 This project has two tiers of documentation, on purpose:
 
 - **This tier** (`docs/GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/AUDIOPROCESSINGTOOLS.md`, `docs/DRIFT_CHECK.md`, `docs/DRIFT_LOG.md`) — plain language, for a human keeping track of their own project. What things do, why they exist, what's been decided and why.
