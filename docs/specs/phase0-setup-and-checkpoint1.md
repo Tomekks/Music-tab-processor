@@ -5,8 +5,8 @@ Set up a project-local Python environment and run the first two Phase 0 checkpoi
 
 ## Prerequisite (human, not agent)
 The user places two audio files (their own copies, personal use) at:
-- `research/00_spike/audio/seven-nation-army.mp3`
-- `research/00_spike/audio/friction.mp3`
+- `research/00_spike/audio/seven-nation-army.{mp3,m4a}`
+- `research/00_spike/audio/friction.{mp3,m4a}`
 
 These are gitignored (`*.mp3` in `.gitignore`) — personal files, never committed. Do not proceed past Checkpoint 0 without confirming both exist.
 

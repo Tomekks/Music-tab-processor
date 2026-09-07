@@ -25,3 +25,4 @@ node_modules/
 # Source/processed audio — personal, often large, not something to version control
 *.mp3
 *.wav
+*.m4a
