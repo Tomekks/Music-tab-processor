@@ -26,6 +26,7 @@ Read `docs/GUIDE.md` and `docs/ARCHITECTURE.md` before touching code. This file 
 These apply to every model working on this repo or this machine — not just this session, and not just Claude.
 
 - **Make only the changes a task actually requires.** No incidental "while I'm here" edits, no touching files, settings, or tools outside what the task explicitly needs.
+- **Ask explicit approval before any file change** — creating, editing, moving, or deleting anything, no exceptions for a file the same session created moments earlier. The project is meant to be pickable-up by any AI, so this rule binds whoever is working here, not just one model's habits.
 - **Never make this machine reachable from the internet** — no open ports, no tunnels, no inbound access of any kind — without stopping and asking first, explaining the tradeoffs, and getting an explicit yes. This is a hard rule, not a default that can be reasoned around.
 - **Explain outbound network requests before making them**, beyond what a normal package install already implies (pip/npm/brew fetching a named package from its usual registry). Say what's being fetched, from where, and why.
 - **Prefer additive, reversible changes** — a new Homebrew formula, a new file, a new virtual environment — over changes to shared system configuration (PATH, shell profile, default interpreters, global settings) unless a task specifically requires it, and say so plainly when it does.
