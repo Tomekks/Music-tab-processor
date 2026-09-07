@@ -2,6 +2,7 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Node
 node_modules/
@@ -37,3 +38,8 @@ research/00_spike/output/
 # Reference/inspiration images (at least one third-party-sourced, e.g. watermarked)
 # -- kept local for browsing, not something to republish.
 research/00_spike/fretboard/
+
+# Real pipeline runs: a copy of the source audio plus everything each stage
+# generates from it. Same copyright reasoning as research/00_spike/ above --
+# never published, regenerable from the original file.
+pipeline_runs/

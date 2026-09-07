@@ -20,10 +20,10 @@ Accept a local audio file, validate it's real/readable audio, and set up a per-r
 - No network access at all in this stage — purely local file handling.
 
 ## Done when
-- [ ] `pipeline/01_ingest/ingest.py` exists with a small, callable function (not just a script) doing the above, importable by later stages.
-- [ ] A CLI entry point exists (`python -m pipeline.01_ingest.ingest <path> [--title "..."]`) for manual/spec-driven runs.
-- [ ] Running it against Mister Sandman produces a correct `pipeline_runs/<run-id>/` directory with `source.m4a` and a correct `metadata.json`.
-- [ ] Running it against a missing file or a non-audio file fails clearly (a real error, not a silent bad output).
-- [ ] A test exists (`pipeline/01_ingest/test_ingest.py`, pytest) covering: valid file succeeds, missing file raises, non-audio file raises. Test passes.
-- [ ] `pipeline/01_ingest/STATUS.md` updated: what it does, what it reads/writes (no contract — internal), current status (done).
-- [ ] `pipeline_runs/` added to `.gitignore` with the same copyright reasoning as the other audio exclusions.
+- [x] `pipeline/01_ingest/ingest.py` exists with a small, callable function (not just a script) doing the above, importable by later stages.
+- [x] A CLI entry point exists (`.venv/bin/python pipeline/01_ingest/ingest.py <path> [--title "..."]`) for manual/spec-driven runs. Correction from the original spec: `python -m pipeline.01_ingest.ingest` isn't valid Python — `01_ingest` can't be a package name (identifiers can't start with a digit). Run as a direct script instead; a later stage reusing this module should load it via `importlib.util.spec_from_file_location`.
+- [x] Running it against Mister Sandman produces a correct `pipeline_runs/<run-id>/` directory with `source.wav` and a correct `metadata.json`. (Used the `.wav` source, not `.m4a` — same song, doesn't matter which format for this check.)
+- [x] Running it against a missing file or a non-audio file fails clearly (a real error, not a silent bad output).
+- [x] A test exists (`pipeline/01_ingest/test_ingest.py`, pytest) covering: valid file succeeds, missing file raises, non-audio file raises, default-title behavior. 4/4 pass.
+- [x] `pipeline/01_ingest/STATUS.md` updated: what it does, what it reads/writes (no contract — internal), current status (done).
+- [x] `pipeline_runs/` added to `.gitignore` with the same copyright reasoning as the other audio exclusions.
