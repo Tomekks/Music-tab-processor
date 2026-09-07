@@ -1,16 +1,16 @@
 """
-pipeline/01_ingest — validate a local audio file and set up a per-run
-working directory for the rest of the pipeline (02_separate onward).
+pipeline/s01_ingest — validate a local audio file and set up a per-run
+working directory for the rest of the pipeline (s02_separate onward).
 
 No contracts/ schema applies to this stage's output: ingest -> separate ->
 transcribe are all internal to the "audio processing" module (see
-AGENTS.md); only 03_transcribe's final output has to match
+AGENTS.md); only s03_transcribe's final output has to match
 contracts/notes.schema.json.
 
-Note on the folder name: "01_ingest" isn't a valid Python package name
+Note on the folder name: "s01_ingest" isn't a valid Python package name
 (identifiers can't start with a digit), so this file is run directly
-(`python pipeline/01_ingest/ingest.py ...`) rather than imported as
-`pipeline.01_ingest.ingest`. A later stage that needs to reuse this
+(`python pipeline/s01_ingest/ingest.py ...`) rather than imported as
+`pipeline.s01_ingest.ingest`. A later stage that needs to reuse this
 module should load it via importlib.util.spec_from_file_location, not
 a normal import statement.
 """

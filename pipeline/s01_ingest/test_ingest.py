@@ -1,11 +1,11 @@
 """
-Tests for pipeline/01_ingest/ingest.py.
+Tests for pipeline/s01_ingest/ingest.py.
 
 Uses synthetically generated audio (a plain sine tone via the stdlib `wave`
 module) as fixtures -- never a real/copyrighted song, consistent with the
 project's rule that no copyrighted audio belongs anywhere in the repo.
 
-Run with: .venv/bin/pytest pipeline/01_ingest/test_ingest.py
+Run with: .venv/bin/pytest pipeline/s01_ingest/test_ingest.py
 """
 import importlib.util
 import math
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-# "01_ingest" isn't a valid Python package/module name (starts with a digit),
+# "s01_ingest" isn't a valid Python package/module name (starts with a digit),
 # so load ingest.py directly by file path rather than a normal import.
 _spec = importlib.util.spec_from_file_location("ingest", Path(__file__).parent / "ingest.py")
 ingest_module = importlib.util.module_from_spec(_spec)
