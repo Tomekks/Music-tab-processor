@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local-only design system playground (deliberately never pushed —
+# see app/STATUS.md)
+/design_system
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
