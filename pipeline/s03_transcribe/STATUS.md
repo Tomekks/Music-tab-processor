@@ -1,6 +1,6 @@
 # s03_transcribe
 
-**Status:** done. Wraps Basic Pitch to transcribe `stems/other.wav` into notes conforming to `contracts/notes.schema.json`. See `docs/specs/pipeline-03-transcribe.md`.
+**Status:** blocked by a known test regression (2026-09-08). The stage wraps Basic Pitch to transcribe `stems/other.wav` into notes conforming to `contracts/notes.schema.json`, but Basic Pitch 0.4.0 now requires `--save-midi` for the CLI to create the MIDI this stage expects. The implementation does not pass that flag, so two tests fail even though Basic Pitch exits successfully. Fixing the invocation and re-running the suite is the next required task for this stage. See `docs/specs/pipeline-03-transcribe.md`.
 
 **Reads:** `pipeline_runs/<run-id>/stems/other.wav`, written by `s02_separate`.
 

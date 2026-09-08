@@ -4,13 +4,17 @@
 
 Read `START_HERE.md` at the repo root first — this file assumes that's done. As of **2026-09-08**, here's the exact state:
 
-**What works, verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data from the database on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
+**What was verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data from the database on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
+
+**Current blocker:** the pipeline suite now has **10 passing and 2 failing tests**, both in `s03_transcribe`. Basic Pitch 0.4.0 exits successfully but writes no MIDI because the CLI invocation omits its required `--save-midi` flag. The existing end-to-end result remains historical proof, but the current checkout must not be treated as a working full pipeline until this small, isolated invocation fix is made and the suite passes again. See `pipeline/s03_transcribe/STATUS.md`.
 
 **Deployment and a first security review are both done** (2026-09-08, no findings — see `docs/PENDING_ACTIONS.md` for the standing "re-review if the app's shape changes" reminder). **No single mandated next step now** — pick from the backlog: local processing UI (resources already gathered in `DECISIONS.md`), playback/metronome/note-highlighting, CI, or Phase 0 Checkpoints 4/5 (now actually in scope per `DECISIONS.md`'s trigger — both processing and hosted UI exist). This is a real decision point, not something to default on.
 
-**Action items for the human:** see `docs/PENDING_ACTIONS.md` — a persistent, checkable list (token rotation, the pending security review, etc.), rather than duplicated here where it'd drift out of sync.
+**Action items for the human:** see `docs/PENDING_ACTIONS.md` — a persistent, checkable list (currently token rotation and a conditional future security review), rather than duplicated here where it'd drift out of sync.
 
 **One environment detail worth knowing:** two `.env.local` files exist with the *same* Turso credentials — one at the repo root (read by `pipeline/s05_publish/publish.py`'s minimal hand-rolled parser) and one inside `app/` (read automatically by Next.js). Both gitignored, verified untracked. If credentials are ever rotated, update both.
+
+**Analytics:** PostHog now records page views on the deployed app. Its public browser project key and US ingestion host are in `app/.env.local` and Vercel production; the configuration deliberately disables autocapture, session replay, identity profiles, and persistent browser storage. See `app/STATUS.md` and `app/.env.example`.
 
 **Known, deliberate rough edges — not bugs, don't "fix" without asking first:**
 - `tab.json`'s `durationSec` per note is approximated ("time until the next note"), not the note's true length — deliberate, confirmed acceptable by the user (tempo/feel is the human's job when practicing, not the tab's).
@@ -27,7 +31,7 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 cd "/Users/tomsvarpins/Documents/Guitar APP"
 .venv/bin/pytest pipeline/ -v
 ```
-**Expect:** `12 passed`.
+**Current result:** `10 passed, 2 failed`. Both failures are the known `s03_transcribe` Basic Pitch MIDI-output regression described above; do not ignore them or use this command as a clean-health signal until they are fixed.
 
 ### 2. Run the pipeline on a real file, one stage at a time
 ```bash
@@ -59,9 +63,9 @@ Visit `http://localhost:3000` — the new song should appear in the list.
 
 ## Still open — decisions worth making explicitly
 
-1. **Vercel deployment** (see above — the actual next task).
+1. **Restore `s03_transcribe` test health** — add Basic Pitch's `--save-midi` flag to the CLI invocation, then run the full pipeline suite. This is the immediate technical blocker, not a design decision.
 2. **One-command orchestration** — 5 manual commands per song is still the reality; a `run_pipeline.py` wrapping all 5 would help, hasn't been asked for yet.
 3. **Local web UI for triggering runs** (pick a file, click a button) instead of CLI commands — backlogged in `DECISIONS.md`, resources already gathered there, not built.
 4. **CI (GitHub Actions)** — still not set up; now genuinely worthwhile since real code+tests exist.
-5. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — explicitly confirmed by the user: relevant "only once we have both processing and hosted UI's done." Hosted UI isn't done yet (this is item 1 above) — so these stay deferred until *after* Vercel deployment, not before.
+5. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — both local processing and hosted UI now exist, so these are in scope when the pipeline is healthy again.
 6. **The pipeline has only been run end-to-end on Mister Sandman and a synthetic tone through the real code** — a harder song hasn't gone through `s01`-`s05` yet, only through the old Phase 0 spike scripts.
