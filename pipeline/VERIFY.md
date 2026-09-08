@@ -1,74 +1,68 @@
-# How to verify the pipeline end-to-end
+# How to verify the pipeline end-to-end, and handoff notes
 
-A manual walkthrough for confirming `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` still runs cleanly, and what to actually look/listen for at each step. Written for a non-engineer to follow — every command is copy-pasteable.
+## If you're a new AI session or model picking this up cold
 
-## 1. Sanity check first (30 seconds)
+Read `START_HERE.md` at the repo root first — this file assumes that's done. As of **2026-09-08**, here's the exact state:
 
+**What works, verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`) reading that database and rendering a tab, all confirmed working end-to-end with the Mister Sandman song. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
+
+**The single next step, explicitly requested and not yet done:** deploy the Next.js app (`app/`) to Vercel. Everything it needs already works locally (`npm run dev` inside `app/`, reads live from Turso). This is genuinely the next task — don't re-derive the plan, just do it (create/link the Vercel project, add `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` to Vercel's environment variables as **server-side only**, never `NEXT_PUBLIC_`, deploy, verify the live URL actually renders a tab).
+
+**Action items for the human, not something to do automatically:**
+1. **Rotate the Turso platform API token.** It was pasted directly into a chat conversation on 2026-09-07 and has been in use since — normal hygiene, not an indication anything went wrong. Do this via the Turso dashboard (`app.turso.tech`), not by asking an AI to do it with the old token.
+2. **A security review is owed once the app is actually live on a public Vercel URL** — the user explicitly asked for this before wide use. Use the `security-review` skill/workflow at that point, not before (nothing public to review yet).
+3. Two `.env.local` files exist with the *same* Turso credentials: one at the repo root (read by `pipeline/s05_publish/publish.py`'s minimal hand-rolled parser) and one inside `app/` (read automatically by Next.js). Both gitignored, verified untracked. If credentials are ever rotated, update both.
+
+**Known, deliberate rough edges — not bugs, don't "fix" without asking first:**
+- `tab.json`'s `durationSec` per note is approximated ("time until the next note"), not the note's true length — deliberate, confirmed acceptable by the user (tempo/feel is the human's job when practicing, not the tab's).
+- `tempoBpm` **was** unreliable (214.51bpm on a real ~112bpm song) but is now fixed via real `librosa` beat-tracking on the source audio, confirmed accurate against two known songs. This matters for real now — a future metronome feature will use it.
+- Tab fret/string choices may differ from a real published tab for the same song — expected, `tuttut` picks *a* playable fingering, not necessarily the original performer's. A deferred check (compare transcribed pitches, not fret choices, against a real tab) is logged in `research/00_spike/RESULTS.md` Checkpoint 3, intentionally not done yet ("once the MVP exists").
+- 4 moderate `npm audit` findings in `app/`, all from `esbuild` via `drizzle-kit`'s dependency chain — dev-tool-only (schema migrations), never ships to the deployed app. Decided to leave as-is; the suggested fix is a breaking `drizzle-kit` downgrade. Don't "fix" this reflexively if `npm audit` flags it again.
+- `pipeline/s05_publish/publish.py` has no test yet, unlike every other stage — a real gap, not an oversight to hide (see its `STATUS.md`).
+- The `.claude/launch.json` needed for this session's browser-preview tool to find the dev server lives in a scratch-workspace path *outside* this repo, specific to this particular Claude Desktop session's environment — a different AI/session/terminal won't have this quirk and can just run `npm run dev` inside `app/` directly.
+
+## Manual verification walkthrough (unchanged from before, still valid)
+
+### 1. Sanity check first (30 seconds)
 ```bash
 cd "/Users/tomsvarpins/Documents/Guitar APP"
 .venv/bin/pytest pipeline/ -v
 ```
-**Expect:** `12 passed`. If anything fails here, something broke since the last verified run — worth investigating before doing a real end-to-end pass, since a broken unit test usually means a real run will fail too.
+**Expect:** `12 passed`.
 
-## 2. Run the pipeline on a real file, one stage at a time
-
-Pick any audio file already in `research/00_spike/audio/` (or a new one). Mister Sandman is the known-good case; try a harder song too if you want to see the difference Phase 0 already documented.
-
+### 2. Run the pipeline on a real file, one stage at a time
 ```bash
-# Stage 1 — ingest
 .venv/bin/python pipeline/s01_ingest/ingest.py "research/00_spike/audio/Chet Atkins - Mister Sandman.wav" --title "My Test Run"
 ```
-Copy the run directory path it prints (e.g. `pipeline_runs/my-test-run-20260908-...`) — you'll reuse it for every step below. Set it as a shell variable to save retyping:
+Copy the printed run directory into a variable:
 ```bash
 RUN_DIR="pipeline_runs/my-test-run-<paste-the-rest>"
-```
-
-```bash
-# Stage 2 — separate into stems
 .venv/bin/python pipeline/s02_separate/separate.py "$RUN_DIR"
-
-# Stage 3 — transcribe the guitar-ish stem into notes
 .venv/bin/python pipeline/s03_transcribe/transcribe.py "$RUN_DIR"
-
-# Stage 4 — turn notes into a tab
 .venv/bin/python pipeline/s04_tab/tab_generate.py "$RUN_DIR"
+.venv/bin/python pipeline/s05_publish/publish.py "$RUN_DIR"
 ```
+Then, to see it on the website:
+```bash
+cd app && npm run dev
+```
+Visit `http://localhost:3000` — the new song should appear in the list.
 
-**"Smoothly" means:** no red error text at any step, and each step prints a normal-looking success line. If a step crashes with a traceback, that's a real problem — stop and flag it, don't just re-run and hope.
-
-## 3. What to actually check at each stage (this needs your attention, not just "did it run")
+### 3. What to actually check at each stage
 
 | Stage | File to look at | What you're checking |
 |---|---|---|
-| 1. Ingest | `$RUN_DIR/metadata.json` | Duration/sample rate look right for the song? |
-| 2. Separate | `$RUN_DIR/stems/other.wav` | **Listen to it.** This is the one that matters — does the guitar/melody come through recognizably? (Vocal bleed and some haziness is expected and already documented — that's not a new problem.) |
-| 3. Transcribe | `$RUN_DIR/transcription.mid` | Note count in the terminal output — wildly low (a handful) or absurdly high (tens of thousands) for the song's length is a red flag. Listening to the MIDI itself needs a player/synth — ask me if you want a quick sonified `.wav` version instead, same as Phase 0 did. |
-| 4. Tab | `$RUN_DIR/tab.txt` | **Read it.** Does it look like a real, structured tab (6 labeled string lines, numbers in sensible columns, not garbled)? You don't need to judge if it's the *best* fingering — just whether it looks structurally sane. |
+| 1. Ingest | `$RUN_DIR/metadata.json` | Duration/sample rate look right? |
+| 2. Separate | `$RUN_DIR/stems/other.wav` | **Listen.** Does guitar/melody come through recognizably? (Vocal bleed/haze on full-band songs is expected, documented, not new.) |
+| 3. Transcribe | `$RUN_DIR/transcription.mid` | Note count sane for the song's length? |
+| 4. Tab | `$RUN_DIR/tab.txt` | **Read it.** Structured, 6 labeled strings, sensible columns? |
+| 5. Publish | the website itself | Does the song show up, with a plausible tempo? |
 
-## 4. Known limitations — not bugs, don't re-report these
+## Still open — decisions worth making explicitly
 
-- Rough/hazy separation and vocal bleed on full-band songs (Phase 0, `research/00_spike/RESULTS.md`).
-- `tab.json`'s `tempoBpm` is an unreliable estimate (came out 214.51 for a ~110bpm song in testing) — don't trust it yet.
-- `tab.json`'s `durationSec` per note is an approximation ("until the next note"), not the note's true length.
-- Tab fret/string choices may differ from a real published tab for the same song — expected, `tuttut` picks *a* playable fingering, not necessarily the original performer's.
-
-## 5. If something looks genuinely wrong
-
-Note exactly which stage, what you saw, and whether it's a crash (real bug) or a quality concern (needs judgment) — bring both to the next session either way.
-
-## 6. What's missing, and what needs a decision before continuing
-
-**Not built yet (gaps, not bugs):**
-- **One-command orchestration.** Right now, running the pipeline means 4 separate manual commands. A single `run_pipeline.py <file>` wrapping all four would make this walkthrough (and real use) much simpler. Nothing blocks building this — just hasn't been asked for yet.
-- **Database.** `DECISIONS.md` wants one "from day one" (it's the mechanism that makes hosting possible later without exposing this Mac). There's now real tab output worth storing, but nothing persists between runs except files in `pipeline_runs/`.
-- **Local web UI, Next.js app, playback, metronome, visual note-highlighting.** All backlogged in `DECISIONS.md`, none built. The pipeline can produce a tab; nothing yet lets you *use* one without reading raw files.
-- **CI (GitHub Actions).** `docs/DRIFT_CHECK.md` already notes this isn't built — now that real code and tests exist (not just docs/spikes), it's actually meaningful to add.
-- **A fresh, independent drift check.** The last one ran before the first GitHub push; a lot has happened since (4 real pipeline stages, a folder rename touching multiple docs). `docs/DRIFT_CHECK.md` recommends this be run by a session other than the one that did the work — worth doing before this gets much bigger.
-- **The pipeline hasn't been run end-to-end on a harder song yet** — only Mister Sandman and a synthetic tone went through the *real* code (as opposed to the Phase 0 spike scripts). Worth trying a full-band song through the actual pipeline to see if anything breaks that didn't show up on clean acoustic material.
-
-**Decisions worth making explicitly, not by default:**
-1. **What's next: database, local UI, or Next.js app first?** All three are backlogged with no stated order among themselves.
-2. **Is `tempoBpm`'s unreliable estimate good enough to build on**, or does it need a better approach before anything (like playback) depends on it?
-3. **Is `durationSec`'s "until next note" approximation good enough**, same question.
-4. **Are Phase 0 Checkpoints 4 and 5 back in scope now?** `DECISIONS.md` deferred them until "a working pipeline/app exists end-to-end" — the CLI pipeline now does, but the *app* doesn't yet. Worth deciding if the trigger has actually fired or not.
-5. **Should the pipeline be smoke-tested on a harder/full-band song before calling this phase done**, given only clean acoustic material has gone through the real code so far?
+1. **Vercel deployment** (see above — the actual next task).
+2. **One-command orchestration** — 5 manual commands per song is still the reality; a `run_pipeline.py` wrapping all 5 would help, hasn't been asked for yet.
+3. **Local web UI for triggering runs** (pick a file, click a button) instead of CLI commands — backlogged in `DECISIONS.md`, resources already gathered there, not built.
+4. **CI (GitHub Actions)** — still not set up; now genuinely worthwhile since real code+tests exist.
+5. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — explicitly confirmed by the user: relevant "only once we have both processing and hosted UI's done." Hosted UI isn't done yet (this is item 1 above) — so these stay deferred until *after* Vercel deployment, not before.
+6. **The pipeline has only been run end-to-end on Mister Sandman and a synthetic tone through the real code** — a harder song hasn't gone through `s01`-`s05` yet, only through the old Phase 0 spike scripts.
