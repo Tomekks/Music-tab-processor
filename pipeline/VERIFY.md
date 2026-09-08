@@ -6,7 +6,7 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 
 **What works, verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data from the database on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
 
-**The single next step, since deployment is now done:** a security review of the live app (see `docs/PENDING_ACTIONS.md` — this went from "someday" to genuinely due the moment the URL went public). After that, pick from the backlog: local processing UI, playback/metronome, or Phase 0 Checkpoints 4/5 (now actually in scope per `DECISIONS.md`'s trigger — both processing and hosted UI exist).
+**Deployment and a first security review are both done** (2026-09-08, no findings — see `docs/PENDING_ACTIONS.md` for the standing "re-review if the app's shape changes" reminder). **No single mandated next step now** — pick from the backlog: local processing UI (resources already gathered in `DECISIONS.md`), playback/metronome/note-highlighting, CI, or Phase 0 Checkpoints 4/5 (now actually in scope per `DECISIONS.md`'s trigger — both processing and hosted UI exist). This is a real decision point, not something to default on.
 
 **Action items for the human:** see `docs/PENDING_ACTIONS.md` — a persistent, checkable list (token rotation, the pending security review, etc.), rather than duplicated here where it'd drift out of sync.
 
