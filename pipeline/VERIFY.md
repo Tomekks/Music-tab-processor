@@ -8,10 +8,9 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 
 **The single next step, explicitly requested and not yet done:** deploy the Next.js app (`app/`) to Vercel. Everything it needs already works locally (`npm run dev` inside `app/`, reads live from Turso). This is genuinely the next task — don't re-derive the plan, just do it (create/link the Vercel project, add `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` to Vercel's environment variables as **server-side only**, never `NEXT_PUBLIC_`, deploy, verify the live URL actually renders a tab).
 
-**Action items for the human, not something to do automatically:**
-1. **Rotate the Turso platform API token.** It was pasted directly into a chat conversation on 2026-09-07 and has been in use since — normal hygiene, not an indication anything went wrong. Do this via the Turso dashboard (`app.turso.tech`), not by asking an AI to do it with the old token.
-2. **A security review is owed once the app is actually live on a public Vercel URL** — the user explicitly asked for this before wide use. Use the `security-review` skill/workflow at that point, not before (nothing public to review yet).
-3. Two `.env.local` files exist with the *same* Turso credentials: one at the repo root (read by `pipeline/s05_publish/publish.py`'s minimal hand-rolled parser) and one inside `app/` (read automatically by Next.js). Both gitignored, verified untracked. If credentials are ever rotated, update both.
+**Action items for the human:** see `docs/PENDING_ACTIONS.md` — a persistent, checkable list (token rotation, the pending security review, etc.), rather than duplicated here where it'd drift out of sync.
+
+**One environment detail worth knowing:** two `.env.local` files exist with the *same* Turso credentials — one at the repo root (read by `pipeline/s05_publish/publish.py`'s minimal hand-rolled parser) and one inside `app/` (read automatically by Next.js). Both gitignored, verified untracked. If credentials are ever rotated, update both.
 
 **Known, deliberate rough edges — not bugs, don't "fix" without asking first:**
 - `tab.json`'s `durationSec` per note is approximated ("time until the next note"), not the note's true length — deliberate, confirmed acceptable by the user (tempo/feel is the human's job when practicing, not the tab's).
