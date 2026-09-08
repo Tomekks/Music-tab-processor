@@ -1,6 +1,8 @@
 # s03_transcribe
 
-**Status:** blocked by a known test regression (2026-09-08). The stage wraps Basic Pitch to transcribe `stems/other.wav` into notes conforming to `contracts/notes.schema.json`, but Basic Pitch 0.4.0 now requires `--save-midi` for the CLI to create the MIDI this stage expects. The implementation does not pass that flag, so two tests fail even though Basic Pitch exits successfully. Fixing the invocation and re-running the suite is the next required task for this stage. See `docs/specs/pipeline-03-transcribe.md`.
+**Status:** done. Wraps Basic Pitch to transcribe `stems/other.wav` into notes conforming to `contracts/notes.schema.json`. All 3 tests pass. See `docs/specs/pipeline-03-transcribe.md`.
+
+**Correction (2026-09-08):** a same-day entry here previously claimed this stage was "blocked" — that Basic Pitch 0.4.0 requires `--save-midi` to write a MIDI file, and that the implementation's omission of that flag failed 2 tests. That was a misdiagnosis, never actually confirmed by re-running the suite. Re-verified the same day: `.venv/bin/pytest pipeline/s03_transcribe/` passes 3/3, `.venv/bin/pytest pipeline/` passes 12/12, and manually invoking `basic-pitch` without `--save-midi` does create a `.mid` file on this install. A fresh end-to-end run on the real "Mister Sandman" file (not just the synthetic test fixture) produced 1018 notes with the same first-three-note pitches/timings as two independently-verified 2026-09-07 runs (1017 and 1022 notes) — consistent with normal run-to-run variance, not a regression. `transcribe.py` was never modified; nothing needed fixing. Leaving this note here rather than deleting the incident, so the correction is visible.
 
 **Reads:** `pipeline_runs/<run-id>/stems/other.wav`, written by `s02_separate`.
 

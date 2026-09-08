@@ -6,7 +6,7 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 
 **What was verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data from the database on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
 
-**Current blocker:** the pipeline suite now has **10 passing and 2 failing tests**, both in `s03_transcribe`. Basic Pitch 0.4.0 exits successfully but writes no MIDI because the CLI invocation omits its required `--save-midi` flag. The existing end-to-end result remains historical proof, but the current checkout must not be treated as a working full pipeline until this small, isolated invocation fix is made and the suite passes again. See `pipeline/s03_transcribe/STATUS.md`.
+**Current blocker: none.** A same-day entry here previously claimed the pipeline suite had 10 passing and 2 failing tests, both in `s03_transcribe`, on the theory that Basic Pitch 0.4.0 requires `--save-midi` to write a MIDI file. That was a misdiagnosis, never confirmed by actually re-running the suite — re-verified later the same day: `.venv/bin/pytest pipeline/ -v` passes **12/12**, and a fresh end-to-end run on a real song produced output consistent with two prior independently-verified runs. See `pipeline/s03_transcribe/STATUS.md` for the full correction. The pipeline is healthy.
 
 **Deployment and a first security review are both done** (2026-09-08, no findings — see `docs/PENDING_ACTIONS.md` for the standing "re-review if the app's shape changes" reminder). **No single mandated next step now** — pick from the backlog: local processing UI (resources already gathered in `DECISIONS.md`), playback/metronome/note-highlighting, CI, or Phase 0 Checkpoints 4/5 (now actually in scope per `DECISIONS.md`'s trigger — both processing and hosted UI exist). This is a real decision point, not something to default on.
 
@@ -31,7 +31,7 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 cd "/Users/tomsvarpins/Documents/Guitar APP"
 .venv/bin/pytest pipeline/ -v
 ```
-**Current result:** `10 passed, 2 failed`. Both failures are the known `s03_transcribe` Basic Pitch MIDI-output regression described above; do not ignore them or use this command as a clean-health signal until they are fixed.
+**Current result:** `12 passed, 0 failed`. (An earlier same-day note here claimed 2 `s03_transcribe` failures — that was a misdiagnosis, corrected above.)
 
 ### 2. Run the pipeline on a real file, one stage at a time
 ```bash
@@ -63,9 +63,9 @@ Visit `http://localhost:3000` — the new song should appear in the list.
 
 ## Still open — decisions worth making explicitly
 
-1. **Restore `s03_transcribe` test health** — add Basic Pitch's `--save-midi` flag to the CLI invocation, then run the full pipeline suite. This is the immediate technical blocker, not a design decision.
+1. ~~Restore `s03_transcribe` test health~~ — was never actually broken; see the correction above. No action needed.
 2. **One-command orchestration** — 5 manual commands per song is still the reality; a `run_pipeline.py` wrapping all 5 would help, hasn't been asked for yet.
 3. **Local web UI for triggering runs** (pick a file, click a button) instead of CLI commands — backlogged in `DECISIONS.md`, resources already gathered there, not built.
 4. **CI (GitHub Actions)** — still not set up; now genuinely worthwhile since real code+tests exist.
-5. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — both local processing and hosted UI now exist, so these are in scope when the pipeline is healthy again.
+5. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — both local processing and hosted UI now exist, so these are in scope now.
 6. **The pipeline has only been run end-to-end on Mister Sandman and a synthetic tone through the real code** — a harder song hasn't gone through `s01`-`s05` yet, only through the old Phase 0 spike scripts.
