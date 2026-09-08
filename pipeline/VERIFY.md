@@ -4,9 +4,9 @@
 
 Read `START_HERE.md` at the repo root first — this file assumes that's done. As of **2026-09-08**, here's the exact state:
 
-**What works, verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`) reading that database and rendering a tab, all confirmed working end-to-end with the Mister Sandman song. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
+**What works, verified live:** `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → a real Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data from the database on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Current architecture: `docs/ARCHITECTURE.md`.
 
-**The single next step, explicitly requested and not yet done:** deploy the Next.js app (`app/`) to Vercel. Everything it needs already works locally (`npm run dev` inside `app/`, reads live from Turso). This is genuinely the next task — don't re-derive the plan, just do it (create/link the Vercel project, add `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` to Vercel's environment variables as **server-side only**, never `NEXT_PUBLIC_`, deploy, verify the live URL actually renders a tab).
+**The single next step, since deployment is now done:** a security review of the live app (see `docs/PENDING_ACTIONS.md` — this went from "someday" to genuinely due the moment the URL went public). After that, pick from the backlog: local processing UI, playback/metronome, or Phase 0 Checkpoints 4/5 (now actually in scope per `DECISIONS.md`'s trigger — both processing and hosted UI exist).
 
 **Action items for the human:** see `docs/PENDING_ACTIONS.md` — a persistent, checkable list (token rotation, the pending security review, etc.), rather than duplicated here where it'd drift out of sync.
 

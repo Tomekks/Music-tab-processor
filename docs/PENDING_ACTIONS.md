@@ -5,5 +5,5 @@ Things only a human can actually do — not automatable by an AI session. Checke
 Format: `- [ ] <what> (<when flagged>, <why/context if not obvious>)`
 
 - [ ] Rotate the Turso platform API token — it was pasted directly into a chat conversation on 2026-09-07. Do via the Turso dashboard (app.turso.tech), not by handing an AI the old token.
-- [ ] Run a security review once `app/` is actually live on a public Vercel URL (flagged 2026-09-08) — not before, there's nothing public to review yet. Use the `security-review` skill/workflow at that point.
-- [ ] Create a Vercel account and connect this GitHub repo (flagged 2026-09-08), when ready to deploy `app/`.
+- [ ] **Run a security review — now genuinely relevant, not "someday."** The app is live at https://app-six-psi-70.vercel.app as of 2026-09-08. Use the `security-review` skill/workflow.
+- [x] Create a Vercel account and connect this GitHub repo (2026-09-08) — done via `vercel login` (device-code flow, user completed auth in browser) + `vercel link`, which also auto-connected the GitHub repo.
