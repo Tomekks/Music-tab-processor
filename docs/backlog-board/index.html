@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guitar App — Backlog Board</title>
+<!--
+  Light-mode palette/type below is generated from DESIGN.md (this folder), pulled via
+  `npx getdesign@latest add claude` — Anthropic's own warm-cream/coral editorial system.
+  Dark mode (prefers-color-scheme) is untouched — a separate, hand-picked palette, not part of this design.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Light mode = DESIGN.md's "Claude" system */
+    --bg: #faf9f5;            /* colors.canvas */
+    --panel: #faf9f5;         /* colors.canvas (header, columns, dialog) */
+    --card-bg: #efe9de;       /* colors.surface-card (one step darker — individual items) */
+    --border: #e6dfd8;        /* colors.hairline */
+    --text: #141413;          /* colors.ink */
+    --muted: #6c6a64;         /* colors.muted */
+    --accent: #cc785c;        /* colors.primary (coral) */
+    --accent-active: #a9583e; /* colors.primary-active */
+    --accent-soft: rgba(204,120,92,0.12);
+    --on-accent: #ffffff;     /* colors.on-primary */
+    --radius-sm: 8px; --radius-md: 12px; --radius-pill: 9999px;
+    --font-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
+    --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --col-process: #3a6ea5; --col-audio: #7a4fb0; --col-app: #2f8f5b; --col-content: #b5772f; --col-decided: #6b655c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1a18; --panel:#242220; --card-bg:#242220; --border:#3a3733; --text:#ece8e2; --muted:#a39c91; --accent:#e08a6f; --accent-active:#e08a6f; --accent-soft:#3a2a24; --on-accent:#1b1a18; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font-body); }
+  header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--panel); position:sticky; top:0; z-index:5; }
+  header h1 { font-family:var(--font-display); font-weight:500; font-size:28px; letter-spacing:-0.3px; margin:0 12px 0 0; }
+  header .spacer { flex:1; }
+  select, button, input[type=text] { font:inherit; font-size:14px; font-weight:500; padding:10px 16px; height:40px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--panel); color:var(--text); cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+  button.primary:active { background:var(--accent-active); border-color:var(--accent-active); }
+  button.ghost { background:transparent; }
+  #saveIndicator { font-size:12px; color:var(--muted); min-width:70px; }
+  #board { display:flex; gap:12px; padding:14px; overflow-x:auto; align-items:flex-start; }
+  .column { background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-md); min-width:250px; max-width:270px; flex:0 0 auto; display:flex; flex-direction:column; max-height:calc(100vh - 76px); }
+  .column-head { padding:10px 12px; font-weight:500; font-size:13px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; }
+  .column-head .count { color:var(--muted); font-weight:400; }
+  .column-body { padding:8px; overflow-y:auto; flex:1; min-height:60px; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; margin-bottom:8px; cursor:grab; font-size:13px; }
+  .card.dragging { opacity:0.4; }
+  .card .tag { display:inline-block; font-family:var(--font-body); font-size:10px; font-weight:500; letter-spacing:0.6px; text-transform:uppercase; padding:2px 8px; border-radius:var(--radius-pill); color:#fff; margin-bottom:5px; }
+  .card .title { font-weight:500; margin-bottom:3px; }
+  .card .desc { color:var(--muted); font-size:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card .meta { margin-top:5px; font-size:11px; color:var(--muted); display:flex; gap:8px; }
+  .card .note-flag { margin-top:5px; font-size:11px; font-weight:500; color:var(--accent-active); }
+  dialog { border:none; border-radius:var(--radius-md); padding:0; width:min(560px, 92vw); background:var(--panel); color:var(--text); }
+  dialog::backdrop { background:rgba(20,20,19,0.4); }
+  form { padding:18px; display:flex; flex-direction:column; gap:10px; max-height:80vh; overflow-y:auto; }
+  form label { font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:3px; }
+  form input, form select, form textarea { font:inherit; padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg); color:var(--text); width:100%; }
+  form input:focus, form select:focus, form textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  form textarea { resize:vertical; min-height:44px; font-family:inherit; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .form-actions { display:flex; justify-content:space-between; gap:8px; padding-top:6px; }
+  .note-callout { background:var(--accent-soft); border-left:3px solid var(--accent); padding:6px 8px; font-size:12px; border-radius:4px; }
+  #helpText { padding:0 18px 14px; font-size:12px; color:var(--muted); max-width:900px; }
+  #helpText code { font-family:var(--font-mono); background:var(--card-bg); padding:1px 4px; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎸 Backlog Board</h1>
+  <select id="categoryFilter">
+    <option value="all">All categories</option>
+    <option value="process">Process & reliability</option>
+    <option value="audio">Audio pipeline</option>
+    <option value="app">App / UI</option>
+    <option value="content">Content / portfolio</option>
+    <option value="decided">Already-decided</option>
+  </select>
+  <button class="primary" id="addBtn">+ Add item</button>
+  <span class="spacer"></span>
+  <span id="saveIndicator"></span>
+  <button id="exportMdBtn">Export → Markdown</button>
+  <button id="copyMdBtn">Copy Markdown</button>
+  <button id="exportJsonBtn">Export JSON</button>
+  <button id="importBtn">Import JSON</button>
+  <input type="file" id="importFile" accept="application/json" style="display:none">
+  <button class="ghost" id="resetBtn" title="Reload the original seeded backlog, discarding local edits">Reset to seed</button>
+</header>
+
+<div id="helpText">
+  Drag a card up/down within a column, or across columns, to change its priority order and status — order top-to-bottom is the priority. Click a card to view or edit its full detail. Changes autosave to this browser only (<code>localStorage</code>) — use <b>Export → Markdown</b> whenever you want to update the real <code>docs/BACKLOG.md</code> file that's tracked in git.
+</div>
+
+<div id="board"></div>
+
+<dialog id="itemDialog">
+  <form id="itemForm">
+    <input type="hidden" id="f_id">
+    <label>Title <input type="text" id="f_title" required></label>
+    <div class="row3">
+      <label>Category
+        <select id="f_category">
+          <option value="process">Process & reliability</option>
+          <option value="audio">Audio pipeline</option>
+          <option value="app">App / UI</option>
+          <option value="content">Content / portfolio</option>
+          <option value="decided">Already-decided</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="f_status">
+          <option>Idea</option>
+          <option>Considered</option>
+          <option>Selected</option>
+          <option>In progress</option>
+          <option>Done</option>
+          <option>Rejected</option>
+        </select>
+      </label>
+      <label>Priority
+        <select id="f_priority">
+          <option>Unranked</option>
+          <option>Low</option>
+          <option>Medium</option>
+          <option>High</option>
+        </select>
+      </label>
+    </div>
+    <label>Effort <input type="text" id="f_effort" placeholder="e.g. S, M, L, Unknown"></label>
+    <label>Description <textarea id="f_description"></textarea></label>
+    <label>Pros <textarea id="f_pros"></textarea></label>
+    <label>Cons <textarea id="f_cons"></textarea></label>
+    <label>Dependencies <textarea id="f_dependencies" placeholder='e.g. "Pin and commit Python pipeline dependencies" (reference by title, not position — order changes)'></textarea></label>
+    <label>Related files <textarea id="f_related" placeholder="one per line"></textarea></label>
+    <label>Open question / note (optional) <textarea id="f_note"></textarea></label>
+    <div class="form-actions">
+      <button type="button" id="deleteBtn" class="ghost" style="color:#b5482f;">Delete</button>
+      <div style="display:flex; gap:8px;">
+        <button type="button" id="cancelBtn" class="ghost">Cancel</button>
+        <button type="submit" class="primary">Save</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const STORAGE_KEY = 'guitarAppBacklog.v1';
+const STATUSES = ['Idea','Considered','Selected','In progress','Done','Rejected'];
+const CATEGORY_LABEL = { process:'Process & reliability', audio:'Audio pipeline', app:'App / UI', content:'Content / portfolio', decided:'Already-decided' };
+const CATEGORY_COLOR = { process:'var(--col-process)', audio:'var(--col-audio)', app:'var(--col-app)', content:'var(--col-content)', decided:'var(--col-decided)' };
+
+// ---- Seed data: current docs/BACKLOG.md, 2026-09-09, as structured items ----
+const SEED = [
+  {id:'pin-python-deps', category:'process', status:'Considered', priority:'Unranked', effort:'S',
+   title:'Pin and commit Python pipeline dependencies',
+   description:"No requirements.txt or pyproject.toml is committed to git for the pipeline side — checked directly, there isn't one. Versions only exist in the live .venv on this Mac (confirmed via pip freeze).",
+   pros:"Reproducible setup on a fresh machine or session; catches silent version drift; matches the reliability philosophy already applied on the app side (TypeScript, tests, CI) — docs/decisions/stack-and-tooling.md.",
+   cons:"tuttut's own pinned dependencies are already known to fail to build as-is (docs/audio-tools/tab-generation.md — installed with --no-deps against modern versions instead). A naive pip freeze wouldn't reproduce cleanly elsewhere without documenting that workaround too.",
+   dependencies:'', related:['docs/decisions/stack-and-tooling.md','docs/audio-tools/tab-generation.md']},
+
+  {id:'audit-tests', category:'process', status:'Considered', priority:'Unranked', effort:'S–M',
+   title:'Audit the existing test suite',
+   description:"Review what the 12 pipeline tests and the app's node --test suite actually catch versus what they cost to maintain, and close the one acknowledged gap: pipeline/s05_publish/publish.py has no test at all.",
+   pros:"Closes a real, already-documented gap; \"golden file\" tests are worth checking for staleness since ML output can drift run to run; cheap relative to the trust it buys.",
+   cons:"Nothing is currently broken or blocked by the missing test, so it's not urgent; risk of padding coverage with low-value tests if not scoped tightly.",
+   dependencies:'', related:['pipeline/VERIFY.md','pipeline/s05_publish/STATUS.md']},
+
+  {id:'living-tech-spec', category:'process', status:'Considered', priority:'Unranked', effort:'M (ongoing)',
+   title:'Living tech-spec-per-feature convention',
+   description:"docs/specs/ currently holds one-off mechanical specs written before pipeline-stage work, not maintained after. This proposes the same for app features, kept updated as behavior changes.",
+   pros:"A precise \"how this is supposed to behave\" reference a memoryless agent could read instead of reverse-engineering it from source.",
+   cons:"Real overlap risk — component RULES.md already covers \"how it renders\", STATUS.md already covers \"what's true now\". A third parallel living doc per feature is close to what the \"three homes\" rule exists to prevent.",
+   dependencies:'', related:['docs/DOCUMENTATION_PRINCIPLES.md','docs/specs/_TEMPLATE.md']},
+
+  {id:'strategist-executor-tool', category:'process', status:'Idea', priority:'Unranked', effort:'L',
+   title:'"Strategist + cheap executor" AI workflow, as a reusable tool',
+   description:"Package the pattern — a strong model plans/specs, a free/cheap model executes, checked against the existing reliability toolkit (types, tests, contracts) — as something invokable on demand. Already roughly how the project gets built in practice (docs/decisions/stack-and-tooling.md).",
+   pros:"Could meaningfully cut cost on future execution-heavy tasks; reuses infrastructure already justified and in place; an interesting second angle for the project's \"demonstrating AI-direction ability\" purpose.",
+   cons:"Meta-work — building a tool to build the project, not the project itself; real yak-shaving risk; \"100% accuracy\" from a free model isn't a promise any tooling can make.",
+   dependencies:'Backup current project structure first (safety step, not a tracked item)', related:['docs/decisions/stack-and-tooling.md']},
+
+  {id:'low-token-layout', category:'process', status:'Idea', priority:'Unranked', effort:'S–M',
+   title:'Low-token layout/wireframe exploration method',
+   description:"A fast, cheap way to iterate on layout ideas before real implementation — ASCII wireframes vs. a minimal low-token HTML render — plus Tailwind components vs. hand-rolled markup for throwaway explorations.",
+   pros:"Cheaper, faster iteration before spending real tokens on full component code; plugs into things already planned rather than being standalone.",
+   cons:"Another process to maintain instead of just building the UI; ASCII wireframes lose real layout fidelity a low-token HTML render wouldn't; only pays off if a real UI push happens soon.",
+   dependencies:'"Local web UI for triggering pipeline runs" (for payoff, not strictly blocking)', related:['docs/decisions/backlog-and-scope.md','app/status/design-system.md']},
+
+  {id:'codescene-mcp', category:'process', status:'Idea', priority:'High', effort:'S–M',
+   title:'Integrate CodeScene MCP server',
+   description:"Add codescene-oss/codescene-mcp-server so Claude (and other agents) can query CodeScene's Code Health analysis directly — hotspot identification, complexity/maintainability scoring, code ownership tracking, delta reviews for refactoring validation, and technical-debt business-case calculations. Runs locally; no source code leaves the machine. Free standalone tier available; a CodeScene subscription/CS_ACCESS_TOKEN unlocks more.",
+   pros:"Directly extends the project's existing reliability toolkit (types, tests, contracts, CI) with an automated code-health signal instead of relying on manual review alone; delta reviews specifically catch newly-introduced technical debt before it's merged — relevant given how much of this codebase is AI-executed; local-only execution matches the project's own \"never internet-reachable, careful about outbound requests\" safety stance.",
+   cons:"Another tool to install and keep current; value is unproven until actually run against this specific codebase — a project this size may not yet have enough history/hotspots for the analysis to be very informative; some features are gated behind a CodeScene subscription, not fully free.",
+   dependencies:'', related:['https://github.com/codescene-oss/codescene-mcp-server']},
+
+  {id:'ci-setup', category:'process', status:'Idea', priority:'Unranked', effort:'S–M',
+   title:'Set up CI (GitHub Actions)',
+   description:"Run pipeline tests + app lint/tests automatically on every commit. The one still-missing piece of the project's own reliability toolkit.",
+   pros:"An objective, always-on signal that doesn't require reading every diff by hand; low effort since the tests already exist.",
+   cons:"Needs the Python pipeline environment (.venv, model weights, tuttut's dependency workaround) reproduced in CI — much easier once dependencies are pinned.",
+   dependencies:'"Pin and commit Python pipeline dependencies" (recommended first)', related:['docs/decisions/stack-and-tooling.md','pipeline/VERIFY.md']},
+
+  {id:'one-command-orchestration', category:'process', status:'Idea', priority:'Unranked', effort:'S',
+   title:'One-command pipeline orchestration',
+   description:"A run_pipeline.py (or similar) wrapping the current 5 manual CLI commands (s01_ingest → s05_publish) into one call per song.",
+   pros:"Removes real day-to-day friction; low risk since each stage already works standalone — this is just sequencing, not new logic.",
+   cons:'Slight overlap with "Local web UI for triggering pipeline runs" — worth deciding if this is a stepping stone toward that or ends up redundant.',
+   dependencies:'', related:['pipeline/VERIFY.md']},
+
+  {id:'audit-doc-principles', category:'process', status:'Idea', priority:'Unranked', effort:'S',
+   title:'Audit docs/DOCUMENTATION_PRINCIPLES.md for gaps and improvements',
+   description:"Review the doc's own rules for gaps, inconsistencies, or things that no longer hold. Starting point: the \"three homes\" principle has no stated home for proposals under consideration — BACKLOG.md itself is a fourth kind of doc it doesn't account for.",
+   pros:"Cheap, and the docs structure is core to how this project stays legible to memoryless agents.",
+   cons:"Purely meta; no user-facing payoff.",
+   dependencies:'', related:['docs/DOCUMENTATION_PRINCIPLES.md']},
+
+  {id:'reaudit-transcription', category:'audio', status:'Considered', priority:'Unranked', effort:'M–L',
+   title:'Re-audit transcription-stage accuracy and alternatives',
+   description:"Basic Pitch has only ever been \"env-sanity\" tested — real accuracy on polyphonic guitar/full-band audio has never been formally judged. Both Basic Pitch and tuttut are already polyphonic end-to-end; this is about detection accuracy, not a missing polyphony capability.",
+   pros:"Targets the project's own stated weak point directly; concrete alternatives already identified (MT3, MR-MT3).",
+   cons:"MT3/MR-MT3 are research-grade (TF/JAX), real setup effort for a possibly marginal gain; risks pulling against the project's own \"recognizable, not accurate\" reframe; needs a real benchmark methodology.",
+   dependencies:'"Phase 0 Checkpoints 4/5" (recommended first — cheaper signal on whether this is even needed)', related:['docs/audio-tools/transcription.md','docs/decisions/pipeline-tool-choices.md','research/00_spike/RESULTS.md']},
+
+  {id:'phase0-checkpoints-4-5', category:'audio', status:'Idea', priority:'Unranked', effort:'M',
+   title:'Phase 0 Checkpoints 4/5 — run a harder, full-band song end-to-end',
+   description:"The real s01–s05 pipeline has only ever been run on Mister Sandman and a synthetic tone; a harder, full-band song has only gone through old Phase 0 spike scripts, never the real pipeline code.",
+   pros:'Cheap way to find real breakage before investing in the "Re-audit transcription-stage accuracy" item\'s tool research; directly answers whether the current stack holds up outside its one validated case.',
+   cons:"Needs a real royalty-free/CC-licensed full-band track to stay consistent with the project's copyright stance if this ever becomes a public demo.",
+   dependencies:'', related:['pipeline/VERIFY.md']},
+
+  {id:'active-note-effect', category:'app', status:'Considered', priority:'Unranked', effort:'M',
+   title:'Stylized "active note" effect synced to the metronome',
+   description:'A plainer version is already backlogged (a visual cue highlighting which note/chord is currently sounding), and Sheet already has a basic implementation (playhead + inverted colors). This is the stylized version (glow/flame/"burn" treatment) plus extending the highlight to Fretboard and Ascii.',
+   pros:"Builds on infrastructure deliberately built generic for this; genuinely fun and portfolio-worthy; low architectural risk.",
+   cons:'Purely decorative; needs restraint to not fight the "recognizable, not accurate" / tight-fit display lessons already learned; Fretboard animation performance untested.',
+   dependencies:'', related:['app/hooks/useMetronome.ts','docs/decisions/display-modes.md','app/status/song-views.md']},
+
+  {id:'local-pipeline-ui', category:'app', status:'Considered', priority:'Unranked', effort:'L',
+   title:'Local web UI for triggering pipeline runs',
+   description:"A simple local-only web UI — pick an audio file, click a button, kick off processing — instead of the current CLI-only workflow. Resources already gathered: Lucide icons, the frontend-design plugin, impeccable design guidance. Open question: same Next.js app (different route) vs. a separate local-only tool.",
+   pros:"Removes the terminal from day-to-day use; doubles as the natural entry point for yt-dlp ingestion later; resources already gathered, not a cold start.",
+   cons:"Real design/build effort; a write-capable local UI is new attack surface if ever exposed beyond localhost.",
+   dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+
+  {id:'design-tokens-fretboard-ascii', category:'app', status:'Idea', priority:'Unranked', effort:'S–M',
+   title:'Apply design-system tokens to Fretboard and Ascii',
+   description:"FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which is already wired to the real tokens.",
+   pros:"Sheet already proves the approach works; makes theming (e.g. dark mode) consistent across all three views instead of one.",
+   cons:"Needs the design-token playground's values to actually be settled first, or this risks being redone once tokens change.",
+   dependencies:'Design-system token playground reaching stable values', related:['app/status/song-views.md','app/status/design-system.md']},
+
+  {id:'synth-audio-playback', category:'app', status:'Idea', priority:'Unranked', effort:'Unknown — scope and approach not decided',
+   title:'Synthesized audio playback of the tab',
+   description:"The stated need: a way to actually hear the transcribed notes/melody ring, to judge by ear whether the tab sounds like the song intends — as much a pipeline-QA tool as a practice feature. Distinct from the existing metronome, which is a silent step sequencer with no note/pitch knowledge — no actual note audio plays today.",
+   pros:"Real, immediate value as a verification tool during pipeline work; matches intent already on record (docs/decisions/display-modes.md), not a new direction.",
+   cons:"Genuinely open scope — in-browser synthesis (Web Audio API + soundfont) vs. rendering an audio file during the pipeline are very different builds; chords vs. monophonic playback and the approximated durationSec both need real decisions first.",
+   dependencies:'', related:['docs/decisions/display-modes.md','app/hooks/useMetronome.ts','docs/DECISIONS.md'],
+   note:'Scope, approach, and priority are explicitly not known yet — kept as Idea on purpose.'},
+
+  {id:'project-blog', category:'content', status:'Idea', priority:'Unranked', effort:'Unknown until scoped',
+   title:'Project blog',
+   description:"A public write-up of the project, serving its explicit second purpose (a public demonstration of directing AI tools as a designer). Real material already exists: research/00_spike/RESULTS.md, docs/DRIFT_LOG.md, git history, gitignored case-study notes.",
+   pros:"Directly serves a purpose the project already states as core; real source material already exists.",
+   cons:"Writing/publishing time competes with build time; needs the same copyright discipline as the rest of the project applied to public writing too.",
+   dependencies:'', related:['docs/DECISIONS.md','docs/PENDING_ACTIONS.md'],
+   note:'"3 day case study, 6 month" — framing unclear, needs your input before this moves past Idea.'},
+
+  {id:'riff-id-automation', category:'decided', status:'Considered', priority:'Unranked', effort:'—',
+   title:'Manual riff identification → possible later automation',
+   description:'Marking which part of a song is "the riff" is done by hand on purpose (auto-detection is a hard, partly-unsolved segmentation problem). Automating it is a possible later upgrade, not blocked.',
+   pros:'', cons:'', dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+
+  {id:'difficulty-grading', category:'decided', status:'Considered', priority:'Unranked', effort:'—',
+   title:'Difficulty grading (Original/Medium/Easy/Baby)',
+   description:"Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand.",
+   pros:'', cons:'', dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+
+  {id:'spotify-tabs-lookup', category:'decided', status:'Considered', priority:'Unranked', effort:'—',
+   title:'Spotify metadata lookup + "check if tabs exist online"',
+   description:"Quality-of-life additions for a tool that, by design, serves one user who already knows what they uploaded — not worth the complexity yet.",
+   pros:'', cons:'', dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+
+  {id:'yt-dlp-ingestion', category:'decided', status:'Considered', priority:'Unranked', effort:'—',
+   title:'yt-dlp (YouTube-link) ingestion',
+   description:"Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio.",
+   pros:'', cons:'', dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+];
+
+// ---- Boilerplate preserved for faithful Markdown export ----
+const MD_HEADER = `# Backlog
+
+The single place to dump, triage, and prioritize ideas for this project — before something here is actually decided and scheduled, it's just a candidate. This is a fourth kind of doc, distinct from the "three homes" in \`docs/DOCUMENTATION_PRINCIPLES.md\` (why / current-status / rendering-rules): this file holds *proposals not yet acted on*, not settled facts.
+
+**Standing rule, binding on every session or model working from this file:** never add a new item to this backlog without first showing the user the exact proposed entry in chat and getting explicit confirmation. Editing or re-prioritizing an existing item doesn't need this — only adding a new one.
+
+This file is generated from \`docs/backlog-board/index.html\` (Export → Markdown). Edit items there, not by hand here, so the board and this file don't drift apart.
+
+Status values: \`Idea\` → \`Considered\` → \`Selected\` → \`In progress\` → \`Done\` / \`Rejected\` (archived below, never deleted). Priority is set per item (\`Unranked\`/\`Low\`/\`Medium\`/\`High\`); order within each section reflects drag-order in the board.
+
+---
+`;
+
+const MD_FOOTER = `
+---
+
+## Current stack & versions, for reference
+
+Not a backlog item — a snapshot. Authoritative sources: \`app/package.json\` (Node/JS) and the \`.venv\` (Python).
+
+- **App:** Next.js 16.3.4, React 19.2.8, TypeScript ^5, Tailwind CSS ^4, Drizzle ORM ^0.45.2, \`@libsql/client\` ^0.18.0, PostHog JS ^1.428.7
+- **Pipeline (Python 3.11.16):** \`basic-pitch\` 0.4.0, \`demucs\` 4.1.0, \`librosa\` 0.11.0, \`tuttut\` 0.0.6, \`torch\` 2.14.0, \`torchaudio\` 2.11.0
+- **Database:** Turso (hosted libSQL/SQLite-compatible)
+- **Hosting:** Vercel
+`;
+
+// ---- State ----
+
+// Guarantees every item has valid, known values for the fields the UI depends on —
+// applied to anything loaded from localStorage or imported from a file, neither of
+// which is guaranteed to match SEED's shape (a hand-edited JSON import, or a future
+// schema change). Never throws; always returns a renderable item.
+function normalizeItem(raw) {
+  raw = raw || {};
+  return {
+    id: raw.id || ('item-' + Math.random().toString(36).slice(2)),
+    category: CATEGORY_LABEL[raw.category] ? raw.category : 'process',
+    status: STATUSES.includes(raw.status) ? raw.status : 'Idea',
+    priority: ['Unranked','Low','Medium','High'].includes(raw.priority) ? raw.priority : 'Unranked',
+    effort: raw.effort || '',
+    title: raw.title || 'Untitled',
+    description: raw.description || '',
+    pros: raw.pros || '',
+    cons: raw.cons || '',
+    dependencies: raw.dependencies || '',
+    related: Array.isArray(raw.related) ? raw.related : [],
+    note: raw.note || '',
+  };
+}
+
+let items = load();
+
+// Loads saved board state, then merges in any SEED item not already present by id —
+// so editing SEED (e.g. adding a new backlog item in a future session) actually shows
+// up for a browser that already has saved state, without ever touching or reordering
+// what's already there. Without this, "Reset to seed" would be the only way to see a
+// new item, and that destroys all prioritization work first.
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw).map(normalizeItem);
+      const savedIds = new Set(saved.map(i => i.id));
+      const newFromSeed = SEED.filter(s => !savedIds.has(s.id)).map(s => normalizeItem(JSON.parse(JSON.stringify(s))));
+      if (newFromSeed.length) console.info(`Backlog board: merged ${newFromSeed.length} new item(s) from SEED not yet in your saved board.`);
+      return saved.concat(newFromSeed);
+    }
+  } catch (e) { console.warn('localStorage read failed', e); }
+  return JSON.parse(JSON.stringify(SEED)).map(normalizeItem);
+}
+
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    flashSaved();
+  } catch (e) { console.warn('localStorage write failed', e); }
+}
+
+function flashSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.textContent = 'Saved ✓';
+  clearTimeout(flashSaved._t);
+  flashSaved._t = setTimeout(() => { el.textContent=''; }, 1500);
+}
+
+// ---- Rendering ----
+const board = document.getElementById('board');
+const categoryFilter = document.getElementById('categoryFilter');
+
+function render() {
+  const filter = categoryFilter.value;
+  board.innerHTML = '';
+  STATUSES.forEach(status => {
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.dataset.status = status;
+    const visible = items.filter(i => i.status === status && (filter==='all' || i.category===filter));
+    col.innerHTML = `<div class="column-head">${status} <span class="count">${visible.length}</span></div>
+      <div class="column-body" data-status="${status}"></div>`;
+    board.appendChild(col);
+    const body = col.querySelector('.column-body');
+    items.filter(i => i.status === status).forEach(item => {
+      if (filter !== 'all' && item.category !== filter) return;
+      body.appendChild(renderCard(item));
+    });
+    setupColumnDnD(body);
+  });
+}
+
+function renderCard(item) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.draggable = true;
+  card.dataset.id = item.id;
+  // item is always normalizeItem()'d before it reaches here, so category/priority are
+  // guaranteed known values — the fallbacks below are defense-in-depth, not load-bearing.
+  const catLabel = CATEGORY_LABEL[item.category] || 'Uncategorized';
+  const catColor = CATEGORY_COLOR[item.category] || '#8a8a8a';
+  card.innerHTML = `
+    <span class="tag" style="background:${catColor}">${escapeHtml(catLabel)}</span>
+    <div class="title">${escapeHtml(item.title)}</div>
+    <div class="desc">${escapeHtml(item.description)}</div>
+    <div class="meta"><span>⚙ ${escapeHtml(item.effort||'—')}</span><span>★ ${escapeHtml(item.priority)}</span></div>
+    ${item.note ? '<div class="note-flag">⚠ open question — see detail</div>' : ''}
+  `;
+  card.addEventListener('click', () => openEditor(item.id));
+  card.addEventListener('dragstart', () => { card.classList.add('dragging'); });
+  card.addEventListener('dragend', () => { card.classList.remove('dragging'); syncOrderFromDOM(); });
+  return card;
+}
+
+function escapeHtml(s) {
+  return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function setupColumnDnD(container) {
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const dragging = document.querySelector('.dragging');
+    if (!dragging) return;
+    const after = getDragAfterElement(container, e.clientY);
+    if (!after) container.appendChild(dragging);
+    else container.insertBefore(dragging, after);
+  });
+}
+
+function getDragAfterElement(container, y) {
+  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  return cards.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset, element: child };
+    return closest;
+  }, { offset: -Infinity, element: null }).element;
+}
+
+function syncOrderFromDOM() {
+  const byId = Object.fromEntries(items.map(i => [i.id, i]));
+  const domOrderByStatus = {};
+  const visibleIds = new Set();
+  document.querySelectorAll('.column-body').forEach(body => {
+    const ids = [...body.querySelectorAll('.card')].map(c => c.dataset.id);
+    domOrderByStatus[body.dataset.status] = ids;
+    ids.forEach(id => visibleIds.add(id));
+  });
+
+  // A card hidden by the current category filter never passes through a column-body,
+  // so a drag physically can't have touched it — it must keep its status and stay near
+  // its original neighbors, not get swept to the end of the whole board (the previous
+  // bug here). Known trade-off: hidden cards are placed before this status's visible
+  // cards rather than perfectly interleaved with them — cosmetic only while a filter is
+  // active, never a data-loss or wrong-column issue.
+  const finalItems = [];
+  STATUSES.forEach(status => {
+    const hidden = items.filter(i => i.status === status && !visibleIds.has(i.id));
+    const visible = (domOrderByStatus[status] || []).map(id => byId[id]).filter(Boolean);
+    visible.forEach(i => { i.status = status; });
+    finalItems.push(...hidden, ...visible);
+  });
+  items = finalItems;
+  save();
+  render();
+}
+
+categoryFilter.addEventListener('change', render);
+
+// ---- Editor dialog ----
+const dialog = document.getElementById('itemDialog');
+const form = document.getElementById('itemForm');
+
+function openEditor(id) {
+  const item = id ? items.find(i => i.id === id) : null;
+  form.reset();
+  document.getElementById('f_id').value = item ? item.id : '';
+  document.getElementById('f_title').value = item ? item.title : '';
+  document.getElementById('f_category').value = item ? item.category : 'process';
+  document.getElementById('f_status').value = item ? item.status : 'Idea';
+  document.getElementById('f_priority').value = item ? item.priority : 'Unranked';
+  document.getElementById('f_effort').value = item ? item.effort : '';
+  document.getElementById('f_description').value = item ? item.description : '';
+  document.getElementById('f_pros').value = item ? item.pros : '';
+  document.getElementById('f_cons').value = item ? item.cons : '';
+  document.getElementById('f_dependencies').value = item ? item.dependencies : '';
+  document.getElementById('f_related').value = item ? (item.related||[]).join('\n') : '';
+  document.getElementById('f_note').value = item ? (item.note||'') : '';
+  document.getElementById('deleteBtn').style.display = item ? 'inline-block' : 'none';
+  dialog.showModal();
+}
+
+document.getElementById('addBtn').addEventListener('click', () => openEditor(null));
+document.getElementById('cancelBtn').addEventListener('click', () => dialog.close());
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('f_id').value || 'item-' + Date.now();
+  const data = {
+    id,
+    title: document.getElementById('f_title').value.trim(),
+    category: document.getElementById('f_category').value,
+    status: document.getElementById('f_status').value,
+    priority: document.getElementById('f_priority').value,
+    effort: document.getElementById('f_effort').value.trim(),
+    description: document.getElementById('f_description').value.trim(),
+    pros: document.getElementById('f_pros').value.trim(),
+    cons: document.getElementById('f_cons').value.trim(),
+    dependencies: document.getElementById('f_dependencies').value.trim(),
+    related: document.getElementById('f_related').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    note: document.getElementById('f_note').value.trim(),
+  };
+  const existingIdx = items.findIndex(i => i.id === id);
+  if (existingIdx >= 0) items[existingIdx] = data;
+  else items.push(data);
+  save();
+  render();
+  dialog.close();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  const id = document.getElementById('f_id').value;
+  if (!id) return;
+  if (!confirm('Delete this item permanently? (The project convention is normally to move to Done/Rejected instead of deleting — Cancel and change Status if you meant that.)')) return;
+  items = items.filter(i => i.id !== id);
+  save();
+  render();
+  dialog.close();
+});
+
+// ---- Reset ----
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Discard all local edits and reload the original seeded backlog?')) return;
+  items = JSON.parse(JSON.stringify(SEED));
+  save();
+  render();
+});
+
+// ---- Export: JSON ----
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+  downloadFile('backlog-export.json', JSON.stringify(items, null, 2), 'application/json');
+});
+
+// ---- Import: JSON ----
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed)) throw new Error('Expected a JSON array of items');
+      if (!confirm(`Replace the current ${items.length} items with ${parsed.length} imported items?`)) return;
+      items = parsed.map(normalizeItem);
+      save();
+      render();
+    } catch (err) {
+      alert('Could not import: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+// ---- Export: Markdown (matches docs/BACKLOG.md structure) ----
+document.getElementById('exportMdBtn').addEventListener('click', () => {
+  downloadFile('BACKLOG.md', buildMarkdown(), 'text/markdown');
+});
+
+// ---- Copy Markdown to clipboard (faster than download → relay for a quick sync) ----
+document.getElementById('copyMdBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('copyMdBtn');
+  const original = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(buildMarkdown());
+    btn.textContent = 'Copied ✓';
+  } catch (e) {
+    btn.textContent = 'Copy failed — use Export';
+  }
+  setTimeout(() => { btn.textContent = original; }, 1500);
+});
+
+function buildMarkdown() {
+  const order = ['process','audio','app','content'];
+  const titles = { process:'Process & reliability', audio:'Audio pipeline', app:'App / UI features', content:'Content / portfolio' };
+  const archived = items.filter(i => i.status === 'Done' || i.status === 'Rejected');
+  let n = 1;
+  let out = MD_HEADER;
+
+  order.forEach(cat => {
+    const list = items.filter(i => i.category === cat && i.status !== 'Done' && i.status !== 'Rejected');
+    if (!list.length) return;
+    out += `\n## ${titles[cat]}\n`;
+    list.forEach(item => {
+      out += `\n### ${n}. ${item.title}\n`;
+      out += `**Status:** ${item.status} · **Priority:** ${item.priority} · **Effort:** ${item.effort||'—'}\n\n`;
+      out += `${item.description}\n\n`;
+      if (item.pros) out += `- **Pros:** ${item.pros}\n`;
+      if (item.cons) out += `- **Cons:** ${item.cons}\n`;
+      if (item.dependencies) out += `- **Dependencies:** ${item.dependencies}\n`;
+      if (item.related && item.related.length) out += `- **Related:** ${item.related.map(r=>`\`${r}\``).join(', ')}\n`;
+      if (item.note) out += `- **Note:** ${item.note}\n`;
+      n++;
+    });
+  });
+
+  // Already-decided pointers
+  const decided = items.filter(i => i.category === 'decided' && i.status !== 'Done' && i.status !== 'Rejected');
+  if (decided.length) {
+    out += `\n## Already-decided backlog (pointers only — full reasoning lives in \`docs/decisions/backlog-and-scope.md\`)\n`;
+    decided.forEach(item => {
+      out += `\n### ${n}. ${item.title}\n${item.description} ${item.related && item.related[0] ? '→ `'+item.related[0]+'`' : ''}\n`;
+      n++;
+    });
+  }
+
+  out += `\n---\n\n## Archive\n`;
+  if (!archived.length) {
+    out += `\n*(nothing yet — done/rejected items move here, never deleted)*\n`;
+  } else {
+    archived.forEach(item => {
+      out += `\n- **[${item.status}]** ${item.title} — ${item.description}\n`;
+    });
+  }
+
+  out += MD_FOOTER;
+  return out;
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+render();
+</script>
+</body>
+</html>

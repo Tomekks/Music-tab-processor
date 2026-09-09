@@ -18,6 +18,8 @@ CLAUDE.md                  — points Claude Code specifically at the above
 docs/
   GUIDE.md                 — this file: how the docs are organized
   ARCHITECTURE.md          — what's actually built, how data flows (a diagram)
+  BACKLOG.md               — ideas under consideration: dump, triage, prioritize
+  backlog-board/            — local drag-and-drop board that generates BACKLOG.md; open index.html directly
   DECISIONS.md             — index → docs/decisions/
   decisions/
     hosting-and-deployment.md
