@@ -26,6 +26,15 @@ Every index file (`docs/DECISIONS.md`, `app/STATUS.md`, `docs/AUDIOPROCESSINGTOO
 
 This is a routing table, not a table of contents — it should tell a reader (human or AI) whether they need to open the full file, not just that the full file exists.
 
+## Writing for token-efficient navigation
+
+Every file exists to be read by an AI (or human) trying to reach one specific fact with the least irrelevant text along the way. Two rules follow:
+
+- **Concise, but complete for what the file claims to cover.** Say everything the file's own scope promises. If something is deliberately out of scope, say so explicitly and point to where it lives (`"X isn't covered here — see Y"`) — a silent gap costs more tokens than a stated pointer, because the reader has to discover it's missing before they can go looking elsewhere.
+- **No padding** — a sentence that adds no fact, reason, or pointer is a sentence every future reader pays to skip. Applies to code comments and docstrings too, not just docs.
+
+**Index entries stay to roughly one or two sentences** (already the rule above) — as a concrete check: if an index's entries average past ~100 words, that entry needs trimming even if the whole file is nowhere near the split threshold below. `docs/DECISIONS.md` is already past this (~140 words/entry, found 2026-09-09) — tracked as part of the "audit `DOCUMENTATION_PRINCIPLES.md`" backlog item, not fixed here.
+
 ## When a file should become an index + folder
 
 **Split it** once a file exceeds roughly 1,500–2,000 words *and* genuinely covers more than one separable topic. `docs/DECISIONS.md` (5,452 words, seven separable topics), `app/STATUS.md` (2,233 words, four), and `docs/AUDIOPROCESSINGTOOLS.md` (1,041 words, four pipeline stages) are the worked examples — see `docs/DRIFT_LOG.md`'s 2026-09-09 entries for how each was actually split.

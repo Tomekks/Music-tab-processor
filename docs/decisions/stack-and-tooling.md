@@ -15,3 +15,12 @@ TypeScript is part of the stack specifically as a reliability mechanism, not jus
 - **Small, scoped commits/PRs per task** — makes it trivial to revert one bad chunk without losing everything around it, and keeps each unit of AI-generated work small enough to actually review.
 - **An explicit, written "done when…" checklist in every task spec** (see `docs/specs/`) — most drift happens because a vague instruction left room to improvise; a concrete acceptance list closes that room.
 - **Periodic "walk tests"** (see `AGENTS.md`) as a manual spot-check layered on top of all of the above, not a replacement for it.
+
+## Code-health discipline (learned via CodeScene, not dependent on it)
+
+A 2026-09-09 audit using CodeScene's Code Health analysis (`docs/codescene/`) found every real issue in the same shape: one function doing too many branchy things. The discipline is worth keeping even though CodeScene is a paid service this project won't necessarily have forever — it was how this was *discovered*, not something the project should depend on to *stay* true. Stated tool-independently, so it survives losing the tool:
+
+- **Complexity ceiling as a refactor trigger, not just a score**: cyclomatic complexity roughly under 9, nesting depth roughly under 4 (CodeScene's own thresholds, confirmed against this repo's Python). Cross either — extract a helper function immediately, don't wait for a tool to flag it.
+- **No "Bumpy Roads"**: the moment a function has two separate chunks of nested conditional logic, split each into its own named function before the function grows, not after.
+- **Cost real fixes, don't guess priority** — when something's genuinely worth fixing, reason concretely about what it costs to leave vs. fix, rather than by feel.
+- **If CodeScene goes away, the discipline shouldn't.** The same class of check exists in free/open tools — `radon` for Python cyclomatic complexity, ESLint's `complexity`/`max-depth` rules for TypeScript — worth wiring one in as a permanent, low-cost substitute rather than losing this when a trial or subscription ends. Full audit history: `docs/codescene/PROCEDURE.md`, `docs/codescene/STATUS.md`.

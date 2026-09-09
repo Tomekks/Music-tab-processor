@@ -90,15 +90,33 @@ A run_pipeline.py (or similar) wrapping the current 5 manual CLI commands (s01_i
 ### 9. Audit docs/DOCUMENTATION_PRINCIPLES.md for gaps and improvements
 **Status:** Idea · **Priority:** Unranked · **Effort:** S
 
-Review the doc's own rules for gaps, inconsistencies, or things that no longer hold. Starting point: the "three homes" principle has no stated home for proposals under consideration — BACKLOG.md itself is a fourth kind of doc it doesn't account for.
+Review the doc's own rules for gaps, inconsistencies, or things that no longer hold. Starting points: (1) the "three homes" principle has no stated home for proposals under consideration — BACKLOG.md itself is a fourth kind of doc it doesn't account for; (2) docs/DECISIONS.md's index entries average ~140 words each (found 2026-09-09), already past the ~100-word guideline the "Writing for token-efficient navigation" section itself sets — a real instance to trim, not just a hypothetical.
 
 - **Pros:** Cheap, and the docs structure is core to how this project stays legible to memoryless agents.
 - **Cons:** Purely meta; no user-facing payoff.
 - **Related:** `docs/DOCUMENTATION_PRINCIPLES.md`
 
+### 10. CodeScene: reduce complexity in 4 pipeline/app functions
+**Status:** Idea · **Priority:** Low · **Effort:** S
+
+Four functions flagged by CodeScene's standalone Code Health analysis (2026-09-09 audit, docs/codescene/STATUS.md), all still "Green" (8.95-9.84) but sharing the same pattern — one function doing too many branchy things: tab_generate.py's _render_ascii (Bumpy Road + nesting at threshold + cc=9, the ASCII tab formatting logic), ingest.py's _probe_audio (cc=10), transcribe.py's transcribe (cc=10), and app/lib/renderTab.ts's renderAsciiTab (Bumpy Road, 2 bumps). Deliberately left unfixed and backlogged rather than touched immediately, since the processing pipeline itself is due its own later audit/rework.
+
+- **Pros:** Cheap, isolated, no behavior change needed — pure readability/maintainability; fixing all four the same way (extract the nested branches into named helper functions) doubles as validating the new complexity-ceiling principle in docs/decisions/stack-and-tooling.md.
+- **Cons:** Not urgent, nothing is broken; real risk of touching working pipeline code for a cosmetic score; better done together with the pipeline's own later audit than piecemeal now.
+- **Related:** `docs/codescene/STATUS.md`, `docs/codescene/PROCEDURE.md`
+
+### 11. Clean up CodeScene MCP integration once the paid service is no longer used
+**Status:** Idea · **Priority:** Low · **Effort:** S
+
+When the CodeScene trial/subscription ends or is otherwise dropped, remove or neutralize the dependency: .mcp.json's codescene server registration, and revisit references in docs/codescene/STATUS.md, docs/codescene/PROCEDURE.md, and docs/decisions/stack-and-tooling.md's code-health-discipline section. Decide whether to replace it with the free/open alternatives that section already names (radon for Python, ESLint complexity/max-depth rules for TypeScript) per the tool-independence principle adopted alongside it.
+
+- **Pros:** Keeps the repo accurate instead of referencing a service no longer in use; honors the "discipline should outlive the tool" principle already written down rather than leaving it as an aspiration.
+- **Cons:** Not urgent until the service actually lapses; low priority, contingent on a future event rather than something to schedule now.
+- **Related:** `docs/codescene/STATUS.md`, `docs/codescene/PROCEDURE.md`, `docs/decisions/stack-and-tooling.md`, `.mcp.json`
+
 ## Audio pipeline
 
-### 10. Re-audit transcription-stage accuracy and alternatives
+### 12. Re-audit transcription-stage accuracy and alternatives
 **Status:** Considered · **Priority:** Unranked · **Effort:** M–L
 
 Basic Pitch has only ever been "env-sanity" tested — real accuracy on polyphonic guitar/full-band audio has never been formally judged. Both Basic Pitch and tuttut are already polyphonic end-to-end; this is about detection accuracy, not a missing polyphony capability.
@@ -108,7 +126,7 @@ Basic Pitch has only ever been "env-sanity" tested — real accuracy on polyphon
 - **Dependencies:** "Phase 0 Checkpoints 4/5" (recommended first — cheaper signal on whether this is even needed)
 - **Related:** `docs/audio-tools/transcription.md`, `docs/decisions/pipeline-tool-choices.md`, `research/00_spike/RESULTS.md`
 
-### 11. Phase 0 Checkpoints 4/5 — run a harder, full-band song end-to-end
+### 13. Phase 0 Checkpoints 4/5 — run a harder, full-band song end-to-end
 **Status:** Idea · **Priority:** Unranked · **Effort:** M
 
 The real s01–s05 pipeline has only ever been run on Mister Sandman and a synthetic tone; a harder, full-band song has only gone through old Phase 0 spike scripts, never the real pipeline code.
@@ -119,7 +137,7 @@ The real s01–s05 pipeline has only ever been run on Mister Sandman and a synth
 
 ## App / UI features
 
-### 12. Design system: one main source + resettable per-surface child overrides
+### 14. Design system: one main source + resettable per-surface child overrides
 **Status:** Idea · **Priority:** High · **Effort:** L
 
 One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.
@@ -129,7 +147,7 @@ One main design system holds the source-of-truth token values. Any surface that 
 - **Dependencies:** "app/design_system/" playground reaching a stable, exportable main token set first; overlaps with "Apply design-system tokens to Fretboard and Ascii" and "Local web UI for triggering pipeline runs"
 - **Related:** `app/status/design-system.md`, `docs/backlog-board/STATUS.md`, `docs/backlog-board/DESIGN.md`
 
-### 13. Stylized "active note" effect synced to the metronome
+### 15. Stylized "active note" effect synced to the metronome
 **Status:** Considered · **Priority:** Unranked · **Effort:** M
 
 A plainer version is already backlogged (a visual cue highlighting which note/chord is currently sounding), and Sheet already has a basic implementation (playhead + inverted colors). This is the stylized version (glow/flame/"burn" treatment) plus extending the highlight to Fretboard and Ascii.
@@ -138,7 +156,7 @@ A plainer version is already backlogged (a visual cue highlighting which note/ch
 - **Cons:** Purely decorative; needs restraint to not fight the "recognizable, not accurate" / tight-fit display lessons already learned; Fretboard animation performance untested.
 - **Related:** `app/hooks/useMetronome.ts`, `docs/decisions/display-modes.md`, `app/status/song-views.md`
 
-### 14. Local web UI for triggering pipeline runs
+### 16. Local web UI for triggering pipeline runs
 **Status:** Considered · **Priority:** Unranked · **Effort:** L
 
 A simple local-only web UI — pick an audio file, click a button, kick off processing — instead of the current CLI-only workflow. Resources already gathered: Lucide icons, the frontend-design plugin, impeccable design guidance. Open question: same Next.js app (different route) vs. a separate local-only tool.
@@ -147,7 +165,7 @@ A simple local-only web UI — pick an audio file, click a button, kick off proc
 - **Cons:** Real design/build effort; a write-capable local UI is new attack surface if ever exposed beyond localhost.
 - **Related:** `docs/decisions/backlog-and-scope.md`
 
-### 15. Apply design-system tokens to Fretboard and Ascii
+### 17. Apply design-system tokens to Fretboard and Ascii
 **Status:** Idea · **Priority:** Unranked · **Effort:** S–M
 
 FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which is already wired to the real tokens.
@@ -157,7 +175,7 @@ FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which
 - **Dependencies:** Design-system token playground reaching stable values
 - **Related:** `app/status/song-views.md`, `app/status/design-system.md`
 
-### 16. Synthesized audio playback of the tab
+### 18. Synthesized audio playback of the tab
 **Status:** Idea · **Priority:** Unranked · **Effort:** Unknown — scope and approach not decided
 
 The stated need: a way to actually hear the transcribed notes/melody ring, to judge by ear whether the tab sounds like the song intends — as much a pipeline-QA tool as a practice feature. Distinct from the existing metronome, which is a silent step sequencer with no note/pitch knowledge — no actual note audio plays today.
@@ -169,7 +187,7 @@ The stated need: a way to actually hear the transcribed notes/melody ring, to ju
 
 ## Content / portfolio
 
-### 17. Project blog
+### 19. Project blog
 **Status:** Idea · **Priority:** Unranked · **Effort:** Unknown until scoped
 
 A public write-up of the project, serving its explicit second purpose (a public demonstration of directing AI tools as a designer). Real material already exists: research/00_spike/RESULTS.md, docs/DRIFT_LOG.md, git history, gitignored case-study notes.
@@ -181,16 +199,16 @@ A public write-up of the project, serving its explicit second purpose (a public 
 
 ## Already-decided backlog (pointers only — full reasoning lives in `docs/decisions/backlog-and-scope.md`)
 
-### 18. Manual riff identification → possible later automation
+### 20. Manual riff identification → possible later automation
 Marking which part of a song is "the riff" is done by hand on purpose (auto-detection is a hard, partly-unsolved segmentation problem). Automating it is a possible later upgrade, not blocked. → `docs/decisions/backlog-and-scope.md`
 
-### 19. Difficulty grading (Original/Medium/Easy/Baby)
+### 21. Difficulty grading (Original/Medium/Easy/Baby)
 Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand. → `docs/decisions/backlog-and-scope.md`
 
-### 20. Spotify metadata lookup + "check if tabs exist online"
+### 22. Spotify metadata lookup + "check if tabs exist online"
 Quality-of-life additions for a tool that, by design, serves one user who already knows what they uploaded — not worth the complexity yet. → `docs/decisions/backlog-and-scope.md`
 
-### 21. yt-dlp (YouTube-link) ingestion
+### 23. yt-dlp (YouTube-link) ingestion
 Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio. → `docs/decisions/backlog-and-scope.md`
 
 ---

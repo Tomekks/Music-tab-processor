@@ -216,7 +216,7 @@ const SEED = [
 
   {id:'audit-doc-principles', category:'process', status:'Idea', priority:'Unranked', effort:'S',
    title:'Audit docs/DOCUMENTATION_PRINCIPLES.md for gaps and improvements',
-   description:"Review the doc's own rules for gaps, inconsistencies, or things that no longer hold. Starting point: the \"three homes\" principle has no stated home for proposals under consideration — BACKLOG.md itself is a fourth kind of doc it doesn't account for.",
+   description:"Review the doc's own rules for gaps, inconsistencies, or things that no longer hold. Starting points: (1) the \"three homes\" principle has no stated home for proposals under consideration — BACKLOG.md itself is a fourth kind of doc it doesn't account for; (2) docs/DECISIONS.md's index entries average ~140 words each (found 2026-09-09), already past the ~100-word guideline the \"Writing for token-efficient navigation\" section itself sets — a real instance to trim, not just a hypothetical.",
    pros:"Cheap, and the docs structure is core to how this project stays legible to memoryless agents.",
    cons:"Purely meta; no user-facing payoff.",
    dependencies:'', related:['docs/DOCUMENTATION_PRINCIPLES.md']},
@@ -242,6 +242,20 @@ const SEED = [
    cons:'Needs a real mechanism, not just copy-pasted palettes — something that can tell "this value was deliberately overridden" from "this value is just inherited," so reset actually means something. app/design_system/\'s own tokens are still explicitly a proof of concept and actively changing, so building the override/reset machinery on top of them now risks redoing the machinery once the main tokens stabilize, not just the values. Also an open question worth deciding early: build-time (a config per surface, applied when each is built) vs. runtime (child pages actually load main tokens and layer overrides live) — different effort either way.',
    dependencies:'"app/design_system/" playground reaching a stable, exportable main token set first; overlaps with "Apply design-system tokens to Fretboard and Ascii" and "Local web UI for triggering pipeline runs"',
    related:['app/status/design-system.md','docs/backlog-board/STATUS.md','docs/backlog-board/DESIGN.md']},
+
+  {id:'codescene-complexity-cleanup', category:'process', status:'Idea', priority:'Low', effort:'S',
+   title:'CodeScene: reduce complexity in 4 pipeline/app functions',
+   description:"Four functions flagged by CodeScene's standalone Code Health analysis (2026-09-09 audit, docs/codescene/STATUS.md), all still \"Green\" (8.95-9.84) but sharing the same pattern — one function doing too many branchy things: tab_generate.py's _render_ascii (Bumpy Road + nesting at threshold + cc=9, the ASCII tab formatting logic), ingest.py's _probe_audio (cc=10), transcribe.py's transcribe (cc=10), and app/lib/renderTab.ts's renderAsciiTab (Bumpy Road, 2 bumps). Deliberately left unfixed and backlogged rather than touched immediately, since the processing pipeline itself is due its own later audit/rework.",
+   pros:'Cheap, isolated, no behavior change needed — pure readability/maintainability; fixing all four the same way (extract the nested branches into named helper functions) doubles as validating the new complexity-ceiling principle in docs/decisions/stack-and-tooling.md.',
+   cons:'Not urgent, nothing is broken; real risk of touching working pipeline code for a cosmetic score; better done together with the pipeline\'s own later audit than piecemeal now.',
+   dependencies:'', related:['docs/codescene/STATUS.md','docs/codescene/PROCEDURE.md']},
+
+  {id:'codescene-cleanup', category:'process', status:'Idea', priority:'Low', effort:'S',
+   title:'Clean up CodeScene MCP integration once the paid service is no longer used',
+   description:"When the CodeScene trial/subscription ends or is otherwise dropped, remove or neutralize the dependency: .mcp.json's codescene server registration, and revisit references in docs/codescene/STATUS.md, docs/codescene/PROCEDURE.md, and docs/decisions/stack-and-tooling.md's code-health-discipline section. Decide whether to replace it with the free/open alternatives that section already names (radon for Python, ESLint complexity/max-depth rules for TypeScript) per the tool-independence principle adopted alongside it.",
+   pros:'Keeps the repo accurate instead of referencing a service no longer in use; honors the "discipline should outlive the tool" principle already written down rather than leaving it as an aspiration.',
+   cons:'Not urgent until the service actually lapses; low priority, contingent on a future event rather than something to schedule now.',
+   dependencies:'', related:['docs/codescene/STATUS.md','docs/codescene/PROCEDURE.md','docs/decisions/stack-and-tooling.md','.mcp.json']},
 
   {id:'active-note-effect', category:'app', status:'Considered', priority:'Unranked', effort:'M',
    title:'Stylized "active note" effect synced to the metronome',
