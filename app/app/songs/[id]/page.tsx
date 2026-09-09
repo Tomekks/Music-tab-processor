@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
 import { renderAsciiTab } from "@/lib/renderTab";
+import { FretboardDiagram } from "@/components/FretboardDiagram";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +23,10 @@ export default async function SongPage({ params }: { params: Promise<{ id: strin
       <p className="text-zinc-500 mb-8">
         {song.tempoBpm.toFixed(0)} bpm · tuning {song.tuning.join("-")}
       </p>
-      <pre className="bg-zinc-950 text-zinc-100 text-sm rounded-lg p-6 overflow-x-auto font-mono leading-relaxed">
+      <pre className="bg-zinc-950 text-zinc-100 text-sm rounded-lg p-6 overflow-x-auto font-mono leading-relaxed mb-6">
         {renderAsciiTab(song.notes)}
       </pre>
+      <FretboardDiagram notes={song.notes} tuning={song.tuning} />
     </main>
   );
 }
