@@ -13,7 +13,8 @@
 // split into several.
 
 import { useState } from "react";
-import { getDisplayRow, getStepWindow, groupNotesByStep, pitchClassName, type TimedNote } from "@/lib/fretboard";
+import { getStepWindow } from "@/lib/fretboard";
+import { getDisplayRow, groupNotesByStep, pitchClassName, stringThickness, type TimedNote } from "@/lib/tabNotation";
 
 const FRET_WIDTH = 26;
 const STRING_GAP = 13;
@@ -65,7 +66,7 @@ function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: numb
           </text>
         ))}
 
-        {/* strings */}
+        {/* strings -- e/B/G tied at the thinnest, D/A/E stepping up, like a real set */}
         {tuning.map((_, i) => (
           <line
             key={i}
@@ -74,7 +75,7 @@ function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: numb
             y1={yForString(i)}
             y2={yForString(i)}
             stroke="#a1a1aa"
-            strokeWidth={Math.max(1, 2 - i * 0.2)}
+            strokeWidth={stringThickness(i, nStrings)}
           />
         ))}
 
@@ -116,7 +117,7 @@ export function FretboardDiagram({ notes, tuning }: { notes: TimedNote[]; tuning
         <h2 className="text-sm font-medium text-zinc-700">Fretboard, in order</h2>
         <button
           onClick={() => setHighOnTop((v) => !v)}
-          className="text-xs text-zinc-500 hover:text-zinc-900 underline underline-offset-2"
+          className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
         >
           Flip to {highOnTop ? "thick E" : "thin e"} on top
         </button>

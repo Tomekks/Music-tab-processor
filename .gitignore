@@ -20,6 +20,9 @@ node_modules/
 .env
 .env.local
 
+# Personal case-study working notes -- never public, stays on this Mac only.
+Case study notes.md
+
 # OS
 .DS_Store
 

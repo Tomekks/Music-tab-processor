@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
 import { renderAsciiTab } from "@/lib/renderTab";
-import { FretboardDiagram } from "@/components/FretboardDiagram";
+import { pitchClassName } from "@/lib/tabNotation";
+import { SongTabs } from "@/components/SongTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -14,19 +15,26 @@ export default async function SongPage({ params }: { params: Promise<{ id: strin
 
   if (!song) notFound();
 
+  // Standard tuning display (e.g. "E-A-D-G-B-e"), not raw MIDI numbers --
+  // lowercase only the highest string, same convention as the ASCII tab
+  // and the fretboard/sheet diagrams.
+  const tuningLabel = song.tuning
+    .map((midi, i) => (i === song.tuning.length - 1 ? pitchClassName(midi).toLowerCase() : pitchClassName(midi)))
+    .join("-");
+
   return (
-    <main className="max-w-3xl mx-auto py-16 px-6">
+    // Fixed max width (not shrink-to-fit) so switching between Sheet,
+    // Fretboard, and Ascii -- each a different natural content width --
+    // doesn't change the page's own width and cause everything to jump.
+    <main className="w-full max-w-[1200px] mx-auto py-16 px-6">
       <Link href="/" className="text-sm text-zinc-500 hover:underline">
         ← All songs
       </Link>
       <h1 className="text-2xl font-semibold mt-2 mb-1">{song.title}</h1>
-      <p className="text-zinc-500 mb-8">
-        {song.tempoBpm.toFixed(0)} bpm · tuning {song.tuning.join("-")}
-      </p>
-      <pre className="bg-zinc-950 text-zinc-100 text-sm rounded-lg p-6 overflow-x-auto font-mono leading-relaxed mb-6">
-        {renderAsciiTab(song.notes)}
-      </pre>
-      <FretboardDiagram notes={song.notes} tuning={song.tuning} />
+      {/* Tempo now lives in the metronome controls (SongTabs -> Sheet), not
+          duplicated here -- it's the one place bpm is both shown and set. */}
+      <p className="text-zinc-500 mb-8">tuning {tuningLabel}</p>
+      <SongTabs notes={song.notes} tuning={song.tuning} tempoBpm={song.tempoBpm} asciiTab={renderAsciiTab(song.notes)} />
     </main>
   );
 }

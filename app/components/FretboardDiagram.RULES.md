@@ -30,6 +30,16 @@ separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
    segments looking cleaner. See `docs/DECISIONS.md` for why.
 5. **The thin-e/thick-E-on-top toggle applies to every segment at once,**
    not per-segment.
+6. **String lines step up in thickness like a real set** — e/B/G tied at
+   the thinnest, D/A/E each a step thicker (`stringThickness` in
+   `tabNotation.ts`, shared with `SheetDiagram`) — not a uniform gradient
+   across all six.
+7. **The toggle button is a real bordered button, not subtle underlined
+   text (2026-09-09).** It was genuinely present and working before this —
+   confirmed in the DOM in both states — but easy to miss visually (small,
+   low-contrast, tucked in a corner). Reports of it having "disappeared"
+   were about discoverability, not an actual regression; fixed by making it
+   look like an actual control, matching the metronome's Play button.
 
 ## Ideas raised, not yet decided
 
