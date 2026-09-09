@@ -1,0 +1,9 @@
+# Database and analytics
+
+Part of `app/status/` — see `app/STATUS.md` for the index. The *why* behind Turso/Drizzle lives in `docs/decisions/hosting-and-deployment.md`, not here.
+
+**Database access:** `db/schema.ts` (the one table: `songs`) and `db/client.ts` (the Drizzle+libSQL client). Schema changes: edit `db/schema.ts`, then `node --env-file=.env.local node_modules/.bin/drizzle-kit push` (plain `npx drizzle-kit push` won't see the env vars — `drizzle-kit` doesn't auto-load `.env.local` the way Next.js itself does).
+
+**Known, accepted issue:** `npm audit` reports 4 moderate vulnerabilities, all from `esbuild` via `drizzle-kit`'s dependency chain (a dev-server CORS issue). This only affects local schema-migration tooling, never the deployed app. Decided to leave as-is rather than accept `npm audit fix --force`'s breaking `drizzle-kit` downgrade — don't "fix" this reflexively if it resurfaces.
+
+**Analytics: PostHog, minimal configuration.** The client records only page views when `NEXT_PUBLIC_POSTHOG_KEY` is configured. Autocapture, session replay, page-leave tracking, person profiles for anonymous visitors, and persistent browser storage are disabled. The public browser project key and US ingestion host are configured in the ignored local environment file and in Vercel production. `.env.example` documents the two required values; use the EU host instead if the PostHog project is ever moved there. The browser project key is deliberately public; do not put a PostHog personal API key or any other secret in a `NEXT_PUBLIC_` variable. Confirmed working live — pageviews are recording real visits. **Session recording (`disable_session_recording: true`) is off by design, not a bug** — leave it off unless there's an explicit decision to turn it on (real privacy tradeoff: session replay captures on-screen behavior, not just a pageview, on an app with no auth/consent flow).

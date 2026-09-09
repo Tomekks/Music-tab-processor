@@ -7,9 +7,11 @@ If you are an AI model or agent picking up this project with no memory of any pr
 1. `AGENTS.md` — the working rules for anyone, human or AI, making changes here. Always first.
 2. `docs/GUIDE.md` — what this project is and how its documentation is organized.
 3. `docs/ARCHITECTURE.md` — how data flows through the system (a live visual diagram is linked from there).
-4. `docs/DECISIONS.md` — the full reasoning behind why things are built the way they are. Don't re-litigate a decision here without a genuinely new reason.
-5. `docs/AUDIOPROCESSINGTOOLS.md` — what's already been researched or tried for each pipeline stage, so research doesn't restart from zero.
+4. `docs/DECISIONS.md` — **now an index, not the full reasoning**: read it in full (it's short), then open the specific `docs/decisions/*.md` file it points to only once your actual task touches that topic. Don't re-litigate a decision without a genuinely new reason.
+5. `docs/AUDIOPROCESSINGTOOLS.md` — same pattern: an index into `docs/audio-tools/`, so research doesn't restart from zero. Open a stage file only when you're actually researching or swapping that stage.
 6. `research/00_spike/RESULTS.md` and each `pipeline/*/STATUS.md` — the actual current state: what's been tried, what works, what's next.
+
+For the walk test in step 2 below, reading the two indexes (steps 4–5) plus the files above is enough for a *first* pass — open the linked topic files for anything your walk-test explanation needs to go deeper on. See `docs/GUIDE.md` for the full map of where everything lives, and `docs/DOCUMENTATION_PRINCIPLES.md` for why the docs are shaped this way.
 
 ## 2. Prove you actually oriented — the walk test
 

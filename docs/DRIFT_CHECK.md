@@ -31,10 +31,10 @@ Keep it this short. Bounded scope — diff against what changed since the last c
 
 1. Check `git log` since the last check: does anything touch `AGENTS.md`'s hard rules (network exposure, system configuration, deletion) without having been flagged as such at the time?
 2. Do `pipeline/*/STATUS.md` files still match what's actually implemented in those folders?
-3. Have any `contracts/*.schema.json` files changed without a corresponding explanation added to `docs/DECISIONS.md`?
-4. Is anything now implemented that `docs/DECISIONS.md` explicitly lists as backlog, without a deliberate, recorded decision to un-backlog it?
+3. Have any `contracts/*.schema.json` files changed without a corresponding explanation added to `docs/DECISIONS.md` (or its linked `docs/decisions/*.md` files)?
+4. Is anything now implemented that `docs/DECISIONS.md`/`docs/decisions/backlog-and-scope.md` explicitly lists as backlog, without a deliberate, recorded decision to un-backlog it?
 5. **Cold-discovery check.** Starting from nothing but "here's a repo, figure it out" — no file paths, no hints — can the checking agent find `START_HERE.md` and follow it unaided? If not, the discovery chain itself is broken, and that's worth fixing before anything else here — it's the specific failure mode this whole project is trying to stay independent of any one AI model's built-in conventions against.
-6. **Comprehension check.** Have the checking agent read `AGENTS.md`, `docs/GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, and `docs/AUDIOPROCESSINGTOOLS.md` fresh, then explain back — in its own words — what the project currently does, why, and what state it's actually in. Compare that explanation against what's actually true. A mismatch **is** the drift signal; that's the point of asking for it.
+6. **Comprehension check.** Have the checking agent read `AGENTS.md`, `docs/GUIDE.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, and `docs/AUDIOPROCESSINGTOOLS.md` fresh — a real comprehension check means also opening whichever `docs/decisions/*.md`/`docs/audio-tools/*.md` topic files are relevant to recent work, not stopping at the two indexes — then explain back, in its own words, what the project currently does, why, and what state it's actually in. Compare that explanation against what's actually true. A mismatch **is** the drift signal; that's the point of asking for it.
 7. Spot-check one or two recent commits: did each do only what its message claims, or did something extra slip in?
 
 ## Recording the result
