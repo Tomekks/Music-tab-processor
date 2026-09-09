@@ -18,6 +18,12 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 
 **Analytics:** PostHog now records page views on the deployed app. Its public browser project key and US ingestion host are in `app/.env.local` and Vercel production; the configuration deliberately disables autocapture, session replay, identity profiles, and persistent browser storage. See `app/STATUS.md` and `app/.env.example`.
 
+**Project relocated (2026-09-09):** moved from `/Users/tomsvarpins/Documents/Guitar APP` to `/Users/tomsvarpins/Projects/guitar_tab_processor` (permission/iCloud-sync issues with the old location, per the user). Git, Vercel's project link, `.claude/launch.json`, and both `.env.local` files were all confirmed path-independent — no changes needed. **The Python `.venv` was not portable** — confirmed empirically (`pip --version` kept self-reporting the old path) — and had to be rebuilt fresh at the new location. Two real lessons from doing that, worth remembering for any future rebuild:
+1. **Plain `pip freeze` silently excludes `pip`/`setuptools`/`wheel`.** The rebuild initially failed with `ModuleNotFoundError: No module named 'pkg_resources'` (needed by `resampy`, a `basic-pitch` dependency) because `setuptools` was never captured. Fixed by installing the exact version (`setuptools==80.10.2`) pulled from the still-intact old venv via `pip freeze --all`, and adding it to the requirements file by hand.
+2. **A straight `pip install -r <file>` re-triggers the known `tuttut`/`matplotlib` conflict** (`docs/audio-tools/tab-generation.md`) — `tuttut` declares a hard pin on `matplotlib==3.5.3` while the working set actually needs `matplotlib==3.11.1`. Since a `pip freeze` output is already a fully-resolved exact snapshot, the fix is `pip install --no-deps -r <file>` throughout, not per-package special-casing.
+
+Result: a real, frozen, working requirements file now exists at the repo root (`requirements.freeze.txt`) for the first time — see `docs/BACKLOG.md`'s "Pin and commit Python pipeline dependencies" item, which this incident answers empirically rather than speculatively. 12/12 pipeline tests and 19/19 app tests pass from the new location; a staging build was also smoke-tested successfully. The old folder still exists on disk — deleting it is the user's own explicit next action, tracked in `docs/PENDING_ACTIONS.md`, not done as part of this.
+
 **Known, deliberate rough edges — not bugs, don't "fix" without asking first:**
 - `tab.json`'s `durationSec` per note is approximated ("time until the next note"), not the note's true length — deliberate, confirmed acceptable by the user (tempo/feel is the human's job when practicing, not the tab's).
 - `tempoBpm` **was** unreliable (214.51bpm on a real ~112bpm song) but is now fixed via real `librosa` beat-tracking on the source audio, confirmed accurate against two known songs. This matters for real now — the metronome feature (`app/hooks/useMetronome.ts`, built 2026-09-09) uses it as its default bpm.
@@ -30,7 +36,7 @@ Read `START_HERE.md` at the repo root first — this file assumes that's done. A
 
 ### 1. Sanity check first (30 seconds)
 ```bash
-cd "/Users/tomsvarpins/Documents/Guitar APP"
+cd "/Users/tomsvarpins/Projects/guitar_tab_processor"
 .venv/bin/pytest pipeline/ -v
 ```
 **Current result:** `12 passed, 0 failed`. (An earlier same-day note here claimed 2 `s03_transcribe` failures — that was a misdiagnosis, corrected above.)

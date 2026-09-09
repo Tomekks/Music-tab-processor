@@ -13,6 +13,9 @@ node_modules/
 # too large and too easy to re-download to belong in git.
 .cache/
 *.pt
+
+# Stray artifact left by Basic Pitch (see docs/PENDING_ACTIONS.md, flagged 2026-09-08)
+:memory:.ses
 *.onnx
 *.ckpt
 
