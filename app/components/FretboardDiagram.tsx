@@ -1,54 +1,119 @@
 "use client";
 
-// Static "where does this song live on the neck" overview -- every unique
-// string/fret position used anywhere in the song, drawn once on a fretboard
-// diagram. A companion to the ASCII tab (app/lib/renderTab.ts), not a
-// replacement: the ASCII tab shows *order*, this shows *position*, which is
-// the piece that's easy to lose reading raw fret numbers. See DECISIONS.md's
-// "Display modes are layered" section -- this is one of those opt-in layers,
-// reading the same tab.schema.json note data, no pipeline changes needed.
+// Sequenced fretboard strip: one small mini-fretboard per playback step
+// (a single note, or a whole chord if several strings ring at once),
+// chained left to right in the order they're actually played. Replaces an
+// earlier single-diagram "everywhere this song touches the neck" overview,
+// which turned out not to be useful on its own -- knowing *where* a note is
+// isn't enough without knowing *when* it comes, which the ASCII tab already
+// shows but not visually on the neck. This is the ASCII tab's order, drawn.
 //
-// Not yet built (deliberately, see app/STATUS.md): a sequential/per-chord
-// step-through. A single static overview like this one is fine to dedupe
-// positions freely, but a stepped version will need to group simultaneous
-// notes (chords, same startTimeSec) into one step rather than splitting them,
-// or two notes that are only ever played together will misleadingly look
-// like two separate steps.
+// See DECISIONS.md's "Display modes are layered" section for the fuller
+// reasoning, including why simultaneous notes (chords) are one step, not
+// split into several.
 
 import { useState } from "react";
-import { getDisplayRow, getFretRange, getUniquePositions, pitchClassName } from "@/lib/fretboard";
+import { getDisplayRow, getStepWindow, groupNotesByStep, pitchClassName, type TimedNote } from "@/lib/fretboard";
 
-type Note = { string: number; fret: number };
+const FRET_WIDTH = 26;
+const STRING_GAP = 13;
+const PAD_LEFT = 14;
+const OPEN_GAP = 12;
+const PAD_TOP = 16;
+const PAD_BOTTOM = 6;
 
-const PAD_LEFT = 30;
-const OPEN_GAP = 22;
-const FRET_WIDTH = 42;
-const STRING_GAP = 24;
-const PAD_TOP = 22;
-const PAD_RIGHT = 16;
-const PAD_BOTTOM = 14;
-const INLAY_FRETS = [3, 5, 7, 9, 12];
+function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: number; fret: number }[]; nStrings: number; tuning: number[]; highOnTop: boolean }) {
+  // Tight-fit window, no fixed width -- see FretboardDiagram.RULES.md rule 1.
+  const { start, end } = getStepWindow(notes.map((n) => n.fret));
+  const cellCount = end - start + 1;
 
-export function FretboardDiagram({ notes, tuning }: { notes: Note[]; tuning: number[] }) {
+  const nutX = PAD_LEFT + OPEN_GAP;
+  const gridWidth = cellCount * FRET_WIDTH;
+  const width = nutX + gridWidth + 10;
+  const height = PAD_TOP + (nStrings - 1) * STRING_GAP + PAD_BOTTOM;
+
+  const yForString = (stringIndex: number) => PAD_TOP + getDisplayRow(stringIndex, nStrings, highOnTop) * STRING_GAP;
+  // fret f (>= start) maps to cell index (f - start); the nut itself is only
+  // drawn if the window actually starts at fret 1 (i.e. includes the neck's edge).
+  const xForFret = (fret: number) => nutX + (fret - start + 0.5) * FRET_WIDTH;
+
+  return (
+    <div className="shrink-0 rounded-md border border-zinc-200 bg-white p-1.5">
+      <svg width={width} height={height}>
+        {/* nut, only when this window actually touches the top of the neck */}
+        {start === 1 && (
+          <line x1={nutX} x2={nutX} y1={PAD_TOP} y2={PAD_TOP + (nStrings - 1) * STRING_GAP} stroke="#27272a" strokeWidth={2.5} />
+        )}
+
+        {/* fret lines */}
+        {Array.from({ length: cellCount + 1 }, (_, i) => (
+          <line
+            key={i}
+            x1={nutX + i * FRET_WIDTH}
+            x2={nutX + i * FRET_WIDTH}
+            y1={PAD_TOP}
+            y2={PAD_TOP + (nStrings - 1) * STRING_GAP}
+            stroke="#e4e4e7"
+            strokeWidth={1}
+          />
+        ))}
+
+        {/* fret number labels */}
+        {Array.from({ length: cellCount }, (_, i) => start + i).map((f) => (
+          <text key={f} x={xForFret(f)} y={PAD_TOP - 6} textAnchor="middle" fontSize={8} fill="#a1a1aa">
+            {f}
+          </text>
+        ))}
+
+        {/* strings */}
+        {tuning.map((_, i) => (
+          <line
+            key={i}
+            x1={nutX - OPEN_GAP + 6}
+            x2={nutX + gridWidth}
+            y1={yForString(i)}
+            y2={yForString(i)}
+            stroke="#a1a1aa"
+            strokeWidth={Math.max(1, 2 - i * 0.2)}
+          />
+        ))}
+
+        {/* string labels -- lowercase only the highest string, matching renderAsciiTab.ts */}
+        {tuning.map((midi, i) => {
+          const name = pitchClassName(midi);
+          return (
+            <text key={i} x={PAD_LEFT - 5} y={yForString(i) + 3} textAnchor="end" fontSize={9} fontFamily="monospace" fill="#71717a">
+              {i === nStrings - 1 ? name.toLowerCase() : name}
+            </text>
+          );
+        })}
+
+        {/* the note(s) played in this step -- no fret number inside the dot,
+            the column header above already says which fret this is
+            (RULES.md rule 3); the dot's position within the segment is the
+            only place that matters now that segments are tightly fit. */}
+        {notes.map(({ string, fret }, i) =>
+          fret === 0 ? (
+            <circle key={i} cx={nutX - OPEN_GAP / 2 - 1} cy={yForString(string)} r={4.5} fill="white" stroke="#18181b" strokeWidth={1.6} />
+          ) : (
+            <circle key={i} cx={xForFret(fret)} cy={yForString(string)} r={5.5} fill="#18181b" />
+          )
+        )}
+      </svg>
+    </div>
+  );
+}
+
+export function FretboardDiagram({ notes, tuning }: { notes: TimedNote[]; tuning: number[] }) {
   const [highOnTop, setHighOnTop] = useState(true); // thin e on top, matches renderAsciiTab's default
 
   const nStrings = tuning.length;
-  const { maxFret } = getFretRange(notes);
-  const positions = getUniquePositions(notes);
-
-  const nutX = PAD_LEFT + OPEN_GAP;
-  const gridWidth = maxFret * FRET_WIDTH;
-  const width = nutX + gridWidth + PAD_RIGHT;
-  const height = PAD_TOP + (nStrings - 1) * STRING_GAP + PAD_BOTTOM;
-  const midY = PAD_TOP + ((nStrings - 1) * STRING_GAP) / 2;
-
-  const yForString = (stringIndex: number) => PAD_TOP + getDisplayRow(stringIndex, nStrings, highOnTop) * STRING_GAP;
-  const xForFret = (fret: number) => nutX + (fret - 0.5) * FRET_WIDTH;
+  const steps = groupNotesByStep(notes);
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-5">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium text-zinc-700">Fretboard overview</h2>
+        <h2 className="text-sm font-medium text-zinc-700">Fretboard, in order</h2>
         <button
           onClick={() => setHighOnTop((v) => !v)}
           className="text-xs text-zinc-500 hover:text-zinc-900 underline underline-offset-2"
@@ -58,92 +123,16 @@ export function FretboardDiagram({ notes, tuning }: { notes: Note[]; tuning: num
       </div>
 
       <div className="overflow-x-auto">
-        <svg width={width} height={height} role="img" aria-label="Fretboard diagram showing every note position used in this song">
-          {/* inlay dots, drawn first so notes/strings sit above them */}
-          {INLAY_FRETS.filter((f) => f <= maxFret).map((f) =>
-            f === 12 ? (
-              <g key={f}>
-                <circle cx={xForFret(f)} cy={midY - STRING_GAP * 0.9} r={2.5} fill="#d4d4d8" />
-                <circle cx={xForFret(f)} cy={midY + STRING_GAP * 0.9} r={2.5} fill="#d4d4d8" />
-              </g>
-            ) : (
-              <circle key={f} cx={xForFret(f)} cy={midY} r={2.5} fill="#d4d4d8" />
-            )
-          )}
-
-          {/* fret lines: 0 = nut, thicker */}
-          {Array.from({ length: maxFret + 1 }, (_, f) => (
-            <line
-              key={f}
-              x1={nutX + f * FRET_WIDTH}
-              x2={nutX + f * FRET_WIDTH}
-              y1={PAD_TOP}
-              y2={PAD_TOP + (nStrings - 1) * STRING_GAP}
-              stroke={f === 0 ? "#27272a" : "#d4d4d8"}
-              strokeWidth={f === 0 ? 3 : 1}
-            />
+        <div className="flex gap-2 pb-1">
+          {steps.map((step, i) => (
+            <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} />
           ))}
-
-          {/* fret number labels */}
-          {Array.from({ length: maxFret }, (_, i) => i + 1).map((f) => (
-            <text key={f} x={xForFret(f)} y={PAD_TOP - 8} textAnchor="middle" fontSize={10} fill="#a1a1aa">
-              {f}
-            </text>
-          ))}
-
-          {/* strings, thickest = low E */}
-          {tuning.map((_, i) => (
-            <line
-              key={i}
-              x1={nutX - OPEN_GAP + 8}
-              x2={nutX + gridWidth}
-              y1={yForString(i)}
-              y2={yForString(i)}
-              stroke="#52525b"
-              strokeWidth={Math.max(1.2, 3.2 - i * 0.4)}
-            />
-          ))}
-
-          {/* string labels, note name of the open string. Lowercased only for
-              the highest string (schema index nStrings-1), matching
-              renderAsciiTab.ts's "thin e" convention -- otherwise the low and
-              high E strings in standard tuning are indistinguishable text. */}
-          {tuning.map((midi, i) => {
-            const name = pitchClassName(midi);
-            return (
-              <text key={i} x={PAD_LEFT - 6} y={yForString(i) + 4} textAnchor="end" fontSize={12} fontFamily="monospace" fill="#3f3f46">
-                {i === nStrings - 1 ? name.toLowerCase() : name}
-              </text>
-            );
-          })}
-
-          {/* note markers */}
-          {positions.map(({ string, fret }) =>
-            fret === 0 ? (
-              <circle
-                key={string + ":" + fret}
-                cx={nutX - OPEN_GAP / 2 - 2}
-                cy={yForString(string)}
-                r={6}
-                fill="white"
-                stroke="#27272a"
-                strokeWidth={2}
-              />
-            ) : (
-              <g key={string + ":" + fret}>
-                <circle cx={xForFret(fret)} cy={yForString(string)} r={8} fill="#18181b" />
-                <text x={xForFret(fret)} y={yForString(string) + 3.5} textAnchor="middle" fontSize={9.5} fontFamily="monospace" fill="white">
-                  {fret}
-                </text>
-              </g>
-            )
-          )}
-        </svg>
+        </div>
       </div>
 
       <p className="text-xs text-zinc-400 mt-3">
-        Every position used in this song, not the order they&apos;re played — see the tab above for that.{" "}
-        {positions.some((p) => p.fret === 0) && "Open circles are open strings."}
+        One segment per step, left to right in playback order — same order as the tab above. A segment with more than
+        one dot is a chord (played together, not in sequence).
       </p>
     </div>
   );

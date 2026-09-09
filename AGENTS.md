@@ -21,6 +21,19 @@ Read `docs/GUIDE.md` and `docs/ARCHITECTURE.md` before touching code. This file 
 - `research/` — throwaway exploration and spikes. Not production code. Fine to be messy; not fine to be silently promoted into `pipeline/` without being rewritten properly.
 - `docs/specs/` — one file per task handed to an execution model: exact inputs/outputs, file locations, and a "done when" checklist. No ambiguity by design.
 
+## Previewing and shipping a change to `app/`
+
+Standing procedure, no exceptions without the user's explicit go-ahead to skip it, binding on every model working in this repo — not a preference of whichever one wrote this:
+
+1. **After any change to `app/`, always preview it with a real local staging build first** — `npm run stage` (`next build && next start -p 3001`) from inside `app/`, not just `npm run dev`. Dev mode behaves differently in real ways (unminified, dev-mode warnings, no static optimization); staging is the actual "does this really work" check, and it's free — zero GitHub or Vercel involvement, run it as many times as needed.
+2. **Then ask, every time, exactly this choice — never assume, never skip the question:**
+   - **Push to git?** — versioning only, `git commit` + `git push`.
+   - **Push to git & deploy?** — also `npx vercel deploy --prod --yes` from the **repo root** (not from inside `app/` — see the Root Directory incident in `app/STATUS.md`).
+   - **Skip for now?** — keep iterating locally, touch neither.
+3. **Never push to GitHub or deploy to Vercel on your own initiative after an `app/` change** — only after the user picks one of the three above.
+
+Why three separate gates, not one: staging shows what's been built, a GitHub push marks when a version exists, a Vercel deploy marks when it's actually live and accessible — each answers a different question the user asked for explicitly, and conflating any two of them (e.g. deploying because a push happened, or requiring a push before a local staging check) breaks that. See `app/STATUS.md`'s "Four separate layers" note for the fuller mechanics, and `docs/DECISIONS.md` for why Vercel auto-deploy-on-push was turned off in the first place.
+
 ## Safety & trust principles
 
 These apply to every model working on this repo or this machine — not just this session, and not just Claude.

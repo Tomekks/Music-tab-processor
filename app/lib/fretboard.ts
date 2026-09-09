@@ -4,6 +4,7 @@
 // fretboard.test.ts.
 
 export type FretPosition = { string: number; fret: number };
+export type TimedNote = FretPosition & { startTimeSec: number };
 
 const PITCH_CLASSES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
@@ -13,34 +14,37 @@ export function pitchClassName(midi: number): string {
 }
 
 /**
- * How many frets to draw. Always starts at the open string (fret 0 notes are
- * drawn separately, to the left of the nut -- see the component). Widens to
- * fit the song's highest fretted note, with a sensible minimum span so a
- * simple song doesn't render a cramped 1-fret diagram, and a cap so an
- * outlier note doesn't stretch the diagram absurdly wide.
+ * Groups notes into playback-order steps: everything sharing a startTimeSec
+ * is one step (a single note, or a chord if several strings ring at once).
+ * Same grouping convention as renderAsciiTab.ts's byTime map -- a step here
+ * is exactly one column there. Order is sorted by time; within a step,
+ * original note order is preserved.
  */
-export function getFretRange(
-  notes: Pick<FretPosition, "fret">[],
-  minSpan = 5,
-  maxFrets = 15
-): { minFret: number; maxFret: number } {
-  if (notes.length === 0) return { minFret: 0, maxFret: minSpan };
-  const highest = Math.max(...notes.map((n) => n.fret));
-  return { minFret: 0, maxFret: Math.min(Math.max(highest, minSpan), maxFrets) };
+export function groupNotesByStep(notes: TimedNote[]): FretPosition[][] {
+  const byTime = new Map<number, FretPosition[]>();
+  for (const { string, fret, startTimeSec } of notes) {
+    const group = byTime.get(startTimeSec) ?? [];
+    group.push({ string, fret });
+    byTime.set(startTimeSec, group);
+  }
+  return [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([, group]) => group);
 }
 
-/** Deduplicated (string, fret) pairs, first-seen order preserved. */
-export function getUniquePositions(notes: FretPosition[]): FretPosition[] {
-  const seen = new Set<string>();
-  const result: FretPosition[] = [];
-  for (const { string, fret } of notes) {
-    const key = string + ":" + fret;
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push({ string, fret });
-    }
-  }
-  return result;
+/**
+ * A tight-fit fret window (in cells, 1-indexed) for one step -- exactly the
+ * fretted span played, no padding. See FretboardDiagram.RULES.md, rule 1: a
+ * single note is just the case where the span is 1 fret wide, not a special
+ * case of some larger fixed width. An open-only step (rule 2) shows 1 cell
+ * of context (fret 1); open notes themselves don't affect the window, since
+ * they're drawn separately, to the left of the nut.
+ */
+export function getStepWindow(frets: number[]): { start: number; end: number } {
+  const fretted = frets.filter((f) => f > 0);
+  if (fretted.length === 0) return { start: 1, end: 1 };
+
+  const lo = Math.min(...fretted);
+  const hi = Math.max(...fretted);
+  return { start: lo, end: hi };
 }
 
 /**
