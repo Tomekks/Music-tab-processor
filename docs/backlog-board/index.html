@@ -235,6 +235,14 @@ const SEED = [
    cons:"Needs a real royalty-free/CC-licensed full-band track to stay consistent with the project's copyright stance if this ever becomes a public demo.",
    dependencies:'', related:['pipeline/VERIFY.md']},
 
+  {id:'design-system-hierarchy', category:'app', status:'Idea', priority:'High', effort:'L',
+   title:'Design system: one main source + resettable per-surface child overrides',
+   description:"One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.",
+   pros:'Consistent by default (every child starts from the main system) while still allowing deliberate, contained divergence where a surface genuinely needs it; a real reset path stops a one-off experiment from silently becoming a permanently stranded, hand-maintained fork; scales to future surfaces without a new one-off design decision each time.',
+   cons:'Needs a real mechanism, not just copy-pasted palettes — something that can tell "this value was deliberately overridden" from "this value is just inherited," so reset actually means something. app/design_system/\'s own tokens are still explicitly a proof of concept and actively changing, so building the override/reset machinery on top of them now risks redoing the machinery once the main tokens stabilize, not just the values. Also an open question worth deciding early: build-time (a config per surface, applied when each is built) vs. runtime (child pages actually load main tokens and layer overrides live) — different effort either way.',
+   dependencies:'"app/design_system/" playground reaching a stable, exportable main token set first; overlaps with "Apply design-system tokens to Fretboard and Ascii" and "Local web UI for triggering pipeline runs"',
+   related:['app/status/design-system.md','docs/backlog-board/STATUS.md','docs/backlog-board/DESIGN.md']},
+
   {id:'active-note-effect', category:'app', status:'Considered', priority:'Unranked', effort:'M',
    title:'Stylized "active note" effect synced to the metronome',
    description:'A plainer version is already backlogged (a visual cue highlighting which note/chord is currently sounding), and Sheet already has a basic implementation (playhead + inverted colors). This is the stylized version (glow/flame/"burn" treatment) plus extending the highlight to Fretboard and Ascii.',

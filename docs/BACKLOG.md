@@ -119,7 +119,17 @@ The real s01–s05 pipeline has only ever been run on Mister Sandman and a synth
 
 ## App / UI features
 
-### 12. Stylized "active note" effect synced to the metronome
+### 12. Design system: one main source + resettable per-surface child overrides
+**Status:** Idea · **Priority:** High · **Effort:** L
+
+One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.
+
+- **Pros:** Consistent by default (every child starts from the main system) while still allowing deliberate, contained divergence where a surface genuinely needs it; a real reset path stops a one-off experiment from silently becoming a permanently stranded, hand-maintained fork; scales to future surfaces without a new one-off design decision each time.
+- **Cons:** Needs a real mechanism, not just copy-pasted palettes — something that can tell "this value was deliberately overridden" from "this value is just inherited," so reset actually means something. app/design_system/'s own tokens are still explicitly a proof of concept and actively changing, so building the override/reset machinery on top of them now risks redoing the machinery once the main tokens stabilize, not just the values. Also an open question worth deciding early: build-time (a config per surface, applied when each is built) vs. runtime (child pages actually load main tokens and layer overrides live) — different effort either way.
+- **Dependencies:** "app/design_system/" playground reaching a stable, exportable main token set first; overlaps with "Apply design-system tokens to Fretboard and Ascii" and "Local web UI for triggering pipeline runs"
+- **Related:** `app/status/design-system.md`, `docs/backlog-board/STATUS.md`, `docs/backlog-board/DESIGN.md`
+
+### 13. Stylized "active note" effect synced to the metronome
 **Status:** Considered · **Priority:** Unranked · **Effort:** M
 
 A plainer version is already backlogged (a visual cue highlighting which note/chord is currently sounding), and Sheet already has a basic implementation (playhead + inverted colors). This is the stylized version (glow/flame/"burn" treatment) plus extending the highlight to Fretboard and Ascii.
@@ -128,7 +138,7 @@ A plainer version is already backlogged (a visual cue highlighting which note/ch
 - **Cons:** Purely decorative; needs restraint to not fight the "recognizable, not accurate" / tight-fit display lessons already learned; Fretboard animation performance untested.
 - **Related:** `app/hooks/useMetronome.ts`, `docs/decisions/display-modes.md`, `app/status/song-views.md`
 
-### 13. Local web UI for triggering pipeline runs
+### 14. Local web UI for triggering pipeline runs
 **Status:** Considered · **Priority:** Unranked · **Effort:** L
 
 A simple local-only web UI — pick an audio file, click a button, kick off processing — instead of the current CLI-only workflow. Resources already gathered: Lucide icons, the frontend-design plugin, impeccable design guidance. Open question: same Next.js app (different route) vs. a separate local-only tool.
@@ -137,7 +147,7 @@ A simple local-only web UI — pick an audio file, click a button, kick off proc
 - **Cons:** Real design/build effort; a write-capable local UI is new attack surface if ever exposed beyond localhost.
 - **Related:** `docs/decisions/backlog-and-scope.md`
 
-### 14. Apply design-system tokens to Fretboard and Ascii
+### 15. Apply design-system tokens to Fretboard and Ascii
 **Status:** Idea · **Priority:** Unranked · **Effort:** S–M
 
 FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which is already wired to the real tokens.
@@ -147,7 +157,7 @@ FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which
 - **Dependencies:** Design-system token playground reaching stable values
 - **Related:** `app/status/song-views.md`, `app/status/design-system.md`
 
-### 15. Synthesized audio playback of the tab
+### 16. Synthesized audio playback of the tab
 **Status:** Idea · **Priority:** Unranked · **Effort:** Unknown — scope and approach not decided
 
 The stated need: a way to actually hear the transcribed notes/melody ring, to judge by ear whether the tab sounds like the song intends — as much a pipeline-QA tool as a practice feature. Distinct from the existing metronome, which is a silent step sequencer with no note/pitch knowledge — no actual note audio plays today.
@@ -159,7 +169,7 @@ The stated need: a way to actually hear the transcribed notes/melody ring, to ju
 
 ## Content / portfolio
 
-### 16. Project blog
+### 17. Project blog
 **Status:** Idea · **Priority:** Unranked · **Effort:** Unknown until scoped
 
 A public write-up of the project, serving its explicit second purpose (a public demonstration of directing AI tools as a designer). Real material already exists: research/00_spike/RESULTS.md, docs/DRIFT_LOG.md, git history, gitignored case-study notes.
@@ -171,16 +181,16 @@ A public write-up of the project, serving its explicit second purpose (a public 
 
 ## Already-decided backlog (pointers only — full reasoning lives in `docs/decisions/backlog-and-scope.md`)
 
-### 17. Manual riff identification → possible later automation
+### 18. Manual riff identification → possible later automation
 Marking which part of a song is "the riff" is done by hand on purpose (auto-detection is a hard, partly-unsolved segmentation problem). Automating it is a possible later upgrade, not blocked. → `docs/decisions/backlog-and-scope.md`
 
-### 18. Difficulty grading (Original/Medium/Easy/Baby)
+### 19. Difficulty grading (Original/Medium/Easy/Baby)
 Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand. → `docs/decisions/backlog-and-scope.md`
 
-### 19. Spotify metadata lookup + "check if tabs exist online"
+### 20. Spotify metadata lookup + "check if tabs exist online"
 Quality-of-life additions for a tool that, by design, serves one user who already knows what they uploaded — not worth the complexity yet. → `docs/decisions/backlog-and-scope.md`
 
-### 20. yt-dlp (YouTube-link) ingestion
+### 21. yt-dlp (YouTube-link) ingestion
 Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio. → `docs/decisions/backlog-and-scope.md`
 
 ---
