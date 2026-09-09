@@ -1,0 +1,22 @@
+# What actually needs to be uploaded for a CLI deploy of app/ is just the
+# Next.js source -- everything below is local-only per the repo-root
+# .gitignore, but that file apparently isn't fully honored by `vercel deploy`
+# from this directory, so it's mirrored explicitly here to be sure.
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+.next/
+.cache/
+*.pt
+*.onnx
+*.ckpt
+research/00_spike/audio/
+research/00_spike/output/
+research/00_spike/fretboard/
+pipeline_runs/
+*.mp3
+*.wav
+*.m4a

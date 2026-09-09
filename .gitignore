@@ -23,6 +23,10 @@ node_modules/
 # OS
 .DS_Store
 
+# Vercel CLI project link (repo-root copy -- see app/STATUS.md for why the
+# CLI now deploys from here instead of from inside app/)
+.vercel
+
 # Source/processed audio — personal, often large, not something to version control
 *.mp3
 *.wav
