@@ -1,12 +1,10 @@
 import { pitchClassName } from "@/lib/tabNotation";
+import { renderAsciiTab } from "@/lib/renderTab";
+import { StudioTabs } from "./StudioTabs";
 import type { songs } from "@/db/schema";
 
 type Song = typeof songs.$inferSelect;
 
-// M1: static header only, plus a temporary tall placeholder standing in for the real
-// tab diagram (added in M3). The placeholder's only job is to prove the scroll
-// containment works -- everything outside it must stay put while it scrolls
-// internally. See app/app/studio/STATUS.md for the milestone this belongs to.
 export function SongDetailPane({ song }: { song: Song | null }) {
   if (!song) {
     return (
@@ -33,14 +31,16 @@ export function SongDetailPane({ song }: { song: Song | null }) {
         </div>
       </header>
 
-      {/* Placeholder for M3's DiagramViewport -- deliberately tall to prove only this
-          region scrolls, not the page. Replace wholesale in M3. */}
-      <div className="flex-1 min-h-0 overflow-y-auto border-t border-zinc-200 px-8 py-6">
-        <div style={{ height: 2000 }} className="rounded bg-zinc-50 border border-dashed border-zinc-300 p-4 text-sm text-zinc-400">
-          Tab diagram placeholder (M1) -- tall on purpose to verify scroll containment.
-          This region should scroll; the header above should not move.
-        </div>
-      </div>
+      {/* key={song.id} is deliberate: forces a fresh StudioTabs mount on every song
+          switch, so tab selection and (from M4) metronome playback/bpm reset per-song
+          instead of leaking across songs. See app/app/studio/STATUS.md. */}
+      <StudioTabs
+        key={song.id}
+        notes={song.notes}
+        tuning={song.tuning}
+        tempoBpm={song.tempoBpm}
+        asciiTab={renderAsciiTab(song.notes)}
+      />
     </div>
   );
 }

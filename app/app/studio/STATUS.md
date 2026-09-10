@@ -8,7 +8,7 @@ the "how", not memory.
 
 - [x] M1 — static shell + data (no interactivity)
 - [x] M2 — song selection via ?song=
-- [ ] M3 — tab switching (Sheet/Fretboard/Ascii, no metronome)
+- [x] M3 — tab switching (Sheet/Fretboard/Ascii, no metronome)
 - [ ] M4 — metronome wiring + FretboardDiagram currentStep
 - [ ] M5 — design tokens + restyle
 
@@ -23,6 +23,10 @@ matching sidebar row (`aria-current="true"`) and SSRs that song; an invalid
 `?song=does-not-exist` falls back silently to the most-recent song, no crash, no error
 page. Worth a real click-through between two distinct songs once the DB has more than
 one, but the logic itself is confirmed correct.
+M3: clicked through Sheet -> Fretboard -> Ascii in-browser -- each renders correctly,
+only the diagram region's content changes, header/toolbar never move, no console
+errors. FretboardDiagram is mounted with no currentStep (its existing default) since
+that prop doesn't exist on it yet -- M4 adds it.
 
 ## Locked decisions (don't re-litigate if resuming cold)
 
