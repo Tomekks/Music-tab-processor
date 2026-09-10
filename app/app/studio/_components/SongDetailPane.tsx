@@ -1,4 +1,4 @@
-import { pitchClassName } from "@/lib/tabNotation";
+import { pitchClassName, formatSongLength } from "@/lib/tabNotation";
 import { renderAsciiTab } from "@/lib/renderTab";
 import { StudioTabs } from "./StudioTabs";
 import type { songs } from "@/db/schema";
@@ -20,13 +20,15 @@ export function SongDetailPane({ song }: { song: Song | null }) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <header className="shrink-0 flex items-start gap-6 p-8 pb-6">
+      <header className="shrink-0 flex items-end gap-6 p-8 pb-6">
         <div className="w-32 h-32 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
-        <div className="flex flex-col gap-1 pt-1">
-          {song.artist && <span className="text-sm text-foreground/60">{song.artist}</span>}
+        <div className="flex flex-col gap-1">
+          {/* Always rendered, even with no artist data -- see SongListRow.tsx's
+              identical treatment for why. */}
+          <span className="text-sm text-foreground/60">{song.artist || " "}</span>
           <h1 className="text-3xl font-bold leading-tight">{song.title}</h1>
           <p className="text-sm text-foreground/60">
-            tuning {tuningLabel} &bull; {Math.round(song.tempoBpm)} bpm
+            {formatSongLength(song.notes)} &bull; tuning {tuningLabel} &bull; {Math.round(song.tempoBpm)} bpm
           </p>
         </div>
       </header>

@@ -19,7 +19,11 @@ the "how", not memory.
 Full plan: /Users/tomsvarpins/.claude/plans/smooth-prancing-babbage.md (round 2
 section). If that plan file is gone, this checklist + commit messages are enough.
 
-- [ ] M6 -- song list & header content (artist, derived length, bottom-left alignment)
+- [x] M6 -- song list & header content (artist, derived length, bottom-left alignment)
+  Verified: header now shows a real derived length ("2:14" for the one dev-DB song),
+  title sits bottom-aligned against the cover art placeholder. Added
+  `formatSongLength` to tabNotation.ts + 3 new tests (22 total, all pass).
+  tsc/eslint clean.
 - [ ] M7 -- Sheet view decluttering (optional bordered/showHeader/showCaption props)
 - [ ] M8 -- Fretboard: wrap instead of horizontal-scroll (touches both routes, flagged)
 - [ ] M9 -- Ascii: invert colors to match the other tabs (studio-only file)

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { pitchClassName, groupNotesByStep, getDisplayRow, chunk, stringThickness, computeStepsPerLine } from "./tabNotation.ts";
+import { pitchClassName, groupNotesByStep, getDisplayRow, chunk, stringThickness, computeStepsPerLine, formatSongLength } from "./tabNotation.ts";
 
 test("pitchClassName matches standard tuning (E2 A2 D3 G3 B3 E4)", () => {
   // contracts/tab.schema.json's own documented example: [40, 45, 50, 55, 59, 64]
@@ -83,4 +83,22 @@ test("computeStepsPerLine: matches exact division when it divides evenly", () =>
 test("computeStepsPerLine: never returns less than 1, even for a very narrow container", () => {
   assert.equal(computeStepsPerLine(10, 38, 26, 16), 1);
   assert.equal(computeStepsPerLine(0, 38, 26, 16), 1);
+});
+
+test("formatSongLength: empty notes is 0:00", () => {
+  assert.equal(formatSongLength([]), "0:00");
+});
+
+test("formatSongLength: uses the latest note's end time, not its start time", () => {
+  const notes = [
+    { startTimeSec: 0, durationSec: 0.5 },
+    { startTimeSec: 10, durationSec: 194 }, // ends at 204s = 3:24
+    { startTimeSec: 50, durationSec: 1 }, // ends earlier than the note above -- must not win
+  ];
+  assert.equal(formatSongLength(notes), "3:24");
+});
+
+test("formatSongLength: pads seconds under 10, and a total that rounds to :60 rolls into the next minute", () => {
+  assert.equal(formatSongLength([{ startTimeSec: 0, durationSec: 65 }]), "1:05");
+  assert.equal(formatSongLength([{ startTimeSec: 0, durationSec: 59.6 }]), "1:00");
 });

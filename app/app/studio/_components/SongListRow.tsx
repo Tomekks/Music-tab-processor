@@ -17,7 +17,10 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
       >
         <div className="w-10 h-10 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
         <div className="min-w-0 flex flex-col">
-          {song.artist && <span className="text-xs text-foreground/60 truncate">{song.artist}</span>}
+          {/* Always rendered, even with no artist data -- reserves the same
+              two-line row height for every song rather than some rows being
+              taller than others depending on what's in the DB. */}
+          <span className="text-xs text-foreground/60 truncate">{song.artist || " "}</span>
           <span className="text-sm font-medium truncate">{song.title}</span>
         </div>
       </Link>

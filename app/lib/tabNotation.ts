@@ -42,6 +42,20 @@ export function getDisplayRow(stringIndex: number, nStrings: number, highOnTop: 
   return highOnTop ? nStrings - 1 - stringIndex : stringIndex;
 }
 
+/**
+ * Total playback length, formatted m:ss. There's no stored duration column
+ * (see db/schema.ts's songs table) -- this is simply the latest point any
+ * note stops ringing, derived from the notes' own timing. Rounds the total
+ * to a whole second before splitting into minutes/seconds so a value like
+ * 59.6s can't come out as the invalid "0:60".
+ */
+export function formatSongLength(notes: { startTimeSec: number; durationSec: number }[]): string {
+  const totalSeconds = notes.length === 0 ? 0 : Math.round(Math.max(...notes.map((n) => n.startTimeSec + n.durationSec)));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
 /** Splits an array into fixed-size chunks, last chunk possibly shorter. */
 export function chunk<T>(items: T[], size: number): T[][] {
   if (size <= 0) return [items];
