@@ -9,7 +9,7 @@ the "how", not memory.
 - [x] M1 — static shell + data (no interactivity)
 - [x] M2 — song selection via ?song=
 - [x] M3 — tab switching (Sheet/Fretboard/Ascii, no metronome)
-- [ ] M4 — metronome wiring + FretboardDiagram currentStep
+- [x] M4 — metronome wiring + FretboardDiagram currentStep
 - [ ] M5 — design tokens + restyle
 
 Currently mid-milestone: none.
@@ -27,6 +27,18 @@ M3: clicked through Sheet -> Fretboard -> Ascii in-browser -- each renders corre
 only the diagram region's content changes, header/toolbar never move, no console
 errors. FretboardDiagram is mounted with no currentStep (its existing default) since
 that prop doesn't exist on it yet -- M4 adds it.
+M4: FretboardDiagram.tsx got the currentStep/active prop exactly per
+docs/specs/ui-fretboard-playhead.md. Verified in a fresh browser tab (a stale tab
+carried an unrelated leftover console error from before a server restart -- confirmed
+it wasn't real by reproducing it on the untouched `/` route too, then re-checked clean
+in a new tab): Play advances Sheet's dashed playhead; switching to Fretboard mid-
+playback shows the correct segment with a bold border, staying in sync as it advances;
+switching to Ascii keeps the metronome bar visible/functional with no highlight
+(expected no-op); switching tabs repeatedly never stopped playback (state lives in
+StudioTabs, which doesn't unmount on tab switch); no console errors. NOT yet tested:
+switching to a *different song* mid-playback to confirm the `key={song.id}` reset
+(only one song exists in the dev DB) -- this is standard React remount semantics, low
+risk, but worth a real check once there's a second song.
 
 ## Locked decisions (don't re-litigate if resuming cold)
 

@@ -23,7 +23,19 @@ const OPEN_GAP = 12;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 6;
 
-function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: number; fret: number }[]; nStrings: number; tuning: number[]; highOnTop: boolean }) {
+function Segment({
+  notes,
+  nStrings,
+  tuning,
+  highOnTop,
+  active,
+}: {
+  notes: { string: number; fret: number }[];
+  nStrings: number;
+  tuning: number[];
+  highOnTop: boolean;
+  active: boolean;
+}) {
   // Tight-fit window, no fixed width -- see FretboardDiagram.RULES.md rule 1.
   const { start, end } = getStepWindow(notes.map((n) => n.fret));
   const cellCount = end - start + 1;
@@ -39,7 +51,7 @@ function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: numb
   const xForFret = (fret: number) => nutX + (fret - start + 0.5) * FRET_WIDTH;
 
   return (
-    <div className="shrink-0 rounded-md border border-zinc-200 bg-white p-1.5">
+    <div className={`shrink-0 rounded-md bg-white p-1.5 ${active ? "border-2 border-zinc-900" : "border border-zinc-200"}`}>
       <svg width={width} height={height}>
         {/* nut, only when this window actually touches the top of the neck */}
         {start === 1 && (
@@ -105,7 +117,15 @@ function Segment({ notes, nStrings, tuning, highOnTop }: { notes: { string: numb
   );
 }
 
-export function FretboardDiagram({ notes, tuning }: { notes: TimedNote[]; tuning: number[] }) {
+export function FretboardDiagram({
+  notes,
+  tuning,
+  currentStep = null,
+}: {
+  notes: TimedNote[];
+  tuning: number[];
+  currentStep?: number | null;
+}) {
   const [highOnTop, setHighOnTop] = useState(true); // thin e on top, matches renderAsciiTab's default
 
   const nStrings = tuning.length;
@@ -126,7 +146,7 @@ export function FretboardDiagram({ notes, tuning }: { notes: TimedNote[]; tuning
       <div className="overflow-x-auto">
         <div className="flex gap-2 pb-1">
           {steps.map((step, i) => (
-            <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} />
+            <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} active={i === currentStep} />
           ))}
         </div>
       </div>

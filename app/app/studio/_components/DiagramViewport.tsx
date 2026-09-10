@@ -27,11 +27,7 @@ export function DiagramViewport({
       {active === "Sheet" && (
         <SheetDiagram notes={notes} tuning={tuning} tempoBpm={tempoBpm} currentStep={currentStep} />
       )}
-      {/* FretboardDiagram doesn't accept currentStep yet -- that prop is added to it in
-          M4 (docs/specs/ui-fretboard-playhead.md's spec), which will also update this
-          line to pass currentStep through. Passing `notes`/`tuning` only for now keeps
-          M3 buildable without touching that file. */}
-      {active === "Fretboard" && <FretboardDiagram notes={notes} tuning={tuning} />}
+      {active === "Fretboard" && <FretboardDiagram notes={notes} tuning={tuning} currentStep={currentStep} />}
       {active === "Ascii" && <AsciiView asciiTab={asciiTab} />}
     </div>
   );
