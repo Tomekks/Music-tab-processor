@@ -25,7 +25,15 @@ export function DiagramViewport({
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">
       {active === "Sheet" && (
-        <SheetDiagram notes={notes} tuning={tuning} tempoBpm={tempoBpm} currentStep={currentStep} />
+        <SheetDiagram
+          notes={notes}
+          tuning={tuning}
+          tempoBpm={tempoBpm}
+          currentStep={currentStep}
+          bordered={false}
+          showHeader={false}
+          showCaption={false}
+        />
       )}
       {active === "Fretboard" && <FretboardDiagram notes={notes} tuning={tuning} currentStep={currentStep} />}
       {active === "Ascii" && <AsciiView asciiTab={asciiTab} />}

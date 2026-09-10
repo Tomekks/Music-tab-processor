@@ -24,7 +24,10 @@ section). If that plan file is gone, this checklist + commit messages are enough
   title sits bottom-aligned against the cover art placeholder. Added
   `formatSongLength` to tabNotation.ts + 3 new tests (22 total, all pass).
   tsc/eslint clean.
-- [ ] M7 -- Sheet view decluttering (optional bordered/showHeader/showCaption props)
+- [x] M7 -- Sheet view decluttering (optional bordered/showHeader/showCaption props)
+  Verified: /studio Sheet tab has no border/"Sheet" label/tempo readout/caption;
+  /songs/[id]'s Sheet tab re-screenshotted and confirmed pixel-identical to before
+  (border, label, tempo, caption all still there). tsc/eslint clean.
 - [ ] M8 -- Fretboard: wrap instead of horizontal-scroll (touches both routes, flagged)
 - [ ] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
 - [ ] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)

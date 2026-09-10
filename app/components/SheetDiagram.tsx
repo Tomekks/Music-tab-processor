@@ -124,11 +124,23 @@ export function SheetDiagram({
   tuning,
   tempoBpm,
   currentStep = null,
+  bordered = true,
+  showHeader = true,
+  showCaption = true,
 }: {
   notes: TimedNote[];
   tuning: number[];
   tempoBpm: number;
   currentStep?: number | null;
+  // The three below default to this component's original look (a bordered
+  // card with its own "Sheet"/tempo header and a caption) so every existing
+  // caller (SongTabs.tsx) is pixel-unchanged. /studio's DiagramViewport.tsx
+  // opts out of all three -- its own song header already shows the tempo,
+  // and the outer card/label is redundant once this is the only thing in
+  // the tab's scroll region.
+  bordered?: boolean;
+  showHeader?: boolean;
+  showCaption?: boolean;
 }) {
   const nStrings = tuning.length;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -149,17 +161,23 @@ export function SheetDiagram({
 
   return (
     <div
-      className="rounded-lg border p-5"
-      style={{
-        borderColor: "color-mix(in srgb, var(--foreground) 15%, transparent)",
-        background: "var(--background)",
-        color: "var(--foreground)",
-      }}
+      className={bordered ? "rounded-lg border p-5" : ""}
+      style={
+        bordered
+          ? {
+              borderColor: "color-mix(in srgb, var(--foreground) 15%, transparent)",
+              background: "var(--background)",
+              color: "var(--foreground)",
+            }
+          : { color: "var(--foreground)" }
+      }
     >
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>Sheet</h2>
-        <span className="text-xs font-mono" style={{ opacity: 0.55 }}>♩ = {Math.round(tempoBpm)}</span>
-      </div>
+      {showHeader && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>Sheet</h2>
+          <span className="text-xs font-mono" style={{ opacity: 0.55 }}>♩ = {Math.round(tempoBpm)}</span>
+        </div>
+      )}
 
       <div ref={containerRef} className="overflow-x-auto">
         <div className="flex flex-col gap-5">
@@ -172,10 +190,12 @@ export function SheetDiagram({
         </div>
       </div>
 
-      <p className="text-xs mt-4" style={{ opacity: 0.45 }}>
-        Notes only, in playback order — no rhythm or timing shown yet. See SheetDiagram.RULES.md for what&apos;s not
-        built.
-      </p>
+      {showCaption && (
+        <p className="text-xs mt-4" style={{ opacity: 0.45 }}>
+          Notes only, in playback order — no rhythm or timing shown yet. See SheetDiagram.RULES.md for what&apos;s not
+          built.
+        </p>
+      )}
     </div>
   );
 }
