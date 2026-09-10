@@ -30,6 +30,7 @@ docs/
     stack-and-tooling.md
     structure-and-methodology.md
     safety-principles.md
+    agent-workflow-tooling.md
   AUDIOPROCESSINGTOOLS.md  — index → docs/audio-tools/
   audio-tools/
     separation.md

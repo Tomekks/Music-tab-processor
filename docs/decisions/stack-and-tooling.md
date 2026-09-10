@@ -16,6 +16,8 @@ TypeScript is part of the stack specifically as a reliability mechanism, not jus
 - **An explicit, written "done when…" checklist in every task spec** (see `docs/specs/`) — most drift happens because a vague instruction left room to improvise; a concrete acceptance list closes that room.
 - **Periodic "walk tests"** (see `AGENTS.md`) as a manual spot-check layered on top of all of the above, not a replacement for it.
 
+The reasoning above is still why this toolkit exists; the day-to-day mechanics of the test-alongside-task and walk-test items are now driven by the Superpowers plugin skills rather than ad hoc habit — see `docs/decisions/agent-workflow-tooling.md`.
+
 ## Code-health discipline (learned via CodeScene, not dependent on it)
 
 A 2026-09-09 audit using CodeScene's Code Health analysis (`docs/codescene/`) found every real issue in the same shape: one function doing too many branchy things. The discipline is worth keeping even though CodeScene is a paid service this project won't necessarily have forever — it was how this was *discovered*, not something the project should depend on to *stay* true. Stated tool-independently, so it survives losing the tool:

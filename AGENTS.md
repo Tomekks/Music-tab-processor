@@ -2,17 +2,24 @@
 
 Read `docs/GUIDE.md` and `docs/ARCHITECTURE.md` before touching code. This file is the rules; those are the map.
 
+## Process: driven by the Superpowers plugin, not ad hoc habit
+
+This repo's coding agent runs the [Superpowers](https://github.com/obra/superpowers) plugin (installed 2026-09-10, user-wide). Its skills — `brainstorming`, `writing-plans`, `test-driven-development`, `systematic-debugging`, `requesting-code-review`/`receiving-code-review`, `using-git-worktrees`, `finishing-a-development-branch`, `verification-before-completion` — are now the default source for *how* to plan, test, debug, review, and verify work, superseding this project's own earlier, looser versions of the same practices. See `docs/decisions/agent-workflow-tooling.md` for the full reasoning on what changed below and why.
+
+What does **not** defer to any skill, ever: every rule in "Safety & trust principles" below, and everything specific to this repo's own structure (`contracts/`, per-stage `STATUS.md`, the app/ preview-and-shipping gate). Those bind regardless of what a skill would otherwise do on its own.
+
 ## How to work in this repo
 
-- **Small, isolated, independently verifiable chunks.** One task = one narrow, self-contained change. No monolithic generation. If a task feels big, it should be split before it's started, not after.
+- **Task sizing and planning follow `superpowers:brainstorming` → `superpowers:writing-plans`.** Brainstorm intent before creative/feature work, then break it into a written plan of small, independently verifiable steps before touching code — no monolithic generation.
 - **Never change a file under `contracts/` as a side effect of another task.** Those are the seams the whole system's modularity depends on (see `docs/ARCHITECTURE.md`). Changing one is its own explicit task, flagged as such, because it can affect every module on both sides of it.
 - **Every pipeline stage keeps its own `STATUS.md`** (see `pipeline/*/STATUS.md`) stating: what it does, what contract it reads, what contract it writes, and its current status. Update it as part of finishing a task in that folder — that file, not the code, is what a memoryless reader (human or agent) should be able to trust.
-- **Write or update a test as part of the task, not after.** A task isn't done until its test passes. For pipeline stages that touch audio/ML, a "golden file" comparison against a known-good prior output counts as the test.
+- **Implementation follows `superpowers:test-driven-development`** (red-green-refactor) rather than a bare "write a test" rule. The one thing that skill can't know on its own: for pipeline stages that touch audio/ML, a "golden file" comparison against a known-good prior output stands in for a unit test.
 - **Before proposing to swap an existing library or tool for an alternative** (a new separation backend, transcription model, tab generator), do a fresh research pass on that alternative at that time — don't reuse an old comparison, tools and their maturity change.
 - **Keep audio processing, guitar logic, and UI in separate modules.** They only ever communicate through the schemas in `contracts/`. A module in one layer should never need to import or understand the internals of another layer.
 - **Small, reusable functions. Don't rewrite working code that wasn't part of the task.**
+- **Debugging follows `superpowers:systematic-debugging`** — root-cause it before proposing a fix. **Non-trivial or risky changes get `superpowers:requesting-code-review`/`receiving-code-review`** before being called finished. **Work needing isolation from the current workspace uses `superpowers:using-git-worktrees`.**
 - **Never add anything that makes this machine reachable from the internet** (opening a port, a tunnel, inbound access of any kind) without stopping and asking first. Outbound requests a normal package install or API call would make are fine.
-- **Walk test, before calling a task done:** could someone with zero memory of this conversation open the folder you just touched and tell what it does and whether it works, from its files alone? If not, the task isn't finished — the code might be, but the documentation of it isn't.
+- **Verification before calling a task done follows `superpowers:verification-before-completion`** — run the actual check and confirm real output, not a mental pass. This project's own **walk test** (could someone with zero memory of this conversation open the folder you just touched and tell what it does and whether it works, from its files alone?) is the concrete form that check takes here, not a competing one — see `docs/decisions/structure-and-methodology.md` for why it exists. If it fails, the task isn't finished — the code might be, but the documentation of it isn't.
 
 ## Where things live
 
@@ -45,6 +52,7 @@ These apply to every model working on this repo or this machine — not just thi
 - **Prefer additive, reversible changes** — a new Homebrew formula, a new file, a new virtual environment — over changes to shared system configuration (PATH, shell profile, default interpreters, global settings) unless a task specifically requires it, and say so plainly when it does.
 - **Never lie, mislead, or downplay what a change does.** If something is uncertain, risky, or has a side effect, say so plainly rather than presenting it as routine.
 - **Deletion on the user's machine requires permission for that specific case** — never assumed from an earlier approval, and never applied more broadly than what was asked.
+- **Ask before every git commit or push, not just `app/` changes, every single time.** Never infer permission from a broader instruction like "handoff" or "let's clean up" — a commit needs its own explicit yes, the same way a deletion does. (The `app/`-specific "Push to git? / Push to git & deploy? / Skip for now?" question below is the app case of this same general rule, not the whole of it.)
 
 ## Periodic review
 

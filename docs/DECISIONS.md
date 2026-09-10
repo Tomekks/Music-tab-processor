@@ -30,4 +30,6 @@ This project also has a second, explicit purpose: it's a public demonstration of
 
 **Safety principles** — the reasoning behind `AGENTS.md`'s hard rules (minimal scoped changes, never internet-reachable, explain outbound requests, prefer additive/reversible changes, scoped deletion permission). *Open if your task touches: anything `AGENTS.md`'s safety section covers, or you need the "why," not just the rule.* → `docs/decisions/safety-principles.md`
 
+**Agent workflow tooling** — the Superpowers Claude Code plugin (installed 2026-09-10, user-wide) is now the process driver for planning, TDD, debugging, code review, and verification, superseding this project's own ad hoc versions of those in `AGENTS.md`; this repo's safety rules and structural specifics (contracts, STATUS.md, the app/ deploy gate) stay untouched and take precedence over any skill. *Open if your task touches: how planning/testing/debugging/review actually happen now, or why `AGENTS.md` points at skill names instead of spelling out process.* → `docs/decisions/agent-workflow-tooling.md`
+
 See also: `docs/AUDIOPROCESSINGTOOLS.md` (the living tool-research catalog, separate from the *decisions* made from it), `app/STATUS.md` (what's actually true right now, not why), and `docs/DOCUMENTATION_PRINCIPLES.md` (the standing rules this whole structure follows).
