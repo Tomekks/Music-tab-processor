@@ -32,7 +32,9 @@ section). If that plan file is gone, this checklist + commit messages are enough
   Verified in-browser on both /studio and /songs/[id]: segments now wrap onto
   multiple rows and scroll vertically with the page/panel, instead of requiring
   horizontal scroll. tsc/eslint clean.
-- [ ] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
+- [x] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
+  Verified in-browser: white background, dark monospace text, consistent with
+  Sheet/Fretboard either side of it. tsc/eslint clean.
 - [ ] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)
 - [ ] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
 
