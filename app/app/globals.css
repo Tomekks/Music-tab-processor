@@ -7,12 +7,15 @@
   /* Additive tokens for /studio only -- deliberately NOT inside the dark-media-query
      block below, so they always resolve light regardless of OS preference (per the
      "/studio defaults to light" decision). Nothing existing reads these names, so
-     this has zero effect on the old routes. Shape mirrors design_system/index.html's
-     own "Copy CSS" output exactly, so pasting a retuned palette from that tool later
-     is a drop-in replacement -- see app/app/studio/STATUS.md. */
-  --color-accent: #2563eb;
-  --color-border: #e4e4e7;
-  --radius: 8px;
+     this has zero effect on the old routes. Values below are the "Claude theme"
+     (design_system/index.html's Claude-theme preset), pasted from its Copy CSS
+     output -- sourced from docs/studio-theme/DESIGN.md (`npx getdesign add claude`):
+     canvas/ink/primary(coral)/hairline. Shape mirrors that tool's output exactly, so
+     pasting a further-retuned palette later is still a drop-in replacement -- see
+     app/app/studio/STATUS.md. */
+  --color-accent: #cc785c;
+  --color-border: #e6dfd8;
+  --radius: 12px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -47,10 +50,12 @@
    attribute -- CSS custom properties cascade normally, so any descendant reading
    var(--background) (including SheetDiagram.tsx, which already does) gets this
    element's value, not :root's, with no specificity fight against the dark media
-   query above. Mirrors design_system/index.html's own data-theme pattern exactly. */
+   query above. Mirrors design_system/index.html's own data-theme pattern exactly.
+   Values are the Claude theme's canvas/ink (see the --color-accent/--color-border
+   comment above for provenance). */
 [data-theme="light"] {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf9f5;
+  --foreground: #141413;
 }
 
 body {

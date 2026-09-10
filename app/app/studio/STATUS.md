@@ -35,7 +35,22 @@ section). If that plan file is gone, this checklist + commit messages are enough
 - [x] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
   Verified in-browser: white background, dark monospace text, consistent with
   Sheet/Fretboard either side of it. tsc/eslint clean.
-- [ ] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)
+- [x] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)
+  `npx getdesign@latest add claude --out docs/studio-theme/DESIGN.md` ran cleanly
+  (real values, not guessed -- see that file for the full extracted design system).
+  design_system/index.html got a THEMES map + resolveTheme() merge (Claude theme
+  stores only bg/fg/accent/border/radius overrides, space inherits DEFAULTS
+  unchanged since DESIGN.md's own base unit is already 4px) plus a Default/Claude
+  theme selector extending the existing light/dark segmented-control pattern --
+  verified in-browser (opened the file directly, no dev server): selecting Claude
+  theme loads #faf9f5/#141413/#cc785c/#e6dfd8 (light) and #181715/#faf9f5/#cc785c/
+  #252320 (dark), live preview updates, Copy CSS emits the right block, Reset
+  correctly reverts to Default. Applied those light-mode values into globals.css's
+  `[data-theme="light"]` block and the `:root` --color-accent/--color-border/--radius
+  (12px, was 8px). Verified /studio now shows the warm cream/coral Claude palette;
+  `/` re-checked and still renders dark under OS dark preference (unaffected --
+  these are new token names / the light-mode override only ever matches /studio's
+  root). tsc/eslint clean.
 - [ ] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
 
 Currently mid-milestone: none.
