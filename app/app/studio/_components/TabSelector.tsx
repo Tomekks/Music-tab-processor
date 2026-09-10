@@ -13,7 +13,7 @@ export function TabSelector<T extends string>({
   onSelect: (tab: T) => void;
 }) {
   return (
-    <div role="tablist" aria-label="Tab display mode" className="flex gap-1 border-b border-zinc-200">
+    <div role="tablist" aria-label="Tab display mode" className="flex gap-1 border-b border-border">
       {tabs.map((tab) => (
         <button
           key={tab}
@@ -22,7 +22,7 @@ export function TabSelector<T extends string>({
           onClick={() => onSelect(tab)}
           className={cn(
             "px-3 py-2 text-sm font-medium -mb-px border-b-2 transition-colors",
-            active === tab ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-400 hover:text-zinc-700"
+            active === tab ? "border-accent text-accent" : "border-transparent text-foreground/40 hover:text-foreground/70"
           )}
         >
           {tab}

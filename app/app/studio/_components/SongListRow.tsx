@@ -12,13 +12,13 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
         aria-current={isSelected ? "true" : undefined}
         className={cn(
           "flex items-center gap-3 px-4 py-3 transition-colors",
-          isSelected ? "bg-zinc-100" : "bg-white hover:bg-zinc-50"
+          isSelected ? "bg-accent/10" : "hover:bg-foreground/[0.04]"
         )}
       >
-        <div className="w-10 h-10 shrink-0 rounded bg-zinc-200" aria-hidden="true" />
+        <div className="w-10 h-10 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
         <div className="min-w-0 flex flex-col">
-          {song.artist && <span className="text-xs text-zinc-500 truncate">{song.artist}</span>}
-          <span className="text-sm font-medium text-zinc-900 truncate">{song.title}</span>
+          {song.artist && <span className="text-xs text-foreground/60 truncate">{song.artist}</span>}
+          <span className="text-sm font-medium truncate">{song.title}</span>
         </div>
       </Link>
     </li>

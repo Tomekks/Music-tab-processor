@@ -10,7 +10,11 @@ the "how", not memory.
 - [x] M2 — song selection via ?song=
 - [x] M3 — tab switching (Sheet/Fretboard/Ascii, no metronome)
 - [x] M4 — metronome wiring + FretboardDiagram currentStep
-- [ ] M5 — design tokens + restyle
+- [x] M5 — design tokens + restyle
+
+**All 5 milestones complete.** `/studio` is a working, live, restyled route.
+Deliberate scope cuts below still apply (AsciiView is a thin wrapper, Fretboard's
+own hardcoded palette untouched, etc.) -- those are follow-up work, not bugs.
 
 Currently mid-milestone: none.
 Last verified working state: M1 (2026-09-10) -- /studio renders the real sidebar (1
@@ -39,6 +43,41 @@ StudioTabs, which doesn't unmount on tab switch); no console errors. NOT yet tes
 switching to a *different song* mid-playback to confirm the `key={song.id}` reset
 (only one song exists in the dev DB) -- this is standard React remount semantics, low
 risk, but worth a real check once there's a second song.
+
+M5: added --color-accent/--color-border/--radius/--space-*/--sidebar-width to
+globals.css, plus a `[data-theme="light"]` rule that re-pins --background/--foreground
+to fixed light values. **Real bug caught and fixed here:** the first pass used the
+Tailwind `bg-background`/`text-foreground` utilities directly, which -- because they
+resolve to the SAME shared --background/--foreground tokens the old routes' dark-mode
+media query flips -- rendered /studio dark under a dark OS/browser preference, exactly
+contradicting the "light by default" requirement. Fixed by adding `data-theme="light"`
+to StudioShell's root div plus a `[data-theme="light"] { --background: ...; --foreground: ...; }`
+rule in globals.css (same pattern design_system/index.html already uses) -- CSS custom
+properties cascade normally, so this re-pins the value for every descendant (including
+SheetDiagram.tsx, which already reads these same vars) without touching :root or the
+existing dark-media-query block at all. Verified: /studio now renders light regardless
+of OS dark-mode setting; `/` and `/songs/[id]` were re-checked in the same dark-OS
+browser session and still correctly render dark (confirms zero regression). Also ran
+the full-plan final verification: `tsc --noEmit` clean, `eslint` clean, `npm run build`
+succeeds (/studio registered as a dynamic route alongside the untouched ones),
+`npm test` -- all 19 pure-logic tests still pass, and
+`git diff --stat master...feature/studio-ui -- app/app/page.tsx app/app/songs app/components/SongTabs.tsx`
+is empty (the frozen routes are byte-for-byte untouched).
+`--sidebar-width` retuning wasn't live-toggled but is guaranteed correct by
+construction (StudioShell reads `var(--sidebar-width, 280px)` directly, nothing else
+hardcodes the width).
+
+## Follow-ups, not part of this build (see plan's "deliberate scope cuts")
+
+- AsciiView has no per-step structure / currentStep support (thin wrapper only).
+- FretboardDiagram's hardcoded color palette (SVG stroke/fill hex values) is untouched.
+- No loading/error UI.
+- Only one song exists in the dev DB -- several M2/M4 checks should be re-run with a
+  second song once one exists, to see real song-switching (not just same-song
+  round-trips).
+- The `agent/ui-fretboard-playhead` worktree/branch is now redundant (this build
+  reimplemented its diff fresh in `app/components/FretboardDiagram.tsx`) -- worth
+  discarding or comparing, at the user's discretion, not done here.
 
 ## Locked decisions (don't re-litigate if resuming cold)
 

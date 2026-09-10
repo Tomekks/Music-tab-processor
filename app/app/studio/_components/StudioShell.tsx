@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 // app/app/studio/STATUS.md for the full layout mechanism this implements.
 export function StudioShell({ sidebar, detail }: { sidebar: ReactNode; detail: ReactNode }) {
   return (
-    <div className="h-dvh w-full overflow-hidden flex bg-white text-zinc-900">
+    <div data-theme="light" className="h-dvh w-full overflow-hidden flex bg-background text-foreground">
       <nav
-        className="shrink-0 h-full overflow-y-auto border-r border-zinc-200"
+        className="shrink-0 h-full overflow-y-auto border-r border-border"
         style={{ width: "var(--sidebar-width, 280px)" }}
         aria-label="Songs"
       >

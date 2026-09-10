@@ -3,6 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Additive tokens for /studio only -- deliberately NOT inside the dark-media-query
+     block below, so they always resolve light regardless of OS preference (per the
+     "/studio defaults to light" decision). Nothing existing reads these names, so
+     this has zero effect on the old routes. Shape mirrors design_system/index.html's
+     own "Copy CSS" output exactly, so pasting a retuned palette from that tool later
+     is a drop-in replacement -- see app/app/studio/STATUS.md. */
+  --color-accent: #2563eb;
+  --color-border: #e4e4e7;
+  --radius: 8px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --sidebar-width: 280px;
 }
 
 @theme inline {
@@ -10,6 +27,12 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Only color tokens are promoted into Tailwind's utility-generating namespace --
+     radius/space/sidebar-width stay plain CSS vars, consumed via arbitrary-value
+     syntax or inline style, matching the design_system playground's own precedent. */
+  --color-accent: var(--color-accent);
+  --color-border: var(--color-border);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,6 +40,17 @@
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+/* /studio defaults to light regardless of OS preference. This re-pins the SAME
+   --background/--foreground names (not new ones) on whatever element carries this
+   attribute -- CSS custom properties cascade normally, so any descendant reading
+   var(--background) (including SheetDiagram.tsx, which already does) gets this
+   element's value, not :root's, with no specificity fight against the dark media
+   query above. Mirrors design_system/index.html's own data-theme pattern exactly. */
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #171717;
 }
 
 body {

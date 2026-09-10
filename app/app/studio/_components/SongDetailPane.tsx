@@ -8,7 +8,7 @@ type Song = typeof songs.$inferSelect;
 export function SongDetailPane({ song }: { song: Song | null }) {
   if (!song) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-400">
+      <div className="flex-1 flex items-center justify-center text-foreground/40">
         <p>Choose a song from the list</p>
       </div>
     );
@@ -21,11 +21,11 @@ export function SongDetailPane({ song }: { song: Song | null }) {
   return (
     <div className="flex flex-col h-full min-h-0">
       <header className="shrink-0 flex items-start gap-6 p-8 pb-6">
-        <div className="w-32 h-32 shrink-0 rounded bg-zinc-200" aria-hidden="true" />
+        <div className="w-32 h-32 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
         <div className="flex flex-col gap-1 pt-1">
-          {song.artist && <span className="text-sm text-zinc-500">{song.artist}</span>}
+          {song.artist && <span className="text-sm text-foreground/60">{song.artist}</span>}
           <h1 className="text-3xl font-bold leading-tight">{song.title}</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-foreground/60">
             tuning {tuningLabel} &bull; {Math.round(song.tempoBpm)} bpm
           </p>
         </div>

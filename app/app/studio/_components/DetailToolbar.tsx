@@ -18,7 +18,7 @@ export function DetailToolbar({
   metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void };
 }) {
   return (
-    <div className="border-t border-zinc-200 px-8 py-4 flex items-center justify-between gap-6">
+    <div className="border-t border-border px-8 py-4 flex items-center justify-between gap-6">
       <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
       <MetronomeControls
         bpm={metronome.bpm}
