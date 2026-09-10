@@ -12,9 +12,19 @@ the "how", not memory.
 - [x] M4 — metronome wiring + FretboardDiagram currentStep
 - [x] M5 — design tokens + restyle
 
-**All 5 milestones complete.** `/studio` is a working, live, restyled route.
-Deliberate scope cuts below still apply (AsciiView is a thin wrapper, Fretboard's
-own hardcoded palette untouched, etc.) -- those are follow-up work, not bugs.
+**Round 1 (M1-M5) complete.** `/studio` is a working, live, restyled route.
+
+## Round 2 -- content fixes, per-view cleanup, Claude theme, Spotify plan
+
+Full plan: /Users/tomsvarpins/.claude/plans/smooth-prancing-babbage.md (round 2
+section). If that plan file is gone, this checklist + commit messages are enough.
+
+- [ ] M6 -- song list & header content (artist, derived length, bottom-left alignment)
+- [ ] M7 -- Sheet view decluttering (optional bordered/showHeader/showCaption props)
+- [ ] M8 -- Fretboard: wrap instead of horizontal-scroll (touches both routes, flagged)
+- [ ] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
+- [ ] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)
+- [ ] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
 
 Currently mid-milestone: none.
 Last verified working state: M1 (2026-09-10) -- /studio renders the real sidebar (1
