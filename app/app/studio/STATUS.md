@@ -64,6 +64,31 @@ section). If that plan file is gone, this checklist + commit messages are enough
 
 **All 11 milestones (M1-M11) complete.**
 
+## Round 3 -- Spotify credentials added, integration is live
+
+User supplied real Spotify Client ID/Secret (app "guitar-tab-processor") in chat.
+Added to `app/.env.local` (confirmed gitignored via `.env*`, never committed --
+also added to `app/.env.example` as blank placeholders in M11 already). Restarted
+the dev server to pick them up and verified end-to-end with the real API, not just
+"doesn't crash with no token" (M11's original test):
+
+- Real cover art now loads for "Mister Sandman" (The Chordettes' "Mister Sandman's
+  Best" single art) -- confirmed visually, no broken image, no console errors.
+- Extended `spotifyArtist` as a fallback in `SongDetailPane.tsx` (`song.artist ||
+  spotifyArtist || " "`) -- DB artist still wins when present, Spotify only
+  backfills when it's null. This closes the original M6 "artist missing" gap for
+  real, using the now-live integration: header now shows "The Chordettes" instead
+  of a blank line. `SongListRow.tsx` (the sidebar) deliberately still doesn't do
+  this -- backfilling every row would mean N Spotify calls per list render; only
+  the one selected song's full data is ever fetched.
+- Re-verified clean in a fresh browser tab (avoided a false-positive: a stale tab
+  briefly showed leftover HMR-websocket console noise from the dev-server restart,
+  same non-issue pattern as M4's -- confirmed clean in a new tab instead).
+- tsc/eslint/`npm test` (22 tests) all still clean.
+
+Credentials live only in `app/.env.local` (gitignored) -- nothing above is a git
+change beyond the two small source edits (`SongDetailPane.tsx`, `page.tsx`).
+
 Currently mid-milestone: none.
 Last verified working state: M1 (2026-09-10) -- /studio renders the real sidebar (1
 song in the DB today: "Mister Sandman") + static header from real DB data; page itself

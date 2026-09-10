@@ -40,7 +40,7 @@ export default async function StudioPage({
   return (
     <StudioShell
       sidebar={<SongListSidebar songs={list} selectedId={selectedId} />}
-      detail={<SongDetailPane song={fullSong ?? null} coverArtUrl={spotify?.coverArtUrl} />}
+      detail={<SongDetailPane song={fullSong ?? null} coverArtUrl={spotify?.coverArtUrl} spotifyArtist={spotify?.artist} />}
     />
   );
 }
