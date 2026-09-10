@@ -51,7 +51,18 @@ section). If that plan file is gone, this checklist + commit messages are enough
   `/` re-checked and still renders dark under OS dark preference (unaffected --
   these are new token names / the light-mode override only ever matches /studio's
   root). tsc/eslint clean.
-- [ ] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
+- [x] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
+  app/lib/spotify.ts: real Client Credentials flow (token fetch + cache, track
+  search), but every path short-circuits to null with no
+  SPOTIFY_CLIENT_ID/SPOTIFY_CLIENT_SECRET set (documented in .env.example) --
+  never throws, no network call at all when unconfigured. Wired into
+  page.tsx -> SongDetailPane's cover art (optional coverArtUrl prop, falls
+  back to the placeholder div when absent). Verified in-browser: /studio is
+  visually and functionally unchanged from before this milestone (today's
+  actual state: no credentials configured) -- no console errors, no added
+  latency. tsc/eslint/test all clean (22 tests, unaffected).
+
+**All 11 milestones (M1-M11) complete.**
 
 Currently mid-milestone: none.
 Last verified working state: M1 (2026-09-10) -- /studio renders the real sidebar (1

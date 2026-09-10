@@ -5,7 +5,7 @@ import type { songs } from "@/db/schema";
 
 type Song = typeof songs.$inferSelect;
 
-export function SongDetailPane({ song }: { song: Song | null }) {
+export function SongDetailPane({ song, coverArtUrl }: { song: Song | null; coverArtUrl?: string }) {
   if (!song) {
     return (
       <div className="flex-1 flex items-center justify-center text-foreground/40">
@@ -21,7 +21,17 @@ export function SongDetailPane({ song }: { song: Song | null }) {
   return (
     <div className="flex flex-col h-full min-h-0">
       <header className="shrink-0 flex items-end gap-6 p-8 pb-6">
-        <div className="w-32 h-32 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
+        {/* Real cover art when Spotify metadata is available (app/lib/spotify.ts),
+            the placeholder otherwise -- no Spotify credentials are configured
+            today, so this is always the placeholder for now. Plain <img>, not
+            next/image: an external CDN host would need next.config.ts's remote
+            image allowlist, not worth it for this optional, not-yet-active path. */}
+        {coverArtUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={coverArtUrl} alt="" className="w-32 h-32 shrink-0 object-cover rounded-[var(--radius)]" />
+        ) : (
+          <div className="w-32 h-32 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
+        )}
         <div className="flex flex-col gap-1">
           {/* Always rendered, even with no artist data -- see SongListRow.tsx's
               identical treatment for why. */}

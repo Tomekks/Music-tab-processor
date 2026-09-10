@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
+import { getTrackMetadata } from "@/lib/spotify";
 import { StudioShell } from "./_components/StudioShell";
 import { SongListSidebar } from "./_components/SongListSidebar";
 import { SongDetailPane } from "./_components/SongDetailPane";
@@ -32,10 +33,14 @@ export default async function StudioPage({
 
   const [fullSong] = selectedId ? await db.select().from(songs).where(eq(songs.id, selectedId)) : [];
 
+  // Optional real cover art -- returns null instantly (no network call) with no
+  // Spotify credentials configured, so this is a no-op today. See app/lib/spotify.ts.
+  const spotify = fullSong ? await getTrackMetadata(fullSong.title, fullSong.artist) : null;
+
   return (
     <StudioShell
       sidebar={<SongListSidebar songs={list} selectedId={selectedId} />}
-      detail={<SongDetailPane song={fullSong ?? null} />}
+      detail={<SongDetailPane song={fullSong ?? null} coverArtUrl={spotify?.coverArtUrl} />}
     />
   );
 }
