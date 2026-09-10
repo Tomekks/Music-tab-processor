@@ -1,4 +1,12 @@
-# /studio build status
+# Home page (`/`) — build status
+
+Part of `app/status/` — see `app/STATUS.md` for the index. This file was
+`app/app/studio/STATUS.md` while this was still a separate `/studio` route being
+built and compared against the original UI; it was promoted to be the site's home
+page (`/`) once that comparison was done (see `archive/v0.1-web-ui/README.md` for
+what it replaced, and git tag `v0.1` for that version's exact final state). Content
+below is unchanged from the build itself — only this note and the file's location
+are new.
 
 Full plan: see the approved plan this build follows (component signatures, layout
 mechanism, data-fetching plan, per-milestone verification steps). If that plan file is

@@ -1,32 +1,45 @@
-import Link from "next/link";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
+import { getTrackMetadata } from "@/lib/spotify";
+import { StudioShell } from "./_components/StudioShell";
+import { SongListSidebar } from "./_components/SongListSidebar";
+import { SongDetailPane } from "./_components/SongDetailPane";
 
-export const dynamic = "force-dynamic"; // always show the latest published songs, no caching
+// Always show the latest published songs, no caching.
+export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
-  const allSongs = await db.select().from(songs);
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Column-projected: the sidebar only ever needs enough to render a row, never the
+  // full notes/tuning JSON blobs -- those are fetched once, below, for just the
+  // selected song. Ordered newest-first so "first in the list" is a stable, meaningful
+  // default.
+  const list = await db
+    .select({ id: songs.id, title: songs.title, artist: songs.artist, tempoBpm: songs.tempoBpm })
+    .from(songs)
+    .orderBy(desc(songs.createdAt));
+
+  // ?song= is a soft UI preference, not a resource identifier -- an invalid or stale
+  // id silently falls back to the most recent song instead of 404ing (deliberately
+  // different from the retired v0.1 UI's hard notFound(), see archive/v0.1-web-ui/).
+  const { song: raw } = await searchParams;
+  const requested = Array.isArray(raw) ? raw[0] : raw;
+  const selectedId = requested && list.some((s) => s.id === requested) ? requested : (list[0]?.id ?? null);
+
+  const [fullSong] = selectedId ? await db.select().from(songs).where(eq(songs.id, selectedId)) : [];
+
+  // Optional real cover art -- returns null instantly (no network call) with no
+  // Spotify credentials configured, so this is a no-op today. See app/lib/spotify.ts.
+  const spotify = fullSong ? await getTrackMetadata(fullSong.title, fullSong.artist) : null;
 
   return (
-    <main className="max-w-2xl mx-auto py-16 px-6">
-      <h1 className="text-2xl font-semibold mb-8">Guitar Practice Tabs</h1>
-      {allSongs.length === 0 ? (
-        <p className="text-zinc-500">No songs published yet.</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {allSongs.map((song) => (
-            <li key={song.id}>
-              <Link
-                href={`/songs/${song.id}`}
-                className="block rounded-lg border border-zinc-200 px-4 py-3 hover:bg-zinc-50 transition-colors"
-              >
-                <span className="font-medium">{song.title}</span>
-                <span className="text-zinc-500 text-sm ml-2">{song.tempoBpm.toFixed(0)} bpm</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+    <StudioShell
+      sidebar={<SongListSidebar songs={list} selectedId={selectedId} />}
+      detail={<SongDetailPane song={fullSong ?? null} coverArtUrl={spotify?.coverArtUrl} spotifyArtist={spotify?.artist} />}
+    />
   );
 }
