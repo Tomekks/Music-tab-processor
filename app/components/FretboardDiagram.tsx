@@ -143,12 +143,15 @@ export function FretboardDiagram({
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <div className="flex gap-2 pb-1">
-          {steps.map((step, i) => (
-            <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} active={i === currentStep} />
-          ))}
-        </div>
+      {/* Wraps onto multiple rows instead of horizontally scrolling -- each
+          Segment is a variable width (getStepWindow-sized, not fixed), so a
+          plain flex-wrap is simpler and more correct here than the
+          fixed-stepWidth measurement SheetDiagram's chunk()/computeStepsPerLine()
+          needs; flex-wrap just lets whatever fits stay on a row. */}
+      <div className="flex flex-wrap gap-2">
+        {steps.map((step, i) => (
+          <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} active={i === currentStep} />
+        ))}
       </div>
 
       <p className="text-xs text-zinc-400 mt-3">

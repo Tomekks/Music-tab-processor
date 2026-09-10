@@ -28,7 +28,10 @@ section). If that plan file is gone, this checklist + commit messages are enough
   Verified: /studio Sheet tab has no border/"Sheet" label/tempo readout/caption;
   /songs/[id]'s Sheet tab re-screenshotted and confirmed pixel-identical to before
   (border, label, tempo, caption all still there). tsc/eslint clean.
-- [ ] M8 -- Fretboard: wrap instead of horizontal-scroll (touches both routes, flagged)
+- [x] M8 -- Fretboard: wrap instead of horizontal-scroll (touches both routes, flagged)
+  Verified in-browser on both /studio and /songs/[id]: segments now wrap onto
+  multiple rows and scroll vertically with the page/panel, instead of requiring
+  horizontal scroll. tsc/eslint clean.
 - [ ] M9 -- Ascii: invert colors to match the other tabs (studio-only file)
 - [ ] M10 -- Claude theme (child theme in design_system/index.html + applied to /studio)
 - [ ] M11 -- Spotify Web API: plan + non-blocking stub (no token yet, explicitly last)
