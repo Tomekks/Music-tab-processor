@@ -123,7 +123,7 @@ Add `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` as GitHub Actions repository sec
 - Consumes: `app/scripts/verify.sh` (built prior session), the two secrets above.
 - Produces: a GitHub check named `verify` on every push touching `app/**` — this is the exact check Task 4 (branch protection) will require.
 
-- [ ] **Step 1: Write the workflow**
+- [x] **Step 1: Write the workflow** — as written below, no changes. Valid YAML confirmed via `.venv/bin/python3` (already had PyYAML).
 
 ```yaml
 name: app
@@ -152,9 +152,7 @@ jobs:
       - run: npm run verify:full
 ```
 
-- [ ] **Step 2: Confirm the secrets exist before pushing**
-
-Run (requires `gh` CLI authenticated as you, not me): `gh secret list` — confirm `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are both listed. If not, stop and add them first (human step above) — pushing without them produces a guaranteed, misleading red run.
+- [x] **Step 2: Confirm the secrets exist before pushing** — user added both via GitHub's UI; `gh secret list` confirmed `TURSO_AUTH_TOKEN` and `TURSO_DATABASE_URL` both present (names only, values never read).
 
 - [ ] **Step 3: Commit and push, then check the run**
 
