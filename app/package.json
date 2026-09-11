@@ -2,13 +2,19 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "stage": "next build && next start -p 3001",
     "lint": "eslint",
-    "test": "node --test lib/**/*.test.ts"
+    "test": "node --test lib/**/*.test.ts",
+    "typecheck": "next typegen && tsc --noEmit",
+    "verify": "bash scripts/verify.sh",
+    "verify:full": "bash scripts/verify.sh --full"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
