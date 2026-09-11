@@ -26,4 +26,6 @@
 
 **Design system** — the local, gitignored token-tuning playground, what's adopted so far, what's planned next (including the "Claude theme" child theme). *Open if your task touches: colors, spacing, or the design-system tokens.* → `app/status/design-system.md`
 
+**Engineering practices** — status of `verify.sh`, the pre-commit secret-scan hook, Node version pinning, and what's still missing toward CI/branch-protection/component tests being real. *Open if your task touches: verification, CI, linting rules, or "is this code actually checked."* → `app/status/engineering-practices.md`
+
 **Not built yet:** any local-processing UI (still CLI-only), a sequential/step-through overview mode for Fretboard, real rhythm notation, `AsciiView`'s own metronome/currentStep support, `FretboardDiagram`'s hardcoded color palette (still not token-driven), CI.

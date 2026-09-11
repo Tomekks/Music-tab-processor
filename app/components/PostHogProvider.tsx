@@ -12,6 +12,8 @@ if (posthogKey && !posthog.__loaded) {
     autocapture: false,
     capture_pageleave: false,
     capture_pageview: false,
+    capture_exceptions: true, // unhandled JS errors only -- distinct from
+    // autocapture (clicks) and session recording, both of which stay off
     disable_session_recording: true,
     person_profiles: "identified_only",
     persistence: "memory",

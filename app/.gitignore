@@ -44,3 +44,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright's own test output -- regenerable, not tracked
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
