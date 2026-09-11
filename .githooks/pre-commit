@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Blocks a commit that stages something secret-shaped, or that breaks
+# TypeScript. Enable once per clone (not committed automatically, on purpose --
+# see docs/DEV_WORKFLOW_GUIDE.md):
+#   git config core.hooksPath .githooks
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+echo "pre-commit: scanning staged changes for likely secrets..."
+STAGED_DIFF="$(git diff --cached -U0 -- . ':!*.lock' ':!package-lock.json' ':!.githooks/pre-commit')"
+
+# Heuristic patterns for common secret shapes -- a second line of defense,
+# not a replacement for never pasting a real credential into chat. Case
+# insensitive (-i) since ANTHROPIC_API_KEY vs anthropic_api_key both count.
+PATTERN='sk-ant-[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{20,}|(api|auth|secret|access)[_-]?(key|token)[[:space:]]*[:=][[:space:]]*[\"'\''"]?[A-Za-z0-9_-]{16,}'
+
+if echo "$STAGED_DIFF" | grep -Ei "$PATTERN" > /dev/null 2>&1; then
+  echo ""
+  echo "BLOCKED: a staged change looks like it contains a secret (API key/token-shaped string)."
+  echo "  Real credential -> unstage it (git restore --staged <file>), and if it was ever pasted"
+  echo "  anywhere else (chat, a doc), rotate it -- see docs/AGENT_TOOLING_LOG.md's neighbors for"
+  echo "  where past rotations were tracked (docs/PENDING_ACTIONS.md)."
+  echo "  False positive -> commit once with --no-verify, and mention it so the pattern gets tightened."
+  exit 1
+fi
+
+if [ -f app/package.json ]; then
+  echo "pre-commit: typecheck (app/)..."
+  (cd app && npm run typecheck --silent)
+fi
+
+echo "pre-commit: OK"
