@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    allow:
+      - dependency-type: "all"
+    # Security-only in spirit: weekly cadence + capped PR count keeps this
+    # from becoming version-bump noise; Dependabot doesn't have a strict
+    # "security-only" toggle for npm, so this is the closest equivalent
+    # without a paid GHAS security-updates feature.
