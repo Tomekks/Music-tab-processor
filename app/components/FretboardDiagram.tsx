@@ -11,10 +11,19 @@
 // See DECISIONS.md's "Display modes are layered" section for the fuller
 // reasoning, including why simultaneous notes (chords) are one step, not
 // split into several.
+//
+// Styled through the real design-system tokens (2026-09-10, matching
+// SheetDiagram/AsciiView) rather than hardcoded zinc/white -- this used to be
+// the one view that didn't adapt to dark mode or match the other two tabs'
+// look. bordered/showHeader/showCaption mirror SheetDiagram's own props for
+// the same reason: a caller embedding this inside its own chrome (today,
+// DiagramViewport) can opt out of the redundant card/label exactly like it
+// already does for Sheet.
 
 import { useState } from "react";
 import { getStepWindow } from "@/lib/fretboard";
 import { getDisplayRow, groupNotesByStep, pitchClassName, stringThickness, type TimedNote } from "@/lib/tabNotation";
+import { StringOrientationToggle } from "./StringOrientationToggle";
 
 const FRET_WIDTH = 26;
 const STRING_GAP = 13;
@@ -36,7 +45,7 @@ function Segment({
   highOnTop: boolean;
   active: boolean;
 }) {
-  // Tight-fit window, no fixed width -- see FretboardDiagram.RULES.md rule 1.
+  // Uniform fixed-width window -- see FretboardDiagram.RULES.md rule 1.
   const { start, end } = getStepWindow(notes.map((n) => n.fret));
   const cellCount = end - start + 1;
 
@@ -51,11 +60,19 @@ function Segment({
   const xForFret = (fret: number) => nutX + (fret - start + 0.5) * FRET_WIDTH;
 
   return (
-    <div className={`shrink-0 rounded-md bg-white p-1.5 ${active ? "border-2 border-zinc-900" : "border border-zinc-200"}`}>
+    <div className={`shrink-0 rounded-md bg-background p-1.5 ${active ? "border-2 border-foreground" : "border border-border"}`}>
       <svg width={width} height={height}>
         {/* nut, only when this window actually touches the top of the neck */}
         {start === 1 && (
-          <line x1={nutX} x2={nutX} y1={PAD_TOP} y2={PAD_TOP + (nStrings - 1) * STRING_GAP} stroke="#27272a" strokeWidth={2.5} />
+          <line
+            x1={nutX}
+            x2={nutX}
+            y1={PAD_TOP}
+            y2={PAD_TOP + (nStrings - 1) * STRING_GAP}
+            stroke="var(--foreground)"
+            strokeOpacity={0.7}
+            strokeWidth={2.5}
+          />
         )}
 
         {/* fret lines */}
@@ -66,14 +83,23 @@ function Segment({
             x2={nutX + i * FRET_WIDTH}
             y1={PAD_TOP}
             y2={PAD_TOP + (nStrings - 1) * STRING_GAP}
-            stroke="#e4e4e7"
+            stroke="var(--foreground)"
+            strokeOpacity={0.12}
             strokeWidth={1}
           />
         ))}
 
         {/* fret number labels */}
         {Array.from({ length: cellCount }, (_, i) => start + i).map((f) => (
-          <text key={f} x={xForFret(f)} y={PAD_TOP - 6} textAnchor="middle" fontSize={8} fill="#a1a1aa">
+          <text
+            key={f}
+            x={xForFret(f)}
+            y={PAD_TOP - 6}
+            textAnchor="middle"
+            fontSize={8}
+            fill="var(--foreground)"
+            fillOpacity={0.55}
+          >
             {f}
           </text>
         ))}
@@ -86,7 +112,8 @@ function Segment({
             x2={nutX + gridWidth}
             y1={yForString(i)}
             y2={yForString(i)}
-            stroke="#a1a1aa"
+            stroke="var(--foreground)"
+            strokeOpacity={0.4}
             strokeWidth={stringThickness(i, nStrings)}
           />
         ))}
@@ -95,7 +122,16 @@ function Segment({
         {tuning.map((midi, i) => {
           const name = pitchClassName(midi);
           return (
-            <text key={i} x={PAD_LEFT - 5} y={yForString(i) + 3} textAnchor="end" fontSize={9} fontFamily="monospace" fill="#71717a">
+            <text
+              key={i}
+              x={PAD_LEFT - 5}
+              y={yForString(i) + 3}
+              textAnchor="end"
+              fontSize={9}
+              fontFamily="monospace"
+              fill="var(--foreground)"
+              fillOpacity={0.55}
+            >
               {i === nStrings - 1 ? name.toLowerCase() : name}
             </text>
           );
@@ -107,12 +143,46 @@ function Segment({
             only place that matters now that segments are tightly fit. */}
         {notes.map(({ string, fret }, i) =>
           fret === 0 ? (
-            <circle key={i} cx={nutX - OPEN_GAP / 2 - 1} cy={yForString(string)} r={4.5} fill="white" stroke="#18181b" strokeWidth={1.6} />
+            <circle
+              key={i}
+              cx={nutX - OPEN_GAP / 2 - 1}
+              cy={yForString(string)}
+              r={4.5}
+              fill="var(--background)"
+              stroke="var(--foreground)"
+              strokeWidth={1.6}
+            />
           ) : (
-            <circle key={i} cx={xForFret(fret)} cy={yForString(string)} r={5.5} fill="#18181b" />
+            <circle key={i} cx={xForFret(fret)} cy={yForString(string)} r={5.5} fill="var(--foreground)" />
           )
         )}
       </svg>
+    </div>
+  );
+}
+
+// Extracted the same way SheetDiagram's own controls row was, so this
+// component's complexity stays low and the two views' header logic reads
+// the same way side by side.
+function FretboardControls({
+  showHeader,
+  highOnTop,
+  onToggleHighOnTop,
+}: {
+  showHeader: boolean;
+  highOnTop: boolean;
+  onToggleHighOnTop: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-3">
+      {showHeader ? (
+        <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>
+          Fretboard, in order
+        </h2>
+      ) : (
+        <span />
+      )}
+      <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
     </div>
   );
 }
@@ -121,43 +191,55 @@ export function FretboardDiagram({
   notes,
   tuning,
   currentStep = null,
+  bordered = true,
+  showHeader = true,
+  showCaption = true,
 }: {
   notes: TimedNote[];
   tuning: number[];
   currentStep?: number | null;
+  // Same meaning and same defaults as SheetDiagram's identical props -- see
+  // its doc comment. DiagramViewport opts out of all three for both views.
+  bordered?: boolean;
+  showHeader?: boolean;
+  showCaption?: boolean;
 }) {
-  const [highOnTop, setHighOnTop] = useState(true); // thin e on top, matches renderAsciiTab's default
+  const [highOnTop, setHighOnTop] = useState(true); // thin e on top, matches SheetDiagram's default
 
   const nStrings = tuning.length;
   const steps = groupNotesByStep(notes);
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-5">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium text-zinc-700">Fretboard, in order</h2>
-        <button
-          onClick={() => setHighOnTop((v) => !v)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-        >
-          Flip to {highOnTop ? "thick E" : "thin e"} on top
-        </button>
-      </div>
+    <div
+      className={bordered ? "rounded-lg border p-5" : ""}
+      style={
+        bordered
+          ? {
+              borderColor: "color-mix(in srgb, var(--foreground) 15%, transparent)",
+              background: "var(--background)",
+              color: "var(--foreground)",
+            }
+          : { color: "var(--foreground)" }
+      }
+    >
+      <FretboardControls showHeader={showHeader} highOnTop={highOnTop} onToggleHighOnTop={() => setHighOnTop((v) => !v)} />
 
       {/* Wraps onto multiple rows instead of horizontally scrolling -- each
-          Segment is a variable width (getStepWindow-sized, not fixed), so a
-          plain flex-wrap is simpler and more correct here than the
-          fixed-stepWidth measurement SheetDiagram's chunk()/computeStepsPerLine()
-          needs; flex-wrap just lets whatever fits stay on a row. */}
+          Segment is FIXED_CELLS-wide for the common case (see lib/fretboard.ts),
+          so a plain flex-wrap keeps rows tidy without needing SheetDiagram's
+          chunk()/computeStepsPerLine() measurement. */}
       <div className="flex flex-wrap gap-2">
         {steps.map((step, i) => (
           <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} active={i === currentStep} />
         ))}
       </div>
 
-      <p className="text-xs text-zinc-400 mt-3">
-        One segment per step, left to right in playback order — same order as the tab above. A segment with more than
-        one dot is a chord (played together, not in sequence).
-      </p>
+      {showCaption && (
+        <p className="text-xs mt-3" style={{ opacity: 0.45 }}>
+          One segment per step, left to right in playback order — same order as the tab above. A segment with more
+          than one dot is a chord (played together, not in sequence).
+        </p>
+      )}
     </div>
   );
 }

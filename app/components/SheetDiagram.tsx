@@ -27,7 +27,19 @@
 // to dark mode -- a known gap in FretboardDiagram, not repeated here.
 
 import { useEffect, useRef, useState } from "react";
-import { chunk, computeStepsPerLine, getDisplayRow, groupNotesByStep, pitchClassName, stringThickness, type TimedNote } from "@/lib/tabNotation";
+import {
+  chunk,
+  computeStepsPerLine,
+  getDisplayRow,
+  groupNotesByStep,
+  intersectLoopRangeWithSystem,
+  pitchClassName,
+  stepIndexForX,
+  stringThickness,
+  type TimedNote,
+} from "@/lib/tabNotation";
+import type { LoopRange } from "@/hooks/useMetronome";
+import { StringOrientationToggle } from "./StringOrientationToggle";
 
 const DEFAULT_STEPS_PER_LINE = 16;
 const STEP_WIDTH = 38;
@@ -43,24 +55,88 @@ function System({
   nStrings,
   tuning,
   highlightIndex,
+  highOnTop,
+  startIdx,
+  loopLocalRange,
+  onSelectRange,
+  onClearLoop,
 }: {
   steps: { string: number; fret: number }[][];
   nStrings: number;
   tuning: number[];
   highlightIndex: number | null;
+  highOnTop: boolean;
+  // Loop drag-select (2026-09-10) -- see SheetDiagram.RULES.md rule 10. A
+  // drag is scoped to one system/line at a time (not built: dragging across
+  // a line wrap), which covers the common case of looping a short section.
+  startIdx: number;
+  loopLocalRange: { start: number; end: number } | null;
+  onSelectRange: (globalStart: number, globalEnd: number) => void;
+  onClearLoop: () => void;
 }) {
   const width = PAD_LEFT + steps.length * STEP_WIDTH + PAD_RIGHT;
   const height = PAD_TOP + (nStrings - 1) * LINE_GAP + PAD_BOTTOM;
 
-  // Sheet always reads thin-e-on-top -- the one universal convention for
-  // this kind of notation, unlike a bare fretboard diagram where physical
-  // orientation is a real preference. No toggle here, unlike
-  // FretboardDiagram -- see RULES.md.
-  const yFor = (stringIndex: number) => PAD_TOP + getDisplayRow(stringIndex, nStrings, true) * LINE_GAP;
+  const yFor = (stringIndex: number) => PAD_TOP + getDisplayRow(stringIndex, nStrings, highOnTop) * LINE_GAP;
   const xForIndex = (i: number) => PAD_LEFT + i * STEP_WIDTH + STEP_WIDTH / 2;
 
+  // In-progress drag preview, local to this system -- committed to the real
+  // (global) loopRange only on pointer-up, so dragging doesn't churn parent
+  // state (and re-render every system) on every pixel of mouse movement.
+  const [dragLocal, setDragLocal] = useState<{ start: number; end: number } | null>(null);
+  const dragStartRef = useRef<number | null>(null);
+
+  const localIndexForClientX = (clientX: number, svg: SVGSVGElement) => {
+    const rect = svg.getBoundingClientRect();
+    return stepIndexForX(clientX - rect.left, STEP_WIDTH, PAD_LEFT, steps.length);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.button !== 0) return;
+    const idx = localIndexForClientX(e.clientX, e.currentTarget);
+    dragStartRef.current = idx;
+    setDragLocal({ start: idx, end: idx });
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (dragStartRef.current === null) return;
+    const idx = localIndexForClientX(e.clientX, e.currentTarget);
+    setDragLocal({ start: Math.min(dragStartRef.current, idx), end: Math.max(dragStartRef.current, idx) });
+  };
+  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    const down = dragStartRef.current;
+    if (down === null) return;
+    const up = localIndexForClientX(e.clientX, e.currentTarget);
+    dragStartRef.current = null;
+    setDragLocal(null);
+    if (down === up) onClearLoop(); // a plain click (no movement) clears any existing loop
+    else onSelectRange(startIdx + Math.min(down, up), startIdx + Math.max(down, up));
+  };
+
+  const band = dragLocal ?? loopLocalRange;
+
   return (
-    <svg width={width} height={height} className="block">
+    <svg
+      width={width}
+      height={height}
+      className="block cursor-crosshair"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      {/* Loop selection band -- drawn first so strings/notes paint over it.
+          Same accent color as the rest of the app's interactive highlights. */}
+      {band && (
+        <rect
+          x={xForIndex(band.start) - STEP_WIDTH / 2}
+          y={PAD_TOP - 6}
+          width={(band.end - band.start + 1) * STEP_WIDTH}
+          height={height - PAD_TOP - PAD_BOTTOM + 12}
+          fill="var(--color-accent)"
+          fillOpacity={0.15}
+        />
+      )}
+
       {/* strings -- e/B/G tied at the thinnest, D/A/E stepping up, like a real set */}
       {Array.from({ length: nStrings }, (_, i) => (
         <line
@@ -119,11 +195,62 @@ function System({
   );
 }
 
+// Extracted from SheetDiagram itself so that component's own complexity stays
+// under the lint ceiling -- this row's two independent conditionals (header
+// visibility, toggle label) belong together but don't need to live inline.
+// The flip toggle is independent of showHeader -- callers that hide the
+// "Sheet"/tempo header (their own song header already shows tempo, see
+// SheetDiagram's showHeader doc comment) still get this control, just
+// without the rest of the row.
+function SheetControls({
+  showHeader,
+  tempoBpm,
+  highOnTop,
+  onToggleHighOnTop,
+  loopRange,
+  onClearLoop,
+}: {
+  showHeader: boolean;
+  tempoBpm: number;
+  highOnTop: boolean;
+  onToggleHighOnTop: () => void;
+  loopRange: LoopRange | null;
+  onClearLoop: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between mb-4">
+      {showHeader ? (
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>Sheet</h2>
+          <span className="text-xs font-mono" style={{ opacity: 0.55 }}>♩ = {Math.round(tempoBpm)}</span>
+        </div>
+      ) : (
+        <span />
+      )}
+      <div className="flex items-center gap-3">
+        {loopRange && (
+          <button
+            onClick={onClearLoop}
+            className="text-xs font-mono px-2 py-1 rounded-full"
+            style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
+            title="Clear loop"
+          >
+            Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
+          </button>
+        )}
+        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      </div>
+    </div>
+  );
+}
+
 export function SheetDiagram({
   notes,
   tuning,
   tempoBpm,
   currentStep = null,
+  loopRange = null,
+  onSetLoopRange,
   bordered = true,
   showHeader = true,
   showCaption = true,
@@ -132,6 +259,10 @@ export function SheetDiagram({
   tuning: number[];
   tempoBpm: number;
   currentStep?: number | null;
+  // Drag-to-select loop range (2026-09-10) -- see SheetDiagram.RULES.md rule
+  // 10. Owned by useMetronome (a timing concern), read/written here.
+  loopRange?: LoopRange | null;
+  onSetLoopRange?: (range: LoopRange | null) => void;
   // The three below default to this component's original look (a bordered
   // card with its own "Sheet"/tempo header and a caption) so every existing
   // caller (SongTabs.tsx) is pixel-unchanged. /studio's DiagramViewport.tsx
@@ -145,6 +276,9 @@ export function SheetDiagram({
   const nStrings = tuning.length;
   const containerRef = useRef<HTMLDivElement>(null);
   const [stepsPerLine, setStepsPerLine] = useState(DEFAULT_STEPS_PER_LINE);
+  // Thin e on top by default, matching FretboardDiagram's own default -- see
+  // SheetDiagram.RULES.md rule 4 (now a real toggle, not a fixed convention).
+  const [highOnTop, setHighOnTop] = useState(true);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -172,12 +306,14 @@ export function SheetDiagram({
           : { color: "var(--foreground)" }
       }
     >
-      {showHeader && (
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>Sheet</h2>
-          <span className="text-xs font-mono" style={{ opacity: 0.55 }}>♩ = {Math.round(tempoBpm)}</span>
-        </div>
-      )}
+      <SheetControls
+        showHeader={showHeader}
+        tempoBpm={tempoBpm}
+        highOnTop={highOnTop}
+        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
+        loopRange={loopRange}
+        onClearLoop={() => onSetLoopRange?.(null)}
+      />
 
       <div ref={containerRef} className="overflow-x-auto">
         <div className="flex flex-col gap-5">
@@ -185,7 +321,20 @@ export function SheetDiagram({
             const startIdx = sysIdx * stepsPerLine;
             const localHighlight =
               currentStep !== null && currentStep >= startIdx && currentStep < startIdx + sys.length ? currentStep - startIdx : null;
-            return <System key={sysIdx} steps={sys} nStrings={nStrings} tuning={tuning} highlightIndex={localHighlight} />;
+            return (
+              <System
+                key={sysIdx}
+                steps={sys}
+                nStrings={nStrings}
+                tuning={tuning}
+                highlightIndex={localHighlight}
+                highOnTop={highOnTop}
+                startIdx={startIdx}
+                loopLocalRange={intersectLoopRangeWithSystem(loopRange, startIdx, sys.length)}
+                onSelectRange={(s, e) => onSetLoopRange?.({ start: s, end: e })}
+                onClearLoop={() => onSetLoopRange?.(null)}
+              />
+            );
           })}
         </div>
       </div>

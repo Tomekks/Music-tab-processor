@@ -38,19 +38,23 @@ reopening that decision, not just adding a display mode.
    open notes) — deliberate, not an inconsistency: Sheet has no "outside the
    grid" concept the way a fretboard neck does, so a uniform "always show
    the number" reads more like real tab notation.
-4. **No thin-e/thick-E toggle**, unlike `FretboardDiagram`. Sheet always
-   reads thin-e-on-top — the one standard convention for this kind of
-   notation. Could add the same toggle later for consistency with the
-   fretboard view; not done now because it wasn't asked for and the
-   convention argument is genuinely different here.
+4. **Thin-e/thick-E toggle (2026-09-10), same as `FretboardDiagram`.**
+   Defaults to thin-e-on-top, same as Fretboard's default. Own `useState`
+   inside `SheetDiagram` (not lifted to a parent — no other component needs
+   this preference), but the button itself is
+   `components/StringOrientationToggle.tsx`, shared verbatim with
+   `FretboardDiagram` so both views' identical control can't visually drift
+   apart. The toggle is independent of `showHeader`: even when a caller
+   hides the "Sheet"/tempo header row (its own song header already shows
+   tempo), the flip button still renders on its own in that row, since it's
+   a real per-view control, not decoration.
 5. **Tempo is shown once, at the top of the whole component** (not per
    system) — matches how a real tempo marking appears once at the start of
    a piece, not repeated on every line.
 6. **Colors come from the real design-system tokens**
    (`var(--background)`/`var(--foreground)` from `app/app/globals.css`), not
-   hardcoded — this component adapts to dark mode correctly. `FretboardDiagram`
-   still doesn't; retrofitting it is a real follow-up, not done as a side
-   effect of this task.
+   hardcoded. `FretboardDiagram` now does too (2026-09-10) — this was the
+   first component to, and the reference the retrofit followed.
 7. **String lines step up in thickness like a real set** — e/B/G tied at
    the thinnest, D/A/E each a step thicker (`stringThickness` in
    `tabNotation.ts`, shared with `FretboardDiagram`).
@@ -64,6 +68,24 @@ reopening that decision, not just adding a display mode.
    independent module. No playhead is drawn until the metronome has actually
    been started at least once (`currentStep` is `null` until then), so the
    view doesn't show a cursor before anyone's pressed play.
+9. **Manual step navigation (2026-09-10), owned by `useMetronome`, driven
+   from `StudioTabs.tsx`, not this component.** Left/right arrow keys call
+   `stepBy(±1)` (clamped, not wrapped); space calls `toggle()`. Skipped
+   while focus is in an editable element (`lib/keyboardShortcuts.ts`'s
+   `isEditableTarget`) so the Tempo field's own arrow-key behavior still
+   wins there. Always pauses first — `stepBy` itself does this — matching
+   the rule that a transport key press during playback should take over,
+   not race the running interval.
+10. **Loop drag-select (2026-09-10).** Dragging directly on a system draws
+    a selection band (accent-colored, low opacity) and, on release, sets
+    `useMetronome`'s `loopRange` to that step range; playback then wraps
+    within it instead of the whole song. A plain click (no movement) clears
+    the loop. Scoped to **one system/line at a time** — dragging across a
+    line wrap isn't built, since the common case (loop a short section) fits
+    in one line already. Reuses the metronome's own `bpm`, deliberately no
+    separate practice-tempo control. The live drag preview is local
+    component state in `System` (not lifted to `loopRange` until pointer-up)
+    so dragging doesn't re-render every system on each pixel of movement.
 
 ## Not built, logged for later
 

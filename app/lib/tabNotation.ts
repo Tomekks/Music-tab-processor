@@ -15,6 +15,47 @@ export function pitchClassName(midi: number): string {
   return PITCH_CLASSES[((midi % 12) + 12) % 12];
 }
 
+/** A string/fret position's actual sounding pitch, as a MIDI note number. */
+export function fretToMidi(tuning: number[], stringIndex: number, fret: number): number {
+  return tuning[stringIndex] + fret;
+}
+
+/** Standard equal-temperament MIDI-to-frequency conversion (A4 = MIDI 69 = 440Hz). */
+export function midiToFrequency(midi: number): number {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+/**
+ * The nearest step index (local to one system/line, per SheetDiagram's own
+ * layout constants) for a horizontal pixel position -- used by the loop
+ * drag-select gesture to turn a pointer position into a step. Clamped to a
+ * valid index for that system, so dragging past either edge still resolves
+ * to the nearest real step rather than an out-of-range value.
+ */
+export function stepIndexForX(x: number, stepWidth: number, padLeft: number, stepCountInSystem: number): number {
+  const idx = Math.round((x - padLeft - stepWidth / 2) / stepWidth);
+  return Math.max(0, Math.min(stepCountInSystem - 1, idx));
+}
+
+/**
+ * Intersects a global loop range (in whole-song step indices) with one
+ * system's own local window -- so SheetDiagram's multi-line layout can draw
+ * a selection band only across the lines it actually touches, in each
+ * line's own local coordinates. Null when the loop range doesn't reach this
+ * system at all.
+ */
+export function intersectLoopRangeWithSystem(
+  loopRange: { start: number; end: number } | null,
+  systemStartIdx: number,
+  systemLength: number,
+): { start: number; end: number } | null {
+  if (!loopRange) return null;
+  const lo = Math.max(loopRange.start, systemStartIdx);
+  const hi = Math.min(loopRange.end, systemStartIdx + systemLength - 1);
+  if (lo > hi) return null;
+  return { start: lo - systemStartIdx, end: hi - systemStartIdx };
+}
+
 /**
  * Groups notes into playback-order steps: everything sharing a startTimeSec
  * is one step (a single note, or a chord if several strings ring at once).

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { pitchClassName, formatSongLength } from "@/lib/tabNotation";
 import { renderAsciiTab } from "@/lib/renderTab";
 import { StudioTabs } from "./StudioTabs";
@@ -9,6 +10,7 @@ export function SongDetailPane({
   song,
   coverArtUrl,
   spotifyArtist,
+  spotifyUrl,
 }: {
   song: Song | null;
   coverArtUrl?: string;
@@ -16,6 +18,10 @@ export function SongDetailPane({
   // the "missing artist" gap from M6 for songs that were ingested without it,
   // now that app/lib/spotify.ts has real credentials to draw from.
   spotifyArtist?: string;
+  // Missing (no credentials configured) or null (Spotify had no page for this
+  // track) both mean the same thing here -- same degrade-gracefully rule as
+  // coverArtUrl/spotifyArtist -- so the title just isn't a link then.
+  spotifyUrl?: string | null;
 }) {
   if (!song) {
     return (
@@ -47,7 +53,19 @@ export function SongDetailPane({
           {/* Always rendered, even with no artist data at all -- see
               SongListRow.tsx's identical treatment for why. */}
           <span className="text-sm text-foreground/60">{displayArtist}</span>
-          <h1 className="text-3xl font-bold leading-tight">{song.title}</h1>
+          {spotifyUrl ? (
+            <Link
+              href={spotifyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-3xl font-bold leading-tight hover:underline w-fit"
+              title="Open on Spotify"
+            >
+              <h1>{song.title}</h1>
+            </Link>
+          ) : (
+            <h1 className="text-3xl font-bold leading-tight">{song.title}</h1>
+          )}
           <p className="text-sm text-foreground/60">
             {formatSongLength(song.notes)} &bull; tuning {tuningLabel} &bull; {Math.round(song.tempoBpm)} bpm
           </p>

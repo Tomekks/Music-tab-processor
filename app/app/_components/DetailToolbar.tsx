@@ -12,10 +12,14 @@ export function DetailToolbar({
   active,
   onSelect,
   metronome,
+  soundEnabled,
+  onToggleSound,
 }: {
   active: Tab;
   onSelect: (tab: Tab) => void;
-  metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void };
+  metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void; reset: () => void };
+  soundEnabled: boolean;
+  onToggleSound: () => void;
 }) {
   return (
     <div className="border-t border-border px-8 py-4 flex items-center justify-between gap-6">
@@ -25,6 +29,9 @@ export function DetailToolbar({
         onBpmChange={metronome.setBpm}
         isPlaying={metronome.isPlaying}
         onToggle={metronome.toggle}
+        onReset={metronome.reset}
+        soundEnabled={soundEnabled}
+        onToggleSound={onToggleSound}
       />
     </div>
   );
