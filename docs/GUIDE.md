@@ -20,6 +20,7 @@ docs/
   ARCHITECTURE.md          — what's actually built, how data flows (a diagram)
   BACKLOG.md               — ideas under consideration: dump, triage, prioritize
   backlog-board/            — local drag-and-drop board that generates BACKLOG.md; open index.html directly
+  patch-bay/                — interactive workflow + architecture diagrams; open index.html directly
   codescene/                — CodeScene MCP audit: STATUS.md (findings/decisions), PROCEDURE.md (how to re-run it)
   DECISIONS.md             — index → docs/decisions/
   decisions/

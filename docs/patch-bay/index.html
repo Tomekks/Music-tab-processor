@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patch Bay</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Palette mirrors THEMES.patchbay in app/design_system/index.html (bg/fg/accent/
+     border only -- that tool's schema has no room for --surface-2 or the semantic
+     status colors this page also uses). Update both by hand if either changes. */
+  :root{
+    --ground:#f4efe2; --surface:#fffdf9; --surface-2:#ece3ce;
+    --line:#d8cdae; --ink:#221f18; --ink-dim:#6c6250;
+    --signal:#b85f22; --ok:#3f6e4d; --warn:#93641b; --blocked:#9c4436;
+    --node-radius:10px; --shadow:0 1px 2px rgba(70,55,20,.05), 0 14px 32px -18px rgba(70,55,20,.28);
+    --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+    --font-sans:'IBM Plex Sans',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#18160f; --surface:#221f19; --surface-2:#2c281f;
+      --line:#4a4433; --ink:#f1e9d8; --ink-dim:#ad9f83;
+      --signal:#e2823f; --ok:#7fae86; --warn:#d9a344; --blocked:#c4635a;
+      --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -20px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#18160f; --surface:#221f19; --surface-2:#2c281f;
+    --line:#4a4433; --ink:#f1e9d8; --ink-dim:#ad9f83;
+    --signal:#e2823f; --ok:#7fae86; --warn:#d9a344; --blocked:#c4635a;
+    --shadow:0 1px 0 rgba(0,0,0,.4), 0 20px 44px -20px rgba(0,0,0,.65);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--font-sans); -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1220px;margin:0 auto;padding:40px 28px 64px;}
+
+  header.top{display:flex; align-items:flex-end; justify-content:space-between; gap:28px; flex-wrap:wrap; padding-bottom:28px; margin-bottom:28px; border-bottom:1px solid var(--line);}
+  .brand .mark{font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; color:var(--ink-dim); border:1px solid var(--line); border-radius:5px; padding:3px 8px; display:inline-block; margin-bottom:12px;}
+  h1{font-family:var(--font-sans); font-weight:700; font-size:38px; margin:0 0 8px; letter-spacing:-0.02em; text-wrap:balance; line-height:1.05;}
+  .tagline{font-size:15px; color:var(--ink-dim); max-width:46ch; line-height:1.5;}
+
+  nav.tabs{display:flex; gap:4px; background:var(--surface-2); padding:5px; border-radius:11px; box-shadow:inset 0 1px 2px rgba(0,0,0,.06);}
+  nav.tabs button{font-family:var(--font-sans); font-weight:600; font-size:13.5px; background:transparent; border:none; color:var(--ink-dim); padding:10px 20px; border-radius:7px; cursor:pointer; transition:color .15s ease, background .15s ease;}
+  nav.tabs button[aria-selected="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+  nav.tabs button:hover{color:var(--ink);}
+  nav.tabs button:focus-visible{outline:2px solid var(--signal); outline-offset:2px;}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;}
+  @media (max-width:760px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat{display:none; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 16px; box-shadow:var(--shadow);}
+  .stat.active{display:block;}
+  .stat .num{font-family:var(--font-mono); font-weight:600; font-size:26px; color:var(--signal); font-variant-numeric:tabular-nums; letter-spacing:-0.01em;}
+  .stat .lbl{font-size:12.5px; color:var(--ink-dim); margin-top:4px; line-height:1.4;}
+
+  main{display:grid; grid-template-columns:1fr 240px; gap:22px; align-items:start;}
+  @media (max-width:900px){ main{grid-template-columns:1fr;} }
+
+  .stage{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:28px 26px 22px; min-width:0; box-shadow:var(--shadow);}
+  .stage-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:18px;}
+  .stage h2{font-size:19px; margin:0 0 6px; font-weight:700; letter-spacing:-0.01em;}
+  .stage-intro{font-size:14px; color:var(--ink-dim); max-width:62ch; line-height:1.55; margin:0;}
+
+  .trace-box{display:flex; align-items:center; gap:10px; flex:none;}
+  .trace-btn{font-family:var(--font-sans); font-weight:600; font-size:13px; background:var(--signal); color:var(--surface); border:none; padding:10px 18px; border-radius:9px; cursor:pointer; box-shadow:var(--shadow); transition:transform .12s ease, opacity .12s ease;}
+  .trace-btn:hover{transform:translateY(-1px);}
+  .trace-btn:active{transform:translateY(0);}
+  .trace-btn:focus-visible{outline:2px solid var(--ink); outline-offset:2px;}
+  .trace-btn.tracing{background:var(--surface-2); color:var(--ink); box-shadow:none;}
+  .trace-count{font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); font-variant-numeric:tabular-nums; min-width:3.4em;}
+  .explored{font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); white-space:nowrap;}
+
+  .panel-fig{display:none; margin:0;}
+  .panel-fig.active{display:block;}
+  .panel-fig svg{width:100%; height:auto; display:block;}
+
+  .detail{margin-top:18px; padding:18px 20px; background:var(--surface-2); border-radius:12px; font-size:14px; line-height:1.6; min-height:64px;}
+  .detail .dt-title{font-family:var(--font-mono); font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--signal); margin-bottom:6px; display:block;}
+  .detail p{margin:0; color:var(--ink);}
+
+  .legend{display:flex; flex-wrap:wrap; gap:16px 24px; margin-top:16px; font-size:12px; color:var(--ink-dim); font-family:var(--font-mono);}
+  .legend span{display:inline-flex; align-items:center; gap:7px;}
+  .legend svg{width:13px;height:13px;flex:none;}
+
+  aside.controls{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:22px 18px; position:sticky; top:24px; box-shadow:var(--shadow);}
+  aside h2{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim); margin:0 0 16px;}
+  .ctl{margin-bottom:18px;}
+  .ctl:last-child{margin-bottom:0;}
+  .ctl label{display:block; font-size:12px; font-weight:600; color:var(--ink); margin-bottom:8px;}
+  .seg{display:flex; background:var(--surface-2); border-radius:8px; padding:3px; gap:2px;}
+  .seg button{flex:1; font-family:var(--font-sans); font-size:12.5px; background:transparent; border:none; color:var(--ink-dim); padding:8px 4px; border-radius:6px; cursor:pointer;}
+  .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+  .seg button:focus-visible{outline:2px solid var(--signal); outline-offset:1px;}
+  .swatch-row{display:flex; align-items:center; gap:11px;}
+  input[type="color"]{-webkit-appearance:none; appearance:none; width:38px; height:38px; border:1px solid var(--line); border-radius:10px; padding:0; background:none; cursor:pointer;}
+  input[type="color"]::-webkit-color-swatch-wrapper{padding:3px;}
+  input[type="color"]::-webkit-color-swatch{border:none; border-radius:7px;}
+  .hexval{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim);}
+  .reset{width:100%; margin-top:6px; font-family:var(--font-sans); font-weight:600; font-size:12px; background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:8px; padding:9px; cursor:pointer;}
+  .reset:hover{color:var(--ink); border-color:var(--ink-dim);}
+  .reset:focus-visible{outline:2px solid var(--signal); outline-offset:1px;}
+
+  footer{margin-top:26px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-dim); font-family:var(--font-mono); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  footer a{color:var(--ink-dim);}
+
+  /* --- diagram primitives --- */
+  .node-rect{ rx:var(--node-radius); fill:var(--surface-2); stroke:var(--line); stroke-width:1.4; transition:stroke .12s ease, transform .18s cubic-bezier(.34,1.4,.64,1); transform-box:fill-box; transform-origin:center; }
+  .node-hit{ cursor:pointer; }
+  .node-hit:hover .node-rect, .node-hit:focus-visible .node-rect{ stroke:var(--signal); stroke-width:2; }
+  .node-hit:active .node-rect{ transform:scale(.97); }
+  .node-hit.tracing .node-rect{ stroke:var(--signal); stroke-width:2.4; transform:scale(1.035); }
+  .node-hit:focus-visible{ outline:none; }
+  .node-title{ font-family:var(--font-sans); font-size:14.5px; font-weight:700; fill:var(--ink); }
+  .node-sub{ font-family:var(--font-mono); font-size:11px; fill:var(--ink-dim); }
+  [data-density="compact"] .sublabel{ display:none; }
+  .tag-label{ font-family:var(--font-mono); font-size:10px; fill:var(--ink-dim); letter-spacing:.03em; }
+  .glyph{ fill:var(--ink-dim); }
+  .path-line{ stroke:var(--line); stroke-width:1.6; fill:none; }
+  .path-line.hot{ stroke:var(--signal); stroke-width:2.2; }
+  .arrow-label{ font-family:var(--font-mono); font-size:10.5px; fill:var(--ink-dim); letter-spacing:.02em; }
+  .zone-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.18em; fill:var(--ink-dim); }
+  .contract-tag{ fill:var(--surface); stroke:var(--signal); stroke-width:1.4; }
+  .contract-label{ font-family:var(--font-mono); font-size:9.5px; fill:var(--signal); font-weight:700; }
+  .watch-box{ fill:none; stroke:var(--line); stroke-width:1.3; stroke-dasharray:4 4; rx:12; }
+  .planned-box{ fill:none; stroke:var(--ink-dim); stroke-width:1.2; stroke-dasharray:3 3; rx:8; }
+  .planned-text{ font-family:var(--font-sans); font-style:italic; font-size:10.5px; fill:var(--ink-dim); }
+  .visited-mark{ fill:var(--ok); opacity:0; transition:opacity .25s ease; }
+  .node-hit.visited .visited-mark{ opacity:1; }
+  .signal-dot{ fill:var(--signal); }
+  .signal-dot-ring{ fill:none; stroke:var(--signal); stroke-width:1; opacity:.35; }
+  .chip-text{ font-family:var(--font-mono); font-size:11.5px; fill:var(--ink); }
+  .card-title{ font-family:var(--font-sans); font-size:15.5px; font-weight:700; fill:var(--ink); }
+  .hub-glow{ fill:var(--signal); opacity:.16; animation:hubPulse 3.6s ease-in-out infinite; }
+  @keyframes hubPulse{ 0%,100%{ opacity:.1; } 50%{ opacity:.28; } }
+  @media (prefers-reduced-motion:reduce){ .hub-glow{ animation:none; opacity:.14; } }
+
+  /* entrance stagger -- disabled under reduced motion below */
+  .node-hit.enter{ animation:enterUp .5s cubic-bezier(.22,1,.36,1) both; }
+  @keyframes enterUp{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:translateY(0); } }
+
+  @media (prefers-reduced-motion:reduce){
+    .node-hit.enter{ animation:none; }
+    .signal-dot, .signal-dot-ring{ display:none; }
+    .node-rect{ transition:stroke .12s ease; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="mark">GUITAR TAB PROCESSOR</span>
+      <h1>Patch Bay</h1>
+      <p class="tagline">How a change actually moves through this project, and how audio actually flows through it — drawn from what's committed and running today. Click a station, or trace the whole path.</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Diagram">
+      <button role="tab" id="tab-flow" aria-controls="fig-flow" aria-selected="true">Workflow</button>
+      <button role="tab" id="tab-arch" aria-controls="fig-arch" aria-selected="false">Architecture</button>
+    </nav>
+  </header>
+
+  <div class="stats" id="stats">
+    <div class="stat flow-stat active"><div class="num">3 / 7</div><div class="lbl">stations that need real judgment — the rest run themselves</div></div>
+    <div class="stat flow-stat active"><div class="num">0</div><div class="lbl">direct pushes to <code>master</code> allowed, since Sep&nbsp;10</div></div>
+    <div class="stat flow-stat active"><div class="num">22/22</div><div class="lbl">unit tests currently passing, every commit</div></div>
+    <div class="stat flow-stat active"><div class="num">Weekly</div><div class="lbl">Dependabot checks dependencies, unattended</div></div>
+
+    <div class="stat arch-stat"><div class="num">5</div><div class="lbl">local pipeline stages, <code>s01</code> → <code>s05</code></div></div>
+    <div class="stat arch-stat"><div class="num">2</div><div class="lbl">typed contracts a note must cross to become a tab</div></div>
+    <div class="stat arch-stat"><div class="num">1</div><div class="lbl">boundary crossed — local machine into hosted database</div></div>
+    <div class="stat arch-stat"><div class="num">Live</div><div class="lbl">deployed, confirmed rendering real data publicly</div></div>
+  </div>
+
+  <main>
+    <div class="stage" id="diagrams">
+
+      <!-- ===================== WORKFLOW DIAGRAM ===================== -->
+      <figure class="panel-fig active" id="fig-flow">
+        <div class="stage-head">
+          <div>
+            <h2>The development loop</h2>
+            <p class="stage-intro">Every change — a one-line fix or a real feature — moves through the same seven stations. Colour and shape mark who's actually doing the work.</p>
+          </div>
+          <div class="trace-box">
+            <span class="explored" id="explored-flow">explored 0/7</span>
+            <button class="trace-btn" id="traceFlow">Trace it →</button>
+          </div>
+        </div>
+        <svg viewBox="0 0 1150 400" role="img" aria-label="A change moves through six stations — Ask, Plan for big changes only, Build, Check, Guard, Ship, Live — while Dependabot, CodeScene and a drift check run continuously underneath without ever blocking the main path.">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--line)"></path>
+            </marker>
+            <g id="glyph-you"><circle cx="4" cy="4" r="4" class="glyph"></circle></g>
+            <g id="glyph-claude"><polygon points="4,0 8,8 0,8" class="glyph"></polygon></g>
+            <g id="glyph-machine"><rect x="0" y="0" width="8" height="8" class="glyph"></rect></g>
+            <g id="visited-mark"><circle r="4"></circle></g>
+            <path id="spine-flow" d="M85,182 L365,182 L535,182 L705,182 L875,182 L1045,182" fill="none"></path>
+          </defs>
+
+          <text x="300" y="284" class="zone-label">BACKGROUND — RUNS ON ITS OWN, NEVER BLOCKS A CHANGE</text>
+          <rect x="300" y="296" width="470" height="76" class="watch-box"></rect>
+          <text x="322" y="322" class="node-sub">Dependabot — weekly dependency PRs</text>
+          <text x="322" y="342" class="node-sub">CodeScene — code-health audit, as needed</text>
+          <text x="322" y="362" class="node-sub">Drift check — periodic, tiered by cost</text>
+
+          <!-- ambient traveling signal, always on, loops the main spine -->
+          <circle r="3.2" class="signal-dot-ring">
+            <animateMotion dur="9s" repeatCount="indefinite"><mpath href="#spine-flow"></mpath></animateMotion>
+          </circle>
+          <circle r="4.5" class="signal-dot">
+            <animateMotion dur="9s" repeatCount="indefinite"><mpath href="#spine-flow"></mpath></animateMotion>
+          </circle>
+
+          <g class="node-hit" data-id="plan" tabindex="0" role="button" aria-label="Plan station, details" style="animation-delay:0ms">
+            <rect x="160" y="40" width="130" height="64" class="node-rect"></rect>
+            <text x="225" y="64" text-anchor="middle" class="node-title">Plan</text>
+            <use href="#glyph-claude" x="176" y="76"></use>
+            <text x="188" y="83" class="tag-label">claude</text>
+            <text x="225" y="97" text-anchor="middle" class="node-sub sublabel">brainstorm + write plan</text>
+            <use href="#visited-mark" x="280" y="50" class="visited-mark"></use>
+          </g>
+
+          <line x1="150" y1="150" x2="160" y2="103" class="path-line" marker-end="url(#arrow)"></line>
+          <text x="98" y="118" class="arrow-label">big / unclear</text>
+          <line x1="290" y1="103" x2="300" y2="150" class="path-line" marker-end="url(#arrow)"></line>
+
+          <g class="node-hit" data-id="ask" tabindex="0" role="button" aria-label="Ask station, details" style="animation-delay:40ms">
+            <rect x="20" y="150" width="130" height="64" class="node-rect"></rect>
+            <text x="85" y="176" text-anchor="middle" class="node-title">Ask</text>
+            <use href="#glyph-you" x="36" y="188"></use>
+            <text x="48" y="195" class="tag-label">you + claude</text>
+            <text x="85" y="207" text-anchor="middle" class="node-sub sublabel">surface assumptions</text>
+            <use href="#visited-mark" x="140" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="150" y1="182" x2="300" y2="182" class="path-line" marker-end="url(#arrow)"></line>
+          <text x="185" y="174" class="arrow-label">small, clear</text>
+
+          <g class="node-hit" data-id="build" tabindex="0" role="button" aria-label="Build station, details" style="animation-delay:90ms">
+            <rect x="300" y="150" width="130" height="64" class="node-rect"></rect>
+            <text x="365" y="176" text-anchor="middle" class="node-title">Build</text>
+            <use href="#glyph-claude" x="316" y="188"></use>
+            <text x="328" y="195" class="tag-label">claude</text>
+            <text x="365" y="207" text-anchor="middle" class="node-sub sublabel">TDD + Ponytail ladder</text>
+            <use href="#visited-mark" x="420" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="430" y1="182" x2="470" y2="182" class="path-line" marker-end="url(#arrow)"></line>
+
+          <g class="node-hit" data-id="check" tabindex="0" role="button" aria-label="Check station, details" style="animation-delay:140ms">
+            <rect x="470" y="150" width="130" height="64" class="node-rect"></rect>
+            <text x="535" y="176" text-anchor="middle" class="node-title">Check</text>
+            <use href="#glyph-machine" x="486" y="188"></use>
+            <text x="498" y="195" class="tag-label">machine</text>
+            <text x="535" y="207" text-anchor="middle" class="node-sub sublabel">verify + pre-commit hook</text>
+            <use href="#visited-mark" x="590" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="600" y1="182" x2="640" y2="182" class="path-line hot"></line>
+
+          <g class="node-hit" data-id="guard" tabindex="0" role="button" aria-label="Guard station, details" style="animation-delay:190ms">
+            <rect x="640" y="150" width="130" height="64" class="node-rect" style="stroke:var(--signal);stroke-width:2;"></rect>
+            <text x="705" y="176" text-anchor="middle" class="node-title">Guard</text>
+            <use href="#glyph-machine" x="656" y="188"></use>
+            <text x="668" y="195" class="tag-label">machine</text>
+            <text x="705" y="207" text-anchor="middle" class="node-sub sublabel">PR + CI must pass</text>
+            <use href="#visited-mark" x="760" y="160" class="visited-mark"></use>
+          </g>
+          <text x="605" y="140" class="arrow-label" style="fill:var(--signal);">enforced — merge blocked otherwise</text>
+
+          <line x1="770" y1="182" x2="810" y2="182" class="path-line" marker-end="url(#arrow)"></line>
+
+          <g class="node-hit" data-id="ship" tabindex="0" role="button" aria-label="Ship station, details" style="animation-delay:240ms">
+            <rect x="810" y="150" width="130" height="64" class="node-rect"></rect>
+            <text x="875" y="176" text-anchor="middle" class="node-title">Ship</text>
+            <use href="#glyph-you" x="826" y="188"></use>
+            <text x="838" y="195" class="tag-label">you</text>
+            <text x="875" y="207" text-anchor="middle" class="node-sub sublabel">preview, then decide</text>
+            <use href="#visited-mark" x="930" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="940" y1="182" x2="980" y2="182" class="path-line" marker-end="url(#arrow)"></line>
+          <text x="945" y="174" class="arrow-label">your word, every time</text>
+
+          <g class="node-hit" data-id="live-flow" tabindex="0" role="button" aria-label="Live station, details" style="animation-delay:290ms">
+            <rect x="980" y="150" width="130" height="64" class="node-rect"></rect>
+            <text x="1045" y="176" text-anchor="middle" class="node-title">Live</text>
+            <use href="#glyph-machine" x="996" y="188"></use>
+            <text x="1008" y="195" class="tag-label">machine</text>
+            <text x="1045" y="207" text-anchor="middle" class="node-sub sublabel">vercel deploy --prod</text>
+            <use href="#visited-mark" x="1100" y="160" class="visited-mark"></use>
+          </g>
+        </svg>
+
+        <div class="detail" id="detail-flow">
+          <span class="dt-title">Overview</span>
+          <p>Only three stations — <b>Ask</b>, <b>Plan</b> and <b>Ship</b> — ever need real judgment; everything else runs the same way every time, for free, which is what makes doing more of this affordable.</p>
+        </div>
+
+        <div class="legend">
+          <span><svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" class="glyph"></circle></svg> you</span>
+          <span><svg viewBox="0 0 8 8"><polygon points="4,0 8,8 0,8" class="glyph"></polygon></svg> claude</span>
+          <span><svg viewBox="0 0 8 8"><rect width="8" height="8" class="glyph"></rect></svg> machine</span>
+          <span style="color:var(--signal);">— accent marks the gate that changed 2026-09-10</span>
+        </div>
+      </figure>
+
+      <!-- ===================== ARCHITECTURE DIAGRAM ===================== -->
+      <figure class="panel-fig" id="fig-arch">
+        <div class="stage-head">
+          <div>
+            <h2>Audio, end to end</h2>
+            <p class="stage-intro">One direction only: a local file becomes stems, then notes, then a tab, crossing two typed contracts before the only thing allowed to leave this machine reaches the hosted app.</p>
+          </div>
+          <div class="trace-box">
+            <span class="explored" id="explored-arch">explored 0/8</span>
+            <button class="trace-btn" id="traceArch">Trace it →</button>
+          </div>
+        </div>
+        <svg viewBox="0 0 1260 400" role="img" aria-label="Audio flows through four local pipeline stages, crossing two typed contracts, then crosses a local-to-hosted boundary through the database into the deployed Next.js app.">
+          <defs>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--line)"></path>
+            </marker>
+            <path id="spine-arch" d="M80,182 L235,182 L390,182 L560,182 L730,182 L910,182 L1065,182 L1205,182" fill="none"></path>
+          </defs>
+
+          <text x="20" y="34" class="zone-label">LOCAL — THIS MAC, NEVER INTERNET-REACHABLE</text>
+          <text x="800" y="34" class="zone-label">HOSTED</text>
+
+          <circle r="3.2" class="signal-dot-ring">
+            <animateMotion dur="11s" repeatCount="indefinite"><mpath href="#spine-arch"></mpath></animateMotion>
+          </circle>
+          <circle r="4.5" class="signal-dot">
+            <animateMotion dur="11s" repeatCount="indefinite"><mpath href="#spine-arch"></mpath></animateMotion>
+          </circle>
+
+          <g class="node-hit" data-id="audio" tabindex="0" role="button" aria-label="Audio station, details" style="animation-delay:0ms">
+            <rect x="20" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="80" y="178" text-anchor="middle" class="node-title">Audio</text>
+            <text x="80" y="197" text-anchor="middle" class="node-sub sublabel">local file</text>
+            <use href="#visited-mark" x="130" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="140" y1="182" x2="175" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+
+          <g class="node-hit" data-id="separate" tabindex="0" role="button" aria-label="Separate station, details" style="animation-delay:40ms">
+            <rect x="175" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="235" y="174" text-anchor="middle" class="node-title">Separate</text>
+            <text x="235" y="192" text-anchor="middle" class="node-sub sublabel">htdemucs</text>
+            <text x="235" y="206" text-anchor="middle" class="node-sub sublabel">stems</text>
+            <use href="#visited-mark" x="285" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="295" y1="182" x2="330" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+
+          <g class="node-hit" data-id="transcribe" tabindex="0" role="button" aria-label="Transcribe station, details" style="animation-delay:80ms">
+            <rect x="330" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="390" y="174" text-anchor="middle" class="node-title">Transcribe</text>
+            <text x="390" y="192" text-anchor="middle" class="node-sub sublabel">Basic Pitch</text>
+            <text x="390" y="206" text-anchor="middle" class="node-sub sublabel">→ notes</text>
+            <use href="#visited-mark" x="440" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="450" y1="182" x2="500" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+          <rect x="452" y="164" width="46" height="18" rx="3" class="contract-tag"></rect>
+          <text x="475" y="176.5" text-anchor="middle" class="contract-label">notes</text>
+
+          <g class="node-hit" data-id="tab" tabindex="0" role="button" aria-label="Tab station, details" style="animation-delay:120ms">
+            <rect x="500" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="560" y="174" text-anchor="middle" class="node-title">Tab</text>
+            <text x="560" y="192" text-anchor="middle" class="node-sub sublabel">tuttut</text>
+            <text x="560" y="206" text-anchor="middle" class="node-sub sublabel">→ fret/string</text>
+            <use href="#visited-mark" x="610" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="620" y1="182" x2="670" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+          <rect x="622" y="164" width="46" height="18" rx="3" class="contract-tag"></rect>
+          <text x="645" y="176.5" text-anchor="middle" class="contract-label">tab</text>
+
+          <g class="node-hit" data-id="publish" tabindex="0" role="button" aria-label="Publish station, details" style="animation-delay:160ms">
+            <rect x="670" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="730" y="174" text-anchor="middle" class="node-title">Publish</text>
+            <text x="730" y="192" text-anchor="middle" class="node-sub sublabel">writes the</text>
+            <text x="730" y="206" text-anchor="middle" class="node-sub sublabel">one songs table</text>
+            <use href="#visited-mark" x="780" y="160" class="visited-mark"></use>
+          </g>
+
+          <rect x="20" y="260" width="220" height="46" class="planned-box"></rect>
+          <text x="30" y="278" class="planned-text">local UI to trigger a run —</text>
+          <text x="30" y="294" class="planned-text">planned, not built yet</text>
+          <line x1="80" y1="214" x2="80" y2="260" stroke="var(--ink-dim)" stroke-width="1" stroke-dasharray="2 3"></line>
+
+          <line x1="815" y1="60" x2="815" y2="340" stroke="var(--ink-dim)" stroke-width="1.3" stroke-dasharray="5 5"></line>
+          <text x="815" y="368" text-anchor="middle" class="node-sub" style="font-family:var(--font-mono);">only data crosses here</text>
+
+          <line x1="790" y1="182" x2="850" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+
+          <g class="node-hit" data-id="turso" tabindex="0" role="button" aria-label="Turso station, details" style="animation-delay:200ms">
+            <rect x="850" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="910" y="178" text-anchor="middle" class="node-title">Turso</text>
+            <text x="910" y="197" text-anchor="middle" class="node-sub sublabel">hosted db</text>
+            <use href="#visited-mark" x="960" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="970" y1="182" x2="1005" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+
+          <g class="node-hit" data-id="nextjs" tabindex="0" role="button" aria-label="Next.js station, details" style="animation-delay:240ms">
+            <rect x="1005" y="150" width="120" height="64" class="node-rect"></rect>
+            <text x="1065" y="174" text-anchor="middle" class="node-title">Next.js</text>
+            <text x="1065" y="192" text-anchor="middle" class="node-sub sublabel">reads db,</text>
+            <text x="1065" y="206" text-anchor="middle" class="node-sub sublabel">renders tab</text>
+            <use href="#visited-mark" x="1115" y="160" class="visited-mark"></use>
+          </g>
+
+          <line x1="1125" y1="182" x2="1160" y2="182" class="path-line" marker-end="url(#arrow2)"></line>
+
+          <g class="node-hit" data-id="live-arch" tabindex="0" role="button" aria-label="Live deployment station, details" style="animation-delay:280ms">
+            <rect x="1160" y="150" width="90" height="64" class="node-rect" style="stroke:var(--ok);stroke-width:1.8;"></rect>
+            <text x="1205" y="176" text-anchor="middle" class="node-title" style="font-size:13px;">Live</text>
+            <text x="1205" y="194" text-anchor="middle" class="node-sub sublabel">vercel</text>
+            <text x="1205" y="207" text-anchor="middle" class="node-sub sublabel" style="fill:var(--ok);">deployed</text>
+            <use href="#visited-mark" x="1240" y="160" class="visited-mark"></use>
+          </g>
+        </svg>
+
+        <div class="detail" id="detail-arch">
+          <span class="dt-title">Overview</span>
+          <p>Audio only ever flows one direction, transformed through two typed contracts (<b>notes.schema.json</b>, <b>tab.schema.json</b>) it must match exactly — until it crosses into the hosted half through the database, the one thing allowed to cross that line.</p>
+        </div>
+
+        <div class="legend">
+          <span><svg viewBox="0 0 46 18"><rect width="44" height="16" rx="3" class="contract-tag"></rect></svg> a typed contract boundary</span>
+          <span style="color:var(--ok);">— solid outline: verified end-to-end, live</span>
+          <span>— dashed: planned, not built</span>
+        </div>
+      </figure>
+
+    </div>
+
+    <aside class="controls">
+      <h2>Adjust</h2>
+      <div class="ctl">
+        <label for="accent">Accent colour</label>
+        <div class="swatch-row">
+          <input type="color" id="accent" value="#b85f22">
+          <span class="hexval" id="accentHex">#b85f22</span>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>Theme</label>
+        <div class="seg" id="themeSeg" role="group">
+          <button data-val="light" aria-pressed="false">Light</button>
+          <button data-val="system" aria-pressed="true">System</button>
+          <button data-val="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>Node shape</label>
+        <div class="seg" id="shapeSeg" role="group">
+          <button data-val="0" aria-pressed="false">Sharp</button>
+          <button data-val="10" aria-pressed="true">Rounded</button>
+          <button data-val="32" aria-pressed="false">Pill</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <label>Text density</label>
+        <div class="seg" id="densitySeg" role="group">
+          <button data-val="comfortable" aria-pressed="true">Detail</button>
+          <button data-val="compact" aria-pressed="false">Compact</button>
+        </div>
+      </div>
+      <button class="reset" id="resetBtn">Reset to defaults</button>
+    </aside>
+  </main>
+
+  <footer>
+    <span>Grounded in <code>docs/DEVELOPMENT_PROCESS.md</code> and <code>docs/ARCHITECTURE.md</code> · palette shared with the <code>Patch bay</code> theme in <code>app/design_system/</code></span>
+    <span>guitar_tab_processor</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var store = {};
+  try { store = JSON.parse(localStorage.getItem('patchbay-prefs') || '{}'); } catch(e) { store = {}; }
+  function save(){ try { localStorage.setItem('patchbay-prefs', JSON.stringify(store)); } catch(e){} }
+
+  var FLOW_INFO = {
+    ask:    { t:'Ask', b:'Added 2026-09-10: state what’s being assumed, and if the request has more than one reasonable reading, name them instead of picking silently. Cherry-picked from an external source, not installed as a plugin.' },
+    plan:   { t:'Plan', b:'<b>superpowers:brainstorming</b> then <b>writing-plans</b> — only for genuinely ambiguous or multi-step work. A single well-specified fix skips this entirely, a deliberate override of Superpowers’ own default of invoking everything.' },
+    build:  { t:'Build', b:'Red-green-refactor. Ponytail’s 7-step decision ladder answers “what’s the minimal implementation” during the green step — a question TDD alone never resolves.' },
+    check:  { t:'Check', b:'<code>npm run verify</code> — typecheck, lint, unit tests. No build: <code>npm run stage</code> already proves the build works, so this doesn’t pay for the same check twice.' },
+    guard:  { t:'Guard', b:'A pre-commit hook (secret scan + typecheck) fires locally on every commit. Then CI runs the full check on GitHub, and a ruleset requires it to pass before merging — live since 2026-09-10.' },
+    ship:   { t:'Ship', b:'<code>npm run stage</code> — a real production build, served locally — then the same question, every time: push? push &amp; deploy? or keep iterating?' },
+    'live-flow': { t:'Live', b:'<code>npx vercel deploy --prod --yes</code>, from the repo root, only after an explicit yes. Auto-deploy-on-push is off, on purpose.' }
+  };
+  var ARCH_INFO = {
+    audio:      { t:'Audio', b:'A local file on this Mac — <code>.mp3</code>/<code>.wav</code>, gitignored, never committed. Placed by hand in <code>research/00_spike/audio/</code>.' },
+    separate:   { t:'Separate', b:'<code>s02_separate</code> runs <b>htdemucs</b> — settled after <code>htdemucs_6s</code> and <code>mlx-demucs</code> were both tried and came out no better. Splits drums/bass/other/vocals.' },
+    transcribe: { t:'Transcribe', b:'<code>s03_transcribe</code> runs <b>Basic Pitch</b>, writing output that must conform to <code>notes.schema.json</code> — pitch, time, duration, no guitar concept at all yet.' },
+    tab:        { t:'Tab', b:'<code>s04_tab</code> runs <b>tuttut</b>, turning plain notes into string/fret choices — <code>tab.schema.json</code>. Picks <i>a</i> playable fingering, not necessarily the original performer’s.' },
+    publish:    { t:'Publish', b:'<code>s05_publish</code> writes the finished tab into the one <code>songs</code> table in Turso. Still lacks its own test — a real, acknowledged gap, unlike every other stage.' },
+    turso:      { t:'Turso', b:'Hosted libSQL/SQLite-compatible database, accessed via <b>Drizzle ORM</b> specifically so swapping it later is a config change, not a rewrite.' },
+    nextjs:     { t:'Next.js', b:'<code>app/</code> — TypeScript, Tailwind, App Router. Reads live from Turso, renders Sheet/Fretboard/Ascii tab views plus a metronome.' },
+    'live-arch':{ t:'Live', b:'Deployed and confirmed live at the public URL, rendering real data — not just locally. Auto-deploy-on-push is off; going live is always its own explicit step.' }
+  };
+  var FLOW_ORDER = ['ask','build','check','guard','ship','live-flow'];
+  var ARCH_ORDER = ['audio','separate','transcribe','tab','publish','turso','nextjs','live-arch'];
+
+  function setupDiagram(figId, detailId, exploredId, traceBtnId, info, order){
+    var fig = document.getElementById(figId);
+    var out = document.getElementById(detailId);
+    var exploredEl = document.getElementById(exploredId);
+    var traceBtn = document.getElementById(traceBtnId);
+    var nodes = fig.querySelectorAll('.node-hit');
+    var visited = new Set();
+    var traceTimer = null;
+    var traceStep = 0;
+
+    function nodeById(id){ return fig.querySelector('.node-hit[data-id="' + id + '"]'); }
+
+    function markVisited(id){
+      if (visited.has(id)) return;
+      visited.add(id);
+      var n = nodeById(id);
+      if (n) n.classList.add('visited');
+      exploredEl.textContent = 'explored ' + visited.size + '/' + order.length;
+    }
+
+    function show(id){
+      var d = info[id];
+      if (!d) return;
+      out.innerHTML = '<span class="dt-title">' + d.t + '</span><p>' + d.b + '</p>';
+      markVisited(id);
+    }
+
+    nodes.forEach(function(g){
+      g.addEventListener('click', function(){ stopTrace(); show(g.getAttribute('data-id')); });
+      g.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopTrace(); show(g.getAttribute('data-id')); }
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault();
+          var idx = order.indexOf(g.getAttribute('data-id'));
+          if (idx === -1) return;
+          var next = order[(idx + (e.key === 'ArrowRight' ? 1 : order.length - 1)) % order.length];
+          var target = nodeById(next);
+          if (target) { target.focus(); stopTrace(); show(next); }
+        }
+      });
+    });
+
+    function stopTrace(){
+      if (traceTimer) { clearInterval(traceTimer); traceTimer = null; }
+      traceBtn.textContent = 'Trace it →';
+      traceBtn.classList.remove('tracing');
+      nodes.forEach(function(n){ n.classList.remove('tracing'); });
+    }
+
+    function stepTrace(){
+      nodes.forEach(function(n){ n.classList.remove('tracing'); });
+      if (traceStep >= order.length) { stopTrace(); return; }
+      var id = order[traceStep];
+      var n = nodeById(id);
+      if (n) n.classList.add('tracing');
+      show(id);
+      traceStep++;
+    }
+
+    traceBtn.addEventListener('click', function(){
+      if (traceTimer) { stopTrace(); return; }
+      traceStep = 0;
+      traceBtn.textContent = 'Stop';
+      traceBtn.classList.add('tracing');
+      stepTrace();
+      traceTimer = setInterval(stepTrace, reduceMotion ? 900 : 2200);
+    });
+
+    function playEnter(){
+      nodes.forEach(function(n){ n.classList.remove('enter'); });
+      if (reduceMotion) return;
+      void fig.offsetWidth; // force reflow so the class can be re-applied
+      nodes.forEach(function(n){ n.classList.add('enter'); });
+    }
+    return { playEnter: playEnter };
+  }
+
+  var flowCtl = setupDiagram('fig-flow', 'detail-flow', 'explored-flow', 'traceFlow', FLOW_INFO, FLOW_ORDER);
+  var archCtl = setupDiagram('fig-arch', 'detail-arch', 'explored-arch', 'traceArch', ARCH_INFO, ARCH_ORDER);
+  flowCtl.playEnter();
+
+  var tabFlow = document.getElementById('tab-flow');
+  var tabArch = document.getElementById('tab-arch');
+  var figFlow = document.getElementById('fig-flow');
+  var figArch = document.getElementById('fig-arch');
+  function selectTab(which){
+    var flowOn = which === 'flow';
+    tabFlow.setAttribute('aria-selected', flowOn ? 'true' : 'false');
+    tabArch.setAttribute('aria-selected', flowOn ? 'false' : 'true');
+    figFlow.classList.toggle('active', flowOn);
+    figArch.classList.toggle('active', !flowOn);
+    document.querySelectorAll('.flow-stat').forEach(function(s){ s.classList.toggle('active', flowOn); });
+    document.querySelectorAll('.arch-stat').forEach(function(s){ s.classList.toggle('active', !flowOn); });
+    (flowOn ? flowCtl : archCtl).playEnter();
+  }
+  tabFlow.addEventListener('click', function(){ selectTab('flow'); });
+  tabArch.addEventListener('click', function(){ selectTab('arch'); });
+
+  var accentInput = document.getElementById('accent');
+  var accentHex = document.getElementById('accentHex');
+  function setAccent(val, persist){
+    root.style.setProperty('--signal', val);
+    accentInput.value = val;
+    accentHex.textContent = val;
+    if (persist !== false) { store.accent = val; save(); }
+  }
+  accentInput.addEventListener('input', function(){ setAccent(this.value); });
+
+  function seg(id, apply){
+    var el = document.getElementById(id);
+    var btns = el.querySelectorAll('button');
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        btns.forEach(function(x){ x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+        apply(b.getAttribute('data-val'));
+      });
+    });
+    return { set: function(val){
+      btns.forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-val') === val ? 'true' : 'false'); });
+      apply(val);
+    }};
+  }
+
+  var themeCtl = seg('themeSeg', function(val){
+    if (val === 'system') { root.removeAttribute('data-theme'); } else { root.setAttribute('data-theme', val); }
+    store.theme = val; save();
+  });
+  var shapeCtl = seg('shapeSeg', function(val){
+    root.style.setProperty('--node-radius', val + 'px');
+    store.shape = val; save();
+  });
+  var densityCtl = seg('densitySeg', function(val){
+    document.getElementById('diagrams').setAttribute('data-density', val);
+    store.density = val; save();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    store = {}; save();
+    setAccent('#b85f22');
+    themeCtl.set('system');
+    shapeCtl.set('10');
+    densityCtl.set('comfortable');
+  });
+
+  if (!store.accent) {
+    var computed = getComputedStyle(root).getPropertyValue('--signal').trim();
+    if (computed) { accentInput.value = computed; accentHex.textContent = computed; }
+  }
+  if (store.accent) setAccent(store.accent, false);
+  if (store.theme) themeCtl.set(store.theme);
+  if (store.shape) shapeCtl.set(store.shape);
+  if (store.density) densityCtl.set(store.density);
+})();
+</script>
+</body>
+</html>
