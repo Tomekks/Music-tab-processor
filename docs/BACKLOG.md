@@ -213,6 +213,34 @@ Backlogged because file upload alone already validates the core pipeline; sequen
 
 ---
 
+## Tech debt (added 2026-09-10 — see `app/status/engineering-practices.md` for the fuller record)
+
+### 24. Refactor HomePage (complexity 11, ceiling 9)
+`app/app/page.tsx`'s `HomePage` does searchParams parsing, selected-id fallback logic, and two sequential DB/API calls all inline. ESLint's complexity gate flags it (warn, not error). Not a bug — flagged automatically 2026-09-10.
+
+### 25. Refactor getTrackMetadata (complexity 18, ceiling 9)
+`app/lib/spotify.ts`'s `getTrackMetadata` mostly scores high from safe-navigation chains (`?.`/`??`) parsing Spotify's response shape, not genuinely tangled logic. Extracting a small field-parsing helper should fix most of it.
+
+### 26. Enforce CI with branch protection
+CI (`.github/workflows/ci.yml`) is live and green as of 2026-09-10 but purely informational — nothing stops a failing change from reaching `master`. Requires adopting a branch+PR workflow first (GitHub can't gate a direct push on CI).
+
+### 27. Add the Playwright home-page smoke test
+Task 5 of the CI plan — scoped but not built. One test: home page loads, no console error. Reuses Playwright rather than adding a second test framework, since full visual regression is a likely later need too.
+
+### 28. Split SESSION_HANDOFF.md / DRIFT_CHECK.md by domain
+Both currently mix app and pipeline concerns in one checklist, and `SESSION_HANDOFF`'s "Full handoff" re-reads the whole conversation instead of trusting already-current STATUS files — expensive by design flaw, not necessity.
+
+### 29. A real process for syncing secrets to GitHub, without pasting them anywhere
+Turso/CodeScene/Spotify credentials have all been pasted into chat at least once, needing rotation each time. Needed: a script the user runs themselves to push `.env.local` values to GitHub Actions secrets — Claude never touches the values.
+
+### 30. `@types/node` pinned to `^20` while running Node 26
+Type-definitions/runtime version mismatch in `app/package.json`, not currently causing a visible problem. Dependabot may resolve this on its own (a PR bumping it is already open as of 2026-09-10).
+
+### 31. `app/package.json` missing a `"type"` field
+`node --test` reparses `.ts` test files as ES modules every run with a small performance warning, because `package.json` doesn't declare its module type. Cosmetic/perf only, not a correctness issue.
+
+---
+
 ## Archive
 
 *(nothing yet — done/rejected items move here, never deleted)*

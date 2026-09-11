@@ -29,7 +29,7 @@
     --font-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
     --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
-    --col-process: #3a6ea5; --col-audio: #7a4fb0; --col-app: #2f8f5b; --col-content: #b5772f; --col-decided: #6b655c;
+    --col-process: #3a6ea5; --col-audio: #7a4fb0; --col-app: #2f8f5b; --col-content: #b5772f; --col-decided: #6b655c; --col-tech-debt: #b5342f;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg:#1b1a18; --panel:#242220; --card-bg:#242220; --border:#3a3733; --text:#ece8e2; --muted:#a39c91; --accent:#e08a6f; --accent-active:#e08a6f; --accent-soft:#3a2a24; --on-accent:#1b1a18; }
@@ -82,6 +82,7 @@
     <option value="app">App / UI</option>
     <option value="content">Content / portfolio</option>
     <option value="decided">Already-decided</option>
+    <option value="tech-debt">Tech debt</option>
   </select>
   <button class="primary" id="addBtn">+ Add item</button>
   <span class="spacer"></span>
@@ -112,6 +113,7 @@
           <option value="app">App / UI</option>
           <option value="content">Content / portfolio</option>
           <option value="decided">Already-decided</option>
+          <option value="tech-debt">Tech debt</option>
         </select>
       </label>
       <label>Status
@@ -153,8 +155,8 @@
 <script>
 const STORAGE_KEY = 'guitarAppBacklog.v1';
 const STATUSES = ['Idea','Considered','Selected','In progress','Done','Rejected'];
-const CATEGORY_LABEL = { process:'Process & reliability', audio:'Audio pipeline', app:'App / UI', content:'Content / portfolio', decided:'Already-decided' };
-const CATEGORY_COLOR = { process:'var(--col-process)', audio:'var(--col-audio)', app:'var(--col-app)', content:'var(--col-content)', decided:'var(--col-decided)' };
+const CATEGORY_LABEL = { process:'Process & reliability', audio:'Audio pipeline', app:'App / UI', content:'Content / portfolio', decided:'Already-decided', 'tech-debt':'Tech debt' };
+const CATEGORY_COLOR = { process:'var(--col-process)', audio:'var(--col-audio)', app:'var(--col-app)', content:'var(--col-content)', decided:'var(--col-decided)', 'tech-debt':'var(--col-tech-debt)' };
 
 // ---- Seed data: current docs/BACKLOG.md, 2026-09-09, as structured items ----
 const SEED = [
@@ -313,6 +315,47 @@ const SEED = [
    title:'yt-dlp (YouTube-link) ingestion',
    description:"Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio.",
    pros:'', cons:'', dependencies:'', related:['docs/decisions/backlog-and-scope.md']},
+
+  // ---- Tech debt (2026-09-10) ----
+  {id:'refactor-hometpage-complexity', category:'tech-debt', status:'Idea', priority:'Low', effort:'S',
+   title:'Refactor HomePage (complexity 11, ceiling 9)',
+   description:"app/app/page.tsx's HomePage does searchParams parsing, selected-id fallback logic, and two sequential DB/API calls all inline. ESLint's complexity gate flags it (warn, not error). Not a bug -- flagged automatically 2026-09-10.",
+   pros:'', cons:'', dependencies:'', related:['app/status/engineering-practices.md','app/app/page.tsx']},
+
+  {id:'refactor-spotify-complexity', category:'tech-debt', status:'Idea', priority:'Low', effort:'S',
+   title:'Refactor getTrackMetadata (complexity 18, ceiling 9)',
+   description:"app/lib/spotify.ts's getTrackMetadata mostly scores high from safe-navigation chains (?./??) parsing Spotify's response shape, not genuinely tangled logic. Extracting a small field-parsing helper should fix most of it.",
+   pros:'', cons:'', dependencies:'', related:['app/status/engineering-practices.md','app/lib/spotify.ts']},
+
+  {id:'ci-branch-protection', category:'tech-debt', status:'Idea', priority:'Unranked', effort:'S',
+   title:'Enforce CI with branch protection',
+   description:"CI (.github/workflows/ci.yml) is live and green as of 2026-09-10 but purely informational -- nothing stops a failing change from reaching master. Requires adopting a branch+PR workflow first (GitHub can't gate a direct push on CI).",
+   pros:'', cons:'', dependencies:'', related:['docs/superpowers/plans/2026-09-10-app-quality-gates.md']},
+
+  {id:'playwright-smoke-test', category:'tech-debt', status:'Idea', priority:'Unranked', effort:'S',
+   title:'Add the Playwright home-page smoke test',
+   description:"Task 5 of the CI plan -- scoped but not built. One test: home page loads, no console error. Reuses Playwright rather than adding a second test framework, since full visual regression is a likely later need too.",
+   pros:'', cons:'', dependencies:'', related:['docs/superpowers/plans/2026-09-10-app-quality-gates.md']},
+
+  {id:'split-handoff-driftcheck', category:'tech-debt', status:'Idea', priority:'Unranked', effort:'S–M',
+   title:'Split SESSION_HANDOFF.md / DRIFT_CHECK.md by domain',
+   description:"Both currently mix app and pipeline concerns in one checklist, and SESSION_HANDOFF's 'Full handoff' re-reads the whole conversation instead of trusting already-current STATUS files -- expensive by design flaw, not necessity.",
+   pros:'', cons:'', dependencies:'', related:['docs/SESSION_HANDOFF.md','docs/DRIFT_CHECK.md']},
+
+  {id:'secret-sync-process', category:'tech-debt', status:'Idea', priority:'Unranked', effort:'S',
+   title:'A real process for syncing secrets to GitHub, without pasting them anywhere',
+   description:"Turso/CodeScene/Spotify credentials have all been pasted into chat at least once, needing rotation each time. Needed: a script the user runs themselves to push .env.local values to GitHub Actions secrets -- Claude never touches the values.",
+   pros:'', cons:'', dependencies:'', related:['docs/PENDING_ACTIONS.md','docs/DEV_WORKFLOW_GUIDE.md']},
+
+  {id:'types-node-version-mismatch', category:'tech-debt', status:'Idea', priority:'Low', effort:'XS',
+   title:'@types/node pinned to ^20 while running Node 26',
+   description:"Type-definitions/runtime version mismatch in app/package.json, not currently causing a visible problem. Dependabot may resolve this on its own (a PR bumping it is already open as of 2026-09-10).",
+   pros:'', cons:'', dependencies:'', related:['app/status/engineering-practices.md']},
+
+  {id:'package-json-type-field', category:'tech-debt', status:'Idea', priority:'Low', effort:'XS',
+   title:'app/package.json missing a "type" field',
+   description:"node --test reparses .ts test files as ES modules every run with a small performance warning, because package.json doesn't declare its module type. Cosmetic/perf only, not a correctness issue.",
+   pros:'', cons:'', dependencies:'', related:['app/status/engineering-practices.md']},
 ];
 
 // ---- Boilerplate preserved for faithful Markdown export ----

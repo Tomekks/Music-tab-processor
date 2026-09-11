@@ -12,4 +12,28 @@ The decision, explicitly: where this project's own `AGENTS.md` had grown ad hoc 
 
 **What deliberately did not change, and won't just because a skill exists:** everything in `AGENTS.md`'s "Safety & trust principles" section — ask before every commit or push, ask before deletion, never make the machine internet-reachable, explain outbound requests before making them — stays exactly as strict, because those are this specific machine's safety rules, not generic engineering process, and Superpowers has no opinion on them one way or the other. Same for everything structural to this repo specifically: the `contracts/` boundary rule, per-stage `STATUS.md` discipline, and the three-gate app/ preview-and-shipping procedure. A skill can tell you *how* to plan or test; it can't know this repo keeps audio/ML output out of git, or that a Vercel deploy needs its own explicit yes every time. Per Superpowers' own stated precedence (its `using-superpowers` skill: "User instructions... take precedence over skills"), none of this is in tension — the skill governs process, this file's rules govern this project and this machine, and where the two would ever conflict, this file wins.
 
-See also: `docs/decisions/stack-and-tooling.md` (the reliability toolkit this supersedes the process-mechanics half of) and `docs/decisions/structure-and-methodology.md` (where the walk test itself came from).
+## Two rules cherry-picked from an external source, not installed as a plugin (2026-09-10)
+
+[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills) is a single `CLAUDE.md` of four behavioral principles distilled from Andrej Karpathy's public observations on LLM coding mistakes — not written by Karpathy himself, and worth naming as third-party attribution rather than treating as official. Reviewed all four against what this repo already has: "Simplicity First" mostly duplicates the existing `simplify` skill, and "Goal-Driven Execution" mostly duplicates `superpowers:writing-plans`/`verification-before-completion` — installing the whole thing as a plugin would have added another always-on text block restating what's already enforced, the exact bloat this file's other entries exist to avoid.
+
+Two pieces were genuine, currently-missing gaps, so they were folded directly into `AGENTS.md` instead of adopting the source wholesale:
+- **Surface assumptions instead of picking silently** — nothing in this repo previously told an agent to name competing interpretations or stop and ask on an ambiguous *ordinary* task (`superpowers:brainstorming` only covers this for creative/feature work).
+- **Clean up only the orphans your own edit creates** — a precise refinement of the existing "make only the changes a task requires" rule; mention pre-existing dead code, don't delete it.
+
+## Ponytail's decision ladder cherry-picked, plugin not installed (2026-09-10)
+
+[DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — a real, actively-maintained, MIT-licensed plugin (verified via GitHub's API, not just the README: 134k+ stars, created 2026-06-12). Its hook scripts (`ponytail-activate.js`, `ponytail-runtime.js`, `ponytail-config.js`, `ponytail-mode-tracker.js`) were read directly before any decision: no network calls, no telemetry, no subprocess execution — they write only to their own local state (`~/.config/ponytail/`, a flag file under `~/.claude`).
+
+Not installed anyway: its delivery mechanism is three hooks firing on every session start, every subagent start, and every prompt submitted — permanent, always-on overhead, which cuts directly against the token-economy goal this file's other entries exist to serve. Its actual content was worth keeping — `AGENTS.md` points here rather than repeating it inline (that repetition was itself a small bloat regression, caught and fixed 2026-09-10). **The ladder, in full — work down it and stop at the first yes:**
+
+1. Does this need to exist at all?
+2. Already in this codebase?
+3. Does the standard library do it?
+4. A native platform feature?
+5. An already-installed dependency?
+6. Can it be one line?
+7. Only then: the minimum new code that works — no new abstraction, dependency, or "flexibility" that wasn't asked for.
+
+Explicitly out of scope for what this addition solves: it improves *new* code (less bloat, fewer dependencies), not *runtime performance* (audio pipeline speed) and not verification of *already-written* code — those are separate problems (CodeScene, CI, and test-suite runs are the right tools for those, not this).
+
+See also: `docs/decisions/stack-and-tooling.md` (the reliability toolkit this supersedes the process-mechanics half of), `docs/decisions/structure-and-methodology.md` (where the walk test itself came from), and `docs/AGENT_TOOLING_LOG.md` (the *what's installed, when* companion to this file's *why* — every plugin/skill added to the coding agent's environment, not just Superpowers).

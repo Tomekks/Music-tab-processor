@@ -23,6 +23,7 @@ docs/
   codescene/                — CodeScene MCP audit: STATUS.md (findings/decisions), PROCEDURE.md (how to re-run it)
   DECISIONS.md             — index → docs/decisions/
   decisions/
+    project-purpose-and-scope.md
     hosting-and-deployment.md
     pipeline-tool-choices.md
     backlog-and-scope.md
@@ -40,7 +41,11 @@ docs/
   DOCUMENTATION_PRINCIPLES.md — the standing rules this map itself follows
   DRIFT_CHECK.md            — the audit procedure (read in full, a checklist)
   DRIFT_LOG.md               — history of every audit run (skim the tail)
+  AGENT_TOOLING_LOG.md      — plugins/skills installed into the coding agent (skim the tail)
   SESSION_HANDOFF.md         — how to pause/switch AI sessions cleanly
+  DEV_WORKFLOW_GUIDE.md      — plain-language how-to for verify.sh + the pre-commit hook
+  DEVELOPMENT_PROCESS.md     — the full change process end to end, LIVE vs PLANNED
+  superpowers/plans/         — implementation plans written via superpowers:writing-plans
   PENDING_ACTIONS.md         — what only a human can actually go do
   specs/                     — precise, mechanical task specs for AI agents
 
@@ -51,6 +56,7 @@ app/
     database-and-analytics.md
     song-views.md
     design-system.md
+    engineering-practices.md
   components/*.RULES.md     — how a specific component renders (Fretboard, Sheet)
 
 pipeline/

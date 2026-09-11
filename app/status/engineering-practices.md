@@ -26,10 +26,15 @@ The rule is set to `warn` rather than `error` specifically because of these — 
 
 **`.github/workflows/ci.yml`** — runs `npm run verify:full` on every push touching `app/**` or `.nvmrc`. First real run: `34551557759`, green. Getting there took 4 real fixes, all logged in the plan file (`docs/superpowers/plans/2026-09-10-app-quality-gates.md`) — worth reading once, since the pattern (things built and tested locally, never actually committed) bit twice and is worth watching for elsewhere: `.nvmrc`, `app/scripts/verify.sh`, `app/package.json`'s new scripts, and `.githooks/pre-commit` had all been sitting local-only since earlier in the session, invisible because they worked fine locally regardless of git status.
 
+## Done (2026-09-10, later still)
+
+- **Playwright smoke test** — `app/e2e/home.spec.ts`, one test (home page loads, no console error). Run via `npm run test:e2e`. Not yet folded into `verify.sh`/CI — a deliberate next step, not an oversight, once there's more than one test.
+- **PostHog exception tracking** — `capture_exceptions: true` added to `PostHogProvider.tsx`. Captures unhandled JS errors only; autocapture and session recording remain off, unchanged.
+- **`DRIFT_CHECK.md`** — restructured into cost tiers, split by domain; see `docs/DRIFT_CHECK.md` directly.
+- **Branch protection** — GitHub ruleset `Protect master` (id `22866141`), active, requires the `verify` check and a PR before merging. Confirmed live via `gh api repos/.../rulesets`. **This changed the workflow**: `app/` work now goes through a branch + PR, not a direct push to `master`.
+
 ## Not done yet — what "standard" still needs (ranked)
 
-- **Branch protection** requiring that CI check before merge — also requires deciding to adopt a PR-based workflow instead of direct pushes to `master`; not implemented until that's agreed separately.
-- **Component test coverage** — `npm test` only covers `lib/**/*.test.ts` (pure logic). Zero coverage on `FretboardDiagram`, `SheetDiagram`, or any page. Scoped as a Playwright smoke test (one test, home page loads without a console error) rather than a new test framework — see the plan.
 - **PR template** — not created. Lowest-priority item; a nudge, not a gate.
 - **A fresh CodeScene audit scoped to `app/`** — last run 2026-09-09 against the whole repo, now stale (see finding above). Worth re-running once the two flagged functions are fixed, to confirm nothing else drifted.
 
