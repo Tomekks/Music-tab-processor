@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "app/**"
+      - ".nvmrc"
       - ".github/workflows/ci.yml"
 
 jobs:
