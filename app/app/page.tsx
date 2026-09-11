@@ -36,10 +36,24 @@ export default async function HomePage({
   // Spotify credentials configured, so this is a no-op today. See app/lib/spotify.ts.
   const spotify = fullSong ? await getTrackMetadata(fullSong.title, fullSong.artist) : null;
 
+  // Same lookup, once per row, for the sidebar thumbnails -- parallelized since
+  // each is an independent network call. No-op (all nulls, no requests) with
+  // no Spotify credentials configured, same as the header lookup above.
+  const listWithArt = await Promise.all(
+    list.map(async (song) => ({ ...song, coverArtUrl: (await getTrackMetadata(song.title, song.artist))?.coverArtUrl })),
+  );
+
   return (
     <StudioShell
-      sidebar={<SongListSidebar songs={list} selectedId={selectedId} />}
-      detail={<SongDetailPane song={fullSong ?? null} coverArtUrl={spotify?.coverArtUrl} spotifyArtist={spotify?.artist} />}
+      sidebar={<SongListSidebar songs={listWithArt} selectedId={selectedId} />}
+      detail={
+        <SongDetailPane
+          song={fullSong ?? null}
+          coverArtUrl={spotify?.coverArtUrl}
+          spotifyArtist={spotify?.artist}
+          spotifyUrl={spotify?.url}
+        />
+      }
     />
   );
 }

@@ -11,14 +11,31 @@ export function MetronomeControls({
   onBpmChange,
   isPlaying,
   onToggle,
+  onReset,
+  soundEnabled,
+  onToggleSound,
 }: {
   bpm: number;
   onBpmChange: (bpm: number) => void;
   isPlaying: boolean;
   onToggle: () => void;
+  onReset: () => void;
+  // Note-accurate playback sound (2026-09-10, beta) -- off by default since
+  // it's new; see hooks/useNoteSound.ts for what it actually plays.
+  soundEnabled: boolean;
+  onToggleSound: () => void;
 }) {
   return (
     <div className="flex items-center gap-4 mb-6">
+      <button
+        onClick={onReset}
+        aria-label="Reset to start"
+        title="Reset to start"
+        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+      >
+        ⏮
+      </button>
+
       <button
         onClick={onToggle}
         aria-label={isPlaying ? "Pause" : "Play"}
@@ -42,6 +59,17 @@ export function MetronomeControls({
         />
         bpm
       </label>
+
+      <button
+        onClick={onToggleSound}
+        aria-pressed={soundEnabled}
+        title="Play the real pitch of each note while the metronome runs (beta)"
+        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${
+          soundEnabled ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+        }`}
+      >
+        🔊 Note sound (beta)
+      </button>
     </div>
   );
 }

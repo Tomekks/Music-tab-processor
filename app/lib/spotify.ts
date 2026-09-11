@@ -43,13 +43,18 @@ export type SpotifyTrackMetadata = {
   coverArtUrl: string;
   durationMs: number;
   artist: string;
+  /** The track's open.spotify.com page, or null if Spotify didn't return one
+   *  (rare, but the field is technically optional on their side). Callers
+   *  treat this the same as a missing artist/cover art -- degrade to plain
+   *  text, never a broken link. */
+  url: string | null;
 };
 
 /**
  * Looks up a track by title (+ optional artist, which sharpens the search)
- * and returns its cover art, duration, and canonical artist name -- or null
- * if no token is configured, the search finds nothing, or the request fails
- * for any reason. Never throws.
+ * and returns its cover art, duration, canonical artist name, and Spotify
+ * page url -- or null if no token is configured, the search finds nothing,
+ * or the request fails for any reason. Never throws.
  */
 export async function getTrackMetadata(title: string, artist: string | null): Promise<SpotifyTrackMetadata | null> {
   const token = await getAccessToken();
@@ -74,5 +79,6 @@ export async function getTrackMetadata(title: string, artist: string | null): Pr
     coverArtUrl: track.album?.images?.[0]?.url ?? "",
     durationMs: track.duration_ms ?? 0,
     artist: track.artists?.[0]?.name ?? artist ?? "",
+    url: track.external_urls?.spotify ?? null,
   };
 }
