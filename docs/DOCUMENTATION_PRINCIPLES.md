@@ -33,7 +33,7 @@ Every file exists to be read by an AI (or human) trying to reach one specific fa
 - **Concise, but complete for what the file claims to cover.** Say everything the file's own scope promises. If something is deliberately out of scope, say so explicitly and point to where it lives (`"X isn't covered here — see Y"`) — a silent gap costs more tokens than a stated pointer, because the reader has to discover it's missing before they can go looking elsewhere.
 - **No padding** — a sentence that adds no fact, reason, or pointer is a sentence every future reader pays to skip. Applies to code comments and docstrings too, not just docs.
 
-**Index entries stay to roughly one or two sentences** (already the rule above) — as a concrete check: if an index's entries average past ~100 words, that entry needs trimming even if the whole file is nowhere near the split threshold below. `docs/DECISIONS.md` is already past this (~140 words/entry, found 2026-09-09) — tracked as part of the "audit `DOCUMENTATION_PRINCIPLES.md`" backlog item, not fixed here.
+**Index entries stay to roughly one or two sentences** (already the rule above) — as a concrete check: if an index's entries average past ~100 words, that entry needs trimming even if the whole file is nowhere near the split threshold below. `docs/DECISIONS.md` hit this in practice (2026-09-09) not because its entries were individually too long, but because ~600 words of actual reasoning (the project's core reframe, local-only scope rules) sat directly in the index instead of being split out like everything else — fixed 2026-09-10 by moving that content to `docs/decisions/project-purpose-and-scope.md`.
 
 ## When a file should become an index + folder
 
