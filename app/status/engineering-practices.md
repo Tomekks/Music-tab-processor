@@ -22,9 +22,12 @@ Two functions already exceed it, built after the 2026-09-09 CodeScene baseline t
 
 The rule is set to `warn` rather than `error` specifically because of these — refactoring them is real work, not part of "add a lint rule." **Next step, not yet started:** extract the branchy logic in each into smaller named functions, then promote both rules to `error` once they're under the ceiling.
 
+## Done (2026-09-10, later still) — CI is live and green
+
+**`.github/workflows/ci.yml`** — runs `npm run verify:full` on every push touching `app/**` or `.nvmrc`. First real run: `34551557759`, green. Getting there took 4 real fixes, all logged in the plan file (`docs/superpowers/plans/2026-09-10-app-quality-gates.md`) — worth reading once, since the pattern (things built and tested locally, never actually committed) bit twice and is worth watching for elsewhere: `.nvmrc`, `app/scripts/verify.sh`, `app/package.json`'s new scripts, and `.githooks/pre-commit` had all been sitting local-only since earlier in the session, invisible because they worked fine locally regardless of git status.
+
 ## Not done yet — what "standard" still needs (ranked)
 
-- **CI** (`.github/workflows`, `app` job only) — runs `npm run verify:full` on every push. Blocked on a human step: `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` need to exist as GitHub Actions secrets first (confirmed empirically: the build hard-fails without them).
 - **Branch protection** requiring that CI check before merge — also requires deciding to adopt a PR-based workflow instead of direct pushes to `master`; not implemented until that's agreed separately.
 - **Component test coverage** — `npm test` only covers `lib/**/*.test.ts` (pure logic). Zero coverage on `FretboardDiagram`, `SheetDiagram`, or any page. Scoped as a Playwright smoke test (one test, home page loads without a console error) rather than a new test framework — see the plan.
 - **PR template** — not created. Lowest-priority item; a nudge, not a gate.

@@ -154,14 +154,12 @@ jobs:
 
 - [x] **Step 2: Confirm the secrets exist before pushing** — user added both via GitHub's UI; `gh secret list` confirmed `TURSO_AUTH_TOKEN` and `TURSO_DATABASE_URL` both present (names only, values never read).
 
-- [ ] **Step 3: Commit and push, then check the run**
-
-```bash
-git add .github/workflows/ci.yml
-git commit -m "ci: add app verify workflow"
-git push
-```
-Then: `gh run watch` (or check the Actions tab) — expect a green `verify` check within a few minutes. If it fails, read the log before assuming the workflow file is wrong — the two likeliest causes are a missing secret or an environment difference from your Mac (e.g. a case-sensitive import path that macOS's filesystem hides).
+- [x] **Step 3: Commit and push, then check the run** — took 4 attempts, not 1, all real findings rather than flaky CI:
+  1. First push rejected outright: git's OAuth token lacked the `workflow` scope needed to touch `.github/workflows/*`. Fixed via `gh auth refresh -s workflow` (user completed the device-code approval).
+  2. First actual run failed: `.nvmrc` referenced by the workflow had never been committed, despite existing locally since Tier A. Committed it.
+  3. That push didn't even trigger a run: the path filter only watched `app/**`, not `.nvmrc`. Widened the filter.
+  4. Next run failed: `npm run verify:full`, `app/scripts/verify.sh`, and the `engines`/`typecheck`/`verify` scripts in `app/package.json` had all been written and tested locally in an earlier session turn but never committed either — same root cause as #2, just a bigger blind spot. Committed both, plus `.githooks/pre-commit` (same gap, not blocking CI but a real risk left unshared).
+  Run `34551557759`: **green.** `verify:full` passed; the two known complexity warnings (`HomePage`, `getTrackMetadata`) surfaced correctly as warnings, not failures.
 
 ---
 
