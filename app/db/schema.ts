@@ -19,4 +19,13 @@ export const songs = sqliteTable("songs", {
     .$type<{ string: number; fret: number; startTimeSec: number; durationSec: number }[]>()
     .notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  // Spotify metadata (2026-09-18), fetched once at publish time
+  // (pipeline/s05_publish/publish.py) instead of live on every page request --
+  // see docs/superpowers/plans/2026-09-18-spotify-lookup-at-publish-time.md
+  // for why. All nullable: absent with no Spotify credentials configured, or
+  // if Spotify had no match for this song, same degrade-gracefully rule as
+  // the old live-lookup had.
+  coverArtUrl: text("cover_art_url"),
+  spotifyArtist: text("spotify_artist"),
+  spotifyUrl: text("spotify_url"),
 });
