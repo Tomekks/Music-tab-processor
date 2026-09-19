@@ -82,11 +82,18 @@ app/
       api/design-system/tokens/route.ts   # write/reset API (dev-only, see §5)
 ```
 
-Real, independently-versioned workspace package from day one (not deferred to extraction time),
-per explicit preference: this will be reused by the control panel project next, and by a fully
-different tech stack after that. Version stays unpublished/private (`"private": true`) until an
-actual second consumer needs it installed from somewhere — no semver discipline to invent for a
-package with one consumer.
+The workspace-package *boundary* exists from day one (not deferred to extraction time), per
+explicit preference: this will be reused by the control panel project next, and by a fully
+different tech stack after that. Versioning is a separate question and stays deferred:
+`"private": true`, no semver discipline invented for a package that has exactly one consumer.
+That gets solved when a second real consumer exists and actually needs to install it from
+somewhere.
+
+**Active brand — the one seam multi-brand needs even with one brand.** Which brand is "live" is
+named in `packages/design-system/active-brand.json` (`{ "brand": "default" }`), read by both
+`build-tokens.mjs` and the API route. Phase 0 ships this file with a single value and never
+changes it; the seam exists so Phase 1 (or a second brand) is "edit one field," not "retrofit a
+selection mechanism that was never designed."
 
 **Discipline to hold going forward:** nothing gets added to this package "for future
 flexibility" that isn't serving `app/` or the control panel today. Extraction to a second
@@ -95,14 +102,17 @@ problem when it's real, not speculatively.
 
 ## 3. Token schema — three-layer, brand-wrapped
 
-Three-layer structure (primitive → semantic → component), matching both the W3C Design Tokens
-Community Group format (what Figma token plugins expect) and Material Design 3's independently
-validated `ref`/`sys`/`comp` model. A brand wrapper means adding a second brand later is adding
-a sibling folder under `brands/`, not restructuring anything that reads this file.
+Three-layer structure (primitive → semantic → component), closely following the shape the W3C
+Design Tokens Community Group (DTCG) format uses (`$value`/`$type`, `{path}` references) — the
+format the **Tokens Studio for Figma** plugin's importer expects (§7) — and independently
+validated by Material Design 3's `ref`/`sys`/`comp` model. Note: DTCG itself is still a draft
+spec with no single canonical schema URI to point at, so `tokens.json` doesn't assert a
+`$schema` field — the shape is what matters for Tokens Studio compatibility, not a resolvable
+schema link. A brand wrapper means adding a second brand later is adding a sibling folder under
+`brands/`, not restructuring anything that reads this file.
 
 ```json
 {
-  "$schema": "https://design-tokens.org/schema.json",
   "primitive": {
     "color": {
       "blue600": { "$value": "#2563eb", "$type": "color" },
@@ -211,10 +221,16 @@ text/UI components) — so these aren't reinvented per-component later.
 
 `packages/design-system/src/build-tokens.mjs`:
 
-1. Reads the active brand's `tokens.json`.
+1. Reads `active-brand.json`, then that brand's `tokens.json`.
 2. Resolves `{path.to.token}` references recursively (algorithm adapted from the
    `ui-ux-pro-max` design-system skill's `generate-tokens.cjs` `resolveReference` — reimplemented
-   directly, not depended on).
+   directly, not depended on). A value that doesn't start with `{` passes through unresolved —
+   this matters for `typography.sans`/`typography.mono`, whose `$value` is
+   `var(--font-geist-sans)` (pointing at a `next/font`-generated CSS variable, not another design
+   token): the resolver must not mistake that for a reference syntax error, it's just a raw CSS
+   value. The resolver also has to detect a reference cycle (`{a}` pointing to `{b}` pointing
+   back to `{a}`) and throw a clear error — not recurse until the stack overflows (see Testing,
+   below).
 3. Emits CSS matching **this app's existing conventions**, not a generic template: a `:root`
    block with all resolved custom properties, a `@theme inline` block promoting only
    `--color-*` keys into Tailwind's utility namespace (mirroring the existing comment in
@@ -226,19 +242,57 @@ text/UI components) — so these aren't reinvented per-component later.
    and hot-reloads. The package owns the *logic* (portable); the app owns *where the output
    lands* (app-specific, gitignored, regenerated on every build).
 
-`app/app/globals.css` gets one added line: `@import "./design-tokens.generated.css";`.
-
-The build also has to run once before the editor ever gets a chance to trigger it — on a fresh
-checkout, after `npm install`, or after pulling a teammate's edit to `tokens.json` directly.
-`app/package.json`'s `dev` script runs `build-tokens.mjs` once before starting `next dev` (a
-`predev` script, or `dev` itself changed to `node ../packages/design-system/src/build-tokens.mjs
-&& next dev`), so `design-tokens.generated.css` always exists and is current before the app
-needs it — not only after someone has used the editor at least once.
+**The build has to run before *anything* that might need the generated CSS to exist — not just
+before `next dev`.** `design-tokens.generated.css` is gitignored, so on a fresh checkout, after
+`npm install`, after pulling a teammate's edit to `tokens.json` directly, or on a CI runner, it
+doesn't exist until something builds it. `app/package.json` gets one script,
+`"tokens:build": "node ../packages/design-system/src/build-tokens.mjs"`, and **two** npm
+lifecycle hooks call it — `"predev": "npm run tokens:build"` and
+`"prebuild": "npm run tokens:build"`. npm runs `pre<script>` automatically before `<script>`, so
+both `next dev` and `next build` always have current CSS before they start. This matters
+concretely for `verify.sh --full` (`npm run verify:full`, used by CI): it runs `npm run build`,
+which without `prebuild` would fail on day one with a missing `@import` target on a clean
+checkout — this is the exact scenario `prebuild` exists to close.
 
 Explicitly not adopted from the Tailwind-integration reference material: storing colors as
 space-separated HSL triplets for opacity-modifier support. That's a Tailwind v3 workaround; this
 app is on Tailwind v4 (`@theme inline`), which resolves `bg-accent/50`-style opacity modifiers
 via `color-mix()` regardless of the underlying color format. Not needed.
+
+### 5.1.1 Cutover — replacing, not just adding
+
+Adding the `@import` line is not the whole change. `globals.css` currently defines the same
+tokens by hand (`--background`, `--foreground`, `--color-accent`, `--color-border`,
+`--color-surface*`, the `[data-theme="light"]`/`[data-theme="dark"]` blocks, and their
+`prefers-color-scheme: dark` fallback). Landing the `@import` *alongside* those hand-rolled
+definitions — instead of *replacing* them in the same change — produces duplicate definitions
+with an order-dependent winner, silently. The cutover is one atomic change: add the `@import`,
+delete every hand-rolled token definition it now supersedes, keep only what genuinely isn't a
+token (the `body { font-family: ... }` fallback stays, since it already reads the token
+variables rather than duplicating them).
+
+This needs a manual visual check before it's considered done — `npm run stage`, look at the main
+app and `/studio` (both existing consumers of these tokens), confirm nothing shifted. Deliberately
+not proposing automated screenshot/visual-regression testing here: `docs/WEB_APP_WORKFLOW.md` §6
+already defers that repo-wide as future infrastructure, and this cutover doesn't need to be the
+change that introduces it. A manual `npm run stage` check is exactly what that workflow's
+execution loop (§5, step 8) already prescribes for changes like this one.
+
+### 5.1.2 Testing
+
+Two tests, not a suite — each one guards a specific failure mode that would otherwise be
+invisible until something broke:
+
+- **Resolver cycle detection.** `{a}` → `{b}` → `{a}` must throw a clear error, not recurse
+  until the process crashes. A hand-edited `tokens.json` can create this by accident.
+- **Path parity between `tokens.json` and `tokens.default.json`.** Same set of token paths in
+  both files. This is what makes per-field reset (§5.2) safe — if a new token lands in one file
+  and not the other, the revert control for it silently breaks.
+
+Both live in `packages/design-system/`, using the test convention already in this repo (Node's
+built-in `node --test`, matching `app/package.json`'s existing `"test"` script — no new
+framework). `verify.sh` gets one added line running them, so they're part of the gate that
+already blocks a broken `app/` change, not written once and forgotten.
 
 ### 5.2 Visual editor
 
@@ -246,10 +300,24 @@ via `color-mix()` regardless of the underlying color format. Not needed.
 design system's own components (§6) — the editor is itself the first real consumer of the
 package it edits.
 
-**Reachability:** dev-only. Both the page and the API route are gated behind
-`process.env.NODE_ENV !== "production"`. `npm run stage` (a production build) shows the app
-styled with whatever was last saved, but the editor and its disk-writing endpoint are not
-reachable there — the write path can never exist in anything resembling a real deployment.
+**Schema-driven, not hand-built per field.** The editor renders its form by walking the active
+brand's `tokens.json` and dispatching on each leaf's `$type` (`color` → `ColorField`,
+`dimension`/`number` → `Slider`, anything else → a plain read-only text field as a safe
+fallback), grouped by top-level section (`color`, `radius`, `space`, `typography`, `state`, then
+each `component.<name>` block). This costs a little more than hardcoding four fields by hand for
+Phase 0, but it's what makes "extendable" true for the editor, not just the schema: a `Button`
+component's `component.button` block added in Phase 1 gets editable fields automatically, with
+zero editor code changes. The alternative (hand-built fields) would mean every future component
+needs matching editor code — quietly coupling "extendable" to a Layer 1 edit every time.
+
+**Reachability:** dev-only, and the mechanism matters because `next build` attempts to
+prerender every route by default. The page calls `notFound()` (from `next/navigation`) when
+`process.env.NODE_ENV === "production"`; the API route checks the same condition first and
+returns a 404 before touching anything else. Both export `const dynamic = "force-dynamic"` so
+Next treats them as request-time, not build-time-prerendered — the gate is evaluated when a
+request actually comes in, not baked in once at build time. `npm run stage` (a production build)
+shows the app styled with whatever was last saved, but the editor and its disk-writing endpoint
+return 404 there — the write path can never exist in anything resembling a real deployment.
 
 **Editing model — per-token, per-brand, never whole-file:**
 
