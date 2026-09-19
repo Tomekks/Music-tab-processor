@@ -3,9 +3,9 @@ import { cn } from "@/lib/cn";
 import type { songs } from "@/db/schema";
 
 export type SongListItem = Pick<typeof songs.$inferSelect, "id" | "title" | "artist" | "tempoBpm"> & {
-  // Real Spotify cover art, same lookup as the selected song's header -- see
-  // app/page.tsx and app/lib/spotify.ts. Undefined/empty both mean "no art
-  // found," same degrade-gracefully rule as everywhere else Spotify data is used.
+  // Real Spotify cover art, fetched once at publish time (2026-09-18) and
+  // stored on the song row -- see pipeline/s05_publish/publish.py. Undefined/
+  // empty both mean "no art found," same degrade-gracefully rule as before.
   coverArtUrl?: string;
   // Fallback only -- the DB's own artist column wins when it has one, same
   // rule as SongDetailPane's displayArtist. Backfills the "missing artist"
