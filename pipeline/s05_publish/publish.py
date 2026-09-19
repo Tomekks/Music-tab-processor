@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 import libsql_client
+import requests
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,6 +28,52 @@ def _load_env():
         key, _, value = line.partition("=")
         env[key.strip()] = value.strip()
     return env
+
+
+def _get_spotify_track_metadata(title, artist, env):
+    """Client Credentials lookup, same logic as app/lib/spotify.ts's
+    getTrackMetadata -- ported to Python since this now runs at publish
+    time instead of live on every page request. Returns
+    (cover_art_url, spotify_artist, spotify_url), all None if no
+    credentials are configured, nothing matched, or any request fails --
+    never raises, same degrade-gracefully rule as the TS version had."""
+    client_id = env.get("SPOTIFY_CLIENT_ID")
+    client_secret = env.get("SPOTIFY_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return None, None, None
+
+    try:
+        token_res = requests.post(
+            "https://accounts.spotify.com/api/token",
+            auth=(client_id, client_secret),
+            data={"grant_type": "client_credentials"},
+            timeout=10,
+        )
+        if not token_res.ok:
+            return None, None, None
+        token = token_res.json()["access_token"]
+
+        query = f"track:{title} artist:{artist}" if artist else title
+        search_res = requests.get(
+            "https://api.spotify.com/v1/search",
+            params={"type": "track", "limit": 1, "q": query},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        if not search_res.ok:
+            return None, None, None
+        items = search_res.json().get("tracks", {}).get("items", [])
+        if not items:
+            return None, None, None
+        track = items[0]
+
+        images = track.get("album", {}).get("images", [])
+        cover_art_url = images[0]["url"] if images else None
+        spotify_artist = track.get("artists", [{}])[0].get("name") or artist
+        spotify_url = track.get("external_urls", {}).get("spotify")
+        return cover_art_url, spotify_artist, spotify_url
+    except requests.RequestException:
+        return None, None, None
 
 
 def publish(run_dir):
@@ -51,6 +98,10 @@ def publish(run_dir):
     run_id = metadata.get("runId", run_dir.name)
 
     env = _load_env()
+    cover_art_url, spotify_artist, spotify_url = _get_spotify_track_metadata(
+        tab_data["title"], tab_data.get("artist"), env  # artist from Task 0's ingest/tab capture, may still be None for older runs
+    )
+
     client = libsql_client.create_client_sync(
         url=env["TURSO_DATABASE_URL"].replace("libsql://", "https://"),
         auth_token=env["TURSO_AUTH_TOKEN"],
@@ -58,20 +109,24 @@ def publish(run_dir):
     try:
         client.execute(
             """
-            INSERT INTO songs (id, title, artist, tempo_bpm, tuning, notes, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO songs (id, title, artist, tempo_bpm, tuning, notes, created_at, cover_art_url, spotify_artist, spotify_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title=excluded.title, artist=excluded.artist, tempo_bpm=excluded.tempo_bpm,
-                tuning=excluded.tuning, notes=excluded.notes
+                tuning=excluded.tuning, notes=excluded.notes, cover_art_url=excluded.cover_art_url,
+                spotify_artist=excluded.spotify_artist, spotify_url=excluded.spotify_url
             """,
             [
                 run_id,
                 tab_data["title"],
-                None,  # artist -- not captured anywhere in the pipeline yet
+                tab_data.get("artist"),  # from Task 0's ingest/tab capture, may still be None for older runs
                 tab_data["tempoBpm"],
                 json.dumps(tab_data["tuning"]),
                 json.dumps(tab_data["notes"]),
                 int(time.time()),
+                cover_art_url,
+                spotify_artist,
+                spotify_url,
             ],
         )
     finally:
