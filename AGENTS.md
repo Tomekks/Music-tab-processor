@@ -2,6 +2,8 @@
 
 Read `docs/GUIDE.md` and `docs/ARCHITECTURE.md` before touching code. This file is the rules; those are the map.
 
+**Working in `app/`, or on the Turso schema?** Read `docs/WEB_APP_WORKFLOW.md` instead of the Superpowers-driven process below — it replaces that process for web-app work specifically (see `docs/superpowers/specs/2026-09-19-web-app-workflow-design.md` for why). The "Safety & trust principles" section below still applies in full regardless of which process governs the task.
+
 ## Process: driven by the Superpowers plugin, not ad hoc habit
 
 This repo's coding agent runs the [Superpowers](https://github.com/obra/superpowers) plugin (installed 2026-09-10, user-wide). Its skills — `brainstorming`, `writing-plans`, `test-driven-development`, `systematic-debugging`, `requesting-code-review`/`receiving-code-review`, `using-git-worktrees`, `finishing-a-development-branch`, `verification-before-completion` — are now the default source for *how* to plan, test, debug, review, and verify work, superseding this project's own earlier, looser versions of the same practices. See `docs/decisions/agent-workflow-tooling.md` for the full reasoning on what changed below and why.
