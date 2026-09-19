@@ -67,6 +67,7 @@ app/
       resolve.test.mjs                              # Task 2
       build-tokens.mjs                              # Task 2
       tokens-validation.test.mjs                     # Task 2 (path parity + shape validation)
+      contrast.test.mjs                              # Task 2 (WCAG AA on the on-color pairs)
       components/
         ColorField.tsx                              # Task 4
         Slider.tsx                                  # Task 4
@@ -99,10 +100,23 @@ values), §4 (per-brand `DESIGN.md`).
   `"private": true`, no dependencies yet (React added in Task 4)
 - Create: `app/packages/design-system/active-brand.json` — `{ "brand": "default" }`
 - Create: `app/packages/design-system/brands/default/tokens.json` — full three-layer schema per
-  spec §3's example, with values read directly from the **current** `app/app/globals.css`
-  (`--background: #ffffff` / `#0a0a0a` dark, `--color-accent: #ae97f7`, `--color-border:
-  #e6dfd8`, the `--color-surface*` family for both `[data-theme="light"]` and
-  `[data-theme="dark"]`, `--radius: 12px`, `--space-1..8`, `--sidebar-width: 240px`), plus the
+  spec §3's example, with values read directly from the **current** `app/app/globals.css`.
+  **Source the "live" values from `[data-theme="dark"]`, not the `@media
+  (prefers-color-scheme: dark)` block or bare `:root`.** Verified by grepping the app: `[data-theme="dark"]` is hardcoded on `StudioShell` (`app/app/_components/StudioShell.tsx`), which wraps
+  `app/app/page.tsx` — the entire shipped app (`/studio` is just a redirect to `/`, not a
+  separate surface, per `app/app/studio/page.tsx`). So `[data-theme="dark"]`'s values
+  (`--background: #1c1d1f`, etc.) are what's actually rendered everywhere today; the `@media`
+  block's `#0a0a0a` and bare `:root`'s light defaults are not reachable through any current
+  route. Still capture `[data-theme="light"]`'s values too (real code, just unreached — kept per
+  `globals.css`'s own comment "in case a manual light toggle is wanted later") as the schema's
+  light set; do not use the `@media` block's values for anything.
+  **Preserve `var()` indirections as references, don't flatten them.** `globals.css` defines
+  `--color-surface: var(--background)` — a relationship, not an independent value. Write this as
+  `"surface": { "$value": "{semantic.color.background}", "$type": "color" }`, not as a copied
+  literal hex. Apply the same rule anywhere else a `var(--x)` points at another token-backed
+  property, not just this one case.
+  Capture `--color-accent: #ae97f7`, `--color-border: #e6dfd8`, the rest of the
+  `--color-surface*` family, `--radius: 12px`, `--space-1..8`, `--sidebar-width: 240px`, plus the
   one new token this design adds: `semantic.color.onAccent` and the three
   `semantic.state.*Opacity` values (spec §3's "Color roles adopted from Material Design 3").
   `component: {}` (empty — Task 4 populates it).
@@ -136,7 +150,9 @@ ask rather than inventing a plausible-looking default.
 
 ## Task 2: Reference resolver, build script, and tests
 
-**Implements:** spec §5.1 (points 1–3), §5.1.2 (all three tests).
+**Implements:** spec §5.1 (points 1–3), §5.1.2 (the three specced tests), plus a fourth test
+(contrast ratios) added during plan review to mechanically enforce the WCAG minimums Task 1's
+`DESIGN.md` states — not in the original spec, added here deliberately.
 
 **Files:**
 - Create: `app/packages/design-system/src/resolve.mjs` — exports a function that takes a token
@@ -154,11 +170,23 @@ ask rather than inventing a plausible-looking default.
   property, a `@theme inline` block promoting only `--color-*` keys, and
   `[data-theme="dark"]`/`[data-theme="light"]` override blocks from `tokens.json`'s `dark` key —
   matching the app's existing attribute-based theming, not a `.dark`-class convention.
-- Create: `app/packages/design-system/tokens-validation.test.mjs` — two checks (spec §5.1.2,
-  tests 2–3): every token path present in `tokens.json` is also present in `tokens.default.json`
-  and vice versa (and the reverse doesn't hold either way); every leaf across both files has both
-  `$value` and `$type`, and `$type` is one of `color` / `dimension` / `number` / `fontFamily`.
-- Modify: `app/packages/design-system/package.json` — add `"test": "node --test src/**/*.test.mjs"`.
+- Create: `app/packages/design-system/src/tokens-validation.test.mjs` — **note: `src/`, not the
+  package root** — two checks (spec §5.1.2, tests 2–3): every token path present in
+  `tokens.json` is also present in `tokens.default.json` and vice versa (and the reverse doesn't
+  hold either way); every leaf across both files has both `$value` and `$type`, and `$type` is
+  one of `color` / `dimension` / `number` / `fontFamily`.
+- Create: `app/packages/design-system/src/contrast.test.mjs` — a small WCAG relative-luminance/
+  contrast-ratio check (standard sRGB formula, no dependency needed) asserting every on-color
+  pair in `tokens.json` (`accent`/`onAccent`, `surface`/`surfaceText`,
+  `surfaceActive`/`surfaceActiveText`, and each light/dark variant) meets the minimums `DESIGN.md`
+  states in Task 1: 4.5:1 for text-sized pairs, 3:1 for large-text/UI-component pairs. Turns the
+  brand doc's stated minimums into an enforced gate, not just prose.
+- Modify: `app/packages/design-system/package.json` — add `"test": "node --test src/"`. Node's
+  built-in test runner recursively discovers `*.test.mjs` files under a directory argument on its
+  own — deliberately **not** a shell glob pattern like `src/**/*.test.mjs`, which npm runs through
+  `sh`: `sh` has no globstar support, so `**` silently degrades to matching one directory level
+  only, and a test file anywhere that pattern doesn't reach would never run and never report a
+  failure for not running. Pointing at the directory sidesteps the whole class of bug.
 - Modify: `app/scripts/verify.sh` — add a line running `npm test --workspace
   @guitar-tabs/design-system` (or `packages/design-system`, whichever npm workspace syntax
   resolves correctly from `app/` — verify locally) after the existing unit-test step.
@@ -170,7 +198,9 @@ ask rather than inventing a plausible-looking default.
   returns the generated CSS as a string — Task 3 is what calls it and writes the result to disk.
 
 **Acceptance criteria:**
-- `npm test --workspace @guitar-tabs/design-system` passes (all three tests green).
+- `npm test --workspace @guitar-tabs/design-system` reports **4 test files, all passing** —
+  check the actual count in the output, not just a zero exit code. A test that silently never
+  runs (the exact bug this task's own build fixes) still exits 0.
 - `npm run verify` passes with the new test step included.
 
 **Stop-conditions:** if resolving a value produces something that doesn't look like valid CSS
@@ -197,9 +227,13 @@ for exactly that reason.
 - Modify: `app/app/globals.css` — add `@import "./design-tokens.generated.css";`, and **in the
   same change**, delete every hand-rolled token definition it now supersedes: the `--background`
   /`--foreground` defaults, the `--color-accent`/`--color-border`/`--color-surface*` family, the
-  `@theme inline` block's color promotions, the `prefers-color-scheme: dark` override, and the
-  `[data-theme="light"]`/`[data-theme="dark"]` blocks. Keep anything that isn't a token — per the
-  spec, that's only the `body { font-family: ... }` rule, which already reads token variables
+  `@theme inline` block's color promotions, and the `[data-theme="light"]`/`[data-theme="dark"]`
+  blocks. **Also delete the `@media (prefers-color-scheme: dark)` override** — confirmed
+  unreachable dead code, not assumed: `data-theme` is set exactly once in the app
+  (`StudioShell.tsx`, hardcoded to `"dark"`), and `StudioShell` wraps the entire shipped app
+  (`app/app/page.tsx`; `/studio` only redirects to `/`), so no route ever falls through to the
+  bare `:root`/`@media` cascade the media query lives in. Keep anything that isn't a token — per
+  the spec, that's only the `body { font-family: ... }` rule, which already reads token variables
   rather than duplicating them.
 
 **Interfaces:**
@@ -211,13 +245,16 @@ for exactly that reason.
 - `npm run verify:full` passes (this is the CI-equivalent path, and exercises `npm run build` →
   `prebuild` → `next build`, which is exactly the scenario this task exists to keep from failing
   on a clean checkout).
-- Manual check (per `docs/WEB_APP_WORKFLOW.md` §5 step 8): `npm run stage`, look at `/` and
-  `/studio` — confirm colors, spacing, and both light/dark themes look the same as before this
-  change. This is the human judgment call the automated checks can't make.
+- Manual check (per `docs/WEB_APP_WORKFLOW.md` §5 step 8): `npm run stage`, look at `/` — confirm
+  colors and spacing look the same as before this change. Only `/` — `/studio` is a redirect to
+  `/`, not a second surface to check. Note: the app currently only ever renders in dark mode
+  (nothing sets `data-theme="light"` anywhere), so there's no live light-mode view to compare
+  against today; a light-mode spot-check means forcing `data-theme="light"` on the root element
+  via devtools, not navigating to a route.
 
-**Stop-conditions:** if anything visually shifts on `/` or `/studio` during the manual check,
-stop — don't guess which hand-rolled value the generated CSS is supposed to match, go back and
-compare Task 1's `tokens.json` against the exact pre-cutover `globals.css` line by line.
+**Stop-conditions:** if anything visually shifts on `/` during the manual check, stop — don't
+guess which hand-rolled value the generated CSS is supposed to match, go back and compare Task
+1's `tokens.json` against the exact pre-cutover `globals.css` line by line.
 
 ---
 
@@ -296,6 +333,10 @@ each).
 - Manual check via `curl` or a REST client against `npm run dev`: a write to a known color path
   changes `tokens.json` and regenerates `design-tokens.generated.css`; a request in a
   `NODE_ENV=production` process (`npm run stage`) returns 404 for every handler.
+- **Before this task is considered done, restore `tokens.json` to its pre-check state** — the
+  manual write check above mutates a tracked file. Run `git checkout --
+  app/packages/design-system/brands/default/tokens.json` (or call the reset-all handler) so
+  Task 6 starts from a clean file, not whatever the last manual test happened to write.
 
 **Stop-conditions:** if validating a value's `$type` turns out to need more than a simple
 regex/range check for any token currently in the schema, stop and ask rather than guessing at
@@ -324,9 +365,15 @@ half of the editing model).
   `tokens.default.json` at that path (direct comparison at render time).
 - A "reset all changes in this brand" action, behind a confirmation dialog.
 - A "set as new default" action per field.
-- Every write/reset/set-default calls Task 5's API route; a successful response means the CSS
-  was already regenerated server-side — no extra client-side rebuild trigger needed, just a
-  refetch of the current `tokens.json` state to re-render.
+- Every write/reset/set-default calls Task 5's API route; on success, call `router.refresh()`
+  (from `next/navigation`) rather than fetching a new read endpoint. `page.tsx` is a server
+  component that reads `tokens.json` fresh on every render, so `router.refresh()` re-invokes it
+  and the page re-renders with the just-written values — no GET/read endpoint needed on top of
+  Task 5's write/reset/set-default handlers, and no new dev-gated surface to add.
+- **Debounce `Slider` writes** (~200ms after the last drag tick, before POSTing) — a drag emits
+  many intermediate values, and without debouncing each one would trigger a full file write +
+  CSS rebuild. `ColorField`'s text input and `Button` actions don't need this; they're already
+  discrete events, not a continuous stream.
 
 **Interfaces:**
 - Consumes: `ColorField`/`Slider`/`SegmentedControl`/`Button` from Task 4, the exact request/
@@ -383,7 +430,18 @@ Material-derived additions) → Task 1. §4 (`DESIGN.md`) → Task 1. §5.1 (bui
 §5.1.1 (cutover) → Task 3. §5.1.2 (tests) → Task 2. §5.2 (editor + API) → Tasks 5, 6. §6
 (components) → Task 4. §6.1 (convention) → Tasks 4 (applied), 7 (documented). §7 (Figma) → Task
 7. §8 (rebuild survivability) is a property of how Tasks 1–6 are built, not a task of its own —
-no gap. §9/§10 are explicitly out of scope / informational — nothing to implement.
+no gap. §9/§10 are explicitly out of scope / informational — nothing to implement. One
+plan-level addition beyond the spec: Task 2's contrast-ratio test enforces §4's WCAG minimums
+mechanically; added during plan review, not originally in the spec — noted as such in Task 2
+rather than presented as if the spec always required it.
+
+**Verified against the codebase, not assumed:** two claims from plan review were checked
+directly rather than taken at face value before being folded in — that `data-theme` is set
+exactly once in the app (`StudioShell.tsx`) and that `StudioShell` wraps the entire shipped app
+(confirmed via `grep` and reading `app/app/page.tsx` and `app/app/studio/page.tsx`), and that
+`--color-surface: var(--background)` is a real indirection in the current `globals.css` (read
+directly, earlier in this session). Both are now cited with their evidence in Tasks 1 and 3
+rather than stated as bare assertions.
 
 **Placeholder scan:** no TBD/TODO; every task names exact files and exact behavior. The one
 deliberate "implementer's call" (Task 6's server/client component split) is flagged as
@@ -393,7 +451,10 @@ explicitly non-load-bearing, not a gap.
 script) and Task 5 (API route validation) — same function, not two implementations. Task 4's
 component prop shapes are pinned down concretely enough for Task 6 to consume without
 re-guessing. Task 5's request/response shapes are the single contract Task 6 codes against — no
-task downstream invents a different shape.
+task downstream invents a different shape. Task 6's data-refresh mechanism is now named
+explicitly (`router.refresh()`) instead of an unspecified "refetch" that implied a read endpoint
+Task 5 never defines — closed during plan review, since leaving it open would have had Task 6's
+implementer either inventing a new API surface or getting stuck on a missing interface.
 
 **Sequencing check (the user's requirement):** each task depends only on prior *completed* tasks
 (1→2→3→4→5→6→7, strictly linear, no task requires a later one to exist). No two tasks touch the
