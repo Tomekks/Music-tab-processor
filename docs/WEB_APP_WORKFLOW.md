@@ -74,14 +74,20 @@ three-way push / push & deploy / skip question.
 1. Claude writes one spec file to `docs/specs/`.
 2. You relay it to musespark/OpenCode by hand — no direct tool access from Claude's session to
    that tool, deliberately, so you stay the courier both directions.
-3. It implements, runs `npm run verify` itself, reports pass/fail and the diff.
-4. You relay the result back to Claude.
-5. **First failure stops the loop.** No second unsupervised attempt. Claude reads the failure
+3. **Before implementing, the execution model asks clarifying questions if anything in the spec
+   is ambiguous** — a missing case, an unclear interface detail, a judgment call the spec didn't
+   settle. It does not guess and proceed. You relay its questions back to Claude, Claude answers
+   or amends the spec, you relay that back, and only then does it implement. Specs are still
+   written to make this the exception, not the routine (per §3's template) — but when a genuine
+   ambiguity exists, asking is the required path, not a fallback.
+4. It implements, runs `npm run verify` itself, reports pass/fail and the diff.
+5. You relay the result back to Claude.
+6. **First failure stops the loop.** No second unsupervised attempt. Claude reads the failure
    and writes a fix-spec (diagnosis + narrowed instructions); back to step 2.
-6. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 7 if this
+7. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 8 if this
    was the last spec.
-7. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
-8. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
+8. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
+9. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
 
 ## 6. Not yet in place
 

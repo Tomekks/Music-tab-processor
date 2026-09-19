@@ -72,20 +72,26 @@ When in doubt, take the heavier tier — same ratchet rule as the brainstorming 
 1. Claude writes one spec file to `docs/specs/`.
 2. You manually relay it to musespark/OpenCode (no direct tool access from this session to that
    tool — deliberate, keeps you in the loop both directions, per pipeline-plan.md's reasoning).
-3. It implements, runs `npm run verify` itself, reports pass/fail + diff.
-4. You relay the result back to Claude.
-5. **First failure → stop.** No second unsupervised attempt — a deterministic TS/Python failure
+3. **Before implementing, the execution model asks clarifying questions if the spec is
+   ambiguous** — a missing case, an unclear interface detail, a judgment call the spec didn't
+   settle — rather than guessing and proceeding. Questions and answers relay through you, same
+   as everything else; only settled specs get implemented. Specs are still written to minimize
+   this (per the template below), but when genuine ambiguity exists, asking is required, not a
+   fallback.
+4. It implements, runs `npm run verify` itself, reports pass/fail + diff.
+5. You relay the result back to Claude.
+6. **First failure → stop.** No second unsupervised attempt — a deterministic TS/Python failure
    isn't a flaky-ML-output situation where a retry has better odds; it means the spec or the
    implementation needs a human/Claude look, not another blind try. Claude reads the failure and
    writes a fix-spec (diagnosis + narrowed instructions); back to step 2.
-6. On pass: **checkpoint commit** — see below — then continue to the next spec (if any), or to
-   step 7 if this was the task's last spec.
-7. You do the existing `AGENTS.md` staging check (`npm run stage`, look at it) — unchanged, not
+7. On pass: **checkpoint commit** — see below — then continue to the next spec (if any), or to
+   step 8 if this was the task's last spec.
+8. You do the existing `AGENTS.md` staging check (`npm run stage`, look at it) — unchanged, not
    duplicated by a new mechanism.
-8. You're asked the existing three-way question (push / push & deploy / skip) — unchanged from
+9. You're asked the existing three-way question (push / push & deploy / skip) — unchanged from
    `AGENTS.md`.
 
-For Trivial tasks: steps 1 and 5-6 collapse — no spec file, no fix-spec ceremony on failure
+For Trivial tasks: steps 1 and 6-7 collapse — no spec file, no fix-spec ceremony on failure
 (just fix directly and re-verify), but the checkpoint-commit step still applies once `verify`
 passes.
 
