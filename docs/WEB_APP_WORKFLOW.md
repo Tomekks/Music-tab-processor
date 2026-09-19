@@ -71,9 +71,17 @@ three-way push / push & deploy / skip question.
 
 ## 5. Execution loop (Bounded and Architectural tasks)
 
-1. Claude writes one spec file to `docs/specs/`.
-2. You relay it to musespark/OpenCode by hand — no direct tool access from Claude's session to
-   that tool, deliberately, so you stay the courier both directions.
+1. Claude writes one spec file to `docs/specs/`. **If the execution model drafts the spec itself
+   instead** (e.g. turning a loose diagnosis into a spec directly, to save a round trip) — that
+   draft is a proposal, not a final spec: relay it back to Claude for review before any
+   implementation starts. Claude checks specifically for judgment calls or assumptions the model
+   made silently, that weren't actually agreed on (e.g. picking a caching staleness policy that
+   sounds reasonable but wasn't the one discussed) — the risk isn't the model being careless, it's
+   that filling an unstated gap with a plausible-sounding default is invisible unless someone
+   who wasn't the one filling it checks. Once Claude approves or amends it, proceed as normal.
+2. You relay the (Claude-authored or Claude-approved) spec to the execution model by hand — no
+   direct tool access from Claude's session to that tool, deliberately, so you stay the courier
+   both directions.
 3. **Before implementing, the execution model asks clarifying questions if anything in the spec
    is ambiguous** — a missing case, an unclear interface detail, a judgment call the spec didn't
    settle. It does not guess and proceed. You relay its questions back to Claude, Claude answers
