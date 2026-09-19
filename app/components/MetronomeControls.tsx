@@ -37,6 +37,15 @@ export function MetronomeControls({
       </button>
 
       <button
+        onClick={onReset}
+        aria-label="Reset to start"
+        title="Reset to start"
+        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+      >
+        ⏮
+      </button>
+
+      <button
         onClick={onToggle}
         aria-label={isPlaying ? "Pause" : "Play"}
         className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
