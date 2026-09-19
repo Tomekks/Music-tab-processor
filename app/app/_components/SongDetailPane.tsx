@@ -16,7 +16,7 @@ export function SongDetailPane({
   coverArtUrl?: string;
   // Fallback only -- the DB's own artist column wins when it has one. Backfills
   // the "missing artist" gap from M6 for songs that were ingested without it,
-  // now that app/lib/spotify.ts has real credentials to draw from.
+  // fetched once at publish time now, not live -- see publish.py.
   spotifyArtist?: string;
   // Missing (no credentials configured) or null (Spotify had no page for this
   // track) both mean the same thing here -- same degrade-gracefully rule as
@@ -39,8 +39,9 @@ export function SongDetailPane({
   return (
     <div className="flex flex-col h-full min-h-0">
       <header className="shrink-0 flex items-end gap-6 p-8 pb-6">
-        {/* Real cover art when Spotify metadata is available (app/lib/spotify.ts),
-            the placeholder otherwise. Plain <img>, not next/image: an external CDN
+        {/* Real cover art when Spotify metadata was found at publish time
+            (pipeline/s05_publish/publish.py, 2026-09-18), the placeholder
+            otherwise. Plain <img>, not next/image: an external CDN
             host would need next.config.ts's remote image allowlist, not worth it
             for this single, already-cached-by-the-browser image. */}
         {coverArtUrl ? (

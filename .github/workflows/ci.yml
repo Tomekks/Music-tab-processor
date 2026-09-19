@@ -1,11 +1,12 @@
 name: app
 
 on:
+  pull_request:
+    branches:
+      - master
   push:
-    paths:
-      - "app/**"
-      - ".nvmrc"
-      - ".github/workflows/ci.yml"
+    branches:
+      - master
 
 jobs:
   verify:
@@ -14,12 +15,23 @@ jobs:
       run:
         working-directory: app
     env:
-      TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
-      TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+      # Inert placeholders, never real credentials. next build constructs the
+      # libSQL client at module load during page-data collection
+      # (app/db/client.ts), so it needs a syntactically valid URL -- but the
+      # route is force-dynamic, so no query ever executes at build time and
+      # these values never make a real connection. Verified locally: full
+      # `npm run verify:full` passes with exactly these values and no
+      # TURSO_* secrets configured.
+      TURSO_DATABASE_URL: "libsql://ci-placeholder"
+      TURSO_AUTH_TOKEN: "ci-placeholder"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
+          # .nvmrc (repo root) is the project's Node pin -- CI runs what
+          # developers run (satisfies app/package.json engines >=22).
           node-version-file: ".nvmrc"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run verify:full

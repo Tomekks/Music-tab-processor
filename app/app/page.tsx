@@ -1,12 +1,12 @@
-import { desc, eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { songs } from "@/db/schema";
-import { getTrackMetadata } from "@/lib/spotify";
+import { Suspense } from "react";
+import { getSongList } from "@/lib/songs";
 import { StudioShell } from "./_components/StudioShell";
 import { SongListSidebar } from "./_components/SongListSidebar";
-import { SongDetailPane } from "./_components/SongDetailPane";
+import { SongDetail, SongDetailSkeleton } from "./_components/SongDetail";
 
-// Always show the latest published songs, no caching.
+// Dynamic per request (searchParams-based selection), but data comes from
+// short-lived caches (docs/specs/song-list-cache.md,
+// docs/specs/song-detail-streaming.md) -- not re-queried from Turso every time.
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({
@@ -17,11 +17,14 @@ export default async function HomePage({
   // Column-projected: the sidebar only ever needs enough to render a row, never the
   // full notes/tuning JSON blobs -- those are fetched once, below, for just the
   // selected song. Ordered newest-first so "first in the list" is a stable, meaningful
-  // default.
-  const list = await db
-    .select({ id: songs.id, title: songs.title, artist: songs.artist, tempoBpm: songs.tempoBpm })
-    .from(songs)
-    .orderBy(desc(songs.createdAt));
+  // default. coverArtUrl/spotifyArtist are read straight from the DB now (2026-09-18)
+  // -- populated once at publish time (pipeline/s05_publish/publish.py), not fetched
+  // live here on every request. This is what fixed slow song-switching: the old
+  // version made a live Spotify API call per song in this list, on every navigation.
+  // Cached (2026-09-19, docs/specs/song-list-cache.md): songs only change via
+  // manual publish.py runs, so the list is cached 60s instead of re-queried
+  // (~445ms Turso round-trip) on every navigation.
+  const list = await getSongList();
 
   // ?song= is a soft UI preference, not a resource identifier -- an invalid or stale
   // id silently falls back to the most recent song instead of 404ing (deliberately
@@ -30,34 +33,17 @@ export default async function HomePage({
   const requested = Array.isArray(raw) ? raw[0] : raw;
   const selectedId = requested && list.some((s) => s.id === requested) ? requested : (list[0]?.id ?? null);
 
-  const [fullSong] = selectedId ? await db.select().from(songs).where(eq(songs.id, selectedId)) : [];
-
-  // Optional real cover art -- returns null instantly (no network call) with no
-  // Spotify credentials configured, so this is a no-op today. See app/lib/spotify.ts.
-  const spotify = fullSong ? await getTrackMetadata(fullSong.title, fullSong.artist) : null;
-
-  // Same lookup, once per row, for the sidebar thumbnails -- parallelized since
-  // each is an independent network call. No-op (all nulls, no requests) with
-  // no Spotify credentials configured, same as the header lookup above. Also
-  // carries the Spotify artist through, same fallback as the detail header
-  // (song.artist || spotifyArtist) -- see SongListRow.tsx.
-  const listWithArt = await Promise.all(
-    list.map(async (song) => {
-      const meta = await getTrackMetadata(song.title, song.artist);
-      return { ...song, coverArtUrl: meta?.coverArtUrl, spotifyArtist: meta?.artist };
-    }),
-  );
-
+  // The sidebar resolves from the cached list immediately; the detail streams
+  // in via Suspense (2026-09-19, docs/specs/song-detail-streaming.md) so a
+  // slow detail query never freezes song-switching. Deliberately no
+  // route-level loading.tsx -- that would blank the sidebar too.
   return (
     <StudioShell
-      sidebar={<SongListSidebar songs={listWithArt} selectedId={selectedId} />}
+      sidebar={<SongListSidebar songs={list.map((s) => ({ ...s, coverArtUrl: s.coverArtUrl ?? undefined, spotifyArtist: s.spotifyArtist ?? undefined }))} selectedId={selectedId} />}
       detail={
-        <SongDetailPane
-          song={fullSong ?? null}
-          coverArtUrl={spotify?.coverArtUrl}
-          spotifyArtist={spotify?.artist}
-          spotifyUrl={spotify?.url}
-        />
+        <Suspense fallback={<SongDetailSkeleton />}>
+          <SongDetail selectedId={selectedId} />
+        </Suspense>
       }
     />
   );

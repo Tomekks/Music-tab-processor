@@ -66,12 +66,15 @@ def _probe_audio(path):
     }
 
 
-def ingest(source_path, title=None):
+def ingest(source_path, title=None, artist=None):
     """Validates `source_path` as audio and sets up its pipeline_runs/ working directory.
 
     Args:
         source_path (str): path to a local audio file.
         title (str, optional): display title. Defaults to the filename stem.
+        artist (str, optional): display artist. Defaults to the part after the
+            last " - " in the filename stem (Title - Artist convention), or
+            None if the filename has no such separator.
 
     Returns:
         dict: the metadata written to metadata.json, plus "runDir" (Path).
@@ -86,7 +89,20 @@ def ingest(source_path, title=None):
 
     audio_info = _probe_audio(source)
 
-    title = title or source.stem
+    if title is None or artist is None:
+        # Filenames follow a Title - Artist convention (e.g. "Friction - Shame.m4a").
+        # Split on the *last* " - " since a title itself may contain a hyphen.
+        # An explicitly passed title/artist always wins for that field; only a
+        # missing field falls back to filename parsing. Never trusted from ID3.
+        if " - " in source.stem:
+            parsed_title, _, parsed_artist = source.stem.rpartition(" - ")
+            parsed_title, parsed_artist = parsed_title.strip(), parsed_artist.strip()
+            if title is None:
+                title = parsed_title or source.stem
+            if artist is None:
+                artist = parsed_artist or None
+        elif title is None:
+            title = source.stem
     run_id = f"{_slugify(title)}-{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir = RUNS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -97,6 +113,7 @@ def ingest(source_path, title=None):
     metadata = {
         "runId": run_id,
         "title": title,
+        "artist": artist,
         "sourceFile": str(source.resolve()),
         "ingestedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
         **audio_info,
@@ -111,9 +128,10 @@ def main():
     parser = argparse.ArgumentParser(description="Ingest a local audio file for pipeline processing.")
     parser.add_argument("source", help="Path to the audio file")
     parser.add_argument("--title", default=None, help="Display title (defaults to filename)")
+    parser.add_argument("--artist", default=None, help="Display artist (defaults to filename parsing)")
     args = parser.parse_args()
 
-    result = ingest(args.source, args.title)
+    result = ingest(args.source, args.title, args.artist)
     print(f"Ingested: {result['runDir']}")
     print(json.dumps({k: v for k, v in result.items() if k != "runDir"}, indent=2))
 
