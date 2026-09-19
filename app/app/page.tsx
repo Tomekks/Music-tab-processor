@@ -1,6 +1,7 @@
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
+import { getSongList } from "@/lib/songs";
 import { StudioShell } from "./_components/StudioShell";
 import { SongListSidebar } from "./_components/SongListSidebar";
 import { SongDetailPane } from "./_components/SongDetailPane";
@@ -20,17 +21,10 @@ export default async function HomePage({
   // -- populated once at publish time (pipeline/s05_publish/publish.py), not fetched
   // live here on every request. This is what fixed slow song-switching: the old
   // version made a live Spotify API call per song in this list, on every navigation.
-  const list = await db
-    .select({
-      id: songs.id,
-      title: songs.title,
-      artist: songs.artist,
-      tempoBpm: songs.tempoBpm,
-      coverArtUrl: songs.coverArtUrl,
-      spotifyArtist: songs.spotifyArtist,
-    })
-    .from(songs)
-    .orderBy(desc(songs.createdAt));
+  // Cached (2026-09-19, docs/specs/song-list-cache.md): songs only change via
+  // manual publish.py runs, so the list is cached 60s instead of re-queried
+  // (~445ms Turso round-trip) on every navigation.
+  const list = await getSongList();
 
   // ?song= is a soft UI preference, not a resource identifier -- an invalid or stale
   // id silently falls back to the most recent song instead of 404ing (deliberately
