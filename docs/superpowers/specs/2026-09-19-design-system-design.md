@@ -280,7 +280,7 @@ execution loop (§5, step 8) already prescribes for changes like this one.
 
 ### 5.1.2 Testing
 
-Two tests, not a suite — each one guards a specific failure mode that would otherwise be
+Three tests, not a suite — each one guards a specific failure mode that would otherwise be
 invisible until something broke:
 
 - **Resolver cycle detection.** `{a}` → `{b}` → `{a}` must throw a clear error, not recurse
@@ -288,6 +288,11 @@ invisible until something broke:
 - **Path parity between `tokens.json` and `tokens.default.json`.** Same set of token paths in
   both files. This is what makes per-field reset (§5.2) safe — if a new token lands in one file
   and not the other, the revert control for it silently breaks.
+- **`$value`/`$type` shape validation.** Every leaf in `tokens.json` has both fields, and
+  `$type` is one of the schema's known types. Catches a malformed hand-edit to `tokens.json`.
+  Genuinely cheap, and the lowest-value of the three — a malformed edit would likely surface
+  fast anyway, either as a JSON parse error or the resolver hitting `undefined` with a
+  reasonably obvious stack trace — but cheap enough that there's no real reason to skip it.
 
 Both live in `packages/design-system/`, using the test convention already in this repo (Node's
 built-in `node --test`, matching `app/package.json`'s existing `"test"` script — no new
