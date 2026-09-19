@@ -110,11 +110,16 @@ values), §4 (per-brand `DESIGN.md`).
   route. Still capture `[data-theme="light"]`'s values too (real code, just unreached — kept per
   `globals.css`'s own comment "in case a manual light toggle is wanted later") as the schema's
   light set; do not use the `@media` block's values for anything.
-  **Preserve `var()` indirections as references, don't flatten them.** `globals.css` defines
-  `--color-surface: var(--background)` — a relationship, not an independent value. Write this as
-  `"surface": { "$value": "{semantic.color.background}", "$type": "color" }`, not as a copied
-  literal hex. Apply the same rule anywhere else a `var(--x)` points at another token-backed
-  property, not just this one case.
+  **Correction to an earlier version of this task (caught re-verifying, not just accepting the
+  first check):** `globals.css`'s bare `:root` block does define `--color-surface: var(--background)`
+  — a real indirection — but that block is exactly the dead code path just established above.
+  The **live** `[data-theme="light"]`/`[data-theme="dark"]` blocks each set `--color-surface` to
+  its own independent literal (`#ffffff` light, `#535353` dark), deliberately different from
+  that theme's own `--background` (`#faf9f5`, `#1c1d1f`) — it's not a mirrored value in either
+  theme that's actually reachable. So: capture `surface` as its own literal per theme, **do not**
+  write it as a `{semantic.color.background}` reference — that reference would resolve to a
+  color that was never actually live. The indirection was real CSS, it just lived entirely in
+  code nothing renders through today.
   Capture `--color-accent: #ae97f7`, `--color-border: #e6dfd8`, the rest of the
   `--color-surface*` family, `--radius: 12px`, `--space-1..8`, `--sidebar-width: 240px`, plus the
   one new token this design adds: `semantic.color.onAccent` and the three
@@ -440,8 +445,15 @@ directly rather than taken at face value before being folded in — that `data-t
 exactly once in the app (`StudioShell.tsx`) and that `StudioShell` wraps the entire shipped app
 (confirmed via `grep` and reading `app/app/page.tsx` and `app/app/studio/page.tsx`), and that
 `--color-surface: var(--background)` is a real indirection in the current `globals.css` (read
-directly, earlier in this session). Both are now cited with their evidence in Tasks 1 and 3
-rather than stated as bare assertions.
+directly, earlier in this session). Both are now cited with their evidence in Tasks 1 and 3.
+
+The second one needed a further check that the first pass skipped: confirming each fact
+separately doesn't confirm their *combination*. The indirection is real, but only inside the
+same dead `:root` block already established as unreachable — the live `[data-theme]` blocks
+don't participate in it (`surface` is an independent literal in each, not derived from
+`background`). Caught re-reading `globals.css` a second time while drafting Task 1's actual
+spec file, not during the first review pass. Task 1 now says to capture `surface` as a literal
+per theme, not a reference — the opposite of what an earlier version of this section said.
 
 **Placeholder scan:** no TBD/TODO; every task names exact files and exact behavior. The one
 deliberate "implementer's call" (Task 6's server/client component split) is flagged as
