@@ -5,7 +5,7 @@
 **Reads:** `pipeline_runs/<run-id>/notes.json` (Contract A), written by `s03_transcribe`.
 
 **Writes:**
-- `pipeline_runs/<run-id>/tab.json` — **contract-bound**, matches `contracts/tab.schema.json` exactly (validated against the real schema file in tests).
+- `pipeline_runs/<run-id>/tab.json` — **contract-bound**, matches `contracts/tab.schema.json` exactly (validated against the real schema file in tests). Carries `"artist"` (2026-09-19, read from `metadata.json`, `null` for older runs) alongside `"title"` — an extra key the schema permits, consumed by `s05_publish`.
 - `pipeline_runs/<run-id>/tab.txt` — human-readable ASCII tab (standard layout, `e` on top, no timing shown), the default display per `DECISIONS.md`.
 
 **⚠️ Flagged for your review, not a `contracts/` change:** the contract requires `startTimeSec`/`durationSec` per note. `startTimeSec` is the real transcribed onset time. `durationSec` is **approximated as "time until the next note/chord"** — `tuttut`'s fingering algorithm doesn't track true note-off timing the way the original transcription did, and exact recovery would need fragile pitch/time matching for precision this project doesn't need (confirmed acceptable: tempo/rhythm is the human's job when practicing, not the tab's — see `DECISIONS.md`). This part is still an open approximation, not fixed.

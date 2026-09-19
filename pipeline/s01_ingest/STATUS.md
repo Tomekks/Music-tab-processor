@@ -6,11 +6,11 @@
 
 **Writes:** `pipeline_runs/<run-id>/` (repo root, gitignored — contains a copy of source audio, never published):
 - `source.<ext>` — a copy of the input file (never the original — copy, not move).
-- `metadata.json` — `{"runId", "title", "sourceFile", "durationSec", "sampleRate", "channels", "ingestedAt"}`.
+- `metadata.json` — `{"runId", "title", "artist", "sourceFile", "durationSec", "sampleRate", "channels", "ingestedAt"}`. `artist` (2026-09-19): from `--artist`, else the part after the last ` - ` in the filename stem (Title - Artist convention), else `null`. Explicit flags always win per-field.
 
 **Files:** `ingest.py` (the module + CLI), `test_ingest.py` (pytest, uses a synthetic sine-tone fixture — never real/copyrighted audio).
 
-**Run it:** `.venv/bin/python pipeline/s01_ingest/ingest.py <path> [--title "..."]`
+**Run it:** `.venv/bin/python pipeline/s01_ingest/ingest.py <path> [--title "..."] [--artist "..."]`
 **Test it:** `.venv/bin/pytest pipeline/s01_ingest/test_ingest.py`
 
 **Note for a later stage that wants to reuse this module:** `s01_ingest` isn't a valid Python package name (identifiers can't start with a digit) — load `ingest.py` via `importlib.util.spec_from_file_location`, not a normal `import` statement. See `test_ingest.py` for the pattern.

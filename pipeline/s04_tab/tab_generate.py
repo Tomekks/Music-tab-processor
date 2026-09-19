@@ -114,9 +114,12 @@ def generate_tab(run_dir):
     weights = {"b": 1, "height": 1, "length": 1, "n_changed_strings": 1}
 
     title = "untitled"
+    artist = None
     metadata_path = run_dir / "metadata.json"
     if metadata_path.is_file():
-        title = json.load(open(metadata_path)).get("title", title)
+        metadata = json.load(open(metadata_path))
+        title = metadata.get("title", title)
+        artist = metadata.get("artist", artist)
 
     tab = Tab(name=title, tuning=tuning, midi=midi, weights=weights)
     steps = _build_steps(tab)
@@ -143,6 +146,7 @@ def generate_tab(run_dir):
     tab_data = {
         "schemaVersion": "1.0.0",
         "title": title,
+        "artist": artist,
         "sourceFile": str(notes_path.relative_to(run_dir)),
         "tuning": tuning_schema,
         "tempoBpm": _estimate_tempo(run_dir),
