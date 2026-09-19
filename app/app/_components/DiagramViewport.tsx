@@ -17,6 +17,8 @@ export function DiagramViewport({
   currentStep,
   loopRange,
   onSetLoopRange,
+  highOnTop,
+  onToggleHighOnTop,
 }: {
   active: Tab;
   notes: TimedNote[];
@@ -28,6 +30,10 @@ export function DiagramViewport({
   // playhead -- see SheetDiagram.RULES.md rule 10.
   loopRange: LoopRange | null;
   onSetLoopRange: (range: LoopRange | null) => void;
+  // Owned by StudioTabs so the toggle button renders in DetailToolbar next
+  // to "Note sound" instead of inside the Sheet view -- see SheetDiagram.tsx.
+  highOnTop: boolean;
+  onToggleHighOnTop: () => void;
 }) {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-8 py-6">
@@ -42,6 +48,8 @@ export function DiagramViewport({
           bordered={false}
           showHeader={false}
           showCaption={false}
+          highOnTop={highOnTop}
+          onToggleHighOnTop={onToggleHighOnTop}
         />
       )}
       {active === "Fretboard" && (

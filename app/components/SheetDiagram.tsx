@@ -42,13 +42,17 @@ import type { LoopRange } from "@/hooks/useMetronome";
 import { StringOrientationToggle } from "./StringOrientationToggle";
 
 const DEFAULT_STEPS_PER_LINE = 16;
-const STEP_WIDTH = 38;
-const LINE_GAP = 20;
+const STEP_WIDTH = 120;
+const LINE_GAP = 32;
 const PAD_LEFT = 26;
 const PAD_RIGHT = 16;
-const PAD_TOP = 14;
-const PAD_BOTTOM = 10;
-const NOTE_RADIUS = 9;
+const PAD_TOP = 16;
+const PAD_BOTTOM = 16;
+const NOTE_RADIUS = 12;
+// Derived from NOTE_RADIUS so the digit always fits and stays centered
+// when NOTE_RADIUS is tuned -- don't hardcode these separately.
+const NOTE_FONT_SIZE = NOTE_RADIUS * 1.40;
+const NOTE_TEXT_Y_OFFSET = NOTE_FONT_SIZE * 0.35;
 
 function System({
   steps,
@@ -60,6 +64,7 @@ function System({
   loopLocalRange,
   onSelectRange,
   onClearLoop,
+  stepWidth,
 }: {
   steps: { string: number; fret: number }[][];
   nStrings: number;
@@ -73,12 +78,18 @@ function System({
   loopLocalRange: { start: number; end: number } | null;
   onSelectRange: (globalStart: number, globalEnd: number) => void;
   onClearLoop: () => void;
+  // Per-step width for THIS row. A full row gets the container width
+  // divided evenly across its steps (stretched to reach the same right edge
+  // as the toolbar above it); a shorter trailing row keeps the base
+  // STEP_WIDTH instead of stretching its few notes out to fill the space --
+  // see SheetDiagram's stepWidth calc below.
+  stepWidth: number;
 }) {
-  const width = PAD_LEFT + steps.length * STEP_WIDTH + PAD_RIGHT;
+  const width = PAD_LEFT + steps.length * stepWidth + PAD_RIGHT;
   const height = PAD_TOP + (nStrings - 1) * LINE_GAP + PAD_BOTTOM;
 
   const yFor = (stringIndex: number) => PAD_TOP + getDisplayRow(stringIndex, nStrings, highOnTop) * LINE_GAP;
-  const xForIndex = (i: number) => PAD_LEFT + i * STEP_WIDTH + STEP_WIDTH / 2;
+  const xForIndex = (i: number) => PAD_LEFT + i * stepWidth + stepWidth / 2;
 
   // In-progress drag preview, local to this system -- committed to the real
   // (global) loopRange only on pointer-up, so dragging doesn't churn parent
@@ -88,7 +99,7 @@ function System({
 
   const localIndexForClientX = (clientX: number, svg: SVGSVGElement) => {
     const rect = svg.getBoundingClientRect();
-    return stepIndexForX(clientX - rect.left, STEP_WIDTH, PAD_LEFT, steps.length);
+    return stepIndexForX(clientX - rect.left, stepWidth, PAD_LEFT, steps.length);
   };
 
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -128,9 +139,9 @@ function System({
           Same accent color as the rest of the app's interactive highlights. */}
       {band && (
         <rect
-          x={xForIndex(band.start) - STEP_WIDTH / 2}
+          x={xForIndex(band.start) - stepWidth / 2}
           y={PAD_TOP - 6}
-          width={(band.end - band.start + 1) * STEP_WIDTH}
+          width={(band.end - band.start + 1) * stepWidth}
           height={height - PAD_TOP - PAD_BOTTOM + 12}
           fill="var(--color-accent)"
           fillOpacity={0.15}
@@ -181,11 +192,11 @@ function System({
               cx={x}
               cy={yFor(note.string)}
               r={NOTE_RADIUS}
-              fill={active ? "var(--background)" : "var(--foreground)"}
+              fill={active ? "var(--foreground)" : "var(--background)"}
               stroke="var(--foreground)"
-              strokeWidth={active ? 2 : 0}
+              strokeWidth={active ? 0 : 2}
             />
-            <text x={x} y={yFor(note.string) + 3.5} textAnchor="middle" fontSize={9.5} fontFamily="monospace" fill={active ? "var(--foreground)" : "var(--background)"}>
+            <text x={x} y={yFor(note.string) + NOTE_TEXT_Y_OFFSET} textAnchor="middle" fontSize={NOTE_FONT_SIZE} fontFamily="monospace" fill={active ? "var(--background)" : "var(--foreground)"}>
               {note.fret}
             </text>
           </g>
@@ -207,6 +218,7 @@ function SheetControls({
   tempoBpm,
   highOnTop,
   onToggleHighOnTop,
+  showOrientationToggle,
   loopRange,
   onClearLoop,
 }: {
@@ -214,6 +226,10 @@ function SheetControls({
   tempoBpm: number;
   highOnTop: boolean;
   onToggleHighOnTop: () => void;
+  // False when the caller (DiagramViewport, via StudioTabs) renders this
+  // toggle itself, next to the "Note sound" button in DetailToolbar instead
+  // -- see StudioTabs.tsx. SongTabs.tsx's bordered card still shows it here.
+  showOrientationToggle: boolean;
   loopRange: LoopRange | null;
   onClearLoop: () => void;
 }) {
@@ -221,14 +237,17 @@ function SheetControls({
     <div className="flex items-center justify-between mb-4">
       {showHeader ? (
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>Sheet</h2>
+          <h2 className="text-sm font-semibold" style={{ opacity: 0.8 }}>Sheet</h2>
           <span className="text-xs font-mono" style={{ opacity: 0.55 }}>♩ = {Math.round(tempoBpm)}</span>
         </div>
       ) : (
         <span />
       )}
       <div className="flex items-center gap-3">
-        {loopRange && (
+        {/* Suppressed here in the same cases as the orientation toggle below
+            (/studio's controlled usage) -- DetailToolbar renders this pill
+            itself, before the Reset button, instead -- see StudioTabs.tsx. */}
+        {showOrientationToggle && loopRange && (
           <button
             onClick={onClearLoop}
             className="text-xs font-mono px-2 py-1 rounded-full"
@@ -238,7 +257,7 @@ function SheetControls({
             Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
           </button>
         )}
-        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+        {showOrientationToggle && <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />}
       </div>
     </div>
   );
@@ -254,6 +273,8 @@ export function SheetDiagram({
   bordered = true,
   showHeader = true,
   showCaption = true,
+  highOnTop: highOnTopProp,
+  onToggleHighOnTop: onToggleHighOnTopProp,
 }: {
   notes: TimedNote[];
   tuning: number[];
@@ -272,26 +293,47 @@ export function SheetDiagram({
   bordered?: boolean;
   showHeader?: boolean;
   showCaption?: boolean;
+  // Orientation is uncontrolled (local state) by default -- SongTabs.tsx's
+  // bordered card owns it itself, toggled from its own row. /studio passes
+  // both of these down from StudioTabs so the toggle button can live next to
+  // "Note sound" in DetailToolbar instead -- see StudioTabs.tsx.
+  highOnTop?: boolean;
+  onToggleHighOnTop?: () => void;
 }) {
   const nStrings = tuning.length;
   const containerRef = useRef<HTMLDivElement>(null);
   const [stepsPerLine, setStepsPerLine] = useState(DEFAULT_STEPS_PER_LINE);
+  // Measured container width, used to stretch a full line's stepWidth so its
+  // notes reach the same right edge as the toolbar -- see the fullLineStepWidth
+  // calc below.
+  const [containerWidth, setContainerWidth] = useState(0);
   // Thin e on top by default, matching FretboardDiagram's own default -- see
   // SheetDiagram.RULES.md rule 4 (now a real toggle, not a fixed convention).
-  const [highOnTop, setHighOnTop] = useState(true);
+  const [localHighOnTop, setLocalHighOnTop] = useState(true);
+  const isOrientationControlled = highOnTopProp !== undefined;
+  const highOnTop = isOrientationControlled ? highOnTopProp : localHighOnTop;
+  const toggleHighOnTop = isOrientationControlled ? onToggleHighOnTopProp! : () => setLocalHighOnTop((v) => !v);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width;
-      if (width) setStepsPerLine(computeStepsPerLine(width, STEP_WIDTH, PAD_LEFT, PAD_RIGHT));
+      if (width) {
+        setStepsPerLine(computeStepsPerLine(width, STEP_WIDTH, PAD_LEFT, PAD_RIGHT));
+        setContainerWidth(width);
+      }
     });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
   const systems = chunk(groupNotesByStep(notes), stepsPerLine);
+  // A full line's steps stretch evenly across the measured container width
+  // (matching the toolbar's right edge, see the parent bug report this fixes);
+  // a shorter trailing line keeps the base STEP_WIDTH instead of stretching
+  // its few notes out to fill the same space.
+  const fullLineStepWidth = containerWidth > 0 ? (containerWidth - PAD_LEFT - PAD_RIGHT) / stepsPerLine : STEP_WIDTH;
 
   return (
     <div
@@ -310,13 +352,14 @@ export function SheetDiagram({
         showHeader={showHeader}
         tempoBpm={tempoBpm}
         highOnTop={highOnTop}
-        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
+        onToggleHighOnTop={toggleHighOnTop}
+        showOrientationToggle={!isOrientationControlled}
         loopRange={loopRange}
         onClearLoop={() => onSetLoopRange?.(null)}
       />
 
       <div ref={containerRef} className="overflow-x-auto">
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-20">
           {systems.map((sys, sysIdx) => {
             const startIdx = sysIdx * stepsPerLine;
             const localHighlight =
@@ -333,6 +376,7 @@ export function SheetDiagram({
                 loopLocalRange={intersectLoopRangeWithSystem(loopRange, startIdx, sys.length)}
                 onSelectRange={(s, e) => onSetLoopRange?.({ start: s, end: e })}
                 onClearLoop={() => onSetLoopRange?.(null)}
+                stepWidth={sys.length === stepsPerLine ? fullLineStepWidth : STEP_WIDTH}
               />
             );
           })}

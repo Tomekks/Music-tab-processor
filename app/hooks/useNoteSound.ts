@@ -7,9 +7,10 @@
 // not accurate" stance (docs/DECISIONS.md) and the metronome's own approach
 // (docs/decisions/display-modes.md's "Playback and the metronome" section):
 // this answers "is this the right note," not "does this sound like a real
-// guitar." The metronome still advances one step per beat, not synced to
-// real note timing, so this plays a fixed short envelope per triggered
-// step -- not the schema's own approximated durationSec.
+// guitar." The metronome (2026-09-18) now paces WHEN each step triggers by
+// real recorded timing, but this still plays a fixed short envelope per
+// triggered step regardless -- not the schema's own approximated
+// durationSec, a separate simplification from the metronome's own.
 //
 // One AudioContext per component lifetime (lazily created on first note --
 // autoplay policies need a prior user gesture, which pressing Play already

@@ -8,12 +8,12 @@ import { AppHeader } from "./AppHeader";
 // full layout mechanism this implements.
 export function StudioShell({ sidebar, detail }: { sidebar: ReactNode; detail: ReactNode }) {
   return (
-    <div data-theme="light" className="h-dvh w-full overflow-hidden flex flex-col bg-background text-foreground">
+    <div data-theme="dark" className="h-dvh w-full overflow-hidden flex flex-col bg-background text-foreground">
       <AppHeader />
       <div className="flex-1 min-h-0 w-full overflow-hidden flex">
         <nav
           className="shrink-0 h-full overflow-y-auto border-r border-border"
-          style={{ width: "var(--sidebar-width, 280px)" }}
+          style={{ width: "var(--sidebar-width, 240px)" }}
           aria-label="Songs"
         >
           {sidebar}

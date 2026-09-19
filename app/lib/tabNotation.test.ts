@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   pitchClassName,
   groupNotesByStep,
+  getStepOnsetTimes,
   getDisplayRow,
   chunk,
   stringThickness,
@@ -41,6 +42,26 @@ test("groupNotesByStep: notes sharing a startTimeSec become one chord step, not 
   const steps = groupNotesByStep(notes);
   assert.equal(steps.length, 1);
   assert.equal(steps[0].length, 3);
+});
+
+test("getStepOnsetTimes: same order/length as groupNotesByStep, one time per step", () => {
+  const notes = [
+    { string: 4, fret: 2, startTimeSec: 1.5 },
+    { string: 5, fret: 0, startTimeSec: 0 },
+  ];
+  assert.deepEqual(getStepOnsetTimes(notes), [0, 1.5]);
+});
+
+test("getStepOnsetTimes: notes sharing a startTimeSec collapse to one time, not repeated", () => {
+  const notes = [
+    { string: 0, fret: 3, startTimeSec: 2 },
+    { string: 1, fret: 2, startTimeSec: 2 },
+  ];
+  assert.deepEqual(getStepOnsetTimes(notes), [2]);
+});
+
+test("getStepOnsetTimes: empty input is an empty array", () => {
+  assert.deepEqual(getStepOnsetTimes([]), []);
 });
 
 test("getDisplayRow: thin-e-on-top reverses schema order (0=low E -> bottom row)", () => {

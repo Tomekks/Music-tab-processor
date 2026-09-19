@@ -7,6 +7,10 @@ export type SongListItem = Pick<typeof songs.$inferSelect, "id" | "title" | "art
   // app/page.tsx and app/lib/spotify.ts. Undefined/empty both mean "no art
   // found," same degrade-gracefully rule as everywhere else Spotify data is used.
   coverArtUrl?: string;
+  // Fallback only -- the DB's own artist column wins when it has one, same
+  // rule as SongDetailPane's displayArtist. Backfills the "missing artist"
+  // gap from M6 for songs ingested without it (see SongDetailPane.tsx).
+  spotifyArtist?: string;
 };
 
 export function SongListRow({ song, isSelected }: { song: SongListItem; isSelected: boolean }) {
@@ -23,13 +27,13 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
         href={{ pathname: "/", query: { song: song.id } }}
         aria-current={isSelected ? "true" : undefined}
         className={cn(
-          "flex items-center gap-3 px-4 py-3 transition-colors",
+          "flex items-center gap-3 px-4 py-4 transition-colors",
           isSelected ? "bg-accent/10" : "hover:bg-foreground/[0.04]"
         )}
       >
         {song.coverArtUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={song.coverArtUrl} alt="" className="w-10 h-10 shrink-0 object-cover rounded-[var(--radius)]" />
+          <img src={song.coverArtUrl} alt="" className="w-12 h-12 shrink-0 object-cover rounded-[var(--radius)]" />
         ) : (
           <div className="w-10 h-10 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
         )}
@@ -37,8 +41,8 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
           {/* Always rendered, even with no artist data -- reserves the same
               two-line row height for every song rather than some rows being
               taller than others depending on what's in the DB. */}
-          <span className="text-xs text-foreground/60 truncate">{song.artist || " "}</span>
-          <span className="text-sm font-medium truncate">{song.title}</span>
+          <span className="text-xs text-foreground/60 truncate">{song.artist || song.spotifyArtist || " "}</span>
+          <span className="text-sm font-semibold truncate">{song.title}</span>
         </div>
       </Link>
     </li>

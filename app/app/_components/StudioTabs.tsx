@@ -9,7 +9,7 @@ import { DetailToolbar } from "./DetailToolbar";
 import { DiagramViewport } from "./DiagramViewport";
 import { useMetronome } from "@/hooks/useMetronome";
 import { useNoteSound } from "@/hooks/useNoteSound";
-import { fretToMidi, groupNotesByStep, type TimedNote } from "@/lib/tabNotation";
+import { fretToMidi, groupNotesByStep, getStepOnsetTimes, type TimedNote } from "@/lib/tabNotation";
 import { isEditableTarget } from "@/lib/keyboardShortcuts";
 
 export const TABS = ["Sheet", "Fretboard", "Ascii"] as const;
@@ -29,8 +29,13 @@ export function StudioTabs({
   const [active, setActive] = useState<Tab>("Sheet");
   const steps = useMemo(() => groupNotesByStep(notes), [notes]);
   const stepCount = steps.length;
-  const metronome = useMetronome(tempoBpm, stepCount);
+  const stepTimes = useMemo(() => getStepOnsetTimes(notes), [notes]);
+  const metronome = useMetronome(tempoBpm, stepCount, stepTimes);
   const [soundEnabled, setSoundEnabled] = useState(false); // beta, opt-in -- see MetronomeControls
+  // Lifted out of SheetDiagram so its toggle button can render next to "Note
+  // sound" in DetailToolbar instead of inside the Sheet view itself -- see
+  // SheetDiagram.tsx's highOnTop prop doc comment.
+  const [highOnTop, setHighOnTop] = useState(true);
   const { playMidiNotes } = useNoteSound();
 
   // Transport keyboard shortcuts (2026-09-10): left/right steps one note at
@@ -72,7 +77,17 @@ export function StudioTabs({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <DetailToolbar active={active} onSelect={setActive} metronome={metronome} soundEnabled={soundEnabled} onToggleSound={() => setSoundEnabled((v) => !v)} />
+      <DetailToolbar
+        active={active}
+        onSelect={setActive}
+        metronome={metronome}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => setSoundEnabled((v) => !v)}
+        highOnTop={highOnTop}
+        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
+        loopRange={metronome.loopRange}
+        onClearLoop={() => metronome.setLoopRange(null)}
+      />
       <DiagramViewport
         active={active}
         notes={notes}
@@ -82,6 +97,8 @@ export function StudioTabs({
         currentStep={metronome.currentStep}
         loopRange={metronome.loopRange}
         onSetLoopRange={metronome.setLoopRange}
+        highOnTop={highOnTop}
+        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
       />
     </div>
   );

@@ -13,8 +13,9 @@
      canvas/ink/primary(coral)/hairline. Shape mirrors that tool's output exactly, so
      pasting a further-retuned palette later is still a drop-in replacement -- see
      app/app/studio/STATUS.md. */
-  --color-accent: #cc785c;
+  --color-accent: #ae97f7;
   --color-border: #e6dfd8;
+  --color-surface: var(--background);
   --radius: 12px;
   --space-1: 4px;
   --space-2: 8px;
@@ -22,7 +23,7 @@
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
-  --sidebar-width: 280px;
+  --sidebar-width: 240px;
 }
 
 @theme inline {
@@ -36,6 +37,11 @@
      syntax or inline style, matching the design_system playground's own precedent. */
   --color-accent: var(--color-accent);
   --color-border: var(--color-border);
+  --color-surface: var(--color-surface);
+  --color-surface-text: var(--color-surface-text);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-surface-active: var(--color-surface-active);
+  --color-surface-active-text: var(--color-surface-active-text);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,17 +51,46 @@
   }
 }
 
-/* /studio defaults to light regardless of OS preference. This re-pins the SAME
-   --background/--foreground names (not new ones) on whatever element carries this
-   attribute -- CSS custom properties cascade normally, so any descendant reading
-   var(--background) (including SheetDiagram.tsx, which already does) gets this
-   element's value, not :root's, with no specificity fight against the dark media
-   query above. Mirrors design_system/index.html's own data-theme pattern exactly.
-   Values are the Claude theme's canvas/ink (see the --color-accent/--color-border
-   comment above for provenance). */
+/* /studio defaults to dark regardless of OS preference (flipped 2026-09-18 --
+   was light). This re-pins the SAME --background/--foreground names (not new
+   ones) on whatever element carries this attribute -- CSS custom properties
+   cascade normally, so any descendant reading var(--background) (including
+   SheetDiagram.tsx, which already does) gets this element's value, not
+   :root's, with no specificity fight against the dark media query above.
+   Mirrors design_system/index.html's own data-theme pattern exactly. Light
+   values (the Claude theme's canvas/ink) kept below, unused by default, in
+   case a manual light toggle is wanted later. */
 [data-theme="light"] {
   --background: #faf9f5;
   --foreground: #141413;
+  --color-border: #e6dfd8;
+  /* Not part of the dark-theme spec that set the values below -- kept as a
+     light-mode-appropriate analog (same relationships: surface a step off
+     background, hover a step darker, active inverted) so a future light
+     toggle doesn't fall back to undefined vars. Adjust to taste if a real
+     light-mode spec is ever given. */
+  --color-surface: #ffffff;
+  --color-surface-text: #141413;
+  --color-surface-hover: #f0efe9;
+  --color-surface-active: #141413;
+  --color-surface-active-text: #faf9f5;
+}
+
+[data-theme="dark"] {
+  --background: #1c1d1f;
+  --foreground: #ededed;
+  --color-border: #353434;
+  /* Default fill for buttons/inputs -- one shade up from --background so
+     controls read as distinct surfaces rather than blending into the page.
+     Border matches fill (same value) rather than being a separate outline
+     color -- one flat button shape, not a filled box with a contrasting
+     ring. Every button/input in the app uses this same five-token set
+     (surface/text/hover/active/active-text), no per-component variation. */
+  --color-surface: #535353;
+  --color-surface-text: #ffffff;
+  --color-surface-hover: #5c5c5c;
+  --color-surface-active: #ffffff;
+  --color-surface-active-text: #212121;
 }
 
 body {

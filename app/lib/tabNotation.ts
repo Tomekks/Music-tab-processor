@@ -63,14 +63,32 @@ export function intersectLoopRangeWithSystem(
  * is exactly one column there. Order is sorted by time; within a step,
  * original note order is preserved.
  */
-export function groupNotesByStep(notes: TimedNote[]): FretPosition[][] {
+// Shared by groupNotesByStep and getStepOnsetTimes below so both derive from
+// exactly one grouping pass -- guarantees they can never drift out of index
+// sync with each other (two independently-written loops producing "the same"
+// order would be one refactor away from silently not matching).
+function groupByStepInternal(notes: TimedNote[]): [number, FretPosition[]][] {
   const byTime = new Map<number, FretPosition[]>();
   for (const { string, fret, startTimeSec } of notes) {
     const group = byTime.get(startTimeSec) ?? [];
     group.push({ string, fret });
     byTime.set(startTimeSec, group);
   }
-  return [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([, group]) => group);
+  return [...byTime.entries()].sort((a, b) => a[0] - b[0]);
+}
+
+export function groupNotesByStep(notes: TimedNote[]): FretPosition[][] {
+  return groupByStepInternal(notes).map(([, group]) => group);
+}
+
+/**
+ * The real onset time (seconds) of each step groupNotesByStep returns --
+ * same order and length by construction. Used by useMetronome.ts to pace
+ * playback by real note-to-note gaps instead of a fixed one-step-per-beat
+ * interval (see its own top comment for the full reasoning).
+ */
+export function getStepOnsetTimes(notes: TimedNote[]): number[] {
+  return groupByStepInternal(notes).map(([time]) => time);
 }
 
 /**

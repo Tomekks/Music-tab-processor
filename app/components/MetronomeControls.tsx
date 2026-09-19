@@ -26,7 +26,16 @@ export function MetronomeControls({
   onToggleSound: () => void;
 }) {
   return (
-    <div className="flex items-center gap-4 mb-6">
+    <div className="flex items-center gap-4">
+      <button
+        onClick={onReset}
+        aria-label="Reset to start"
+        title="Reset to start"
+        className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
+      >
+        ⏮
+      </button>
+
       <button
         onClick={onReset}
         aria-label="Reset to start"
@@ -39,12 +48,12 @@ export function MetronomeControls({
       <button
         onClick={onToggle}
         aria-label={isPlaying ? "Pause" : "Play"}
-        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+        className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
       >
         {isPlaying ? "⏸ Pause" : "▶ Play"}
       </button>
 
-      <label className="flex items-center gap-2 text-sm text-zinc-600">
+      <label className="flex items-center gap-2 text-sm text-surface-text">
         Tempo
         <input
           type="number"
@@ -55,7 +64,7 @@ export function MetronomeControls({
             const next = Number(e.target.value);
             if (Number.isFinite(next)) onBpmChange(next);
           }}
-          className="w-16 rounded border border-zinc-300 px-2 py-1 text-sm"
+          className="w-16 rounded border border-surface bg-surface px-2 py-1 text-sm text-surface-text"
         />
         bpm
       </label>
@@ -64,11 +73,13 @@ export function MetronomeControls({
         onClick={onToggleSound}
         aria-pressed={soundEnabled}
         title="Play the real pitch of each note while the metronome runs (beta)"
-        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${
-          soundEnabled ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold ${
+          soundEnabled
+            ? "border-surface-active bg-surface-active text-surface-active-text"
+            : "border-surface bg-surface text-surface-text hover:bg-surface-hover hover:border-surface-hover"
         }`}
       >
-        🔊 Note sound (beta)
+        MIDI sound
       </button>
     </div>
   );

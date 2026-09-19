@@ -38,9 +38,14 @@ export default async function HomePage({
 
   // Same lookup, once per row, for the sidebar thumbnails -- parallelized since
   // each is an independent network call. No-op (all nulls, no requests) with
-  // no Spotify credentials configured, same as the header lookup above.
+  // no Spotify credentials configured, same as the header lookup above. Also
+  // carries the Spotify artist through, same fallback as the detail header
+  // (song.artist || spotifyArtist) -- see SongListRow.tsx.
   const listWithArt = await Promise.all(
-    list.map(async (song) => ({ ...song, coverArtUrl: (await getTrackMetadata(song.title, song.artist))?.coverArtUrl })),
+    list.map(async (song) => {
+      const meta = await getTrackMetadata(song.title, song.artist);
+      return { ...song, coverArtUrl: meta?.coverArtUrl, spotifyArtist: meta?.artist };
+    }),
   );
 
   return (
