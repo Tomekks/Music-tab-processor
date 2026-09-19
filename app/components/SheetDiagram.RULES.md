@@ -89,11 +89,14 @@ reopening that decision, not just adding a display mode.
 
 ## Not built, logged for later
 
-- **Rhythm/timing-proportional spacing.** Steps are spaced evenly regardless
-  of actual time between them. A held note and a quick run currently look
-  the same width apart. The metronome doesn't change this — it deliberately
-  advances one step per beat, not synced to real note timing either (see
-  `docs/DECISIONS.md`'s Metronome note).
+- **Rhythm/timing-proportional spacing.** Steps are still spaced evenly on
+  screen regardless of actual time between them — a held note and a quick
+  run still look the same width apart visually. This is now a purely visual
+  gap, though: the metronome's *playback* (2026-09-18) is paced by each
+  step's real recorded timing (see `app/hooks/useMetronome.ts` and
+  `docs/decisions/display-modes.md`'s Metronome note) — what's missing here
+  is only proportional spacing in the rendered Sheet/Fretboard diagrams
+  themselves, not in how playback sounds.
 - **Technique markers** (hammer-on, pull-off, slide, bend, palm-mute) —
   `tab.schema.json`'s `technique` field already carries this data; nothing
   reads it yet, in Sheet or the ASCII tab.
