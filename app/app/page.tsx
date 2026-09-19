@@ -1,12 +1,12 @@
-import { eq } from "drizzle-orm";
-import { db } from "@/db/client";
-import { songs } from "@/db/schema";
+import { Suspense } from "react";
 import { getSongList } from "@/lib/songs";
 import { StudioShell } from "./_components/StudioShell";
 import { SongListSidebar } from "./_components/SongListSidebar";
-import { SongDetailPane } from "./_components/SongDetailPane";
+import { SongDetail, SongDetailSkeleton } from "./_components/SongDetail";
 
-// Always show the latest published songs, no caching.
+// Dynamic per request (searchParams-based selection), but data comes from
+// short-lived caches (docs/specs/song-list-cache.md,
+// docs/specs/song-detail-streaming.md) -- not re-queried from Turso every time.
 export const dynamic = "force-dynamic";
 
 export default async function HomePage({
@@ -33,18 +33,17 @@ export default async function HomePage({
   const requested = Array.isArray(raw) ? raw[0] : raw;
   const selectedId = requested && list.some((s) => s.id === requested) ? requested : (list[0]?.id ?? null);
 
-  const [fullSong] = selectedId ? await db.select().from(songs).where(eq(songs.id, selectedId)) : [];
-
+  // The sidebar resolves from the cached list immediately; the detail streams
+  // in via Suspense (2026-09-19, docs/specs/song-detail-streaming.md) so a
+  // slow detail query never freezes song-switching. Deliberately no
+  // route-level loading.tsx -- that would blank the sidebar too.
   return (
     <StudioShell
       sidebar={<SongListSidebar songs={list.map((s) => ({ ...s, coverArtUrl: s.coverArtUrl ?? undefined, spotifyArtist: s.spotifyArtist ?? undefined }))} selectedId={selectedId} />}
       detail={
-        <SongDetailPane
-          song={fullSong ?? null}
-          coverArtUrl={fullSong?.coverArtUrl ?? undefined}
-          spotifyArtist={fullSong?.spotifyArtist ?? undefined}
-          spotifyUrl={fullSong?.spotifyUrl ?? null}
-        />
+        <Suspense fallback={<SongDetailSkeleton />}>
+          <SongDetail selectedId={selectedId} />
+        </Suspense>
       }
     />
   );

@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db/client";
 import { songs } from "@/db/schema";
@@ -35,4 +35,19 @@ export const getSongList = unstable_cache(
   },
   ["songs-list"],
   { revalidate: 60, tags: ["songs-list"] },
+);
+
+// Full song row for the detail pane (2026-09-19,
+// docs/specs/song-detail-streaming.md). Same 60s time-based revalidation
+// reasoning as getSongList above. Returns undefined for unknown ids --
+// callers fall back exactly as the old inline query did.
+export type FullSong = typeof songs.$inferSelect;
+
+export const getSongById = unstable_cache(
+  async (id: string): Promise<FullSong | undefined> => {
+    const [row] = await db.select().from(songs).where(eq(songs.id, id));
+    return row;
+  },
+  ["song-detail"],
+  { revalidate: 60, tags: ["song-detail"] },
 );
