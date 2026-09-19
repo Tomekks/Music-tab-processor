@@ -9,8 +9,7 @@ export function StringOrientationToggle({ highOnTop, onToggle }: { highOnTop: bo
   return (
     <button
       onClick={onToggle}
-      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:opacity-70"
-      style={{ borderColor: "color-mix(in srgb, var(--foreground) 25%, transparent)" }}
+      className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
     >
       Flip to {highOnTop ? "thick E" : "thin e"} on top
     </button>

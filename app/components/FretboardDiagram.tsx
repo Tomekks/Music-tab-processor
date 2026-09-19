@@ -176,7 +176,7 @@ function FretboardControls({
   return (
     <div className="flex items-center justify-between mb-3">
       {showHeader ? (
-        <h2 className="text-sm font-medium" style={{ opacity: 0.8 }}>
+        <h2 className="text-sm font-semibold" style={{ opacity: 0.8 }}>
           Fretboard, in order
         </h2>
       ) : (
