@@ -62,9 +62,11 @@ detail.
 ## Global Constraints
 
 - `npm run verify` (typecheck, lint, `node --test`) must pass after every task — see
-  `app/packages/design-system/src/*.test.mjs` for the existing 45 tests these changes must not
-  break, especially `contrast.test.mjs` (WCAG AA 4.5:1 check on every semantic color pair, both
-  themes — Task 1's generated output must keep passing this unchanged test, not a modified one).
+  `app/packages/design-system/src/*.test.mjs` for the existing tests (count grows with each
+  landed task; check `npm test --workspace @guitar-tabs/design-system`'s own output rather than
+  trusting a number written here) these changes must not break, especially `contrast.test.mjs`
+  (WCAG AA 4.5:1 check on every semantic color pair, both themes — Task 1's generated output must
+  keep passing this unchanged test, not a modified one).
 - **Shipping model: checkpoint commits, not per-task branches/PRs** — per `WEB_APP_WORKFLOW.md`
   §4/§5 (this supersedes an earlier draft of this plan that said "every task ships via a branch +
   PR"; Task 7's own spec already correctly follows the checkpoint model, this line just brings the
@@ -106,10 +108,13 @@ below rather than run as one task. This replaces the old "each task is independe
 Tracks A and C can run interleaved with Track B; within a track, the order shown is required.
 
 **Shared-file serialization across tracks:** `app/app/api/design-system/tokens/route.ts` and
-`app/packages/design-system/src/token-writes.mjs` are edited in the fixed order 1b → 5b → 8a no
-matter how tracks interleave — a track that arrives at one of those files early waits. The
-`token-writes.mjs` additions are additive and low-risk, but adjacent-line `route.ts` dispatch
-insertions collide under a concurrent editor in the same tree; this rule exists for that case.
+`app/packages/design-system/src/token-writes.mjs` are edited in a fixed order — `5b` has landed,
+`1b` is implemented and verified pending its checkpoint commit, next up: `8a`. (The order
+originally stated here was `1b → 5b → 8a`; it actually landed as `5b` then `1b`, which still
+avoided any collision, just not in the documented sequence — corrected here rather than left
+stale for `8a`'s benefit.) The `token-writes.mjs` additions are additive and low-risk, but
+adjacent-line `route.ts` dispatch insertions collide under a concurrent editor in the same tree;
+this rule exists for that case.
 
 ---
 
@@ -345,42 +350,13 @@ them from this plan without saying so):**
   parent's current value into it — copying would look identical today but silently stops
   inheriting future parent changes, which defeats the entire point of the feature.
 
-**Files:**
-- `[5a]` Create: `app/packages/design-system/brands/<child-brand-name>/tokens.json` (a first real
-  child — read `docs/backlog-board/DESIGN.md` per item 14's own text and decide, at spec-writing
-  time, whether migrating the backlog board's hand-pulled palette to a real child brand is
-  in-scope for 5a or a fast-follow; don't silently expand scope to include it without saying so).
-- `[5a]` Modify: `app/packages/design-system/brands/<child-brand-name>/` needs a way to declare
-  its parent — e.g. a sibling `brand.json` with `{ "parent": "default" }` (exact shape is a real
-  decision for 5a's spec, not fixed here).
-- `[5a]` Modify: `app/packages/design-system/src/build-tokens.mjs` — `resolveBrandDir`/
-  `generateCSS` need a merge step: if the resolved brand has a `parent`, recursively resolve the
-  parent's tree first (supporting more than one level of inheritance is explicitly YAGNI — cap at
-  one level, parent-of-a-parent is out of scope unless a real second use case shows up), then
-  `deepMerge` the child's `tokens.json` on top before proceeding exactly as today.
-- `[5b]` Modify: `app/packages/design-system/src/token-writes.mjs` — `applyReset` needs a
-  parent-brand-aware variant (or a new function) that deletes the leaf from the child's tree
-  instead of copying from `tokens.default.json`, when operating on a child brand. Decide at 5b's
-  spec time whether this is a new `applyResetToParent` or a mode flag on existing `applyReset` —
-  don't silently overload the existing function's meaning without documenting the change.
-- `[5b]` Modify: `app/app/api/design-system/tokens/route.ts` — add the reset-to-parent `action`
-  case to the existing dispatch (same pattern as the other actions, no restructuring), so the
-  function 5b creates is reachable.
+**Files/Interfaces (`[5c]` only — 5a/5b's own file lists are archived with their specs, §
+below):**
 - `[5c]` Modify: `app/app/design-system/editor.tsx` / `FieldDescriptor` (`field-descriptors.mjs`)
   — `isModified` today means "differs from `tokens.default.json`"; a child brand's editor needs a
   parallel `isInheritedFromParent` so the UI can show "inherited" vs. "overridden" distinctly,
   and the revert button's label/behavior changes accordingly on a child brand. Lands after Task
   8's staged-save UI exists (Track B) — integrate with it, don't reintroduce auto-commit here.
-- `[5a]` Test: `build-tokens.test.mjs` (golden CSS output for a 2-brand parent/child fixture).
-- `[5b]` Test: `token-writes.test.mjs` (reset-to-parent deletes rather than copies).
-
-**Interfaces:**
-- `[5a]` Produces: `resolveBrandTree(brandDir): { tree, parentBrandDir: string | null }` (or
-  equivalent — exact naming is a spec-time decision) that `generateCSS` consumes instead of a bare
-  `JSON.parse(readFileSync(...))`.
-- `[5b]` Produces: whatever reset function 5b lands on, consumed by
-  `app/app/api/design-system/tokens/route.ts`'s existing `action` dispatch (add a case, don't
-  restructure the dispatch).
 
 **`[5a]` — Done**, committed as `1ddd888`. `resolveBrandTree`/`deepMerge` extraction/`demo-child`
 fixture. `docs/BACKLOG.md` item 14 updated (backlog-board migration itself still open, pending a

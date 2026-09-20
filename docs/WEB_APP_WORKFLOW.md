@@ -109,7 +109,14 @@ One markdown file per task in `docs/specs/`:
    through a criterion nothing can satisfy. Conversely, **don't write a manual step for something
    automation already proves** — a manual node one-liner re-confirming a golden test's exact claim
    is duplicate work dressed up as rigor, not extra safety; cut it instead of trimming prose
-   elsewhere.
+   elsewhere. **Any manual check that exercises a route/action which writes real state to disk
+   (`tokens.json`, `active-brand.json`, anything the running `/design-system` editor can mutate)
+   must include revert-and-rebuild as part of the check itself, not left implicit** — the write is
+   real, not sandboxed, and the generated CSS it produces is gitignored, so a stale rebuild won't
+   show up in `git diff` even after the source file is reverted (seen directly: a manual seed-
+   generation check left `tokens.json` mutated, uncommitted, breaking 6 unrelated tests until
+   `git checkout` + `npm run tokens:build` cleared it). Task 5b's spec got this right first;
+   every later spec whose manual check touches a writing route repeats it, not just once.
 8. **Definition of done** — `npm run verify` passes + `git diff --stat` matches the file
    allowlist + the human-checkbox manual check where relevant (per §7, not conflated with the
    self-check below) + **a self-check**: before reporting back, confirm every concrete claim the
@@ -199,8 +206,8 @@ target that: what actually travels each turn, and what accumulates in the repo o
   the detail. A live plan document that only grows eventually goes unread — see [[keep-plan-docs-light]].
 - **Archive a landed spec.** Once its checkpoint commit lands, stamp one line on it (commit hash,
   test delta) and move it to `docs/specs/_done/`. The next session then loads however many specs
-  are actually active, not the full accumulated history (21 files in `docs/specs/` as of this
-  writing, and growing).
+  are actually active, not the full accumulated history — `docs/specs/` grows over a long plan if
+  this isn't kept up.
 - **Collapse a landed plan task to one line** once its spec is archived — `Task N: done (<commit>,
   +X tests)` — since the real detail already lives in the archived spec, not in the plan. Don't
   let the plan re-grow the detail it just shed.
@@ -218,7 +225,7 @@ target that: what actually travels each turn, and what accumulates in the repo o
 
 ## 7. Token discipline
 
-Three rules that keep per-task token cost down. They apply to both sides of the relay
+Four rules that keep per-task token cost down. They apply to both sides of the relay
 (Claude-orchestrated and execution-model sessions) unless noted.
 
 - **Output hygiene.** Prefer terse flags first (`pytest -q`, `git status --short`,
