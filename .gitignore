@@ -26,6 +26,17 @@ node_modules/
 # Personal case-study working notes -- never public, stays on this Mac only.
 Case study notes.md
 case study prmpting.md
+/0_case_study_raw_materials/
+
+# OpenCode CLI's local tool config/agents (self-contained, not part of this repo's
+# app or pipeline) -- local-only.
+/.opencode/
+
+# Personal skill definitions for various AI tools -- local-only, not this project's code.
+/Skills/
+
+# Scratch space for trying out architecture ideas before they're a real plan -- local-only.
+/_architecture_playground/
 
 # OS
 .DS_Store
