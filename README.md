@@ -4,7 +4,7 @@
 
 A personal tool that turns songs into playable, beginner-friendly guitar practice sessions: upload or point at a song, get a tab you can actually play along to, close enough to the real riff to be satisfying, not a note-perfect transcription.
 
-**Status:** Phase 0 — proving the core idea works before any app code exists. See `research/00_spike/`.
+**Status:** pipeline runs end-to-end (local audio → Turso) into the Next.js app. See `research/00_spike/` for the original Phase 0 spike, `pipeline/VERIFY.md` for current state.
 
 Two docs to start with:
 - [`docs/GUIDE.md`](docs/GUIDE.md) — what this project is and how it's organized, in plain language.

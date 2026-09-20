@@ -16,4 +16,4 @@ only way to preview a token change against real components.
 not just `SheetDiagram.tsx` — see `app/packages/design-system/README.md` for what the package
 contains and `docs/superpowers/specs/2026-09-19-design-system-design.md` for the full design.
 
-**Three named theme presets now, not two.** Added 2026-09-11: `patchbay`, a child theme (same "only the keys that differ" structure as `claude`) matching `docs/patch-bay/`'s interactive diagrams exactly — select it here to preview that palette against the app's real mocked components. See `docs/patch-bay/STATUS.md` for the manual-sync convention between the two files.
+**Three named theme presets now, not two.** Added 2026-09-11: `patchbay`, a child theme (same "only the keys that differ" structure as `claude`) matching the interactive diagrams at `app/public/archytechy/index.html` exactly (formerly `docs/patch-bay/`, removed 2026-09-20 as a duplicate) — select it here to preview that palette against the app's real mocked components.

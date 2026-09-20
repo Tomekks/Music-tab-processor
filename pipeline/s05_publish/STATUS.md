@@ -6,7 +6,7 @@
 
 **Reads:** `pipeline_runs/<run-id>/tab.json` (Contract B) and `metadata.json`.
 
-**Writes:** one row in the hosted Turso database's `songs` table (`id`, `title`, `artist` [not yet captured anywhere — always null], `tempo_bpm`, `tuning`, `notes` as JSON, `created_at`). Upserts on `id` (the run-id), so re-publishing an updated run overwrites cleanly.
+**Writes:** one row in the hosted Turso database's `songs` table (`id`, `title`, `artist` — from `metadata.json`'s artist field (CLI `--artist`, filename `Title - Artist` convention, else null; corrected 2026-09-20, was "always null") — plus `tempo_bpm`, `tuning`, `notes` as JSON, `created_at`, and publish-time Spotify columns (`coverArtUrl`/`spotifyArtist`/`spotifyUrl`, added in `d742a78`). Upserts on `id` (the run-id), so re-publishing an updated run overwrites cleanly.
 
 **Files:** `publish.py` (module + CLI, no test yet — flagging as a gap, not an oversight to hide).
 

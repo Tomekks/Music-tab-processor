@@ -1,7 +1,19 @@
 # Agent tooling log
 
-**Last updated: 2026-09-10.**
+**Last updated: 2026-09-20.**
  If that date looks old, treat the list below as possibly stale — check `claude plugin list` for what's actually installed right now.
+
+This tracks tooling installed into the **coding agent's environment** — Claude Code plugins and skills — not the software this project ships. Actual runtime dependencies live where they always have and this file doesn't duplicate them: `app/package.json` (Next.js/TypeScript side) and the pipeline's `requirements.txt`/`pyproject.toml` (Python side). Check those for "what does the app/pipeline depend on"; check this file for "what's installed to help build it."
+
+Newest first. Each entry: name, what it does (≤80 words), when it was installed.
+
+---
+
+## Local skill bundles (kept, 2026-09-20 decision)
+
+`Skills/` holds vendored reference copies, all gitignored (local-only): `graphify-8` (19M, graphify source at v0.9.64 — kept as the Tier 1 pilot reference), `impeccable-main` (70M), `taste-skill-main` (3M), `ui-ux-pro-max-skill-main` (22M). Decision: keep on disk, document only — no deletions, no moves. Revisit if disk pressure or version drift makes the vendored copies misleading (the supported install path remains `uv tool install graphifyy`, not the vendored copy).
+
+---
 
 This tracks tooling installed into the **coding agent's environment** — Claude Code plugins and skills — not the software this project ships. Actual runtime dependencies live where they always have and this file doesn't duplicate them: `app/package.json` (Next.js/TypeScript side) and the pipeline's `requirements.txt`/`pyproject.toml` (Python side). Check those for "what does the app/pipeline depend on"; check this file for "what's installed to help build it."
 

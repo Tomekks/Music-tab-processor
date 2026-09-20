@@ -1,5 +1,13 @@
 # Task spec: <name>
 
+Target size: ~2,000 words max. Keep the §3 structure from `docs/WEB_APP_WORKFLOW.md`
+(Scope, Non-goals, Interface, Bad-case table, Forbidden patterns, Allowlist, Acceptance,
+Done, Stop-conditions) — but link sources instead of quoting them: point at the plan /
+design-doc section, the live file + lines, the decision doc. Revision history and
+decision tables go in the PR, not the spec. (Why: specs are read at least twice and
+hand-carried through a human relay; the 2026-09 design-system specs ran 3,000–5,400
+words, ~10× this template, and every pasted paragraph is re-read on each leg.)
+
 ## Goal
 One sentence: what this task accomplishes.
 

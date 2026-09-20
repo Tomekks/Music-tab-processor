@@ -66,11 +66,14 @@ One markdown file per task in `docs/specs/`:
 
 ## 4. Checkpoint commits
 
-Commit locally (not pushed) after every spec's `npm run verify` passes, before handing over the
-next spec. This is still an ask-first commit per `AGENTS.md` — it just happens routinely, once
-per completed sub-step, instead of only at the very end of a multi-spec task. Purpose: if the
-execution model goes rogue mid-task, there's a recent working checkpoint to roll back to, not
-just the state before the whole task started.
+Commit locally (not pushed) once per task-batch — after the last spec's `npm run verify`
+passes, or every 3–4 specs on a long task — before moving on. This is still an ask-first
+commit per `AGENTS.md` — it just happens once per batch instead of after every sub-step.
+`npm run verify` still runs per spec (§5.4); only the commit-ask is batched, so a failing
+spec is still caught before it can pollute the checkpoint. Purpose: if the execution model
+goes rogue mid-task, there's a recent working checkpoint to roll back to, not just the
+state before the whole task started. (Batched 2026-09-20; per-spec commits cost a human
+round trip each without adding verifiability on a PR-gated branch.)
 
 Push and deploy timing is unchanged from `AGENTS.md`: asked once, at the very end, as the
 three-way push / push & deploy / skip question.
@@ -98,9 +101,12 @@ three-way push / push & deploy / skip question.
 5. You relay the result back to Claude.
 6. **First failure stops the loop.** No second unsupervised attempt. Claude reads the failure
    and writes a fix-spec (diagnosis + narrowed instructions); back to step 2.
-7. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 8 if this
-   was the last spec.
-8. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
+7. On pass: run `npm run verify` for the spec (§5.4 already covers it), then the next spec
+   if the task has one, or step 8 if this was the last spec. Checkpoint commit per §4
+   (batched, not per spec).
+8. Manual staging check per `AGENTS.md`: `npm run stage`, look at it — once per task-batch
+   at the end, not per spec (exception: a spec that visibly changes rendering gets its own
+   staging look before moving on).
 9. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
    **`master` is branch-protected** (confirmed 2026-09-20 by a rejected direct push) — "push to
    git" means push to a branch and open a PR, wait for the required `verify` CI check, then merge;
@@ -108,9 +114,23 @@ three-way push / push & deploy / skip question.
 
 ## 6. Not yet in place
 
-- `npm run verify` itself (typecheck, lint, unit tests as one command) needs to exist before the
-  first real Bounded task runs through this loop. Small, direct work — not routed through this
-  workflow.
+- ~~`npm run verify` itself (typecheck, lint, unit tests as one command) needs to exist before the
+  first real Bounded task runs through this loop~~ — done, it exists and is the acceptance gate
+  throughout this document. (Struck 2026-09-20; was stale.)
 - Visual regression testing (screenshot comparisons via Playwright) is deferred. Once built, it
   slots into §3's Definition-of-done section as an added check — no rewrite of this document
   needed.
+
+## 7. Warm-start context pack (token budget)
+
+A fresh execution-model session must NOT re-pay the full `START_HERE.md` reading chain
+(~7–8k tokens) on every leg of a task. When relaying a spec (step §5.2), send only:
+
+1. The spec file itself (it already names exact files, interfaces, and stop-conditions).
+2. The `AGENTS.md` "Safety & trust principles" section excerpt (not the whole file).
+3. The live files in the spec's allowlist, or the instruction to read them first (§3 rule).
+4. The relevant `contracts/*.schema.json` if the task produces/consumes one.
+
+`START_HERE.md`, `GUIDE.md`, `ARCHITECTURE.md`, `DECISIONS.md`, and status files are
+Claude's context for *writing* the spec — not the execution model's context for *running* it.
+If the model needs background beyond the pack, it asks (per §5.3) instead of pre-reading.

@@ -68,15 +68,8 @@ Add codescene-oss/codescene-mcp-server so Claude (and other agents) can query Co
 - **Cons:** Another tool to install and keep current; value is unproven until actually run against this specific codebase — a project this size may not yet have enough history/hotspots for the analysis to be very informative; some features are gated behind a CodeScene subscription, not fully free.
 - **Related:** `https://github.com/codescene-oss/codescene-mcp-server`
 
-### 7. Set up CI (GitHub Actions)
-**Status:** Idea · **Priority:** Unranked · **Effort:** S–M
-
-Run pipeline tests + app lint/tests automatically on every commit. The one still-missing piece of the project's own reliability toolkit.
-
-- **Pros:** An objective, always-on signal that doesn't require reading every diff by hand; low effort since the tests already exist.
-- **Cons:** Needs the Python pipeline environment (.venv, model weights, tuttut's dependency workaround) reproduced in CI — much easier once dependencies are pinned.
-- **Dependencies:** "Pin and commit Python pipeline dependencies" (recommended first)
-- **Related:** `docs/decisions/stack-and-tooling.md`, `pipeline/VERIFY.md`
+### 7. Set up CI (GitHub Actions) — Done 2026-09-10
+Moved to `## Archive` 2026-09-20: `.github/workflows/ci.yml` live, "Protect master" ruleset active (verified via API). Pipeline tests remain app-only, not in CI.
 
 ### 8. One-command pipeline orchestration
 **Status:** Idea · **Priority:** Unranked · **Effort:** S
@@ -206,32 +199,17 @@ Marking which part of a song is "the riff" is done by hand on purpose (auto-dete
 Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand. → `docs/decisions/backlog-and-scope.md`
 
 ### 22. Spotify metadata lookup + "check if tabs exist online"
-Quality-of-life additions for a tool that, by design, serves one user who already knows what they uploaded — not worth the complexity yet. → `docs/decisions/backlog-and-scope.md`
+Partially shipped (2026-09-18): Spotify *metadata* (cover art/artist/URL) is now fetched at publish time and stored in the DB (commits `d742a78`/`83a93ab`/`7e16acd`) — the old "not worth the complexity" framing no longer holds for that half. Still open: "check if tabs exist online." → `docs/decisions/backlog-and-scope.md`
 
 ### 23. yt-dlp (YouTube-link) ingestion
 Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio. → `docs/decisions/backlog-and-scope.md`
 
 ---
 
-## Tech debt (added 2026-09-10 — see `app/status/engineering-practices.md` for the fuller record)
-
-### 24. Refactor HomePage (complexity 11, ceiling 9)
-`app/app/page.tsx`'s `HomePage` does searchParams parsing, selected-id fallback logic, and two sequential DB/API calls all inline. ESLint's complexity gate flags it (warn, not error). Not a bug — flagged automatically 2026-09-10.
-
-### 25. Refactor getTrackMetadata (complexity 18, ceiling 9)
-`app/lib/spotify.ts`'s `getTrackMetadata` mostly scores high from safe-navigation chains (`?.`/`??`) parsing Spotify's response shape, not genuinely tangled logic. Extracting a small field-parsing helper should fix most of it.
-
-### 26. Enforce CI with branch protection
-CI (`.github/workflows/ci.yml`) is live and green as of 2026-09-10 but purely informational — nothing stops a failing change from reaching `master`. Requires adopting a branch+PR workflow first (GitHub can't gate a direct push on CI).
-
-### 27. Add the Playwright home-page smoke test
-Task 5 of the CI plan — scoped but not built. One test: home page loads, no console error. Reuses Playwright rather than adding a second test framework, since full visual regression is a likely later need too.
+## Tech debt (added 2026-09-10 — see `app/status/engineering-practices.md` for the fuller record; items resolved 2026-09-20 now live under `## Archive` below)
 
 ### 28. Split SESSION_HANDOFF.md / DRIFT_CHECK.md by domain
 Both currently mix app and pipeline concerns in one checklist, and `SESSION_HANDOFF`'s "Full handoff" re-reads the whole conversation instead of trusting already-current STATUS files — expensive by design flaw, not necessity.
-
-### 29. A real process for syncing secrets to GitHub, without pasting them anywhere
-Turso/CodeScene/Spotify credentials have all been pasted into chat at least once, needing rotation each time. Needed: a script the user runs themselves to push `.env.local` values to GitHub Actions secrets — Claude never touches the values.
 
 ### 30. `@types/node` pinned to `^20` while running Node 26
 Type-definitions/runtime version mismatch in `app/package.json`, not currently causing a visible problem. Dependabot may resolve this on its own (a PR bumping it is already open as of 2026-09-10).
@@ -243,7 +221,25 @@ Type-definitions/runtime version mismatch in `app/package.json`, not currently c
 
 ## Archive
 
-*(nothing yet — done/rejected items move here, never deleted)*
+Done/rejected items move here, never deleted. Statuses verified 2026-09-20 unless noted.
+
+### 7. Set up CI (GitHub Actions) — Done
+Shipped 2026-09-10: `.github/workflows/ci.yml` live, "Protect master" branch-protection ruleset active (verified via API 2026-09-20). Pipeline tests remain app-only, not in CI.
+
+### 24. Refactor HomePage (complexity 11, ceiling 9) — Done
+Resolved by refactor: `npx eslint app/page.tsx` is clean (exit 0, no warnings) as of 2026-09-20. The complexity gate it tripped in 2026-09-10 no longer fires.
+
+### 25. Refactor getTrackMetadata (complexity 18, ceiling 9) — Void
+Moot: `app/lib/spotify.ts` was deleted when metadata lookup moved to publish time (`7e16acd`). No function left to refactor.
+
+### 26. Enforce CI with branch protection — Done
+Shipped 2026-09-10: "Protect master" ruleset active, requires the `verify` check via PR (verified via API 2026-09-20).
+
+### 27. Add the Playwright home-page smoke test — Done
+Shipped: `app/e2e/home.spec.ts` exists (home page loads, no console error), run via `npm run test:e2e`. Not yet folded into `verify.sh`/CI — see `app/status/engineering-practices.md`.
+
+### 29. A real process for syncing secrets to GitHub, without pasting them anywhere — Done
+Shipped: `scripts/sync-secrets-to-github.sh` exists — the user runs it themselves to push `.env.local` values to GitHub Actions secrets.
 
 ---
 
