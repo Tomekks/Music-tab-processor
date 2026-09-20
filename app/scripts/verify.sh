@@ -19,6 +19,9 @@ npm run lint
 echo "== unit tests =="
 npm test
 
+echo "== design-system package tests =="
+npm test --workspace @guitar-tabs/design-system
+
 if [ "${1:-}" = "--full" ]; then
   echo "== production build =="
   npm run build
