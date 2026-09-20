@@ -17,7 +17,7 @@ Part of `docs/backlog-board/` — see `docs/GUIDE.md`'s map for how this fits in
 **Known, deliberate trade-offs — not bugs:**
 - `localStorage` (and the clipboard, for "Copy Markdown") may not persist/work reliably in Safari for `file://` pages, which are stricter about local-file origins than Chrome/Firefox. Untested in real Safari as of this writing — recommend Chrome or Firefox if edits don't seem to be sticking.
 - Dragging a card while a category filter is active places any filtered-out card in that status column *before* the visible ones, rather than perfectly interleaved with them — cosmetic only, never data loss or a wrong column. See the comment above `syncOrderFromDOM` in `index.html`.
-- Any cross-reference between items (`Dependencies`, `Related`) must name the other item's title, never a positional number (`#N`) — item order changes by design (that's the whole point of the board), so a positional reference silently goes stale the moment anything is added or reordered. This actually happened once already (2026-09-09, inserting the CodeScene item shifted three existing numeric references) — see `docs/DRIFT_LOG.md`'s entry that day for the fix.
+- Any cross-reference between items (`Dependencies`, `Related`) must name the other item's title, never a positional number (`#N`) — item order changes by design (that's the whole point of the board), so a positional reference silently goes stale the moment anything is added or reordered. This actually happened once already (2026-09-09, inserting the CodeScene item shifted three existing numeric references) — see `docs/DRIFT_LOG_archive.md`'s entry that day for the fix.
 
 **Decided (2026-09-09):** yes, this tool + `DESIGN.md` are public on GitHub. See `docs/PENDING_ACTIONS.md`.
 

@@ -37,7 +37,7 @@ Every file exists to be read by an AI (or human) trying to reach one specific fa
 
 ## When a file should become an index + folder
 
-**Split it** once a file exceeds roughly 1,500–2,000 words *and* genuinely covers more than one separable topic. `docs/DECISIONS.md` (5,452 words, seven separable topics), `app/STATUS.md` (2,233 words, four), and `docs/AUDIOPROCESSINGTOOLS.md` (1,041 words, four pipeline stages) are the worked examples — see `docs/DRIFT_LOG.md`'s 2026-09-09 entries for how each was actually split.
+**Split it** once a file exceeds roughly 1,500–2,000 words *and* genuinely covers more than one separable topic. `docs/DECISIONS.md` (5,452 words, seven separable topics), `app/STATUS.md` (2,233 words, four), and `docs/AUDIOPROCESSINGTOOLS.md` (1,041 words, four pipeline stages) are the worked examples — see `docs/DRIFT_LOG_archive.md`'s 2026-09-09 entries for how each was actually split.
 
 **Don't split** a file just because it's grown, if it's one of these shapes instead:
 
@@ -51,16 +51,7 @@ Every file exists to be read by an AI (or human) trying to reach one specific fa
 
 This is the rule that makes the split stick instead of quietly re-bloating the way `DECISIONS.md` originally did.
 
-## Weekly maintenance check
-
-Lighter-weight than `docs/DRIFT_CHECK.md`'s full, event-triggered audit, and deliberately calendar-based (weekly) rather than tied to a natural pause point — doc bloat accumulates gradually with ordinary use, not in one identifiable burst.
-
-1. Check the word count (`wc -w`) of the index files (`docs/DECISIONS.md`, `app/STATUS.md`, `docs/AUDIOPROCESSINGTOOLS.md`) plus any file that's grown noticeably that week.
-2. Check whether the "three homes" assignment still held for everything added that week — did any *why* end up in a status file, or vice versa?
-3. Check whether any topic file has itself crossed the split-threshold above.
-4. Log the result as an entry in the existing `docs/DRIFT_LOG.md` (no separate log file), tagged as a **doc maintenance check** so it's distinguishable from a full drift check.
-
-This is currently a documented, manually-run procedure — not an automated recurring job. Real scheduling (an actual weekly reminder) is possible but a separate decision, not assumed here.
+Doc bloat is checked as part of the regular drift check (`docs/DRIFT_CHECK.md` Tier 1) rather than on a separate weekly cadence — a calendar-based check with no scheduler behind it never actually ran.
 
 ## The update ritual
 
