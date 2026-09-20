@@ -20,9 +20,21 @@ shape. Work from that branch, not `master`.
 - `app/packages/design-system/src/tokens-validation.test.mjs` (**new**): path-parity between
   `tokens.json`/`tokens.default.json`, and `$value`/`$type` shape validation.
 - `app/packages/design-system/src/contrast.test.mjs` (**new**): WCAG AA contrast check on the
-  brand's five on-color pairs.
+  brand's seven on-color pairs (see §7 — five as originally scoped, plus `background`/
+  `foreground` for both themes, added on review since that's the most-rendered text on the page
+  and wasn't covered).
+- `app/packages/design-system/src/build-tokens.test.mjs` (**new**): golden-output test —
+  `generateCSS()` against the real, committed `tokens.json` produces exactly the CSS pinned in
+  §3. Added on review: with that CSS already fully pinned as literal text, this is nearly free to
+  write, and it's the most direct mechanical protection for "replicate `globals.css`, don't clean
+  it up" — the requirement §3 spends the most words justifying.
 - `app/packages/design-system/package.json` (modify): add `"test": "node --test src/"`.
-- `app/scripts/verify.sh` (modify): add a step running this package's tests.
+- `app/scripts/verify.sh` (modify): add a step running this package's tests, inserted
+  immediately after the existing `npm test` line and before the `if [ "${1:-}" = "--full" ]`
+  block — so it runs on every `npm run verify`, not only `--full`, matching how the app's own
+  unit tests are already gated. Confirm locally that `npm test --workspace
+  @guitar-tabs/design-system` (run from `app/`) is the correct invocation for this workspace
+  before wiring it in — the plan already flags this as worth double-checking.
 - No `.env`/credential contact. No changes to `app/app/` — this task's output is exercised only
   by its own tests, not wired into the running app yet (that's Task 3).
 
@@ -58,51 +70,97 @@ export function resolveValue(tree: TokenTree, value: unknown, path?: string[]): 
   `Error("Token reference not found: {semantic.color.accent}")` (exact path in the message).
   If the resolved node isn't a token object (no `$value` key), throw
   `Error("Token reference {path} does not resolve to a token")`.
+- **Reference whitespace:** trim the string inside the braces before treating it as a path —
+  `"{ semantic.color.accent }"` and `"{semantic.color.accent}"` resolve identically. This is a
+  hand-editable JSON file; don't make a stray space an obscure "not found" error.
 - **Cycle detection:** `path` (the optional third parameter) accumulates every reference string
-  resolved so far in the current call chain. Before resolving a reference, check whether it's
-  already in `path` — if so, throw `Error` naming the full cycle (e.g.
-  `"Circular token reference: {a} -> {b} -> {a}"`), not a stack overflow. Reference sketch (adapt
-  freely, but the cycle check must work this way — check-before-recurse, not catch-after-crash):
+  resolved so far in the current call chain (braces already stripped, so entries look like
+  `"semantic.color.accent"`, not `"{semantic.color.accent}"`). Before resolving a reference,
+  check whether it's already in `path` — if so, throw `Error` naming the full cycle, e.g.
+  `"Circular token reference: a -> b -> a"` (unbraced, matching what the sketch below actually
+  produces) — not a stack overflow. Reference sketch (adapt freely, but the cycle check must work
+  this way — check-before-recurse, not catch-after-crash; the two `hasOwn`/`typeof` checks matter
+  too, not just decoration — see the note after):
 
   ```js
   export function resolveValue(tree, value, path = []) {
     if (typeof value !== "string" || !value.startsWith("{") || !value.endsWith("}")) {
       return value;
     }
-    const ref = value.slice(1, -1);
+    const ref = value.slice(1, -1).trim();
     if (path.includes(ref)) {
       throw new Error(`Circular token reference: ${[...path, ref].join(" -> ")}`);
     }
     let node = tree;
     for (const segment of ref.split(".")) {
-      if (node == null || !(segment in node)) {
+      if (node === null || typeof node !== "object" || !Object.hasOwn(node, segment)) {
         throw new Error(`Token reference not found: {${ref}}`);
       }
       node = node[segment];
     }
-    if (node == null || typeof node !== "object" || !("$value" in node)) {
+    if (node === null || typeof node !== "object" || !Object.hasOwn(node, "$value")) {
       throw new Error(`Token reference {${ref}} does not resolve to a token`);
     }
     return resolveValue(tree, node.$value, [...path, ref]);
   }
   ```
 
+  **Why `Object.hasOwn`, not `in`:** `segment in node` walks the prototype chain — a reference
+  like `{constructor}` would match `Object.prototype.constructor` and resolve into garbage
+  instead of throwing "not found." `Object.hasOwn(node, segment)` only matches the object's own
+  keys. The added `typeof node !== "object"` guard (now checked *before* the property check, not
+  after) stops the walk cleanly if a path tries to go deeper than a token allows — e.g. through a
+  string or number — instead of letting `in`/`hasOwn` throw a raw, unhelpful native `TypeError`.
+
 ### `build-tokens.mjs`
 
 ```ts
 export function generateCSS(brandDir: string): string;
+export function resolveBrandDir(): string;
 ```
 
-Given a brand's directory (e.g. `app/packages/design-system/brands/default`), reads
-`tokens.json` from it, resolves every leaf via `resolveValue`, and returns the generated CSS as
-a string. A separate, small piece of this task's own logic reads `active-brand.json` to find
-which brand directory to pass — see Bad-case behavior (§4) for what happens when that file is
-missing or names a brand that doesn't exist.
+`generateCSS` reads `tokens.json` from the given brand directory (e.g.
+`app/packages/design-system/brands/default`), resolves every leaf via `resolveValue`, and
+returns the generated CSS as a string.
 
-**Exact output, given Task 1's real `tokens.json`** (naming convention: `camelCase` JSON keys
-become `kebab-case` CSS segments, e.g. `surfaceText` → `surface-text`, `onAccent` → `on-accent`,
-except where noted — the table below is authoritative, don't derive names from a general rule
-where this spec gives the literal name):
+`resolveBrandDir` reads `active-brand.json` and returns the absolute path to the named brand's
+directory. **Pinned as a named export now, not left as unnamed "a separate piece of logic"** —
+Task 3's CLI entrypoint and Task 5's API route both need this same lookup, from different working
+directories (a build script vs. a Next.js API route file), so both must call the same function
+rather than each reimplementing brand resolution slightly differently. Resolve every path from
+`import.meta.dirname` (this file's own location), never from `process.cwd()` — the whole reason
+to name this export now is so it behaves identically regardless of which task calls it from
+where. See Bad-case behavior (§4) for missing-file / bad-brand handling.
+
+**Emission approach — a generic walker with a small exception map, not a hardcoded template.**
+`generateCSS` doesn't special-case each token by name; it walks whatever sections exist in
+`tokens.json` (`semantic.color`, `semantic.state`, `semantic.focus`, `semantic.radius`,
+`semantic.space`, `semantic.typography`, `semantic.layout`, and — once Task 4 adds them —
+`component.*`), converting each leaf's path to a CSS custom property name and its resolved
+`$value` to the property's value. This matters because Task 4 adds `component.*` blocks that
+don't exist yet and must emit correctly without this build script being rewritten.
+
+The naming conversion itself is `camelCase` → `kebab-case` by default (`surfaceText` →
+`surface-text`), **except** for a short, explicit list of names that must stay bare instead of
+gaining a `--color-`/section prefix — encode this as a small lookup table in the code itself
+(e.g. a `NAME_MAP` object), not as an ad-hoc `if` buried in the walk logic, so Task 4 can extend
+it in one obvious place:
+
+```js
+// Keys that keep their bare CSS name instead of getting a --color-/section prefix.
+// Everything else in semantic.color.* gets --color-<kebab-name>.
+const BARE_COLOR_KEYS = new Set(["background", "foreground"]);
+```
+
+This isn't a guess at a clean convention — it's the exact, provably-not-derivable-from-a-rule
+inconsistency already in `app/app/globals.css` (§3's "why this exact shape" explains why it has
+to stay this way, not get "fixed"). `radius.base` → `--radius` (not `--radius-base`) and
+`layout.sidebarWidth` → `--sidebar-width` (not `--layout-sidebar-width`) are two more real
+exceptions already present in the pinned output below — same mechanism, same table, not special
+cases bolted on separately.
+
+**Exact output, given Task 1's real `tokens.json`** — this is the literal, checked output for
+today's data, and (with the golden test in §7) a mechanical gate, not just documentation:
 
 ```css
 /* Design tokens — auto-generated by build-tokens.mjs. Do not edit directly. */
@@ -172,11 +230,15 @@ where this spec gives the literal name):
 **Why this exact shape, not a "cleaner" one** — this replicates the current real
 `app/app/globals.css` structure precisely (including its one real inconsistency: `background`/
 `foreground` are bare names, everything else is `--color-`-prefixed), because Task 3's cutover
-has to be a drop-in replacement for that file, and because `SheetDiagram.tsx` already consumes
-`var(--background)`/`var(--foreground)` directly by their bare names — renaming them to
-`--color-background`/`--color-foreground` here would silently break that component, which is out
-of this task's (and this whole phase's) scope to touch. Specific points, since they're easy to
-get wrong by "cleaning up" instead of replicating:
+has to be a drop-in replacement for that file, and because **both** `SheetDiagram.tsx` and
+`FretboardDiagram.tsx` already consume `var(--background)`/`var(--foreground)` directly by their
+bare names (`app/components/SheetDiagram.tsx`, `app/components/FretboardDiagram.tsx` — both
+extensively, not just incidentally) — renaming them to `--color-background`/`--color-foreground`
+here would silently break two real, already-shipped components, which is out of this task's (and
+this whole phase's) scope to touch. (`app/status/design-system.md` currently says `SheetDiagram`
+is the "first *and only*" component wired to tokens — that's stale, `FretboardDiagram` is too;
+not this task's job to fix that note, just worth knowing why the citation here names both.)
+Specific points, since they're easy to get wrong by "cleaning up" instead of replicating:
 
 - `--color-surface-text`, `--color-surface-hover`, `--color-surface-active`,
   `--color-surface-active-text` appear in `@theme inline` and inside both `[data-theme]` blocks,
@@ -209,7 +271,7 @@ get wrong by "cleaning up" instead of replicating:
 | `active-brand.json`'s `"brand"` names a folder that doesn't exist under `brands/` | Throw a clear error naming both the requested brand and the path it looked for |
 | A token reference points at a path that doesn't exist | `resolveValue` throws (§3) — `build-tokens.mjs` doesn't catch this, lets it propagate |
 | A token reference forms a cycle | `resolveValue` throws with the cycle named (§3) |
-| `tokens.json` is missing a token this task's output table (§3) expects | Stop and ask (§9) — don't silently omit it from the generated CSS |
+| The real `tokens.json`'s current content doesn't produce the exact CSS pinned in §3 | Stop and ask (§9) — that pinned output is the golden test's expected value (§7); a mismatch means either this task's walker logic or the pinned example is wrong, not something to paper over by editing whichever one is more convenient |
 
 ## 5. Forbidden patterns
 
@@ -225,6 +287,7 @@ get wrong by "cleaning up" instead of replicating:
 - `app/packages/design-system/src/resolve.mjs` (new)
 - `app/packages/design-system/src/resolve.test.mjs` (new)
 - `app/packages/design-system/src/build-tokens.mjs` (new)
+- `app/packages/design-system/src/build-tokens.test.mjs` (new)
 - `app/packages/design-system/src/tokens-validation.test.mjs` (new)
 - `app/packages/design-system/src/contrast.test.mjs` (new)
 - `app/packages/design-system/package.json` (modify)
@@ -232,12 +295,22 @@ get wrong by "cleaning up" instead of replicating:
 
 ## 7. Test specifications
 
+All test files use this repo's existing convention (matching `app/lib/fretboard.test.ts`):
+`import test from "node:test"` and `node:assert/strict`, not a third-party test framework.
+
 **`resolve.test.mjs`:**
-- A multi-hop reference (e.g. resolving `semantic.color.onAccent`, which is
-  `{primitive.color.ink}`) returns the final literal (`"#141413"`).
+- A genuinely multi-hop reference: `semantic.focus.ringColor` is `{semantic.color.accent}`,
+  which is itself `{primitive.color.accent}`, which is `"#ae97f7"` — two hops, not one.
+  Resolving `ringColor`'s `$value` must return `"#ae97f7"`. (`onAccent` is single-hop — it
+  resolves directly to `{primitive.color.ink}` — fine as a second, simpler case, but not the one
+  that proves chained resolution actually chains.)
 - A reference to a path that doesn't exist in the tree throws.
 - A reference to a path that exists but isn't a token (no `$value`) throws.
+- A reference with surrounding whitespace (`"{ semantic.color.accent }"`) resolves the same as
+  without it.
 - A raw, non-reference value (`"#ae97f7"`, `12`, `"var(--font-geist-sans)"`) returns unchanged.
+- A reference naming an inherited/prototype property (`"{constructor}"` or similar) throws "not
+  found" — it must **not** resolve into `Object.prototype`.
 - A synthetic circular reference — construct a small standalone token tree in the test itself
   (don't rely on `tokens.json` having a cycle, it doesn't and shouldn't) where `a`'s `$value` is
   `"{b}"` and `b`'s `$value` is `"{a}"` — resolving either throws, and the process doesn't hang.
@@ -250,37 +323,60 @@ get wrong by "cleaning up" instead of replicating:
 - Every leaf across both files has both `$value` and `$type`, and `$type` is one of `color` /
   `dimension` / `number` / `fontFamily`.
 
+**`build-tokens.test.mjs`** (golden output): `generateCSS(<path to
+brands/default>)` called against the real, committed `tokens.json` returns a string identical to
+the CSS pinned in §3, character for character. Check the expected output in as a fixture (e.g.
+`src/__fixtures__/default-brand.css` or inline as a template literal — implementer's call) rather
+than retyping it a third time; either way it must be the *exact* text from §3, not a paraphrase.
+This is what makes "replicate `globals.css`, don't clean it up" a test failure instead of a code
+review opinion the moment someone's refactor drifts from it.
+
 **`contrast.test.mjs`** — implement the WCAG relative-luminance formula (sRGB → linear per
 channel → `0.2126R + 0.7152G + 0.0722B` → contrast ratio `(L1+0.05)/(L2+0.05)`, lighter over
-darker) and assert **≥ 4.5:1** for exactly these five pairs, resolving each side through
+darker) and assert **≥ 4.5:1** for exactly these seven pairs, resolving each side through
 `resolveValue` first (don't hardcode the hex values in the test — resolve them from the real
 `tokens.json`, so the test actually re-checks the live data, not a frozen snapshot of it):
 
 | Pair | Light | Dark |
 |---|---|---|
 | `accent` / `onAccent` | theme-invariant — one check, not two: `#ae97f7` / `#141413` → 7.52:1 | — |
+| `background` / `foreground` | `#faf9f5` / `#141413` → 17.50:1 | `#1c1d1f` / `#ededed` → 14.41:1 |
 | `surface` / `surfaceText` | `#ffffff` / `#141413` → 18.43:1 | `#535353` / `#ffffff` → 7.69:1 |
 | `surfaceActive` / `surfaceActiveText` | `#141413` / `#faf9f5` → 17.50:1 | `#ffffff` / `#212121` → 16.10:1 |
 
 (Numbers shown are what Task 1's real data currently produces — computed independently (Python,
-the standard WCAG formula) while writing this spec, not asserted without basis. The test should
-compute these itself from the live `tokens.json`, not hardcode the ratios — if the data changes
-later and a pair drops below 4.5:1, this test is what's supposed to catch it, not a frozen table.)
+the standard WCAG formula), and re-verified again while fixing this spec on review, not asserted
+without basis. The test should compute these itself from the live `tokens.json`, not hardcode
+the ratios — if the data changes later and a pair drops below 4.5:1, this test is what's supposed
+to catch it, not a frozen table.)
+
+**A deliberate strictness note, not an oversight:** `DESIGN.md` (Task 1) states 4.5:1 for body
+text but allows 3:1 for large text (18px+) and UI components. This test holds **every** pair to
+4.5:1 regardless, because every pair listed above happens to clear it with real margin today —
+there's no currently-known pair that needs the looser bound. If a future brand adds a pair that's
+genuinely large-text-only and intentionally sits between 3:1 and 4.5:1, that's a real reason to
+loosen this specific test for that specific pair — not a sign the test is broken.
 
 ## 8. Definition of done
 
-`npm test --workspace @guitar-tabs/design-system` reports **5 test files, all passing** (check
-the count, not just exit code — see the reasoning in the plan's Task 2 section about why a
-shell-glob test-discovery bug would otherwise pass silently) + `npm run verify` passes with the
-new step included + `git diff --stat` matches the allowlist (7 files: 5 new, 2 modified) +
-checkpoint commit (ask-first per `AGENTS.md`).
+`npm test --workspace @guitar-tabs/design-system` reports **4 test files, all passing**
+(`resolve.test.mjs`, `build-tokens.test.mjs`, `tokens-validation.test.mjs`,
+`contrast.test.mjs` — check the actual count, not just exit code: this exact spec had a wrong
+count here once already, caught on review, which is itself the silent-pass class of bug this
+check exists to guard against) + `npm run verify` passes with the new step included +
+`git diff --stat` matches the allowlist (8 files: 6 new, 2 modified) + checkpoint commit
+(ask-first per `AGENTS.md`).
 
 ## 9. Stop-conditions
 
-- If any token in `tokens.json` doesn't map cleanly onto the naming table in §3 (a shape this
-  spec didn't anticipate), stop and ask rather than inventing a name.
+- If any token in `tokens.json` doesn't map cleanly onto the `BARE_COLOR_KEYS`-exception walker
+  described in §3 (a shape neither the rule nor the exception list anticipated), stop and ask
+  rather than inventing a name.
 - If `resolveValue`'s cycle detection can't be made to work as sketched for some reason specific
   to this codebase's tooling, stop and ask before shipping a different mechanism.
-- If the contrast test finds any of the five pairs actually failing 4.5:1 against the real,
+- If the contrast test finds any of the seven pairs actually failing 4.5:1 against the real,
   committed `tokens.json` (contradicting the numbers in §7's table), stop and ask — don't adjust
   the threshold or the data to make it pass.
+- If the golden-output test's actual `generateCSS()` result doesn't match §3's pinned CSS on the
+  first honest attempt, stop and ask which one is wrong — don't edit the fixture to match
+  whatever the code produced without checking it against §3's reasoning first.
