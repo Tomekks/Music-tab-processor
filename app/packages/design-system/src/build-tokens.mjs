@@ -6,8 +6,8 @@
 // Replicates app/app/globals.css's existing structure exactly, including its
 // bare-vs-prefixed inconsistency (background/foreground are bare, everything
 // else is --color- prefixed) and radius.base -> --radius /
-// layout.sidebarWidth -> --sidebar-width. Task 4 extends the exception map in
-// the one marked place; nothing else in this file should need to change.
+// layout.sidebarWidth -> --sidebar-width. Task 4 adds the component.* var()
+// alias branch in the marked loop below; nothing else in this file changes.
 
 import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
@@ -59,6 +59,20 @@ function colorPropName(key) {
   return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
 }
 
+// Task 4 §0(a): a component.* leaf whose $value is a direct single reference
+// to a theme-varying semantic color (a key present in the dark override
+// block) emits a var() alias to that color's own CSS variable instead of a
+// resolved literal. The alias re-resolves live, so [data-theme] overrides
+// flow through automatically — no per-theme duplication needed. Anything
+// else (non-color leaves, theme-invariant colors like accent/onAccent)
+// resolves to a literal exactly as before.
+function themeVaryingColorRef(leaf, themeVaryingKeys) {
+  if (typeof leaf.$value !== "string") return null;
+  const m = /^\{\s*semantic\.color\.([A-Za-z0-9_]+)\s*\}$/.exec(leaf.$value);
+  if (!m) return null;
+  return themeVaryingKeys.has(m[1]) ? m[1] : null;
+}
+
 // Read active-brand.json and return the absolute path of that brand's directory.
 // Paths resolve from this file's location, never process.cwd(), so the build
 // script (Task 3), the API route (Task 5), and tests all get the same answer.
@@ -96,9 +110,14 @@ export function generateCSS(brandDir) {
       root.push(`  ${namer(path[path.length - 1])}: ${v(leaf)};`);
     }
   }
-  // Future component.* blocks (Task 4): --<component>-<token-path>.
+  // Component.* blocks (Task 4): --<component>-<token-path>.
+  // Leaves referencing a theme-varying semantic color emit a var() alias
+  // (§0(a)); everything else resolves to a literal.
+  const themeVaryingKeys = new Set(Object.keys(darkColors));
   for (const [path, leaf] of collectLeaves(tokens.component, ["component"])) {
-    root.push(`  --${path.map(kebab).join("-")}: ${v(leaf)};`);
+    const name = `--${path.map(kebab).join("-")}`;
+    const refKey = themeVaryingColorRef(leaf, themeVaryingKeys);
+    root.push(refKey ? `  ${name}: var(${colorPropName(refKey)});` : `  ${name}: ${v(leaf)};`);
   }
 
   // ---- @theme inline ----

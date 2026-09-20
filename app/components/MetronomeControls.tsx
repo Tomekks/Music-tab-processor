@@ -31,16 +31,7 @@ export function MetronomeControls({
         onClick={onReset}
         aria-label="Reset to start"
         title="Reset to start"
-        className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
-      >
-        ⏮
-      </button>
-
-      <button
-        onClick={onReset}
-        aria-label="Reset to start"
-        title="Reset to start"
-        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover"
       >
         ⏮
       </button>
@@ -48,7 +39,7 @@ export function MetronomeControls({
       <button
         onClick={onToggle}
         aria-label={isPlaying ? "Pause" : "Play"}
-        className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover"
       >
         {isPlaying ? "⏸ Pause" : "▶ Play"}
       </button>
@@ -64,7 +55,7 @@ export function MetronomeControls({
             const next = Number(e.target.value);
             if (Number.isFinite(next)) onBpmChange(next);
           }}
-          className="w-16 rounded border border-surface bg-surface px-2 py-1 text-sm text-surface-text"
+          className="w-16 rounded border border-border bg-surface px-2 py-1 text-sm text-surface-text"
         />
         bpm
       </label>
@@ -76,7 +67,7 @@ export function MetronomeControls({
         className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold ${
           soundEnabled
             ? "border-surface-active bg-surface-active text-surface-active-text"
-            : "border-surface bg-surface text-surface-text hover:bg-surface-hover hover:border-surface-hover"
+            : "border-border bg-surface text-surface-text hover:bg-surface-hover"
         }`}
       >
         MIDI sound

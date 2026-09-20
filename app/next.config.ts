@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@guitar-tabs/design-system"],
   // /archytechy -- an unlisted, secret-link-only static page (docs/patch-bay/
   // index.html, copied verbatim into public/archytechy/). Next.js serves
   // public/ files at their exact path (public/archytechy/index.html works as

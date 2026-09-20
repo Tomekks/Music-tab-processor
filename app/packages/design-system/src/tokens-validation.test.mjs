@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const HERE = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
 const BRAND_DIR = join(HERE, "..", "brands", "default");
-const KNOWN_TYPES = new Set(["color", "dimension", "number", "fontFamily"]);
+const KNOWN_TYPES = new Set(["color", "dimension", "number", "fontFamily", "percentage"]);
 
 // Every dot-joined path terminating in a {$value, $type} leaf.
 function leafPaths(obj, prefix = []) {

@@ -21,10 +21,12 @@
       "surfaceActiveText": { "$value": "{primitive.color.paper}", "$type": "color" }
     },
     "state": {
-      "hoverOpacity": { "$value": 0.08, "$type": "number" },
-      "focusOpacity": { "$value": 0.10, "$type": "number" },
-      "pressedOpacity": { "$value": 0.12, "$type": "number" },
-      "disabledOpacity": { "$value": 0.5, "$type": "number" }
+      "hoverOpacity": { "$value": "8%", "$type": "percentage" },
+      "focusOpacity": { "$value": "10%", "$type": "percentage" },
+      "pressedOpacity": { "$value": "12%", "$type": "percentage" },
+      "disabledOpacity": { "$value": "50%", "$type": "percentage" },
+      "mutedTextOpacity": { "$value": "40%", "$type": "percentage" },
+      "mutedTextHoverOpacity": { "$value": "70%", "$type": "percentage" }
     },
     "focus": {
       "ringWidth": { "$value": "2px", "$type": "dimension" },
@@ -40,7 +42,8 @@
       "3": { "$value": "12px", "$type": "dimension" },
       "4": { "$value": "16px", "$type": "dimension" },
       "6": { "$value": "24px", "$type": "dimension" },
-      "8": { "$value": "32px", "$type": "dimension" }
+      "8": { "$value": "32px", "$type": "dimension" },
+      "1_5": { "$value": "6px", "$type": "dimension" }
     },
     "typography": {
       "sans": { "$value": "var(--font-geist-sans)", "$type": "fontFamily" },
@@ -50,7 +53,34 @@
       "sidebarWidth": { "$value": "240px", "$type": "dimension" }
     }
   },
-  "component": {},
+  "component": {
+    "colorField": {
+      "swatchSize": { "$value": "{semantic.space.6}", "$type": "dimension" },
+      "radius": { "$value": "{semantic.radius.base}", "$type": "dimension" },
+      "fontFamily": { "$value": "{semantic.typography.mono}", "$type": "fontFamily" },
+      "border": { "$value": "{semantic.color.border}", "$type": "color" },
+      "background": { "$value": "{semantic.color.surface}", "$type": "color" },
+      "text": { "$value": "{semantic.color.surfaceText}", "$type": "color" }
+    },
+    "slider": {
+      "trackColor": { "$value": "{semantic.color.border}", "$type": "color" }
+    },
+    "segmentedControl": {
+      "gap": { "$value": "{semantic.space.6}", "$type": "dimension" },
+      "border": { "$value": "{semantic.color.border}", "$type": "color" }
+    },
+    "button": {
+      "paddingX": { "$value": "{semantic.space.3}", "$type": "dimension" },
+      "paddingY": { "$value": "{semantic.space.1_5}", "$type": "dimension" },
+      "radius": { "$value": "{semantic.radius.base}", "$type": "dimension" },
+      "fontFamily": { "$value": "{semantic.typography.sans}", "$type": "fontFamily" },
+      "primaryBackground": { "$value": "{semantic.color.accent}", "$type": "color" },
+      "primaryText": { "$value": "{semantic.color.onAccent}", "$type": "color" },
+      "secondaryBackground": { "$value": "{semantic.color.surface}", "$type": "color" },
+      "secondaryText": { "$value": "{semantic.color.surfaceText}", "$type": "color" },
+      "secondaryBorder": { "$value": "{semantic.color.border}", "$type": "color" }
+    }
+  },
   "dark": {
     "semantic": {
       "color": {
