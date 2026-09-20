@@ -24,6 +24,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, unmodified third-party source (see its own README) -- not ours to hold to
+    // this repo's style/complexity rules.
+    "packages/design-system/src/vendor/**",
   ]),
 ]);
 
