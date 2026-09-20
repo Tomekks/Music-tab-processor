@@ -41,6 +41,9 @@ yarn-error.log*
 # see app/STATUS.md)
 /design_system
 
+# generated design tokens (rebuilt by tokens:build on predev/prebuild/prestage)
+/app/design-tokens.generated.css
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

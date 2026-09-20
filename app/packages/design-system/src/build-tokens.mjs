@@ -9,8 +9,8 @@
 // layout.sidebarWidth -> --sidebar-width. Task 4 extends the exception map in
 // the one marked place; nothing else in this file should need to change.
 
-import { readFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
 
@@ -143,4 +143,14 @@ export function generateCSS(brandDir) {
     `\n` +
     `[data-theme="dark"] {\n${block("dark").join("\n")}\n}\n`
   );
+}
+
+// CLI entrypoint (Task 3). Gated behind a main-module check so merely
+// importing this file (tests, Task 5's API route) never writes to disk.
+// fileURLToPath/resolve comparison — not import.meta.url string-concat — so
+// this fires whether argv[1] arrives absolute or relative.
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  const outPath = resolve(HERE, "../../../app/design-tokens.generated.css");
+  writeFileSync(outPath, generateCSS(resolveBrandDir()));
+  console.log(`Generated: ${outPath}`);
 }
