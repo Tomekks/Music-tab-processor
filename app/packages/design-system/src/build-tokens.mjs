@@ -164,12 +164,19 @@ export function generateCSS(brandDir) {
   );
 }
 
+// Rebuild the active brand's generated CSS on disk. Extracted (Task 5) so
+// the token API route can trigger exactly the same build in-process;
+// the CLI guard below becomes a thin caller. Behavior is identical either way.
+export function buildActiveBrand() {
+  const outPath = resolve(HERE, "../../../app/design-tokens.generated.css");
+  writeFileSync(outPath, generateCSS(resolveBrandDir()));
+  return outPath;
+}
+
 // CLI entrypoint (Task 3). Gated behind a main-module check so merely
 // importing this file (tests, Task 5's API route) never writes to disk.
 // fileURLToPath/resolve comparison — not import.meta.url string-concat — so
 // this fires whether argv[1] arrives absolute or relative.
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  const outPath = resolve(HERE, "../../../app/design-tokens.generated.css");
-  writeFileSync(outPath, generateCSS(resolveBrandDir()));
-  console.log(`Generated: ${outPath}`);
+  console.log(`Generated: ${buildActiveBrand()}`);
 }
