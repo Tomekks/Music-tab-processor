@@ -4,20 +4,10 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
+import { deepMerge } from "./deep-merge.mjs";
 
 const HERE = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
 const tokens = JSON.parse(readFileSync(join(HERE, "..", "brands", "default", "tokens.json"), "utf8"));
-
-function deepMerge(base, override) {
-  const out = { ...base };
-  for (const key of Object.keys(override ?? {})) {
-    out[key] =
-      base?.[key] !== null && typeof base?.[key] === "object" && override[key] !== null && typeof override[key] === "object" && !("$value" in override[key])
-        ? deepMerge(base[key], override[key])
-        : override[key];
-  }
-  return out;
-}
 
 // Task 1 §3 merge rule: dark.semantic.* overlays base semantic.*; anything
 // absent from dark resolves from base unchanged.

@@ -13,6 +13,7 @@ import { readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
+import { deepMerge } from "./deep-merge.mjs";
 
 const HERE = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(HERE, "..");
@@ -86,8 +87,41 @@ export function resolveBrandDir() {
   return brandDir;
 }
 
-export function generateCSS(brandDir) {
+// Resolves a brand's full token tree, following its `brand.json`'s `parent`
+// declaration (if any) exactly one level up and deep-merging the child's
+// tokens.json on top. Capped at one level by design -- a parent that itself
+// declares a parent throws loudly instead of silently truncating the chain,
+// so a real second-level use case has to touch this function, not sneak
+// past it.
+export function resolveBrandTree(brandDir) {
   const tokens = JSON.parse(readFileSync(join(brandDir, "tokens.json"), "utf8"));
+  const metaPath = join(brandDir, "brand.json");
+  if (!existsSync(metaPath)) {
+    return { tree: tokens, parentBrandDir: null };
+  }
+  const { parent } = JSON.parse(readFileSync(metaPath, "utf8"));
+  if (!parent) {
+    return { tree: tokens, parentBrandDir: null };
+  }
+  const parentBrandDir = join(PACKAGE_ROOT, "brands", parent);
+  if (!existsSync(parentBrandDir)) {
+    throw new Error(`Unknown parent brand "${parent}" for ${brandDir} (looked for ${parentBrandDir})`);
+  }
+  if (existsSync(join(parentBrandDir, "brand.json"))) {
+    const parentMeta = JSON.parse(readFileSync(join(parentBrandDir, "brand.json"), "utf8"));
+    if (parentMeta.parent) {
+      throw new Error(
+        `Brand "${parent}" (parent of ${brandDir}) itself declares a parent ("${parentMeta.parent}") -- ` +
+          `multi-level brand inheritance is not supported (by design, YAGNI until a real use case exists)`,
+      );
+    }
+  }
+  const parentTokens = JSON.parse(readFileSync(join(parentBrandDir, "tokens.json"), "utf8"));
+  return { tree: deepMerge(parentTokens, tokens), parentBrandDir };
+}
+
+export function generateCSS(brandDir) {
+  const { tree: tokens } = resolveBrandTree(brandDir);
   const base = tokens.semantic ?? {};
   const darkColors = tokens.dark?.semantic?.color ?? {};
   const v = (leaf) => String(resolveValue(tokens, leaf.$value));
