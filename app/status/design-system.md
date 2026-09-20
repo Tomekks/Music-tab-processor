@@ -4,8 +4,16 @@ Part of `app/status/` — see `app/STATUS.md` for the index.
 
 **In progress, local-only by design.** `app/design_system/index.html` is a standalone, gitignored playground for tuning color/radius/spacing tokens against mocked-up versions of the real components (song row, tab block), with a live CSS-output panel shaped to paste straight into `globals.css`'s `@theme` block. It's a plain static HTML file — open it directly in a browser, no dev server needed. Deliberately never pushed to GitHub (see `app/.gitignore`) since it's a personal tuning tool, not part of the shipped app; this note exists so a future session isn't confused by a folder it can't see on GitHub.
 
-**Planned next (not built):** a live "bridge" mode — the tool embeds the real `npm run dev` server in an iframe and pushes token changes into it via `postMessage`, so tweaks preview against the actual rendered app (real Tailwind output, real components) instead of a hand-built mockup, without ever touching the live/deployed site. Needs a small dev-only listener in the app itself, gated to never run in production. Once real Tailwind components (e.g. shadcn/ui) exist, Storybook is the natural next step up from this tool — deliberately deferred until there's an actual component set worth isolating.
+**Shipped instead of the bridge:** the package (`app/packages/design-system/`, see its README)
+plus an in-app editor at `/design-system` (`app/app/design-system/`) now do what the planned
+"bridge" mode was for — live token tuning against the real rendered app. Because the editor runs
+inside the actual Next.js dev server and writes straight to `tokens.json`, Next's own HMR pushes
+every change into the live page automatically; no iframe/`postMessage` bridge was needed. The
+standalone playground above stays useful for quick mockup-only sketches, but it's no longer the
+only way to preview a token change against real components.
 
-**Actual adoption so far:** `SheetDiagram.tsx` is the first (and only) component wired to the real tokens (`var(--background)`/`var(--foreground)`) instead of hardcoded colors — see `app/status/song-views.md`.
+**Current state:** the whole app runs on the generated token stylesheet now (Task 3's cutover),
+not just `SheetDiagram.tsx` — see `app/packages/design-system/README.md` for what the package
+contains and `docs/superpowers/specs/2026-09-19-design-system-design.md` for the full design.
 
 **Three named theme presets now, not two.** Added 2026-09-11: `patchbay`, a child theme (same "only the keys that differ" structure as `claude`) matching `docs/patch-bay/`'s interactive diagrams exactly — select it here to preview that palette against the app's real mocked components. See `docs/patch-bay/STATUS.md` for the manual-sync convention between the two files.
