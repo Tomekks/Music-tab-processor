@@ -42,6 +42,12 @@ optional tools for any tier, not mandatory gates.
 
 ## 3. Spec template (Bounded and Architectural tasks)
 
+**Before drafting Scope/Interface below, read the actual current files the task touches — don't
+rely on `app/status/*.md` or a prior spec's description of them.** Those go stale (confirmed
+2026-09-20: a spec was written for "add the Fretboard playhead" when it had already shipped
+under different filenames, because the task was drafted from a stale status doc instead of the
+live code).
+
 One markdown file per task in `docs/specs/`:
 
 1. **Scope** — exact files, explicit `.env`/credential exclusion.
@@ -96,6 +102,9 @@ three-way push / push & deploy / skip question.
    was the last spec.
 8. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
 9. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
+   **`master` is branch-protected** (confirmed 2026-09-20 by a rejected direct push) — "push to
+   git" means push to a branch and open a PR, wait for the required `verify` CI check, then merge;
+   a direct `git push origin master` is always rejected regardless of content.
 
 ## 6. Not yet in place
 
