@@ -1,5 +1,8 @@
 # Task spec: Seed-color tonal ramp generator (pure logic)
 
+> **Landed:** commit `ecfc7ef` — `generate-ramp.test.mjs` 23/23 passing (`node --test
+> generate-ramp.test.mjs`, verified 2026-09-20). Archived per `WEB_APP_WORKFLOW.md` §5a.
+
 Corresponds to Task 1 of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md`. Written
 against `app/packages/design-system/brands/default/tokens.json`,
 `app/packages/design-system/src/contrast.test.mjs`, `app/packages/design-system/package.json`, and

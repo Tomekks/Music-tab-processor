@@ -1,5 +1,12 @@
 # Task spec: Token orphan-detection test (Task 6)
 
+> **Landed:** commit `c2f3733` — design-system workspace 81/81 passing (`npm test --workspace
+> @guitar-tabs/design-system`, verified 2026-09-20). `KNOWN_ORPHANS` holds 6 entries (2 predicted +
+> 4 found by the baseline run itself: `semantic.space.1`/`.2`/`.4`/`.8`). Archived per
+> `WEB_APP_WORKFLOW.md` §5a. **This is a live gate, not a one-time check** — re-run
+> `token-usage.test.mjs` after every future token-touching task per this file's own §7/§9, even
+> though the spec itself is archived.
+
 Corresponds to Task 6 of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md` — the
 mandatory gate task (run as an early baseline now, and again as the closing check after every
 token-touching task in the plan lands). Written against

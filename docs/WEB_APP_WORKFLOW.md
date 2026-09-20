@@ -35,7 +35,12 @@ When in doubt, pick the heavier tier.
 **Architectural:**
 - `superpowers:brainstorming` → `superpowers:writing-plans` first.
 - Each task in the resulting plan becomes its own spec file, then runs the execution loop in §5
-  exactly like a Bounded task.
+  exactly like a Bounded task. **Split a large task at a genuine seam** (e.g. testable logic vs.
+  untestable UI, or a hard ordering dependency) — not by size alone. Splitting has real value
+  (parallelizable, independently revertible, serializable across shared files) but each split
+  fragment pays the full template weight and introduces its own seam-bug risk (an
+  interface/ownership mismatch between fragments that didn't exist before the split, observed in
+  practice). Split when there's a real boundary, not as a default reflex.
 
 `systematic-debugging` and `requesting-code-review`/`receiving-code-review` remain available as
 optional tools for any tier, not mandatory gates.
@@ -49,6 +54,35 @@ a narrow, single-question spike**, and only when the question is genuinely unans
 reading — an environment/runtime compatibility question ("does this package import under plain
 Node ESM"), not a logic question ("is this merge function correct"). Scope a spike to answering
 that one question, then stop; it does not turn into building the feature.
+
+**Tier the template to the task's size and reversibility.** A single-file helper + its own test
+(a small, easily-revertible Bounded task) doesn't need all 9 sections below — Scope / File
+allowlist / Acceptance criteria is enough, roughly 60 lines. Reserve the full 9-section template
+for cross-file changes or anything hard to revert. Don't apply one template weight to every task
+regardless of size (observed cost: a 268-line spec for ~30 lines of real change).
+
+**Trimming means cutting narration, never cutting verification of genuine correctness risk.**
+Cut: audit essays justifying a conclusion at paragraph length (a one-line scope statement is
+enough — "only `Button.tsx` needs this, the other three don't, different pattern"),
+pre-verification of things the execution model checks for free while implementing (does this
+file/function/string still match, does this import resolve), full code embedded for logic with
+no real risk. Never cut: a null-deref or crash path in embedded logic, a test assertion the new
+code will break (e.g. an action-count check), a test fixture that can't actually exercise the
+function being added, an entirely unaddressed scope question (e.g. "what happens on a child
+brand"). Cutting the second kind is under-specifying a spec, not making it lean — a spec this
+lean produced 4 real gaps in one round (a stale test assertion, an unusable fixture, a null-deref,
+an unaddressed scope question) that only surfaced because the execution model hit them at
+implementation time. Before handing off, run this checklist against your own spec: does every
+order/count stated in prose match the file it's about; does every file the spec implies gets
+created/modified actually get named in the allowlist; does every "verified"/"confirmed" claim
+carry the command + output that verified it (next rule).
+
+**No empirical claim without evidence.** Any "verified"/"confirmed" statement — in a spec, or in
+the execution model's report (§5 step 4) — must carry the actual command and observed output next
+to it. An unverified "verified" costs tokens on both sides (writing it, reading it, calibrating
+trust to it) and is worse than silence when it turns out false — it was seen in this project's own
+history: a spec claimed "fully verified end-to-end," and the file it described crashed with
+`ENOENT` on first real run.
 
 One markdown file per task in `docs/specs/`:
 
@@ -66,23 +100,39 @@ One markdown file per task in `docs/specs/`:
    silently-swallowed errors, no touching credentials/`.env`.
 6. **File allowlist** — the exact files this spec may touch.
 7. **Acceptance criteria** — the runnable `npm run verify` command, plus any manual judgment
-   question for the human that Claude couldn't resolve alone.
+   question for the human that Claude couldn't resolve alone. **A check nobody running this loop
+   can actually perform — a visual/eyeball judgment on colors, layout, animation — is not an
+   execution-model acceptance criterion.** Write it as an explicit human checkbox instead (for
+   `npm run stage`, §5 step 9), not folded into this section as if the execution model's own
+   `npm run verify` self-check covers it; three specs in this project did this and all three
+   ended up "flagged for human staging" anyway — write that outcome directly instead of routing
+   through a criterion nothing can satisfy. Conversely, **don't write a manual step for something
+   automation already proves** — a manual node one-liner re-confirming a golden test's exact claim
+   is duplicate work dressed up as rigor, not extra safety; cut it instead of trimming prose
+   elsewhere.
 8. **Definition of done** — `npm run verify` passes + `git diff --stat` matches the file
-   allowlist + manual check where relevant + **a self-check**: before reporting back, confirm
-   every concrete claim the report makes (file list, test counts, any specific numbers) against
-   what's actually on disk + checkpoint commit made.
+   allowlist + the human-checkbox manual check where relevant (per §7, not conflated with the
+   self-check below) + **a self-check**: before reporting back, confirm every concrete claim the
+   report makes (file list, test counts, any specific numbers) against what's actually on disk,
+   each claim next to the command/output that confirmed it + checkpoint commit made.
 9. **Stop-conditions** — explicit "if X happens, stop and ask, don't guess" list.
 
 ## 4. Checkpoint commits
 
 Commit locally (not pushed) after every spec's `npm run verify` passes, before handing over the
-next spec. This is still an ask-first commit per `AGENTS.md` — it just happens routinely, once
-per completed sub-step, instead of only at the very end of a multi-spec task. Purpose: if the
-execution model goes rogue mid-task, there's a recent working checkpoint to roll back to, not
-just the state before the whole task started.
+next spec. Purpose: if the execution model goes rogue mid-task, there's a recent working
+checkpoint to roll back to, not just the state before the whole task started. **Commit-and-report,
+not ask-first**, for a task's own local checkpoint — this is what a single-task local commit is
+for; ask-first is reserved for push/PR/multi-task actions (per `AGENTS.md`'s actual scope) and for
+anything irreversible or spanning more than the one task just completed.
 
 Push and deploy timing is unchanged from `AGENTS.md`: asked once, at the very end, as the
 three-way push / push & deploy / skip question.
+
+**Log cost per commit.** One line alongside the checkpoint: tests added, review rounds, execution
+rounds this task took. Cheap to write, and it's the only way to know whether specs, reviews, or
+execution actually dominate cost on this plan — right now that's a feeling, and feelings get
+optimized superstitiously.
 
 ## 5. Execution loop (Bounded and Architectural tasks)
 
@@ -120,14 +170,48 @@ three-way push / push & deploy / skip question.
    instructions); back to step 2.
 8. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 9 if this
    was the last spec.
-9. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
+9. Manual staging check per `AGENTS.md`: `npm run stage`, look at it — this is also where §3's
+   human-checkbox manual checks (the ones no execution-model criterion could cover) get done.
 10. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
+
+**One review round per spec, then execution is the review.** Step 1's check (and any review a
+second reviewer does before implementation starts) is the one pass a spec gets before it's
+handed off. If a spec is reviewed again after that — by request, or by a different reviewer —
+that pass must name what's actually new since the last one and skim for it, not re-audit from
+scratch. In practice, findings from re-reading the same spec decay fast (first pass: structural,
+significant issues; later passes: wording, a stale cross-reference) while findings from *running
+things* during step 4 (a baseline test run, invoking a route directly, `git diff`) kept surfacing
+real bugs no amount of re-reading caught. Budget tokens for the red-green-verify cycle in step 4,
+not for additional reading passes before it.
+
+## 5a. Keeping context small across a multi-spec plan
+
+Round trips, not spec length, dominate token burn — every turn reloads full context on both
+sides, so a long spec read once is cheaper than three short clarification rounds. These rules
+target that: what actually travels each turn, and what accumulates in the repo over a long plan.
+
+- **Relay packets, not whole documents.** Hand the execution model the spec file plus the plan's
+  Tracks & sequencing section — not the full plan (design rationale, self-review, every other
+  task's detail). It doesn't need 800 lines of context to implement one helper.
+- **Single-source: the plan never repeats what a spec owns.** Every duplication found in this
+  plan so far (a stale order list, a stale test count, a stale component reference) was plan-text
+  paraphrasing spec-text going stale. Plan holds intent + track order + links to specs; specs hold
+  the detail. A live plan document that only grows eventually goes unread — see [[keep-plan-docs-light]].
+- **Archive a landed spec.** Once its checkpoint commit lands, stamp one line on it (commit hash,
+  test delta) and move it to `docs/specs/_done/`. The next session then loads however many specs
+  are actually active, not the full accumulated history (21 files in `docs/specs/` as of this
+  writing, and growing).
+- **Collapse a landed plan task to one line** once its spec is archived — `Task N: done (<commit>,
+  +X tests)` — since the real detail already lives in the archived spec, not in the plan. Don't
+  let the plan re-grow the detail it just shed.
+- **Document a pattern once it's proven, instead of re-discovering it per spec.** Captured-output
+  goldens (assert against real tool output, not hand-derived values) and direct handler invocation
+  (import a route module and call it in plain Node instead of a dev server — no port conflicts, no
+  disturbing a concurrent session) both proved out this session. Point future specs at this
+  paragraph instead of re-deriving either technique from scratch.
 
 ## 6. Not yet in place
 
-- `npm run verify` itself (typecheck, lint, unit tests as one command) needs to exist before the
-  first real Bounded task runs through this loop. Small, direct work — not routed through this
-  workflow.
 - Visual regression testing (screenshot comparisons via Playwright) is deferred. Once built, it
   slots into §3's Definition-of-done section as an added check — no rewrite of this document
   needed.

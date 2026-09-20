@@ -1,5 +1,10 @@
 # Task spec: Multi-brand inheritance — parent resolution + merge (5a)
 
+> **Landed:** commit `1ddd888`. Contributes to `contrast.test.mjs` (7 tests) and
+> `build-tokens.test.mjs`; part of the design-system workspace's 81/81 passing total (`npm test
+> --workspace @guitar-tabs/design-system`, verified 2026-09-20, after Task 6 also landed). Archived
+> per `WEB_APP_WORKFLOW.md` §5a.
+
 Corresponds to Task 5a of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md` (Track
 A, per that plan's "Tracks & sequencing" section — runs after Task 1, before 5b/3/6). Written
 against `app/packages/design-system/src/build-tokens.mjs`,

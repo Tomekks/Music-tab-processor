@@ -1,5 +1,8 @@
 # Task spec: Multi-brand inheritance — reset-to-parent (5b)
 
+> **Landed:** commit `5acd34f` — `token-writes.test.mjs` 26/26 passing (`node --test
+> token-writes.test.mjs`, verified 2026-09-20). Archived per `WEB_APP_WORKFLOW.md` §5a.
+
 Corresponds to Task 5b of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md` (Track
 A, runs immediately after 5a — per that plan's "Tracks & sequencing" and "Shared-file
 serialization across tracks" notes, this task's `route.ts`/`token-writes.mjs` edits must land

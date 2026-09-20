@@ -51,8 +51,8 @@ throws `ERR_MODULE_NOT_FOUND`, and its `exports` field blocks the subpath-import
 would otherwise dodge it. Two smaller corrections to this paragraph's earlier claims, confirmed
 via `npm view`: the package is **Apache-2.0**, not MIT; unpacked size is **~1MB/138 files**, not
 "~30KB." Full detail and the resolved approach — vendoring the 8 specific files this task actually
-needs, unmodified, rather than depending on the broken package — is in Task 1's own spec,
-`docs/specs/design-system-generate-ramp.md`. `@guitar-tabs/design-system` still has no runtime
+needs, unmodified, rather than depending on the broken package — is in Task 1's own spec (landed,
+archived: `docs/specs/_done/design-system-generate-ramp.md`). `@guitar-tabs/design-system` still has no runtime
 dependency beyond `peerDependencies` on react/react-dom.
 
 **Spec:** No separate design spec — this plan **is** the design doc; each task's own
@@ -115,102 +115,9 @@ insertions collide under a concurrent editor in the same tree; this rule exists 
 
 ### Task 1: Seed-color tonal ramp generator (pure logic)
 
-Generates the full light+dark neutral/surface ramp and the light/dark tone pair for a single
-accent hue, from a handful of seed hex colors — replacing hand-picked hex values in `tokens.json`
-and its `dark` block with values derived from a formula. Pure logic only; wiring it into the
-brand data / editor is Task 1b.
-
-**A real spec for this task has been written** (per the execution loop, `WEB_APP_WORKFLOW.md` §5):
-`docs/specs/design-system-generate-ramp.md`, ready to relay to the execution model. It resolves
-this task's approach differently from the sketch immediately below — **no new npm dependency**;
-the needed HCT/tonal-palette math is vendored instead, because the originally-planned package
-can't be imported under plain Node ESM (verified; see the spec's §0 and the Tech Stack note
-above). The design sketch below is kept for the algorithm/tone-index reasoning, which the spec's
-own vendored-import version implements unchanged — only the import source differs.
-
-**Files (per the real spec — supersedes the list below):**
-- Create: `app/packages/design-system/src/generate-ramp.mjs`
-- Create: `app/packages/design-system/src/generate-ramp.test.mjs`
-- Create: `app/packages/design-system/src/vendor/material-color-utilities/**` (8 vendored files +
-  `LICENSE`, unmodified from upstream `0.4.0`) and `vendor/README.md`
-- Modify: `app/eslint.config.mjs` (exclude the vendor directory from lint)
-- **Not** `package.json` — no new dependency.
-
-**Interfaces:**
-- Produces:
-  - `generateNeutralRamp(seedHex: string): { light: NeutralTones, dark: NeutralTones }` where
-    `NeutralTones = { background, foreground, border, surface, surfaceText, surfaceHover,
-    surfaceActive, surfaceActiveText }` — every value a `#rrggbb` hex string.
-  - `generateAccentPair(seedHex: string): { accent: string, onAccent: string }` — theme-invariant,
-    matching the existing schema (`dark.semantic.color` has no `accent`/`onAccent` override today;
-    this generator's output for these two stays a single value, not a light/dark pair, exactly
-    like the hand-authored version).
-
-**Design (fill in against real HCT tone semantics, not guessed alphabetically):**
-
-```js
-// generate-ramp.mjs
-import { Hct, TonalPalette, argbFromHex, hexFromArgb } from "@material/material-color-utilities";
-
-function tone(palette, t) {
-  return hexFromArgb(palette.tone(t));
-}
-
-// Tone indices chosen to match this brand's existing hand-picked values as closely as
-// possible (see DESIGN.md's "Color roles" section for what each slot means) — verify against
-// the current tokens.json/dark block's actual hex values as part of writing this task's spec,
-// don't just trust these numbers blind.
-export function generateNeutralRamp(seedHex) {
-  const hct = Hct.fromInt(argbFromHex(seedHex));
-  const neutral = TonalPalette.fromHueAndChroma(hct.hue, Math.min(hct.chroma, 8));
-  return {
-    light: {
-      background: tone(neutral, 99),
-      foreground: tone(neutral, 10),
-      border: tone(neutral, 90),
-      surface: tone(neutral, 98),
-      surfaceText: tone(neutral, 10),
-      surfaceHover: tone(neutral, 94),
-      surfaceActive: tone(neutral, 10),
-      surfaceActiveText: tone(neutral, 99),
-    },
-    dark: {
-      background: tone(neutral, 11),
-      foreground: tone(neutral, 92),
-      border: tone(neutral, 22),
-      surface: tone(neutral, 32),
-      surfaceText: tone(neutral, 99),
-      surfaceHover: tone(neutral, 38),
-      surfaceActive: tone(neutral, 99),
-      surfaceActiveText: tone(neutral, 13),
-    },
-  };
-}
-
-export function generateAccentPair(seedHex) {
-  const hct = Hct.fromInt(argbFromHex(seedHex));
-  const accentPalette = TonalPalette.fromHueAndChroma(hct.hue, hct.chroma);
-  return {
-    accent: tone(accentPalette, 70),
-    onAccent: tone(accentPalette, 10),
-  };
-}
-```
-
-- [ ] Write `generate-ramp.test.mjs`: feed today's actual light/dark hex values' approximate hue
-      back in and assert the WCAG pairs the generator produces (`background`/`foreground`,
-      `surface`/`surfaceText`, `surfaceActive`/`surfaceActiveText`, both themes) each hit ≥4.5:1 —
-      reuse `contrast.test.mjs`'s existing `luminance`/`ratio` helpers (extract them to a small
-      shared `contrast-math.mjs` if duplicating them a second time feels wrong — a real call to
-      make at spec time, not decided here).
-- [ ] Run tests, confirm failing (function doesn't exist yet).
-- [ ] Implement `generate-ramp.mjs` per the design above, tune tone indices until the contrast
-      tests pass for at least 3 different seed hues (a warm neutral, a cool neutral, a
-      saturated one) — this tuning is the actual work of this task, not the scaffolding.
-- [ ] Run `node --test app/packages/design-system/src/generate-ramp.test.mjs`, confirm passing.
-- [ ] Run the full `npm test --workspace @guitar-tabs/design-system` — confirm all 45+N tests
-      still pass, especially `contrast.test.mjs` unmodified.
-- [ ] Checkpoint commit.
+**[Task 1] — Done**, committed as `ecfc7ef` (`generateNeutralRamp`/`generateAccentPair`, vendored
+HCT math — no new npm dependency, the originally-planned package can't import under plain Node
+ESM). 23/23 tests passing. Archived spec: `docs/specs/_done/design-system-generate-ramp.md`.
 
 ---
 
@@ -329,68 +236,12 @@ explicit "reset the inline style property back to `d.value` on write failure" st
 
 ### Task 3: Shared hover/press/focus state primitive
 
-**What already exists, so this task doesn't re-invent it:** interaction states are already
-formula-driven from `semantic.state.hoverOpacity`/`focusOpacity`/`pressedOpacity` via
-`color-mix()` (see `DESIGN.md`'s "Component behavior expectations" and `Button.tsx`'s
-`PRIMARY_HOVER` constant) — liftkit's `StateLayer` doesn't bring a new *concept* here, since we
-already derive states from opacity tokens rather than hand-picking hover colors. What it does
-bring: **one shared implementation instead of every component writing its own `color-mix()`
-string.** Today `Button.tsx` has its own `PRIMARY_HOVER` Tailwind arbitrary-value string; a
-`Slider`/`ColorField`/`SegmentedControl` audit (do this first, at spec-writing time — don't assume
-their current state) will show whatever each one does today.
-
-**Open item — shape, resolve at spec-writing time, don't default to the component silently:**
-prefer a shared **helper function** (e.g. `stateOverlayClassName(...)` returning the Tailwind
-arbitrary-value `color-mix()` string from token names) over a new `<StateOverlay />` component,
-unless the audit below finds a case a plain string genuinely can't express (e.g. the
-`forcedState` always-on case). A helper gets the stated win — one shared implementation instead of
-every component writing its own `color-mix()` string — with zero new DOM nodes, no
-absolute-positioning/stacking-context requirements, and no second styling convention. Confirm
-helper-first at spec time; only reach for the component if the audit forces it.
-
-**Files:**
-- Create: `app/packages/design-system/src/components/StateOverlay.tsx` — a small internal
-  (non-exported from `index.ts`) helper component, not a new public primitive: an absolutely
-  positioned `<span>` using `background-color: currentColor`, opacity driven by CSS attribute
-  selectors on parent `:hover`/`:active`/`:focus-visible`, magnitude read from the existing
-  `--state-hover-opacity`/`--state-pressed-opacity`/`--state-focus-opacity` custom properties
-  (not hardcoded percentages like liftkit's `0.16`/`0.5`/`0.35` — ours are already tokens, keep
-  them tokens). **Per the open item above, only build this if the helper-function shape (§ above)
-  turns out insufficient — write the helper first, promote to a component only if forced.**
-- Create: `app/packages/design-system/src/components/StateOverlay.css` (or inline via existing
-  Tailwind arbitrary-value convention — match whatever `ColorField.tsx`/`Slider.tsx` already do,
-  confirm at spec time rather than introducing a second styling convention into a 4-component
-  package).
-- Modify: `Button.tsx` (replace `PRIMARY_HOVER` usage with `<StateOverlay />`), and whichever of
-  `ColorField.tsx`/`Slider.tsx`/`SegmentedControl.tsx` the audit above finds duplicating the same
-  pattern.
-
-**Interfaces:**
-- Produces: `<StateOverlay />` — no props needed for the common case (reads `currentColor` from
-  its parent, like liftkit's default). The one prop worth keeping from liftkit's version:
-  `forcedState?: "hover" | "active"` for a case like "this option is already selected, so it
-  should always show at hover-opacity even when the mouse isn't over it" — confirm at spec time
-  whether `SegmentedControl` actually needs this before adding it (YAGNI otherwise).
-
-- [ ] Audit `ColorField.tsx`, `Slider.tsx`, `SegmentedControl.tsx` for existing hover/focus/press
-      CSS — document exactly what each does today in the task's spec (this is the "check current
-      code before drafting" step; don't write the spec from `Button.tsx`'s pattern alone and
-      assume the other three match it).
-- [ ] Write the helper function first and consume it from `Button.tsx`; promote to a
-      `StateOverlay.tsx` component (+ its CSS, per Files above) only if the audit forced it —
-      see the open item above.
-- [ ] Refactor `Button.tsx` to use it; run `npm run verify` — no visual regression (manual check:
-      hover/press/focus a button in the running app, compare before/after).
-- [ ] Refactor whichever other components the audit flagged.
-- [ ] **Optional, cheap, same file — `forced-colors: active` support.** Windows/some browsers'
-      forced-colors mode overrides custom-painted colors with OS system colors, which can flatten
-      a `currentColor`+opacity overlay to invisible (research finding). Since this task is already
-      touching `StateOverlay.css`, add one `@media (forced-colors: active)` block redefining the
-      state-opacity custom properties using system color keywords (e.g. `Highlight`) — small
-      enough to fold in here, not worth its own task. Verify manually (Windows/forced-colors
-      emulation in devtools), same "no automated test" reasoning as the rest of this task.
-- [ ] `npm run verify`.
-- [ ] Checkpoint commit.
+**[Task 3] — Done**, committed as `40d2fdd`. Helper function, not a component
+(`components/state-overlay.mjs`'s `stateOverlayClassName()`), Button-only — audit found no other
+component duplicates the pattern — plus a new pressed state closing the `pressedOpacity` gap. No
+`<StateOverlay />` component, no CSS file, no forced-colors, no focus overlay (ring stays the only
+focus treatment). 3/3 tests passing; visual eyeball check still open, see the archived spec's §7.
+Archived spec: `docs/specs/_done/design-system-state-overlay.md`.
 
 ---
 
@@ -531,32 +382,14 @@ them from this plan without saying so):**
   `app/app/api/design-system/tokens/route.ts`'s existing `action` dispatch (add a case, don't
   restructure the dispatch).
 
-**`[5a]`** — **Done**, committed as `1ddd888` ("Task 5a: brand parent resolution + merge").
-`docs/specs/design-system-brand-inheritance-5a.md` is the executed spec. Narrow-reviewed per
-`WEB_APP_WORKFLOW.md` §5 step 6: `npm run verify` passes (76/76), `applyResetToParent`/
-`resolveBrandTree`/`demo-child` fixture spot-checked against the spec and match, `BACKLOG.md` item
-14 updated correctly (not marked fully done — notes the backlog-board migration is still open
-pending a schema extension, per the spec's §0).
-- [x] Write the parent-resolution + merge logic, with a test fixture (a `default` + one child
-      brand pair) proving: a leaf present only in `default` resolves for the child; a leaf
-      present in the child overrides it; `deepMerge`'s existing semantics (reused, not
-      reimplemented) are what's actually doing the merging.
-- [x] Run tests, confirm failing, implement, confirm passing.
-- [x] `npm run verify`; manually build both brands and visually confirm the child renders with
-      its overrides while inheriting everything else.
-- [x] Update `docs/BACKLOG.md` item 14's status.
-- [x] Checkpoint commit.
+**`[5a]` — Done**, committed as `1ddd888`. `resolveBrandTree`/`deepMerge` extraction/`demo-child`
+fixture. `docs/BACKLOG.md` item 14 updated (backlog-board migration itself still open, pending a
+schema extension — not this task's job). Archived spec:
+`docs/specs/_done/design-system-brand-inheritance-5a.md`.
 
-**`[5b]`** — **Done**, committed as `5acd34f` ("Task 5b: reset-to-parent"). Narrow-reviewed same
-as 5a: `applyResetToParent`'s signature/body spot-checked against the spec and matches, test count
-consistent with 5a's baseline + 5 new (76 total).
-`docs/specs/design-system-brand-reset-to-parent-5b.md` is the executed spec.
-- [x] Write the reset-to-parent logic + its test (deletes, doesn't copy — assert the leaf is
-      literally absent from the child's `tokens.json` afterward, not just value-equal to parent).
-- [x] Run tests, confirm failing, implement, confirm passing.
-- [x] Wire the new `action` case into `route.ts`'s existing dispatch (no restructuring).
-- [x] `npm run verify`.
-- [x] Checkpoint commit.
+**`[5b]` — Done**, committed as `5acd34f`. `applyResetToParent` (delete-not-copy, prunes empty
+ancestors) + `route.ts` dispatch case. Archived spec:
+`docs/specs/_done/design-system-brand-reset-to-parent-5b.md`.
 
 **`[5c]`** (Track B, after Task 8b — see Tracks & sequencing)
 - [ ] Wire the editor UI's inherited/overridden distinction on top of Task 8's staged-edit model.
@@ -597,23 +430,15 @@ whole value: it exists specifically to catch what those later tasks might orphan
   checking) — nothing references a `dark.*` path directly by design, so requiring direct
   references would red-line every themed token.
 
-**Files:**
-- Create: `app/packages/design-system/src/token-usage.test.mjs`
-
-**Interfaces:** none new — this is a test-only task, reading existing files.
-
-- [ ] Write a test that: (1) walks `tokens.json` via the existing `collectLeafPaths`
-      (`token-writes.mjs`) to get every leaf path, (2) greps `app/packages/design-system/src/**`
-      and `app/app/**`/`app/components/**` for `var(--...)` and `{path.to.token}` occurrences,
-      (3) asserts every `component.*` and `semantic.*` leaf (including `dark.*`) is referenced at
-      least once somewhere, per the scoping rules above.
-- [ ] Run against the current tree, confirm it passes today (if it doesn't, that's a real finding
-      to report, not a bug in the test — investigate before assuming the test is wrong). This is
-      the early baseline run.
-- [ ] `npm run verify`.
-- [ ] Checkpoint commit.
-- [ ] **Re-run after every token-touching task in this plan lands** (the closing-gate run — see
-      above). Report any new orphan as a real finding for that task, not a flaw in this test.
+**[Task 6] — Done**, committed as `c2f3733`. `token-usage.test.mjs`, keyed off a new
+`cssVarNameForPath` export from `build-tokens.mjs` (avoids a second, driftable copy of its naming
+logic). Baseline passed with 6 documented orphans in `KNOWN_ORPHANS`
+(`focusOpacity`, `slider.trackColor`, `space.1/.2/.4/.8` — the last four found by the baseline
+run itself, missed by the hand audit). Archived spec:
+`docs/specs/_done/design-system-token-orphan-detection.md`.
+**Still a live gate — re-run `token-usage.test.mjs` after every future token-touching task**
+(the closing-gate run, per the "run this twice" framing above); report any new orphan as a real
+finding for that task, not a flaw in this test, per the scoping rules above.
 
 ---
 

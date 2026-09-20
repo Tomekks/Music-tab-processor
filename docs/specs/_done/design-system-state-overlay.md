@@ -1,5 +1,10 @@
 # Task spec: Shared hover/press/focus state primitive (Task 3)
 
+> **Landed:** commit `40d2fdd` — `state-overlay.test.mjs` 3/3 passing (`node --test
+> components/state-overlay.test.mjs`, verified 2026-09-20). Visual eyeball check (byte-identical
+> hover, new pressed tint, disabled guards) still open — see this spec's own §7. Archived per
+> `WEB_APP_WORKFLOW.md` §5a.
+
 Corresponds to Task 3 of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md` (Track
 A, runs after 5a/5b, before Task 6 — Task 6's baseline run assumes this task has already landed;
 see that spec's §0). Written against
