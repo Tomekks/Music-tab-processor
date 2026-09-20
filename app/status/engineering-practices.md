@@ -43,6 +43,20 @@ The rule is set to `warn` rather than `error` specifically because of these — 
 - `npm test` prints a Node warning: `app/package.json` has no `"type"` field, so `.ts` test files get reparsed as ES modules with a small performance cost. Real, but not part of Tier A.
 - `app/package.json`'s `@types/node` is pinned to `^20` while the actual runtime is Node 26 — a type-definitions/runtime version mismatch, not currently causing a visible problem.
 
+## A lesson worth generalizing (2026-09-19, from the design system build)
+
+**A `pre<script>` npm hook only fires for the exact script name it's attached to — not for any
+other script that happens to run the same underlying command.** `"stage": "next build && next
+start -p 3001"` calls the `next` binary directly; it never invokes `npm run build`, so a
+`prebuild` hook never fires for it, even though both scripts run `next build` under the hood.
+Found while wiring the design-token build into `predev`/`prebuild` (see
+`docs/specs/design-system-cutover.md`) — `prebuild` alone would have left `npm run stage` running
+against stale or missing generated output on a fresh checkout. Fixed by adding a third hook
+(`prestage`) matched to the actual script name, not by changing `stage`'s command body.
+**When wiring any future `pre*`/`post*` hook, check every other script in `package.json` that
+independently invokes the same underlying tool** — `grep` for the tool name across the `scripts`
+block, not just the one script you're thinking about.
+
 ## Deliberately not covered here
 
 `pipeline/` (the Python audio pipeline) has no equivalent of any of this — not an oversight. It's scheduled for a rewrite; building verification infrastructure against code that's about to be replaced would be wasted effort. Revisit this file once that rewrite starts.
