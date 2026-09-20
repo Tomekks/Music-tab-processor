@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateCSS, resolveBrandDir, resolveBrandTree } from "./build-tokens.mjs";
+import { generateCSS, resolveBrandDir, resolveBrandTree, cssVarNameForPath } from "./build-tokens.mjs";
 import { join, dirname } from "node:path";
+import { collectLeafPaths } from "./token-writes.mjs";
 
 // Expected output: captured from the real generateCSS(resolveBrandDir())
 // after the Task 4 token additions (§3.1) and the §0(a) alias fix — not
@@ -216,4 +217,21 @@ test("resolveBrandTree(demo-child) merges parent's tree under its own override",
   assert.equal(tree.semantic.color.accent.$value, "#4a90d9");
   assert.equal(tree.semantic.color.background.$value, "{primitive.color.paper}");
   assert.ok(tree.dark, "dark block inherited from parent");
+});
+
+test("cssVarNameForPath agrees with generateCSS's real output for every default-brand leaf (no drift between the two)", () => {
+  const brandDir = resolveBrandDir();
+  const css = generateCSS(brandDir);
+  const { tree } = resolveBrandTree(brandDir);
+  for (const { path } of collectLeafPaths(tree)) {
+    const varName = cssVarNameForPath(path);
+    if (varName === null) {
+      assert.equal(path.split(".")[0], "primitive", `${path} unexpectedly has no CSS var name`);
+      continue;
+    }
+    assert.ok(
+      css.includes(`${varName}:`),
+      `${path} -> "${varName}" not found as a declared property in generateCSS's real output`,
+    );
+  }
 });

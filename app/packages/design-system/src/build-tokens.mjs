@@ -60,6 +60,49 @@ function colorPropName(key) {
   return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
 }
 
+/**
+ * The exact CSS custom-property name generateCSS() emits for a given leaf
+ * path (dot-joined, e.g. "semantic.color.accent", "component.button.
+ * primaryBackground", "dark.semantic.color.surfaceHover"), or null for a
+ * primitive.* leaf (alias-only by design, never emitted directly). Exported
+ * (Task 6) so token-usage.test.mjs derives its expected var names from the
+ * exact same logic generateCSS uses -- see that task's spec §0 for why a
+ * second, independent copy of this naming logic was rejected.
+ * @param {string} path
+ * @returns {string | null}
+ */
+export function cssVarNameForPath(path) {
+  const raw = path.startsWith("dark.") ? path.slice("dark.".length) : path;
+  const segments = raw.split(".");
+  const [top] = segments;
+  if (top === "primitive") return null;
+  if (top === "component") {
+    return `--${segments.map(kebab).join("-")}`;
+  }
+  // top === "semantic"
+  const section = segments[1];
+  const key = segments[segments.length - 1];
+  if (section === "color") {
+    return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
+  }
+  if (section === "state" || section === "focus") {
+    return `--${section}-${kebab(key)}`;
+  }
+  if (section === "radius") {
+    return `--${LEAF_NAME_MAP[`radius.${key}`] ?? `radius-${kebab(key)}`}`;
+  }
+  if (section === "space") {
+    return `--space-${key}`;
+  }
+  if (section === "layout") {
+    return `--${LEAF_NAME_MAP[`layout.${key}`] ?? kebab(key)}`;
+  }
+  if (section === "typography") {
+    return `--font-${kebab(key)}`;
+  }
+  return null;
+}
+
 // Task 4 §0(a): a component.* leaf whose $value is a direct single reference
 // to a theme-varying semantic color (a key present in the dark override
 // block) emits a var() alias to that color's own CSS variable instead of a
