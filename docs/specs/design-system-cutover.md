@@ -41,21 +41,39 @@ before touching `globals.css` — the order of operations matters, not just the 
 
 ### 3.1 `build-tokens.mjs`'s CLI entrypoint
 
-Add, at the bottom of the existing file, a main-module check (Node's standard pattern:
-`if (import.meta.url === \`file://${process.argv[1]}\`)` or equivalent) that:
+Add, at the bottom of the existing file, a main-module check using
+`fileURLToPath(import.meta.url) === path.resolve(process.argv[1])` (both already available —
+`fileURLToPath` from `node:url`, and `HERE` in this file already derives from it per Task 2).
+**Not** the more commonly-seen `import.meta.url === \`file://${process.argv[1]}\`` shortcut —
+that string-concatenation version depends on `process.argv[1]` already being an absolute path,
+which happens to be true for an ESM entrypoint on this project's Node version but isn't a
+documented guarantee worth depending on. The `fileURLToPath`/`path.resolve` version is correct
+regardless of whether `argv[1]` arrives absolute or relative.
 
-1. Calls `resolveBrandDir()` and `generateCSS(brandDir)` (both already exported, unchanged).
-2. Writes the result to `app/app/design-tokens.generated.css` — resolved from this file's own
+The check, once true, should:
+
+1. Call `resolveBrandDir()` and `generateCSS(brandDir)` (both already exported, unchanged).
+2. Write the result to `app/app/design-tokens.generated.css` — resolved from this file's own
    location (`HERE`, already computed in the file per Task 2), **not** from `process.cwd()`:
    `path.resolve(HERE, "../../../app/design-tokens.generated.css")` (`src` → `design-system` →
    `packages` → `app`, then into `app/design-tokens.generated.css`). Same cwd-independence
    reasoning as `resolveBrandDir()` in Task 2 — this file gets invoked from different working
    directories by different callers (an npm script here, potentially Task 5's API route later),
    and it must produce the same result regardless.
-3. Prints a one-line confirmation (`Generated: <path>`) on success, so `npm run dev`'s startup
+3. Print a one-line confirmation (`Generated: <path>`) on success, so `npm run dev`'s startup
    isn't silently doing this — matching the visibility precedent in the `ui-ux-pro-max` reference
    script this design's build script was originally modeled on (Task 2's spec, §10 equivalent
-   reasoning — visibility, not silence, on a generated-file write).
+   reasoning — visibility, not silence, on a generated-file write). This print fires exactly once
+   per direct invocation, and never when the module is merely imported (Task 5, later) — that's
+   the entire point of gating it behind the main-module check.
+
+**On Vercel deployment, checked and confirmed unnecessary to handle specially:** Vercel's own
+build-configuration docs state that for a detected framework, it uses the project's
+`package.json` `"build"` script if one exists, falling back to the framework's raw default
+command only when no such script is present. `app/package.json` already has
+`"build": "next build"`, so Vercel runs `npm run build` — which fires `prebuild` exactly as a
+local build does. No `vercel.json` `buildCommand` override or `postinstall` hook is needed for
+this task; don't add one.
 
 ### 3.2 `package.json` scripts
 
@@ -150,13 +168,19 @@ see §9.
 
 ## 7. Acceptance criteria
 
+- `npm test --workspace @guitar-tabs/design-system` still passes (19/19, unchanged) — this task
+  adds code to `build-tokens.mjs` (§3.1); re-running Task 2's suite, especially its golden-output
+  test, confirms that addition didn't disturb `generateCSS`'s existing behavior, mechanically
+  rather than by inspection.
 - `npm run verify:full` passes — this specifically exercises `npm run build` → `prebuild` →
   `next build` on what should behave like a clean build, the exact scenario `prebuild` exists to
   keep from failing.
 - `rm -f app/app/design-tokens.generated.css && cd app && npm run stage` — deliberately delete
   the generated file first to prove `prestage` actually regenerates it, not just that a
-  leftover copy from an earlier `predev` run happened to still be there. Confirm the file exists
-  again after `stage` starts, before doing the visual check below.
+  leftover copy from an earlier `predev` run happened to still be there. **`stage` runs in the
+  foreground** (`next start` doesn't return) — run it in one terminal, confirm the file exists
+  again from a second terminal (or background it: `npm run stage &`), before doing the visual
+  check below.
 - **Manual visual check** (per `docs/WEB_APP_WORKFLOW.md` §5 step 8 — this is the human judgment
   call the automated checks above can't make): with `npm run stage` running, open `/` (the only
   real surface — `/studio` just redirects to it, per Task 1's spec) and confirm colors and
@@ -164,20 +188,39 @@ see §9.
   to compare against today (Task 1's spec, §3) — if you want to spot-check the light theme too,
   force `data-theme="light"` on the root element via devtools; that's not part of this
   acceptance check's required scope, just available if you want the extra confidence.
+- **One accepted micro-delta, not a failure to chase down:** `body`'s own `background`/`color`
+  (§3.4 "keep, unchanged") resolve at the `<body>` level, *outside* `StudioShell`'s `data-theme`
+  div — so unlike everything else on the page, they were never actually covered by the
+  `[data-theme]` values in the first place. Deleting the now-dead `@media
+  (prefers-color-scheme: dark)` block changes what they resolve to: `background` goes from
+  `#ffffff` (light OS) / `#0a0a0a` (dark OS) to `#faf9f5` unconditionally;
+  `foreground` goes from `#171717` / `#ededed` to `#141413` unconditionally. In practice this is
+  visible, if at all, only in overscroll/bounce areas outside `StudioShell`'s `h-dvh w-full`
+  coverage — actual rendered text and UI is unaffected, since everything inside `StudioShell`
+  reads `--foreground`/`--background` at *its own* `data-theme`-scoped level, not body's. If the
+  visual check happens to notice a different overscroll color, that's this, not a regression.
 
 ## 8. Definition of done
 
-`npm run verify:full` passes + the `prestage` regeneration check above shows the file exists post
--delete + the manual visual check confirms no visible change + `git diff --stat` matches the
-allowlist (4 files, all modified) + checkpoint commit (ask-first per `AGENTS.md`).
+`npm test --workspace @guitar-tabs/design-system` passes (19/19) + `npm run verify:full` passes +
+the `prestage` regeneration check above shows the file exists post-delete + the manual visual
+check confirms no visible change to `/`'s actual content (the body-level micro-delta in §7 is
+expected, not a failure) + `git diff --stat` matches the allowlist (4 files, all modified) +
+checkpoint commit (ask-first per `AGENTS.md`).
 
 ## 9. Stop-conditions
 
 - If anything in `globals.css` doesn't cleanly sort into §3.4's "add" or "delete" lists, stop and
   ask — don't guess whether an unlisted rule is token-related.
-- If the visual check shows *any* difference on `/`, stop — don't hunt for which hand-rolled
+- If the visual check shows *any* difference on `/`'s actual rendered content (not the body-level
+  overscroll micro-delta §7 already names as expected), stop — don't hunt for which hand-rolled
   value the generated CSS is supposed to match by trial and error; go back to Task 2's pinned
   output (its spec, §3) and compare line by line against exactly what was deleted.
 - If `npm run stage` still serves a stale `design-tokens.generated.css` after the delete-and-
   regenerate check in §7 (i.e., `prestage` didn't actually fire), stop and ask rather than adding
   a manual `rm` step to the `stage` script itself as a workaround.
+- **Rollback, if anything above fails and the cause isn't obvious:** everything this task touches
+  is git-tracked. `git checkout -- app/app/globals.css app/package.json
+  app/packages/design-system/src/build-tokens.mjs app/.gitignore` restores the pre-cutover state
+  exactly; no manual reconstruction needed. Use this to get back to a known-good state before
+  re-attempting, rather than debugging forward from a half-applied edit.
