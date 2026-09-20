@@ -3,11 +3,13 @@ import { join } from "node:path";
 import {
   buildActiveBrand,
   resolveBrandDir,
+  resolveBrandTree,
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
   applyReset,
   applyResetAll,
+  applyResetToParent,
   applySetAsDefault,
   applyWrite,
   stringifyTokens,
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
       value?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
-      return badRequest("action must be one of: write, reset, reset-all, set-as-default");
+      return badRequest("action must be one of: write, reset, reset-all, set-as-default, reset-to-parent");
     }
     // All file paths resolve from the active brand at request time — the
     // string "brands/default" appears nowhere here, so a second brand keeps
@@ -91,6 +93,22 @@ export async function POST(req: Request) {
         buildActiveBrand();
         return Response.json({ ok: true, reset: result.reset });
       }
+      case "reset-to-parent": {
+        if (typeof path !== "string") {
+          return badRequest('"reset-to-parent" requires "path" to be a string');
+        }
+        const { parentBrandDir } = resolveBrandTree(brandDir);
+        if (!parentBrandDir) {
+          return badRequest('"reset-to-parent" is not valid for a brand with no parent');
+        }
+        const result = applyResetToParent(readJson("tokens.json"), path);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
       case "set-as-default": {
         if (typeof path !== "string") {
           return badRequest('"set-as-default" requires "path" to be a string');
@@ -110,7 +128,7 @@ export async function POST(req: Request) {
         // Unreachable: VALID_ACTIONS gate above rejects anything else. Kept so
         // a future action added to VALID_ACTIONS without a case here fails
         // loudly at request time instead of falling through silently.
-        return badRequest("action must be one of: write, reset, reset-all, set-as-default");
+        return badRequest("action must be one of: write, reset, reset-all, set-as-default, reset-to-parent");
       }
     }
   } catch (err) {

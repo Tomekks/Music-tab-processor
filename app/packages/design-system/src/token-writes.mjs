@@ -3,7 +3,7 @@
 // route.ts owns HTTP + disk and delegates here. All functions are importable
 // by node --test without a running Next server.
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -232,4 +232,42 @@ export function applySetAsDefault(tokensTree, defaultsTree, path) {
   const defaults = structuredClone(defaultsTree);
   getLeaf(defaults, path).$value = leaf.$value;
   return { ok: true, defaults };
+}
+
+/**
+ * Delete a leaf from a CHILD brand's own tokens.json tree -- not copy a
+ * value, delete -- so it goes back to inheriting the parent brand's value
+ * (including any future changes to it), rather than freezing a snapshot the
+ * way applyReset's tokens.default.json copy does. Also prunes any ancestor
+ * object left empty by the deletion, so the child's tokens.json only ever
+ * contains leaves it genuinely still overrides -- no empty scaffolding.
+ * @param {object} tokensTree the CHILD brand's own live tokens.json tree (not mutated) --
+ *   NOT the merged/resolved tree; a sparse tree containing only overrides
+ * @param {string} path
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyResetToParent(tokensTree, path) {
+  const leaf = getLeaf(tokensTree, path);
+  if (!leaf) {
+    return {
+      ok: false,
+      status: 400,
+      error: `"${path}" is not present in this brand's own tokens.json -- nothing to reset (it's already inherited, or not a valid path)`,
+    };
+  }
+  const tokens = structuredClone(tokensTree);
+  const segments = path.split(".");
+  const chain = [tokens];
+  for (let i = 0; i < segments.length - 1; i++) {
+    chain.push(chain[i][segments[i]]);
+  }
+  delete chain[chain.length - 1][segments[segments.length - 1]];
+  for (let i = chain.length - 1; i > 0; i--) {
+    if (Object.keys(chain[i]).length === 0) {
+      delete chain[i - 1][segments[i - 1]];
+    } else {
+      break;
+    }
+  }
+  return { ok: true, tokens };
 }

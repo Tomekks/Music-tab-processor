@@ -13,7 +13,9 @@ import {
   applyReset,
   applyResetAll,
   applySetAsDefault,
+  applyResetToParent,
 } from "./token-writes.mjs";
+import { deepMerge } from "./deep-merge.mjs";
 
 // Small fixture trees — not the real brand data, so these tests stay fast
 // and isolated from unrelated future schema changes.
@@ -57,8 +59,11 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the four known actions", () => {
-  assert.deepEqual([...VALID_ACTIONS].sort(), ["reset", "reset-all", "set-as-default", "write"]);
+test("VALID_ACTIONS lists exactly the five known actions", () => {
+  assert.deepEqual(
+    [...VALID_ACTIONS].sort(),
+    ["reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
+  );
 });
 
 test("getLeaf resolves a deep leaf", () => {
@@ -219,4 +224,60 @@ test("tempfile round-trip: no-op transform is byte-identical", () => {
   const second = stringifyTokens(structuredClone(readBack));
   writeFileSync(file, second, "utf8");
   assert.equal(readFileSync(file, "utf8"), first);
+});
+
+// A child brand's OWN tokens.json -- sparse, only the leaves it overrides.
+const childTree = () => ({
+  semantic: {
+    color: {
+      accent: { $value: "#4a90d9", $type: "color" },
+    },
+  },
+});
+
+test("applyResetToParent deletes the leaf, not copies a value", () => {
+  const before = childTree();
+  const snapshot = structuredClone(before);
+  const result = applyResetToParent(before, "semantic.color.accent");
+  assert.equal(result.ok, true);
+  assert.equal(getLeaf(result.tokens, "semantic.color.accent"), null);
+  assert.deepEqual(before, snapshot, "input not mutated");
+});
+
+test("applyResetToParent prunes now-empty ancestor objects", () => {
+  const result = applyResetToParent(childTree(), "semantic.color.accent");
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.tokens, {}, "no empty semantic/color scaffolding left behind");
+});
+
+test("applyResetToParent leaves sibling overrides untouched when pruning", () => {
+  const tree = childTree();
+  tree.semantic.color.border = { $value: "#000000", $type: "color" };
+  const result = applyResetToParent(tree, "semantic.color.accent");
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.tokens, {
+    semantic: { color: { border: { $value: "#000000", $type: "color" } } },
+  });
+});
+
+test("applyResetToParent 400s when the path isn't overridden in this brand (already inherited)", () => {
+  const result = applyResetToParent(childTree(), "semantic.color.border");
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /semantic\.color\.border/);
+});
+
+test("applyResetToParent's result, re-merged with the parent, falls back to the parent's current value -- proving delete (not copy) actually keeps inheriting", () => {
+  const parentTree = tokensTree(); // has its own semantic.color.accent
+  const child = childTree(); // overrides semantic.color.accent to #4a90d9
+  const beforeMerge = deepMerge(parentTree, child);
+  assert.equal(beforeMerge.semantic.color.accent.$value, "#4a90d9", "override wins pre-reset");
+
+  const result = applyResetToParent(child, "semantic.color.accent");
+  const afterMerge = deepMerge(parentTree, result.tokens);
+  assert.equal(
+    afterMerge.semantic.color.accent.$value,
+    parentTree.semantic.color.accent.$value,
+    "post-reset, the merged tree reads the PARENT's live value, not a frozen copy",
+  );
 });
