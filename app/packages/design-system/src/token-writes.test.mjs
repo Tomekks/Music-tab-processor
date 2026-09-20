@@ -14,8 +14,10 @@ import {
   applyResetAll,
   applySetAsDefault,
   applyResetToParent,
+  applyGenerateFromSeed,
 } from "./token-writes.mjs";
 import { deepMerge } from "./deep-merge.mjs";
+import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
 // Small fixture trees — not the real brand data, so these tests stay fast
 // and isolated from unrelated future schema changes.
@@ -59,10 +61,10 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the five known actions", () => {
+test("VALID_ACTIONS lists exactly the six known actions", () => {
   assert.deepEqual(
     [...VALID_ACTIONS].sort(),
-    ["reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
+    ["generate-from-seed", "reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
   );
 });
 
@@ -280,4 +282,70 @@ test("applyResetToParent's result, re-merged with the parent, falls back to the 
     parentTree.semantic.color.accent.$value,
     "post-reset, the merged tree reads the PARENT's live value, not a frozen copy",
   );
+});
+
+// Full default-brand-shaped color leaf set for applyGenerateFromSeed -- the
+// small tokensTree() fixture above only has 2 color leaves and no dark block,
+// so it cannot exercise a function that writes all 18 paths.
+const NEUTRAL_SEED_KEYS = [
+  "background", "foreground", "border", "surface",
+  "surfaceText", "surfaceHover", "surfaceActive", "surfaceActiveText",
+];
+
+const seedTree = () => {
+  const leaf = { $value: "#000000", $type: "color" };
+  const block = (keys) => Object.fromEntries(keys.map((k) => [k, { ...leaf }]));
+  return {
+    semantic: {
+      color: {
+        ...block(NEUTRAL_SEED_KEYS),
+        accent: { ...leaf },
+        onAccent: { ...leaf },
+      },
+    },
+    dark: { semantic: { color: block(NEUTRAL_SEED_KEYS) } },
+  };
+};
+
+test("applyGenerateFromSeed populates all 18 color leaves from two seeds", () => {
+  const result = applyGenerateFromSeed(seedTree(), "#faf9f5", "#ae97f7");
+  assert.equal(result.ok, true);
+  const ramp = generateNeutralRamp("#faf9f5");
+  const pair = generateAccentPair("#ae97f7");
+  for (const key of NEUTRAL_SEED_KEYS) {
+    assert.equal(getLeaf(result.tokens, `semantic.color.${key}`).$value, ramp.light[key]);
+    assert.equal(getLeaf(result.tokens, `dark.semantic.color.${key}`).$value, ramp.dark[key]);
+  }
+  assert.equal(getLeaf(result.tokens, "semantic.color.accent").$value, pair.accent);
+  assert.equal(getLeaf(result.tokens, "semantic.color.onAccent").$value, pair.onAccent);
+});
+
+test("applyGenerateFromSeed 400s on non-6-digit seeds (including valid-but-short #fff)", () => {
+  for (const [neutral, accent] of [
+    ["#fff", "#ae97f7"],
+    ["#faf9f5", "#fff"],
+    ["blue", "#ae97f7"],
+    ["#faf9f5", "{semantic.color.accent}"],
+  ]) {
+    const result = applyGenerateFromSeed(seedTree(), neutral, accent);
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 400);
+  }
+});
+
+test("applyGenerateFromSeed 400s naming the first missing path on a sparse tree", () => {
+  const sparse = seedTree();
+  delete sparse.dark.semantic.color.surface;
+  const result = applyGenerateFromSeed(sparse, "#faf9f5", "#ae97f7");
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /dark\.semantic\.color\.surface/);
+});
+
+test("applyGenerateFromSeed does not mutate the input tree", () => {
+  const before = seedTree();
+  const snapshot = structuredClone(before);
+  const result = applyGenerateFromSeed(before, "#faf9f5", "#ae97f7");
+  assert.equal(result.ok, true);
+  assert.deepEqual(before, snapshot);
 });

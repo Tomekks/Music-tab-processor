@@ -7,6 +7,7 @@ import {
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
+  applyGenerateFromSeed,
   applyReset,
   applyResetAll,
   applyResetToParent,
@@ -31,6 +32,8 @@ function badRequest(error: string) {
   return Response.json({ ok: false, error }, { status: 400 });
 }
 
+const ACTION_LIST_ERROR = `action must be one of: ${VALID_ACTIONS.join(", ")}`;
+
 export async function POST(req: Request) {
   if (process.env.NODE_ENV === "production") {
     return new Response(null, { status: 404 });
@@ -45,13 +48,15 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value } = body as {
+    const { action, path, value, neutralSeed, accentSeed } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
+      neutralSeed?: unknown;
+      accentSeed?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
-      return badRequest("action must be one of: write, reset, reset-all, set-as-default, reset-to-parent");
+      return badRequest(ACTION_LIST_ERROR);
     }
     // All file paths resolve from the active brand at request time — the
     // string "brands/default" appears nowhere here, so a second brand keeps
@@ -124,11 +129,27 @@ export async function POST(req: Request) {
         atomicWriteString(join(brandDir, "tokens.default.json"), stringifyTokens(result.defaults));
         return Response.json({ ok: true });
       }
+      case "generate-from-seed": {
+        if (typeof neutralSeed !== "string" || typeof accentSeed !== "string") {
+          return badRequest('"generate-from-seed" requires "neutralSeed" and "accentSeed" to be strings');
+        }
+        const { parentBrandDir } = resolveBrandTree(brandDir);
+        if (parentBrandDir) {
+          return badRequest('"generate-from-seed" is not valid for a child brand — generate on its parent brand instead');
+        }
+        const result = applyGenerateFromSeed(readJson("tokens.json"), neutralSeed, accentSeed);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
       default: {
         // Unreachable: VALID_ACTIONS gate above rejects anything else. Kept so
         // a future action added to VALID_ACTIONS without a case here fails
         // loudly at request time instead of falling through silently.
-        return badRequest("action must be one of: write, reset, reset-all, set-as-default, reset-to-parent");
+        return badRequest(ACTION_LIST_ERROR);
       }
     }
   } catch (err) {

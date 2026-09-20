@@ -13,6 +13,10 @@ import { cn } from "@/lib/cn";
 // never parsed out of the display string.
 const UNIT: Record<string, string> = { dimension: "px", percentage: "%" };
 
+// Client-side mirror of token-writes.mjs's SEED_COLOR_RE — gating only, the
+// server still validates. Not a second source of truth.
+const SEED_RE = /^#[0-9a-fA-F]{6}$/;
+
 type Range = { min: number; max: number; step: number };
 
 // Editor-local ranges — tokens carry no range metadata and adding it would be
@@ -204,6 +208,16 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
   const [resetArmed, setResetArmed] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [generateBusy, setGenerateBusy] = useState(false);
+  // Seed inputs aren't token fields (no path/revert/modified-state) — they
+  // start from the live resolved values and are never written back as tokens.
+  const [neutralSeed, setNeutralSeed] = useState(
+    descriptors.find((d) => d.path === "semantic.color.background")?.value ?? "",
+  );
+  const [accentSeed, setAccentSeed] = useState(
+    descriptors.find((d) => d.path === "semantic.color.accent")?.value ?? "",
+  );
+  const seedsValid = SEED_RE.test(neutralSeed) && SEED_RE.test(accentSeed);
 
   const modifiedPaths = descriptors.filter((d) => d.isModified).map((d) => d.path);
   const modifiedKey = modifiedPaths.join("\n");
@@ -303,6 +317,24 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
     }
   }
 
+  async function runGenerate() {
+    if (!seedsValid) return;
+    setGenerateBusy(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      const result = await postAction({ action: "generate-from-seed", neutralSeed, accentSeed });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setFeedback("Regenerated 18 colors from new seeds");
+      router.refresh();
+    } finally {
+      setGenerateBusy(false);
+    }
+  }
+
   const fieldsFor = (key: string) => descriptors.filter((d) => d.section === key);
   const flat = SECTIONS.filter((s) => !s.group);
   const grouped = SECTIONS.filter((s) => s.group);
@@ -347,6 +379,37 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
         running app renders the dark theme only, so base colors with dark overrides look different
         there — theme-invariant tokens like <code>accent</code> update live everywhere.
       </p>
+
+      <section aria-label="Generate from seed colors" className="mt-6">
+        <h2 className="text-lg font-semibold">Generate from seed colors</h2>
+        <p className={cn(CAPTION, "mt-1")}>
+          Pick a neutral seed and an accent seed to regenerate all 18 brand colors at once.
+        </p>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <ColorField
+            label="Neutral seed"
+            value={neutralSeed}
+            onChange={setNeutralSeed}
+            disabled={generateBusy}
+          />
+          <ColorField
+            label="Accent seed"
+            value={accentSeed}
+            onChange={setAccentSeed}
+            disabled={generateBusy}
+          />
+          <Button
+            variant="secondary"
+            disabled={generateBusy || !seedsValid}
+            onClick={runGenerate}
+          >
+            {generateBusy ? "Generating…" : "Generate from seeds"}
+          </Button>
+        </div>
+        {!seedsValid && (
+          <p className={cn(CAPTION, "mt-1")}>Seeds must be 6-digit hex colors like #rrggbb.</p>
+        )}
+      </section>
 
       <div className="mt-4 flex items-center gap-3">
         <Button variant="secondary" disabled={resetBusy} onClick={runResetAll}>

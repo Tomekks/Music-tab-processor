@@ -2,8 +2,9 @@
 // No filesystem access, no network, no mutation of the input trees —
 // route.ts owns HTTP + disk and delegates here. All functions are importable
 // by node --test without a running Next server.
+import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -268,6 +269,59 @@ export function applyResetToParent(tokensTree, path) {
     } else {
       break;
     }
+  }
+  return { ok: true, tokens };
+}
+
+const SEED_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+const NEUTRAL_KEYS = [
+  "background", "foreground", "border", "surface",
+  "surfaceText", "surfaceHover", "surfaceActive", "surfaceActiveText",
+];
+
+/**
+ * @param {object} tokensTree live tokens.json tree (not mutated)
+ * @param {string} neutralSeed 6-digit hex, e.g. "#faf9f5"
+ * @param {string} accentSeed 6-digit hex, e.g. "#ae97f7"
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed) {
+  if (!SEED_COLOR_RE.test(neutralSeed) || !SEED_COLOR_RE.test(accentSeed)) {
+    return {
+      ok: false,
+      status: 400,
+      error: `expected 6-digit hex colors like #rrggbb, got ${JSON.stringify(neutralSeed)} / ${JSON.stringify(accentSeed)}`,
+    };
+  }
+  const ramp = generateNeutralRamp(neutralSeed);
+  const { accent, onAccent } = generateAccentPair(accentSeed);
+  for (const hex of [...Object.values(ramp.light), ...Object.values(ramp.dark), accent, onAccent]) {
+    if (typeof hex !== "string" || !SEED_COLOR_RE.test(hex)) {
+      return {
+        ok: false,
+        status: 500,
+        error: `generator produced a non-hex value ${JSON.stringify(hex)} -- not writing anything (see stop-conditions)`,
+      };
+    }
+  }
+  const writes = [
+    ...NEUTRAL_KEYS.map((key) => [`semantic.color.${key}`, ramp.light[key]]),
+    ["semantic.color.accent", accent],
+    ["semantic.color.onAccent", onAccent],
+    ...NEUTRAL_KEYS.map((key) => [`dark.semantic.color.${key}`, ramp.dark[key]]),
+  ];
+  for (const [path] of writes) {
+    if (!getLeaf(tokensTree, path)) {
+      return {
+        ok: false,
+        status: 400,
+        error: `"${path}" is missing from this brand's tokens.json -- generate-from-seed requires the full default-brand leaf set, not a sparse child brand`,
+      };
+    }
+  }
+  const tokens = structuredClone(tokensTree);
+  for (const [path, hex] of writes) {
+    getLeaf(tokens, path).$value = hex;
   }
   return { ok: true, tokens };
 }
