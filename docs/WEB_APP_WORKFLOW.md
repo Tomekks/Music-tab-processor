@@ -42,11 +42,24 @@ optional tools for any tier, not mandatory gates.
 
 ## 3. Spec template (Bounded and Architectural tasks)
 
+Write the spec from reading the current code — not from building, running, or testing a
+prototype of the change. An implementation the execution model hasn't produced yet doesn't need
+Claude to have already built it once; that's the same work paid for twice. **The one exception is
+a narrow, single-question spike**, and only when the question is genuinely unanswerable by
+reading — an environment/runtime compatibility question ("does this package import under plain
+Node ESM"), not a logic question ("is this merge function correct"). Scope a spike to answering
+that one question, then stop; it does not turn into building the feature.
+
 One markdown file per task in `docs/specs/`:
 
 1. **Scope** — exact files, explicit `.env`/credential exclusion.
 2. **Non-goals** — explicitly what not to touch.
-3. **Interface** — signatures/types/contract.
+3. **Interface** — signatures/types/contract. For a change that matches an existing sibling
+   pattern already in the file (a new dispatch case shaped like existing ones, a new test
+   following an established fixture format), point at the pattern and give the delta — don't
+   embed a full verbatim code block. Reserve embedded code for logic with real correctness risk
+   (an off-by-one, a subtle edge case, a genuinely new algorithm) where the wrong wording could
+   produce a working-looking but wrong result.
 4. **Bad-case behavior** — plain table of edge cases and required behavior. Include only if the
    task actually has edge cases worth naming.
 5. **Forbidden patterns** — no bare `except`, no hardcoded fixture-specific values, no
@@ -55,7 +68,9 @@ One markdown file per task in `docs/specs/`:
 7. **Acceptance criteria** — the runnable `npm run verify` command, plus any manual judgment
    question for the human that Claude couldn't resolve alone.
 8. **Definition of done** — `npm run verify` passes + `git diff --stat` matches the file
-   allowlist + manual check where relevant + checkpoint commit made.
+   allowlist + manual check where relevant + **a self-check**: before reporting back, confirm
+   every concrete claim the report makes (file list, test counts, any specific numbers) against
+   what's actually on disk + checkpoint commit made.
 9. **Stop-conditions** — explicit "if X happens, stop and ask, don't guess" list.
 
 ## 4. Checkpoint commits
@@ -88,14 +103,25 @@ three-way push / push & deploy / skip question.
    or amends the spec, you relay that back, and only then does it implement. Specs are still
    written to make this the exception, not the routine (per §3's template) — but when a genuine
    ambiguity exists, asking is the required path, not a fallback.
-4. It implements, runs `npm run verify` itself, reports pass/fail and the diff.
+4. It implements, runs `npm run verify` itself, then **self-checks its own report against the
+   actual diff and test output before sending it** (§3's Definition-of-done addition) — does the
+   file list, the test count, and every concrete claim actually match what's on disk. Reports
+   pass/fail, the diff, and that self-check.
 5. You relay the result back to Claude.
-6. **First failure stops the loop.** No second unsupervised attempt. Claude reads the failure
-   and writes a fix-spec (diagnosis + narrowed instructions); back to step 2.
-7. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 8 if this
+6. **Claude's check is narrow, not a re-run.** Confirm the claimed file list against
+   `git diff --stat`, spot-check one or two of the report's specific claims, confirm the verify
+   command's own pass/fail line. Full independent re-verification — re-running the whole suite,
+   rebuilding something to compare against — is reserved for a claim that looks internally
+   inconsistent (contradicts itself, or contradicts a file Claude already has open), not the
+   default. The execution model already did the hard verification work in step 4; Claude's job
+   here is to catch a report that doesn't hold up, not to redo it.
+7. **First failure, or a spot-check that doesn't hold up, stops the loop.** No second
+   unsupervised attempt. Claude reads the failure and writes a fix-spec (diagnosis + narrowed
+   instructions); back to step 2.
+8. On pass: checkpoint commit (§4), then the next spec if the task has one, or step 9 if this
    was the last spec.
-8. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
-9. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
+9. Manual staging check per `AGENTS.md`: `npm run stage`, look at it.
+10. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
 
 ## 6. Not yet in place
 
@@ -105,3 +131,25 @@ three-way push / push & deploy / skip question.
 - Visual regression testing (screenshot comparisons via Playwright) is deferred. Once built, it
   slots into §3's Definition-of-done section as an added check — no rewrite of this document
   needed.
+
+## 7. Token discipline
+
+Three rules that keep per-task token cost down. They apply to both sides of the relay
+(Claude-orchestrated and execution-model sessions) unless noted.
+
+- **Output hygiene.** Prefer terse flags first (`pytest -q`, `git status --short`,
+  `git diff --stat`, `tail` on build logs). Report "pass/fail + diff-stat," never paste raw
+  logs into chat. Scripts compute; agents read results.
+- **Session preference (soft rule).** Prefer a fresh session when the next task is unrelated
+  to what's already loaded — stale context is re-billed every turn. Long-running *related*
+  work may stay in one session; continuity (schemas, write models, backlog context carried
+  across passes) is real value, not waste.
+- **Handoff directive.** Any handoff note authored by hand keeps decisions and file paths,
+  drops tool outputs. (No new mechanism — harness auto-compact already exists; this only
+  governs what a human writes down.)
+- **Division of labor.** Claude designs and reviews; the execution model builds. Claude doesn't
+  implement, run, or test a prototype while writing a spec (§3) — that's the same work paid for
+  twice once the execution model builds it for real. Claude's post-execution review is a
+  spot-check, not an independent re-run (§5 step 6), because the execution model already
+  self-checked before reporting (§5 step 4). Net effect: token cost shifts toward the execution
+  model actually doing the work, and away from Claude re-deriving it.

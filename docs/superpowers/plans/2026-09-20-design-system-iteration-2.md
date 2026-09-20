@@ -9,7 +9,10 @@
 > that task starts, not baked into this plan up front (this project learned the hard way this
 > session that specs go stale fast — see the git-blame on `WEB_APP_WORKFLOW.md`'s newest note).
 
-**Goal:** Eight independent design-system improvements. Four sourced from reviewing
+**Goal:** Eight design-system improvements (Tasks 1-8 below name eight distinct features; Tasks 5
+and 8 are each large enough that they're executed as multiple specs — 5a/5b/5c and 8a/8b — per
+**Tracks & sequencing** below, so the actual spec-file count is higher than eight). Four sourced
+from reviewing
 [Chainlift/liftkit](https://github.com/Chainlift/liftkit) (concepts only — that repo is GPL-2 and
 explicitly "not recommended for production"; no code is copied from it): generative color from
 seed hues, a live preview in the token editor, a shared interaction-state primitive, and a real
@@ -25,21 +28,32 @@ liftkit/backlog/research.
 
 **Architecture:** All eight build on the existing `@guitar-tabs/design-system` package
 (`app/packages/design-system/`) and its `/design-system` editor — no new subsystem, no new
-package. Each task is independently shippable and independently revertible.
+package. Most tasks are independently shippable and revertible, but two — Tasks 7 and 8 — have a
+hard, unavoidable sequencing dependency (Task 8 restructures the commit model *inside* the panel
+Task 7 creates), and several others share files closely enough that order matters even without a
+hard dependency. See **Tracks & sequencing**, right after the global constraints below, for the
+actual execution order — don't read the numbered Task list that follows as "run in any order."
 
 **Note on `docs/BACKLOG.md`:** item 14's text is quoted directly in Task 5 below rather than that
 file being edited to cross-reference this plan — `BACKLOG.md` has uncommitted changes from a
 concurrent session as of 2026-09-20 (a docs-reorg pass, several files touched), and editing a
 file mid-flight under another editor risks clobbering it. Whoever picks up Task 5 should update
 `BACKLOG.md` item 14's status once it's safe to touch (after the concurrent session's changes
-land or are confirmed clear).
+land or are confirmed clear). Re-check `git status` for `BACKLOG.md` at 5a spec-writing time —
+the 2026-09-20 date above may be stale.
 
-**Tech Stack:** Existing stack only, plus one new runtime dependency introduced in Task 1
-(`@material/material-color-utilities` — Google's HCT/tonal-palette library, MIT-licensed, ~30KB,
-zero transitive deps beyond itself). This is the first runtime dependency
-`@guitar-tabs/design-system` will have (today: `peerDependencies` on react/react-dom only,
-confirmed in `app/packages/design-system/package.json`) — flagged explicitly because adding it is
-a real decision, not a given.
+**Tech Stack:** Existing stack only — **no new runtime dependency**, superseding this paragraph's
+earlier draft. Task 1 originally planned to add `@material/material-color-utilities` (Google's
+HCT/tonal-palette library) as a runtime dependency of `@guitar-tabs/design-system`; verified at
+Task 1's spec-writing time that the published package (`0.4.0`, `latest`) cannot be `import`ed
+under plain Node.js ESM — an extensionless relative import several layers into its module graph
+throws `ERR_MODULE_NOT_FOUND`, and its `exports` field blocks the subpath-import workaround that
+would otherwise dodge it. Two smaller corrections to this paragraph's earlier claims, confirmed
+via `npm view`: the package is **Apache-2.0**, not MIT; unpacked size is **~1MB/138 files**, not
+"~30KB." Full detail and the resolved approach — vendoring the 8 specific files this task actually
+needs, unmodified, rather than depending on the broken package — is in Task 1's own spec,
+`docs/specs/design-system-generate-ramp.md`. `@guitar-tabs/design-system` still has no runtime
+dependency beyond `peerDependencies` on react/react-dom.
 
 **Spec:** No separate design spec — this plan **is** the design doc; each task's own
 `docs/specs/*.md` (written at execution time, per the note above) is the implementation-level
@@ -51,16 +65,51 @@ detail.
   `app/packages/design-system/src/*.test.mjs` for the existing 45 tests these changes must not
   break, especially `contrast.test.mjs` (WCAG AA 4.5:1 check on every semantic color pair, both
   themes — Task 1's generated output must keep passing this unchanged test, not a modified one).
-- `master` is branch-protected (confirmed this session by a rejected direct push) — every task
-  ships via a branch + PR, not a direct push.
-- **Another AI model may be concurrently editing this same working tree.** Each task works on its
-  own branch (created fresh from `origin/master` at task-start time, not reused across tasks), and
-  commits are scoped tightly to that task's file allowlist — no broad `git add -A`.
+- **Shipping model: checkpoint commits, not per-task branches/PRs** — per `WEB_APP_WORKFLOW.md`
+  §4/§5 (this supersedes an earlier draft of this plan that said "every task ships via a branch +
+  PR"; Task 7's own spec already correctly follows the checkpoint model, this line just brings the
+  plan's stated constraint in line with it). Commit locally (not pushed) after each task's
+  `npm run verify` passes, before the next spec starts. Push/deploy is asked once — the existing
+  three-way push / push & deploy / skip question — at the very end of this plan's work, not per
+  task. `master` is still branch-protected (confirmed this session by a rejected direct push), so
+  that eventual push, whenever it happens, targets a branch + PR like any other push to this repo
+  — it's just not a per-task ceremony.
+- **Another AI model may be concurrently editing this same working tree.** Commits stay scoped
+  tightly to each task's file allowlist — no broad `git add -A` — so a concurrent edit elsewhere
+  in the tree doesn't get swept into a checkpoint commit by accident.
 - No hardcoded colors — every new value is a token, resolved through the existing
   `{path.to.token}` reference system in `resolve.mjs`.
 - Don't touch `.env`/credentials (none of these tasks need to).
 - Per `DESIGN.md`: WCAG AA minimum (4.5:1 body text, 3:1 large text/UI), no decorative motion, no
   card-nesting.
+
+## Tracks & sequencing
+
+Three tasks touch `editor.tsx` heavily enough, in close enough succession, that "any order" isn't
+actually safe — and Task 5 is large enough (and touches enough of the same files) that it's split
+below rather than run as one task. This replaces the old "each task is independent" framing.
+
+- **Track A — package logic, order-flexible:** Task 1 → Task 5a (parent-resolution + merge logic
+  only, no editor UI) → Task 5b (reset-to-parent logic, no editor UI) → Task 3 → Task 6, run
+  once early as a baseline (see Task 6 below).
+- **Track B — editor, strictly serial (each lands on top of the previous, not in parallel):**
+  Task 1b → Task 2 → Task 7 → Task 8a (batch-write logic + route, no editor UI) → Task 8b
+  (pending-edits state + Save bar, inside Task 7's panel) → Task 5c (inherited/overridden UI, on
+  top of Task 8's staged-save UI — the highest-complexity merge point in this plan, budgeted here
+  explicitly rather than left implicit).
+- **Track C — independent:** Task 4, any time after Task 1b lands (so its manual light-mode check
+  covers Task 1's generated values, not hand-authored placeholders).
+- **Gate:** Task 6 runs once early (confirm green today) and once more, mandatory, as the closing
+  check after every token-touching task above has landed — see Task 6's own entry for why "run it
+  whenever" was wrong.
+
+Tracks A and C can run interleaved with Track B; within a track, the order shown is required.
+
+**Shared-file serialization across tracks:** `app/app/api/design-system/tokens/route.ts` and
+`app/packages/design-system/src/token-writes.mjs` are edited in the fixed order 1b → 5b → 8a no
+matter how tracks interleave — a track that arrives at one of those files early waits. The
+`token-writes.mjs` additions are additive and low-risk, but adjacent-line `route.ts` dispatch
+insertions collide under a concurrent editor in the same tree; this rule exists for that case.
 
 ---
 
@@ -71,11 +120,21 @@ accent hue, from a handful of seed hex colors — replacing hand-picked hex valu
 and its `dark` block with values derived from a formula. Pure logic only; wiring it into the
 brand data / editor is Task 1b.
 
-**Files:**
+**A real spec for this task has been written** (per the execution loop, `WEB_APP_WORKFLOW.md` §5):
+`docs/specs/design-system-generate-ramp.md`, ready to relay to the execution model. It resolves
+this task's approach differently from the sketch immediately below — **no new npm dependency**;
+the needed HCT/tonal-palette math is vendored instead, because the originally-planned package
+can't be imported under plain Node ESM (verified; see the spec's §0 and the Tech Stack note
+above). The design sketch below is kept for the algorithm/tone-index reasoning, which the spec's
+own vendored-import version implements unchanged — only the import source differs.
+
+**Files (per the real spec — supersedes the list below):**
 - Create: `app/packages/design-system/src/generate-ramp.mjs`
 - Create: `app/packages/design-system/src/generate-ramp.test.mjs`
-- Modify: `app/packages/design-system/package.json` (add `@material/material-color-utilities`
-  dependency)
+- Create: `app/packages/design-system/src/vendor/material-color-utilities/**` (8 vendored files +
+  `LICENSE`, unmodified from upstream `0.4.0`) and `vendor/README.md`
+- Modify: `app/eslint.config.mjs` (exclude the vendor directory from lint)
+- **Not** `package.json` — no new dependency.
 
 **Interfaces:**
 - Produces:
@@ -169,7 +228,13 @@ of hand-editing each of the ~18 color leaves individually.
   `applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed)`, following the existing
   `applyWrite`/`applyResetAll` pattern (pure function, tempfile-round-trip tested).
 - Modify: `app/app/design-system/editor.tsx` — one new section at the top ("Generate from seed
-  colors"): two `ColorField`s (neutral, accent) + a `Button` that POSTs the new action.
+  colors"): two `ColorField`s (neutral, accent) + a `Button` that POSTs the new action. **`editor.tsx`
+  must not import `generate-ramp.mjs` (or anything that imports it) directly** — it only `POST`s
+  to the route and lets `route.ts`/`token-writes.mjs` call the generator server-side, same as
+  today's other actions. Confirmed nothing in the app imports `generate-ramp.mjs` yet, so its
+  vendored ~1MB (`src/vendor/material-color-utilities/`, Task 1) stays out of the client bundle by
+  construction — keep it that way; this task is the one place that constraint could get broken by
+  a convenient client-side "preview before saving" shortcut.
 - Test: `app/packages/design-system/src/token-writes.test.mjs` — add cases for
   `applyGenerateFromSeed`.
 
@@ -188,8 +253,14 @@ of hand-editing each of the ~18 color leaves individually.
 - [ ] Run `npm run verify`; manually generate from 2-3 seed pairs in the running editor, confirm
       the live app (both `data-theme="light"` and `"dark"`, toggle via devtools until Task 4 ships
       a real switcher) still reads correctly and passes the existing contrast test.
-- [ ] **Extend `contrast.test.mjs`'s hand-enumerated `PAIRS` array** if generation introduces any
-      new color-pair relationship not already covered — a discipline check, not new tooling
+- [ ] **Resolved decision: the checkpoint commit happens only after this manual eyeball check
+      confirms the generated colors read correctly — not immediately once `npm run verify`
+      passes.** Generated color values are exactly the kind of output that can pass an automated
+      contrast check while still looking visually wrong (hue drift, muddiness, a neutral ramp that
+      reads as tinted) — the eyeball check is the real gate here; `verify` is necessary but not
+      sufficient.
+- [ ] **Extend `contrast.test.mjs`'s hand-enumerated `PAIRS` array** if the generated ramp adds
+      any token leaf consumed in a pairing not already covered by `PAIRS` — a discipline check, not new tooling
       (research finding: a hand-enumerated contrast test silently stops covering new pairs if
       nobody remembers to extend it; make it a checklist item here rather than trusting memory).
 - [ ] Checkpoint commit.
@@ -268,6 +339,15 @@ string.** Today `Button.tsx` has its own `PRIMARY_HOVER` Tailwind arbitrary-valu
 `Slider`/`ColorField`/`SegmentedControl` audit (do this first, at spec-writing time — don't assume
 their current state) will show whatever each one does today.
 
+**Open item — shape, resolve at spec-writing time, don't default to the component silently:**
+prefer a shared **helper function** (e.g. `stateOverlayClassName(...)` returning the Tailwind
+arbitrary-value `color-mix()` string from token names) over a new `<StateOverlay />` component,
+unless the audit below finds a case a plain string genuinely can't express (e.g. the
+`forcedState` always-on case). A helper gets the stated win — one shared implementation instead of
+every component writing its own `color-mix()` string — with zero new DOM nodes, no
+absolute-positioning/stacking-context requirements, and no second styling convention. Confirm
+helper-first at spec time; only reach for the component if the audit forces it.
+
 **Files:**
 - Create: `app/packages/design-system/src/components/StateOverlay.tsx` — a small internal
   (non-exported from `index.ts`) helper component, not a new public primitive: an absolutely
@@ -275,7 +355,8 @@ their current state) will show whatever each one does today.
   selectors on parent `:hover`/`:active`/`:focus-visible`, magnitude read from the existing
   `--state-hover-opacity`/`--state-pressed-opacity`/`--state-focus-opacity` custom properties
   (not hardcoded percentages like liftkit's `0.16`/`0.5`/`0.35` — ours are already tokens, keep
-  them tokens).
+  them tokens). **Per the open item above, only build this if the helper-function shape (§ above)
+  turns out insufficient — write the helper first, promote to a component only if forced.**
 - Create: `app/packages/design-system/src/components/StateOverlay.css` (or inline via existing
   Tailwind arbitrary-value convention — match whatever `ColorField.tsx`/`Slider.tsx` already do,
   confirm at spec time rather than introducing a second styling convention into a 4-component
@@ -295,7 +376,9 @@ their current state) will show whatever each one does today.
       CSS — document exactly what each does today in the task's spec (this is the "check current
       code before drafting" step; don't write the spec from `Button.tsx`'s pattern alone and
       assume the other three match it).
-- [ ] Write `StateOverlay.tsx` + its CSS.
+- [ ] Write the helper function first and consume it from `Button.tsx`; promote to a
+      `StateOverlay.tsx` component (+ its CSS, per Files above) only if the audit forced it —
+      see the open item above.
 - [ ] Refactor `Button.tsx` to use it; run `npm run verify` — no visual regression (manual check:
       hover/press/focus a button in the running app, compare before/after).
 - [ ] Refactor whichever other components the audit flagged.
@@ -322,15 +405,18 @@ entirely UI + persistence, not token/build work — scope it that way, don't let
 touching the generator.
 
 **Files:**
-- Modify: `app/app/_components/StudioShell.tsx` — replace the hardcoded `data-theme="dark"` with
+- Modify: `app/app/_components/StudioShell.tsx` — add `"use client"` (it owns the theme-mode
+  state and sets `data-theme`; `sidebar`/`detail` pass through as opaque children props, so
+  server rendering of content is preserved), and replace the hardcoded `data-theme="dark"` with
   state.
 - Create: `app/hooks/useThemeMode.ts` — `() => { mode: "light" | "dark", toggle: () => void }`,
   backed by `localStorage` (key: `"guitar-tabs-theme"`), falling back to
   `window.matchMedia("(prefers-color-scheme: dark)")` on first load if nothing is stored yet.
-- Modify: wherever `MetronomeControls`/`DetailToolbar`-style small controls already live (check
-  `DetailToolbar.tsx` — it's already the home for compact toggle-style controls like "Note
-  sound", per its own comment referencing `StringOrientationToggle`) — add a theme toggle button
-  there, not a new floating UI element.
+- Create: `app/app/_components/ThemeToggle.tsx` — small client button consuming `useThemeMode`,
+  rendered inside `AppHeader.tsx` (which stays a server component and imports the client button
+  — the standard pattern). **Resolved: AppHeader is the toggle home** — it is the one fixed
+  landmark regardless of which song is selected (per its own comment); `DetailToolbar.tsx` is
+  song-scoped UI and the wrong home for a global toggle.
 - Test: none required (a `localStorage`-backed React hook + a DOM attribute — this project's
   `node --test` runner has no DOM/browser harness, same reasoning `ui-fretboard-playhead`'s spec
   used; manual visual check is the real gate here).
@@ -342,8 +428,8 @@ touching the generator.
 
 - [ ] Write `useThemeMode.ts`.
 - [ ] Wire it into `StudioShell.tsx`.
-- [ ] Add the toggle button to `DetailToolbar.tsx` (confirm exact placement/styling convention by
-      reading that file first, not guessing from `StringOrientationToggle`'s pattern alone).
+- [ ] Render the client `ThemeToggle` inside `AppHeader` (resolved above — don't reintroduce
+      `DetailToolbar`; it's song-scoped UI, the wrong home for a global toggle).
 - [ ] Manual check: toggle in the browser, reload the page, confirm it persisted; confirm every
       view (Sheet/Fretboard/Ascii, the `/design-system` editor itself) reads correctly in both
       modes — this is the first time light mode will actually be seen live, so this is also
@@ -355,6 +441,19 @@ touching the generator.
 ---
 
 ### Task 5: Multi-brand inheritance with per-token reset-to-parent
+
+**Split into three specs, per Tracks & sequencing above — this was one oversized task, now three
+right-sized ones:**
+- **5a (Track A, early):** parent-resolution + `deepMerge` + `resolveBrandTree`, golden test.
+  Pure logic, no editor UI. Tagged `[5a]` below.
+- **5b (Track A, early, after 5a):** `applyResetToParent`, delete-not-copy test. Pure logic.
+  Tagged `[5b]` below.
+- **5c (Track B, last):** the editor's inherited/overridden UI, landing on top of Task 8's staged-
+  save UI. Tagged `[5c]` below. This is the piece that has to wait — everything else here can run
+  in Track A well before Task 7/8 exist.
+
+The backlog-board-migration decision (below) belongs to 5a's spec, since it's about the first
+real child brand's data, not any UI.
 
 `docs/BACKLOG.md` item 14, quoted directly (that file is not being edited right now — see the
 note above): *"One main design system holds the source-of-truth token values. Any surface that
@@ -379,7 +478,7 @@ direction rather than inventing a second, parallel mechanism.
 **Resolved decisions (make these explicit in this task's own spec too, don't silently inherit
 them from this plan without saying so):**
 - **Build-time, not runtime.** `generateCSS` already runs at `predev`/`prebuild`/`prestage`
-  (Task 3's cutover) and reads one `active-brand.json`-selected directory. A child brand gets its
+  (the earlier cutover) and reads one `active-brand.json`-selected directory. A child brand gets its
   own `active-brand.json` (or an equivalent per-surface build invocation) pointing at its own
   directory; there is no client-side merge, no extra runtime cost, and no new build-time
   dependency beyond the existing script.
@@ -396,53 +495,73 @@ them from this plan without saying so):**
   inheriting future parent changes, which defeats the entire point of the feature.
 
 **Files:**
-- Create: `app/packages/design-system/brands/<child-brand-name>/tokens.json` (a first real child
-  — read `docs/backlog-board/DESIGN.md` per item 14's own text and decide, at spec-writing time,
-  whether migrating the backlog board's hand-pulled palette to a real child brand is in-scope for
-  this task or a fast-follow; don't silently expand scope to include it without saying so).
-- Modify: `app/packages/design-system/brands/<child-brand-name>/` needs a way to declare its
-  parent — e.g. a sibling `brand.json` with `{ "parent": "default" }` (exact shape is a real
-  decision for the task's spec, not fixed here).
-- Modify: `app/packages/design-system/src/build-tokens.mjs` — `resolveBrandDir`/`generateCSS`
-  need a merge step: if the resolved brand has a `parent`, recursively resolve the parent's tree
-  first (supporting more than one level of inheritance is explicitly YAGNI — cap at one level,
-  parent-of-a-parent is out of scope unless a real second use case shows up), then `deepMerge`
-  the child's `tokens.json` on top before proceeding exactly as today.
-- Modify: `app/packages/design-system/src/token-writes.mjs` — `applyReset` needs a
+- `[5a]` Create: `app/packages/design-system/brands/<child-brand-name>/tokens.json` (a first real
+  child — read `docs/backlog-board/DESIGN.md` per item 14's own text and decide, at spec-writing
+  time, whether migrating the backlog board's hand-pulled palette to a real child brand is
+  in-scope for 5a or a fast-follow; don't silently expand scope to include it without saying so).
+- `[5a]` Modify: `app/packages/design-system/brands/<child-brand-name>/` needs a way to declare
+  its parent — e.g. a sibling `brand.json` with `{ "parent": "default" }` (exact shape is a real
+  decision for 5a's spec, not fixed here).
+- `[5a]` Modify: `app/packages/design-system/src/build-tokens.mjs` — `resolveBrandDir`/
+  `generateCSS` need a merge step: if the resolved brand has a `parent`, recursively resolve the
+  parent's tree first (supporting more than one level of inheritance is explicitly YAGNI — cap at
+  one level, parent-of-a-parent is out of scope unless a real second use case shows up), then
+  `deepMerge` the child's `tokens.json` on top before proceeding exactly as today.
+- `[5b]` Modify: `app/packages/design-system/src/token-writes.mjs` — `applyReset` needs a
   parent-brand-aware variant (or a new function) that deletes the leaf from the child's tree
-  instead of copying from `tokens.default.json`, when operating on a child brand. Decide at spec
-  time whether this is a new `applyResetToParent` or a mode flag on existing `applyReset` — don't
-  silently overload the existing function's meaning without documenting the change.
-- Modify: `app/app/design-system/editor.tsx` / `FieldDescriptor` (`field-descriptors.mjs`) —
-  `isModified` today means "differs from `tokens.default.json`"; a child brand's editor needs a
+  instead of copying from `tokens.default.json`, when operating on a child brand. Decide at 5b's
+  spec time whether this is a new `applyResetToParent` or a mode flag on existing `applyReset` —
+  don't silently overload the existing function's meaning without documenting the change.
+- `[5b]` Modify: `app/app/api/design-system/tokens/route.ts` — add the reset-to-parent `action`
+  case to the existing dispatch (same pattern as the other actions, no restructuring), so the
+  function 5b creates is reachable.
+- `[5c]` Modify: `app/app/design-system/editor.tsx` / `FieldDescriptor` (`field-descriptors.mjs`)
+  — `isModified` today means "differs from `tokens.default.json`"; a child brand's editor needs a
   parallel `isInheritedFromParent` so the UI can show "inherited" vs. "overridden" distinctly,
-  and the revert button's label/behavior changes accordingly on a child brand.
-- Test: `build-tokens.test.mjs` (golden CSS output for a 2-brand parent/child fixture),
-  `token-writes.test.mjs` (reset-to-parent deletes rather than copies).
+  and the revert button's label/behavior changes accordingly on a child brand. Lands after Task
+  8's staged-save UI exists (Track B) — integrate with it, don't reintroduce auto-commit here.
+- `[5a]` Test: `build-tokens.test.mjs` (golden CSS output for a 2-brand parent/child fixture).
+- `[5b]` Test: `token-writes.test.mjs` (reset-to-parent deletes rather than copies).
 
 **Interfaces:**
-- Produces: `resolveBrandTree(brandDir): { tree, parentBrandDir: string | null }` (or equivalent —
-  exact naming is a spec-time decision) that `generateCSS` consumes instead of a bare
+- `[5a]` Produces: `resolveBrandTree(brandDir): { tree, parentBrandDir: string | null }` (or
+  equivalent — exact naming is a spec-time decision) that `generateCSS` consumes instead of a bare
   `JSON.parse(readFileSync(...))`.
-- Produces: whatever reset function Task 5 lands on, consumed by
+- `[5b]` Produces: whatever reset function 5b lands on, consumed by
   `app/app/api/design-system/tokens/route.ts`'s existing `action` dispatch (add a case, don't
   restructure the dispatch).
 
-- [ ] Decide, in this task's own spec: is migrating `docs/backlog-board/`'s palette to a real
-      child brand in-scope, or is a synthetic test-fixture child brand enough for this task?
-- [ ] Write the parent-resolution + merge logic, with a test fixture (a `default` + one child
+**`[5a]`** — **Done**, committed as `1ddd888` ("Task 5a: brand parent resolution + merge").
+`docs/specs/design-system-brand-inheritance-5a.md` is the executed spec. Narrow-reviewed per
+`WEB_APP_WORKFLOW.md` §5 step 6: `npm run verify` passes (76/76), `applyResetToParent`/
+`resolveBrandTree`/`demo-child` fixture spot-checked against the spec and match, `BACKLOG.md` item
+14 updated correctly (not marked fully done — notes the backlog-board migration is still open
+pending a schema extension, per the spec's §0).
+- [x] Write the parent-resolution + merge logic, with a test fixture (a `default` + one child
       brand pair) proving: a leaf present only in `default` resolves for the child; a leaf
       present in the child overrides it; `deepMerge`'s existing semantics (reused, not
       reimplemented) are what's actually doing the merging.
-- [ ] Run tests, confirm failing, implement, confirm passing.
-- [ ] Write the reset-to-parent logic + its test (deletes, doesn't copy — assert the leaf is
+- [x] Run tests, confirm failing, implement, confirm passing.
+- [x] `npm run verify`; manually build both brands and visually confirm the child renders with
+      its overrides while inheriting everything else.
+- [x] Update `docs/BACKLOG.md` item 14's status.
+- [x] Checkpoint commit.
+
+**`[5b]`** — **Done**, committed as `5acd34f` ("Task 5b: reset-to-parent"). Narrow-reviewed same
+as 5a: `applyResetToParent`'s signature/body spot-checked against the spec and matches, test count
+consistent with 5a's baseline + 5 new (76 total).
+`docs/specs/design-system-brand-reset-to-parent-5b.md` is the executed spec.
+- [x] Write the reset-to-parent logic + its test (deletes, doesn't copy — assert the leaf is
       literally absent from the child's `tokens.json` afterward, not just value-equal to parent).
-- [ ] Wire the editor UI's inherited/overridden distinction.
-- [ ] `npm run verify`; manually build both brands (`predev`/whatever the per-surface build
-      invocation ends up being — decided at spec time) and visually confirm the child renders
-      with its overrides while inheriting everything else.
-- [ ] Update `docs/BACKLOG.md` item 14's status, once that file is confirmed clear of the
-      concurrent session's uncommitted changes.
+- [x] Run tests, confirm failing, implement, confirm passing.
+- [x] Wire the new `action` case into `route.ts`'s existing dispatch (no restructuring).
+- [x] `npm run verify`.
+- [x] Checkpoint commit.
+
+**`[5c]`** (Track B, after Task 8b — see Tracks & sequencing)
+- [ ] Wire the editor UI's inherited/overridden distinction on top of Task 8's staged-edit model.
+- [ ] `npm run verify`; manually confirm inherited vs. overridden reads correctly, and that
+      staged-save (Task 8) still works correctly for a child-brand field.
 - [ ] Checkpoint commit.
 
 ---
@@ -457,6 +576,27 @@ tempt developers to reach for the wrong thing"). Small and standalone — fits t
 existing all-in-house `node --test` convention rather than pulling in an external linter
 (Design Token Kit, a Stylelint plugin) for a 4-component package.
 
+**Run this twice, not once — it's a gate, not a normal task (see Tracks & sequencing above):**
+an early baseline run right after this test is written (confirm it passes on today's tree), and a
+**mandatory** re-run as the closing check after every other token-touching task in this plan has
+landed (1, 1b, 3, 5a, 5b — anything that adds/removes/renames a token leaf or a reference to one).
+Running it once "whenever, including first" and never again — the earlier framing — wastes its
+whole value: it exists specifically to catch what those later tasks might orphan.
+
+**Scoping rules, spelled out so the first run doesn't go red on a technicality:**
+- `dark.*` leaves inherit the same "must be referenced" requirement as their `semantic.*`
+  counterparts — being under `dark.*` doesn't exempt a leaf, it's the same token, themed.
+- A `component.*` or `semantic.*` leaf counts as "used" if it's referenced either directly (
+  `var(--...)` in CSS/Tailwind arbitrary values) **or** as an alias target (`{path.to.token}`
+  appearing inside another leaf's `$value`) — an alias reference from a component leaf back to a
+  semantic token is real usage, not orphaned just because nothing references it by CSS var
+  directly.
+- `primitive.*` leaves are exempt from the "must be directly used" check — they're expected to be
+  referenced only via `{...}` aliases from `semantic.*`, never directly by CSS var, by design.
+- `dark.X` counts as used iff base path `X` counts as used (strip the `dark.` prefix before
+  checking) — nothing references a `dark.*` path directly by design, so requiring direct
+  references would red-line every themed token.
+
 **Files:**
 - Create: `app/packages/design-system/src/token-usage.test.mjs`
 
@@ -465,14 +605,15 @@ existing all-in-house `node --test` convention rather than pulling in an externa
 - [ ] Write a test that: (1) walks `tokens.json` via the existing `collectLeafPaths`
       (`token-writes.mjs`) to get every leaf path, (2) greps `app/packages/design-system/src/**`
       and `app/app/**`/`app/components/**` for `var(--...)` and `{path.to.token}` occurrences,
-      (3) asserts every `component.*` and `semantic.*` leaf is referenced at least once somewhere
-      (primitive-layer leaves are expected to be referenced only via `{...}` aliases from
-      semantic, not directly — exclude them from the "must be directly used" check, confirm this
-      distinction at spec time rather than assuming it needs no explanation).
+      (3) asserts every `component.*` and `semantic.*` leaf (including `dark.*`) is referenced at
+      least once somewhere, per the scoping rules above.
 - [ ] Run against the current tree, confirm it passes today (if it doesn't, that's a real finding
-      to report, not a bug in the test — investigate before assuming the test is wrong).
+      to report, not a bug in the test — investigate before assuming the test is wrong). This is
+      the early baseline run.
 - [ ] `npm run verify`.
 - [ ] Checkpoint commit.
+- [ ] **Re-run after every token-touching task in this plan lands** (the closing-gate run — see
+      above). Report any new orphan as a real finding for that task, not a flaw in this test.
 
 ---
 
@@ -482,8 +623,9 @@ User-requested (2026-09-20), revised same day to add an explicit "All variables"
 liftkit or research. Today's editor (`editor.tsx`) renders every section — semantic sections, then
 all four components' sections — as one long scrolling page. This task adds a sidebar with **five**
 entries: **All variables** (today's full flat page, unchanged, for global edits from one place)
-and the four `component.*` sections (`SECTIONS` entries with `group: "Components"` — `Button`,
-`ColorField`, `Slider`, `SegmentedControl`) for narrower, single-component edits. "All variables"
+and the four `component.*` sections (`SECTIONS` entries with `group: "Components"` —
+`ColorField`, `Slider`, `SegmentedControl`, `Button`, i.e. `SECTIONS`' declared order; the
+task's own spec is authoritative on ordering) for narrower, single-component edits. "All variables"
 is a real, named, clickable sidebar item — not an implicit default/no-selection state — so the
 sidebar always shows the user exactly where they are and both scopes (global vs. per-component)
 are equally first-class, reachable the same way.
@@ -517,8 +659,9 @@ are equally first-class, reachable the same way.
       component type (four small render branches, not a generic "renders any component"
       abstraction — YAGNI until a fifth component exists).
 - [ ] `npm run verify`; manually click through "All variables" and all four components, confirm
-      "All variables" is pixel-identical to today's page, and each component's fields + live
-      instance both render and update together.
+      "All variables"'s content column is pixel-identical to today's page's content (the page as a
+      whole also shows the new persistent sidebar — expected, see the task's own spec), and each
+      component's fields + live instance both render and update together.
 - [ ] Checkpoint commit.
 
 **A real spec for this task has been written** (per the execution loop, `WEB_APP_WORKFLOW.md` §5):
@@ -560,53 +703,90 @@ used "Set as default" — `applySetAsDefault` — to bake a literal into the def
 exact path); if it has, Revert legitimately won't restore the alias, and that's correct existing
 behavior, not a bug this task needs to fix.
 
-**Staged changes + explicit Save:**
+**Split into two specs, per Tracks & sequencing above:**
+- **8a (Track B, right after Task 7):** `applyBatchWrite` + its tests + the `batch-write` route
+  action. Pure logic and API surface, no editor UI. Tagged `[8a]` below.
+- **8b (Track B, after 8a):** the pending-edits state, Save bar, and scope radios inside Task 7's
+  panel. Tagged `[8b]` below.
+
+**Resolved decision — unsaved pending edits across navigation:** pending edits **persist across
+navigation** — switching to a different component or closing/reopening the panel does not discard
+them — until an explicit Save or an explicit Discard action. No confirm dialog on navigation away.
+This removes the single biggest open unknown in 8b and makes it directly plannable: 8b's pending-
+edit state lives at the `Editor` level (already implied by "held at the `Editor` component level"
+below), keyed by path across all four components at once, not reset when `selectedView` changes.
+Add an explicit "Discard changes" action alongside "Save changes (`N`)" so there's a deliberate way
+to drop pending edits, since silent navigation no longer does it implicitly.
+
+**Open item — scope-selection granularity, resolve at 8b's spec-writing time:** the design below
+still describes a per-field exception/brand-wide radio. Consider instead a single Save-bar-level
+scope choice ("apply as: exceptions / brand-wide where possible") with per-field override only
+where `isAlias` differs — fewer states to hold (`Map<path, value>` + one scope flag, vs.
+`Map<path, {value, scope}>`), less UI surface for what's already the most decision-dense part of
+this plan. Default to the bulk toggle with per-field override as the fallback unless 8b's spec
+finds a concrete reason per-field-only is required.
 
 **Files:**
-- Modify: `app/app/design-system/editor.tsx` (Task 7's component detail panel) — replace
+- `[8a]` Modify: `app/app/api/design-system/tokens/route.ts` — new `action: "batch-write"`,
+  `{ edits: { path: string; value: string; scope: "exception" | "brand" }[] }` (scope travels
+  with each edit; 8a resolves it — see Interfaces).
+- `[8a]` Modify: `app/packages/design-system/src/token-writes.mjs` — add
+  `applyBatchWrite(tokensTree, edits: { path, value, scope }[])`: validates every edit first
+  (reusing `validateWriteValue`), resolves a `"brand"`-scoped edit to its alias target read from
+  the tree at that path (fail-closed: `"brand"` on a non-alias path fails the whole batch), and
+  applies **all-or-nothing** — if any single edit fails validation, none are written. A
+  partially-applied explicit Save would be worse than today's auto-commit model, not an
+  improvement; don't ship a partial-apply path.
+- `[8a]` Test: `token-writes.test.mjs` — `applyBatchWrite` cases: all-valid batch applies every
+  edit; one invalid edit in a batch of three applies none of them; a `"brand"`-scoped edit
+  resolves to the alias target path, not the originating component path (this is the core new
+  behavior — test it directly, not just "batch write works").
+- `[8b]` Modify: `app/app/design-system/editor.tsx` (Task 7's component detail panel) — replace
   `ColorRow`/`SliderRow`'s auto-commit-on-blur/debounce with local pending-edit state: a
-  `Map<path, { value: string; scope: "exception" | "brand" }>` (or equivalent), held at the
-  `Editor` component level so a "Save" bar can span all of a component's pending edits at once.
-  Task 2's live-DOM-preview mutation (`document.documentElement.style.setProperty`) still fires
-  on every change regardless of pending/saved state — **this task changes when a value is
-  persisted to disk, not the instant-visual-feedback mechanism Task 2 built.** State the
-  supersession explicitly in this task's spec: Task 2's auto-commit-on-blur is what's being
-  replaced here; Task 2's live-preview effect is being kept and reused as-is.
-- Add a "Save changes (`N`)" button, visible only when the pending-edits map is non-empty, that
-  sends every pending edit in one batch.
-- Modify: `app/app/api/design-system/tokens/route.ts` — new `action: "batch-write"`,
-  `{ edits: { path: string; value: string }[] }`.
-- Modify: `app/packages/design-system/src/token-writes.mjs` — add
-  `applyBatchWrite(tokensTree, edits: { path, value }[])`: validates every edit first (reusing
-  `validateWriteValue`), and applies **all-or-nothing** — if any single edit fails validation,
-  none are written. A partially-applied explicit Save would be worse than today's auto-commit
-  model, not an improvement; don't ship a partial-apply path.
-- Test: `token-writes.test.mjs` — `applyBatchWrite` cases: all-valid batch applies every edit;
-  one invalid edit in a batch of three applies none of them; a `"brand"`-scoped edit resolves to
-  the alias target path, not the originating component path (this is the core new behavior —
-  test it directly, not just "batch write works").
+  `Map<path, { value: string; scope: "exception" | "brand" }>` (or equivalent — see the open item
+  above on whether `scope` is per-field or lives once on the Save bar), held at the `Editor`
+  component level, persisting across navigation per the resolved decision above. Task 2's
+  live-DOM-preview mutation (`document.documentElement.style.setProperty`) still fires on every
+  change regardless of pending/saved state — **this task changes when a value is persisted to
+  disk, not the instant-visual-feedback mechanism Task 2 built.** State the supersession
+  explicitly in 8b's spec: Task 2's auto-commit-on-blur is what's being replaced here; Task 2's
+  live-preview effect is being kept and reused as-is.
+- `[8b]` Add a "Save changes (`N`)" button, visible only when the pending-edits map is non-empty,
+  that sends every pending edit in one batch to `[8a]`'s `batch-write` action; a "Discard changes"
+  action alongside it, per the resolved decision above.
 
 **Interfaces:**
-- Produces: `applyBatchWrite(tokensTree, edits: { path: string; value: string }[]): { ok: true,
+- `[8a]` Produces: `applyBatchWrite(tokensTree, edits: { path: string; value: string; scope:
+  "exception" | "brand" }[]): { ok: true,
   tree } | { ok: false, error }` — same result shape as `applyWrite`/`applyResetAll`, so
-  `route.ts` handles it identically to the existing actions.
-- Consumes (in `editor.tsx`): for a pending edit `{ path, value, scope }` on a `FieldDescriptor
-  d`, resolve the write path as `scope === "brand" ? d.rawValue.slice(1, -1) : d.path` before
-  adding it to the batch sent to `applyBatchWrite`.
+  `route.ts` handles it identically to the existing actions. Scope resolution lives here, not in
+  the editor: `"exception"` writes `path` as-is; `"brand"` resolves to the alias target read
+  from the tree at that path.
+- `[8b]` Consumes (in `editor.tsx`): for a pending edit on a `FieldDescriptor d`, send
+  `{ path: d.path, value, scope }` — no path math in the editor; 8a owns `brand`-to-alias-target
+  resolution.
 
+**`[8a]`**
 - [ ] Write `applyBatchWrite` + its tests (all-valid, one-invalid-rejects-all, brand-scope
       resolves to the alias target).
 - [ ] Run, confirm failing, implement, confirm passing.
-- [ ] Wire the pending-edits state + Save button into Task 7's detail panel.
-- [ ] Wire the exception/brand-wide radio per field, disabled/hidden per the resolved decision
-      above when `d.isAlias` is `false`.
-- [ ] **Decide and document, in this task's own spec, what happens to unsaved pending edits when
-      the user switches to a different component or closes the panel** — discard silently, warn,
-      or persist across navigation until an explicit Save/Discard. Not resolved here; pick one
-      and write it down, don't leave it implicit.
+- [ ] Wire the route action.
+- [ ] `npm run verify`.
+- [ ] Checkpoint commit.
+
+**`[8b]`**
+- [ ] Wire the pending-edits state (persisting across navigation) + Save/Discard buttons into
+      Task 7's detail panel.
+- [ ] Wire the scope selection per the open item above — resolve bulk-vs-per-field in 8b's spec
+      before implementing, not while implementing.
+- [ ] Wire the exception/brand-wide distinction, disabled/hidden per the earlier resolved decision
+      when `d.isAlias` is `false`.
 - [ ] `npm run verify`; manually: edit two fields on one component with different scopes, confirm
       neither writes to disk until Save is clicked, confirm the "brand" one changes a second
-      component that shares the same token, confirm Revert still works pre- and post-Save.
+      component that shares the same token, confirm Revert on a pending (unsaved) edit discards
+      the staged value, confirm Revert post-Save restores the `tokens.default.json` value, confirm
+      switching components and coming back preserves the pending edits, confirm Discard clears
+      them.
 - [ ] Checkpoint commit.
 
 ## Self-Review
@@ -626,24 +806,27 @@ don't trust blind" rather than asserted as correct — that's a known open quest
 own spec to resolve empirically (via the contrast test), not a placeholder standing in for
 missed work. Task 2/3/4 each name the exact file to read before writing code, where this plan
 doesn't already know the answer (CSS var naming convention, other components' current hover CSS,
-`DetailToolbar.tsx`'s exact layout) — consistent with this session's own lesson about not
+`StudioShell.tsx`/`AppHeader.tsx`'s header convention) — consistent with this session's own lesson about not
 drafting specs from assumption.
 
 **Type consistency:** `generateNeutralRamp`/`generateAccentPair` (Task 1) return shapes are
 consumed as-is by `applyGenerateFromSeed` (Task 1b) with no renaming. `useThemeMode`'s return
 shape (Task 4) is used directly in `StudioShell.tsx` with no renaming.
 
-**Task independence, explicitly:** Tasks 1/1b, 2, 3, 4, 5, 6, 7, and 8 touch disjoint files
-except: all touch `app/packages/design-system/` broadly; Tasks 1b/2 both touch `editor.tsx`
-(different sections) — sequence 1/1b before 2 if both are in flight; Task 5 also touches
-`editor.tsx` (`isInheritedFromParent`) and `build-tokens.mjs`/`token-writes.mjs` (same files Tasks
-1/1b/2 touch) — Task 5 is the largest and riskiest task before Task 8 (it changes what "reset"
-*means* on a child brand, not just adding a new one); Task 6 only reads existing files and has no
-ordering dependency — run it whenever, including first.
+**Task independence, explicitly — superseded by Tracks & sequencing above:** an earlier version of
+this plan claimed every task was "independently shippable and independently revertible" and that
+Task 6 could "run whenever, including first." Neither survived scrutiny: five tasks (1b, 2, 5c, 7,
+8) touch `editor.tsx`, four of them in the same strict order within Track B; Task 6's entire value
+is catching orphans *introduced by* the other token-touching tasks, so running it once, early, and
+never again wastes it — it now runs early as a baseline and again as a mandatory closing gate.
+Five tasks share `build-tokens.mjs`/`token-writes.mjs` (1, 1b, 5a, 5b, 8a) — Track A's ordering
+(1 → 5a → 5b → 3) exists specifically so 5a/5b aren't written against a stale picture of those files. See
+**Tracks & sequencing** for the actual required order; nothing in the numbered Task list below
+should be read as "any order."
 
-**Tasks 7 and 8 have a hard, explicit dependency chain, unlike everything else in this plan:**
+**Tasks 7 and 8 have a hard, explicit dependency chain, unlike most of the rest of this plan:**
 Task 8 restructures `editor.tsx`'s commit model (auto-commit-on-blur → staged edits + explicit
 Save) *inside the per-component panel Task 7 creates* — Task 8 cannot be written or reviewed
 meaningfully before Task 7 exists, and Task 8's own spec explicitly supersedes Task 2's
-auto-commit behavior (while keeping Task 2's live-preview mutation mechanism) — sequence 2 → 7 →
-8 strictly, not "any order" like the rest of this plan's tasks.
+auto-commit behavior (while keeping Task 2's live-preview mutation mechanism) — Track B sequences
+1b → 2 → 7 → 8a → 8b → 5c strictly, not "any order."

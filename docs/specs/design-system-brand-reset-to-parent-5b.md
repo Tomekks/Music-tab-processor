@@ -305,6 +305,10 @@ a parent" check), not for the tree it resolves.
   `active-brand.json` before committing), and the generated CSS rebuilt from `default`
   (`npm run tokens:build` re-run — required because the checked-in diff can't show the
   gitignored generated file's staleness).
+- Self-check (per `WEB_APP_WORKFLOW.md` §3): before reporting back, confirm every concrete claim
+  in the report — the file list, the test count (existing + 5 new), the `demo-child` behavior
+  described in §7's manual check — against what's actually on disk and what `npm run verify`
+  actually printed.
 - Checkpoint commit made (per `WEB_APP_WORKFLOW.md` §4).
 
 ## 9. Stop-conditions

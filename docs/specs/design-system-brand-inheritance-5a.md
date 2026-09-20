@@ -386,6 +386,9 @@ test("resolveBrandTree(demo-child) merges parent's tree under its own override",
 - `git diff --stat` matches §6's file allowlist.
 - Manual check above passed.
 - `docs/BACKLOG.md` item 14 updated per §7.
+- Self-check (per `WEB_APP_WORKFLOW.md` §3): before reporting back, confirm every concrete claim
+  in the report — the file list, the test count (existing + 3 new), the golden-CSS output
+  described in §3.5 — against what's actually on disk and what `npm run verify` actually printed.
 - Checkpoint commit made (per `WEB_APP_WORKFLOW.md` §4).
 
 ## 9. Stop-conditions
