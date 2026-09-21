@@ -744,3 +744,100 @@ test.describe("spec 7 orientation", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 });
+
+// Spec 8b blocks (appended; earlier specs' blocks above untouched).
+//
+// Live-data note: the suite runs against the real song list, so which art
+// variants exist is data, not code. Each test quotes its observed
+// rows-with-art / rows-without-art counts as an annotation; a missing
+// variant is reported, never silently skipped. The empty-list and
+// empty-detail branches cannot render against a populated database (no
+// fixture per spec 8b §2/§9), so their exact copy is covered by diff/code
+// review plus the human checkbox -- NOT claimed as runtime e2e here. Spec
+// 5's no-links drawer test stays as focus regression coverage only.
+
+test.describe("spec 8b empty states", () => {
+  test("populated rows: art and placeholder boxes each reserve 48px", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Visible desktop nav only (the drawer's nav is hidden at this width).
+    const nav = page.locator('nav[aria-label="Songs"]:visible');
+    await expect(nav).toHaveCount(1);
+
+    // Rows identified semantically: one link per song row.
+    const rowCount = await nav.getByRole("link").count();
+    expect(rowCount, "live list is populated").toBeGreaterThan(0);
+
+    const artImgs = nav.locator("li img");
+    const placeholders = nav.locator('li div[aria-hidden="true"]');
+    const artCount = await artImgs.count();
+    const placeholderCount = await placeholders.count();
+    test.info().annotations.push({
+      type: "spec-8b-live-data",
+      description: `rows-with-art=${artCount} rows-without-art=${placeholderCount} rows-total=${rowCount}`,
+    });
+    expect(
+      artCount + placeholderCount,
+      "every visible row contributes exactly one art box (loaded art or placeholder)",
+    ).toBe(rowCount);
+
+    if (artCount === 0) {
+      test.info().annotations.push({
+        type: "spec-8b-missing-variant",
+        description: "no rows with loaded art in the live list -- loaded-art geometry half not runtime-covered (source diff + human review only)",
+      });
+    } else {
+      for (let i = 0; i < artCount; i++) {
+        const img = artImgs.nth(i);
+        await expect(img).toHaveAttribute(
+          "class",
+          "w-12 h-12 shrink-0 object-cover rounded-[var(--radius)]",
+        );
+        const box = await img.boundingBox();
+        expect(box, "loaded-art box exists").not.toBeNull();
+        expect(box!.width, `loaded-art box ${i} width`).toBeCloseTo(48, 0);
+        expect(box!.height, `loaded-art box ${i} height`).toBeCloseTo(48, 0);
+      }
+    }
+
+    if (placeholderCount === 0) {
+      test.info().annotations.push({
+        type: "spec-8b-missing-variant",
+        description: "no rows without art in the live list -- placeholder geometry half not runtime-covered (source diff + human review only)",
+      });
+    } else {
+      for (let i = 0; i < placeholderCount; i++) {
+        const ph = placeholders.nth(i);
+        // Rendered class contract: the w-12 size correction AND the
+        // foreground token utility (no text-zinc-500) in one assertion.
+        await expect(ph).toHaveAttribute(
+          "class",
+          "w-12 h-12 shrink-0 bg-foreground/10 rounded-[var(--radius)]",
+        );
+        const box = await ph.boundingBox();
+        expect(box, "placeholder box exists").not.toBeNull();
+        expect(box!.width, `placeholder box ${i} width`).toBeCloseTo(48, 0);
+        expect(box!.height, `placeholder box ${i} height`).toBeCloseTo(48, 0);
+      }
+    }
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("no publish link or button on the live page", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // The empty-branch copy mentions publishing as plain guidance, never as
+    // a control; the populated page must therefore have no publish-named
+    // link or button at all. (The empty branches themselves are unreachable
+    // against the populated DB -- their no-CTA half is diff + human review.)
+    await expect(page.getByRole("link", { name: /publish/i })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /publish/i })).toHaveCount(0);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});

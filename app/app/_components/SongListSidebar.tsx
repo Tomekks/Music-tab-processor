@@ -99,7 +99,7 @@ export function SongListSidebar({ songs, selectedId }: { songs: SongListItem[]; 
 
 function SidebarList({ songs, selectedId }: { songs: SongListItem[]; selectedId: string | null }) {
   if (songs.length === 0) {
-    return <p className="p-4 text-sm text-zinc-500">No songs published yet.</p>;
+    return <p className="p-4 text-sm text-foreground/60">No songs published yet. Publish a tab to see it here.</p>;
   }
 
   return (

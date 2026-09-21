@@ -26,7 +26,7 @@ export function SongDetailPane({
   if (!song) {
     return (
       <div className="flex-1 flex items-center justify-center text-foreground/40">
-        <p>Choose a song from the list</p>
+        <p>No song is selected yet. Publish a tab to start practicing.</p>
       </div>
     );
   }
