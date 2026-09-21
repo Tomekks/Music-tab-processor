@@ -104,7 +104,10 @@ test("1. staging a slider edit shows Save but writes nothing to disk", async ({
   await expect(
     page.getByRole("button", { name: "Save changes (1)" }),
   ).toBeVisible();
-  await page.waitForTimeout(1500);
+  // Fixed settle, not a poll: a poll would pass at t=0 before any stray POST
+  // could fire. The wait must outlast the 200ms debounce a miswired row would
+  // post on — only then does "no POST" mean anything.
+  await page.waitForTimeout(1000);
   expect(posts).toEqual([]);
   expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
   expect(
@@ -211,4 +214,158 @@ test("6. discarding the colliding batch ends clean", async ({ page }) => {
   ).toHaveCount(0);
   const tokens = readTokens();
   expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+});
+
+test("7. staging a color edit shows Save but writes nothing to disk", async ({
+  page,
+}) => {
+  await sidebar(page).getByRole("button", { name: "Color Field" }).click();
+  const hex = section(page, "Color Field")
+    .locator("label", { hasText: "Border" })
+    .locator('input[type="text"]');
+  await hex.fill("#123456");
+  await hex.press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Save changes (1)" }),
+  ).toBeVisible();
+  // The override control renders for color rows too (Border is an alias).
+  await expect(
+    section(page, "Color Field").getByRole("tablist", { name: "Scope for Border" }),
+  ).toBeVisible();
+  const tokens = readTokens();
+  expect(leaf(tokens, "component.colorField.border").$value).toBe(
+    "{semantic.color.border}",
+  );
+  await page.getByRole("button", { name: "Discard changes" }).click();
+  await expect(
+    page.getByRole("button", { name: /Save changes/ }),
+  ).toHaveCount(0);
+});
+
+test("8. a non-alias field can only stage as exception, even under bulk Brand-wide", async ({
+  page,
+}) => {
+  // First make Button Radius a literal via an exception save.
+  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await setSlider(page, "Button", "Radius", 13);
+  const firstSave = postTokensRequest(page);
+  await page.getByRole("button", { name: "Save changes (1)" }).click();
+  await (await firstSave).ok();
+  expect(leaf(readTokens(), "component.button.radius").$value).toBe("13px");
+  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
+  // The bulk toggle lives in the Save bar, which needs a staged edit to
+  // exist — stage a throwaway, flip bulk to Brand-wide, then discard it.
+  await setSlider(page, "Button", "Padding X", 20);
+  await page
+    .getByRole("tablist", { name: "Default scope for new edits" })
+    .getByRole("tab", { name: "Brand-wide" })
+    .click();
+  await page.getByRole("button", { name: "Discard changes" }).click();
+  // Now edit the (literal, non-alias) Radius field under a Brand-wide bulk.
+  await setSlider(page, "Button", "Radius", 14);
+  // No scope override is offered for a non-alias field — and the staged scope
+  // was forced to exception, not the bulk default.
+  await expect(
+    section(page, "Button").getByRole("tablist", { name: "Scope for Radius" }),
+  ).toHaveCount(0);
+  await expect(
+    section(page, "Button").getByText("(exception only", { exact: false }),
+  ).toBeVisible();
+  const secondSave = postTokensRequest(page);
+  await page.getByRole("button", { name: "Save changes (1)" }).click();
+  await (await secondSave).ok();
+  // Exception semantics: the origin leaf was written, the shared target not.
+  const tokens = readTokens();
+  expect(leaf(tokens, "component.button.radius").$value).toBe("14px");
+  expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+  // Revert the origin leaf: restores the alias, tree fully clean again.
+  const revertResponse = postTokensRequest(page);
+  await section(page, "Button")
+    .getByRole("button", { name: "Revert Radius to default" })
+    .click();
+  await (await revertResponse).ok();
+  const clean = readTokens();
+  expect(leaf(clean, "component.button.radius").$value).toBe(
+    "{semantic.radius.base}",
+  );
+  expect(leaf(clean, "semantic.radius.base").$value).toBe("12px");
+});
+
+test("9. a per-field override does not move the bulk default", async ({
+  page,
+}) => {
+  await sidebar(page).getByRole("button", { name: "Color Field" }).click();
+  await setSlider(page, "Color Field", "Radius", 30);
+  await section(page, "Color Field")
+    .getByRole("tablist", { name: "Scope for Radius" })
+    .getByRole("tab", { name: "Brand-wide" })
+    .click();
+  // Stage a second field: it must still default to Exception (the bulk
+  // default), unaffected by the first field's override.
+  const hex = section(page, "Color Field")
+    .locator("label", { hasText: "Border" })
+    .locator('input[type="text"]');
+  await hex.fill("#123456");
+  await hex.press("Enter");
+  const borderScope = section(page, "Color Field").getByRole("tablist", {
+    name: "Scope for Border",
+  });
+  await expect(
+    borderScope.getByRole("tab", { name: "Exception" }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("button", { name: "Discard changes" }).click();
+  await expect(
+    page.getByRole("button", { name: /Save changes/ }),
+  ).toHaveCount(0);
+  // Nothing was ever saved: the tree is untouched.
+  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
+});
+
+test("10. All-variables edits still auto-commit with no Save bar", async ({
+  page,
+}) => {
+  await sidebar(page).getByRole("button", { name: "All variables" }).click();
+  // Exact textbox name: a substring "Accent" would also match the "Accent
+  // seed" and "On accent" fields in this view.
+  const hex = section(page, "Color").getByRole("textbox", {
+    name: "Accent",
+    exact: true,
+  });
+  const writeResponse = postTokensRequest(page);
+  await hex.fill("#123450");
+  await hex.press("Enter");
+  await (await writeResponse).ok();
+  // Staged UI never appears in All variables: the write went straight through.
+  await expect(
+    page.getByRole("button", { name: /Save changes/ }),
+  ).toHaveCount(0);
+  expect(leaf(readTokens(), "semantic.color.accent").$value).toBe("#123450");
+  const revertResponse = postTokensRequest(page);
+  await section(page, "Color")
+    .getByRole("button", { name: "Revert Accent to default" })
+    .click();
+  await (await revertResponse).ok();
+  expect(leaf(readTokens(), "semantic.color.accent").$value).toBe(
+    "{primitive.color.accent}",
+  );
+});
+
+test.fixme("Escape discards a staged color edit", async ({ page }) => {
+  // Deferred bug: staged-mode Escape calls onDiscardPending, but the
+  // following blur() re-fires commitIfChanged with pre-discard closure values
+  // and re-stages the same text. Un-skip when fixed; the steps below encode
+  // the expected behavior.
+  await sidebar(page).getByRole("button", { name: "Color Field" }).click();
+  const hex = section(page, "Color Field")
+    .locator("label", { hasText: "Border" })
+    .locator('input[type="text"]');
+  await hex.fill("#123456");
+  await hex.press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Save changes (1)" }),
+  ).toBeVisible();
+  await hex.press("Escape");
+  await expect(
+    page.getByRole("button", { name: /Save changes/ }),
+  ).toHaveCount(0);
 });

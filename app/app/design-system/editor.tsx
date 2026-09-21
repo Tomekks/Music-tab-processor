@@ -236,7 +236,10 @@ function FieldRow({
 }: {
   d: FieldDescriptor;
   disabled: boolean;
-  onCommitValue: (path: string, value: string) => Promise<boolean>;
+  // Optional: only the "All variables" call site passes it (immediate writes).
+  // The per-component detail view stages instead and omits it — the fallback
+  // branch below is unreachable there, hence the single assertion.
+  onCommitValue?: (path: string, value: string) => Promise<boolean>;
   onRevert: (path: string) => void;
   onPromote: (path: string) => void;
   pending?: PendingEdit;
@@ -255,7 +258,7 @@ function FieldRow({
         onStage!(d.path, value);
         return Promise.resolve(true);
       }
-    : (value: string) => onCommitValue(d.path, value);
+    : (value: string) => onCommitValue!(d.path, value);
   const control =
     d.$type === "color" ? (
       <ColorRow
@@ -375,7 +378,6 @@ function ComponentDetailView({
   disabledPaths,
   saveBusy,
   pendingEdits,
-  onCommitValue,
   onStage,
   onRevert,
   onPromote,
@@ -390,7 +392,6 @@ function ComponentDetailView({
   disabledPaths: Set<string>;
   saveBusy: boolean;
   pendingEdits: Map<string, PendingEdit>;
-  onCommitValue: (path: string, value: string) => Promise<boolean>;
   onStage: (path: string, value: string) => void;
   onRevert: (path: string) => void;
   onPromote: (path: string) => void;
@@ -412,7 +413,6 @@ function ComponentDetailView({
             key={d.path}
             d={d}
             disabled={disabledPaths.has(d.path) || saveBusy}
-            onCommitValue={onCommitValue}
             onStage={onStage}
             onRevert={onRevert}
             onPromote={onPromote}
@@ -849,7 +849,6 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
                   disabledPaths={inFlight}
                   saveBusy={saveBusy}
                   pendingEdits={pendingEdits}
-                  onCommitValue={runWrite}
                   onStage={stageEdit}
                   onRevert={runReset}
                   onPromote={runPromote}
