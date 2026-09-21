@@ -1,10 +1,18 @@
 "use client";
 
+import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
+
 // Presentational only -- takes bpm/isPlaying/onToggle/onBpmChange as props
 // rather than owning the useMetronome hook itself, so this stays swappable
 // independently of the timing logic (same "one interface, swappable
 // implementation" principle as the rest of this app). Bpm defaults to the
 // song's own tempo (set by the caller), editable here.
+//
+// Tiers (spec 1+4): Play is the primary action (component.button primary
+// tokens); Reset + sound rest on the secondary (ghost) tier via the
+// component.button secondary tokens -- token vars only, no color literals.
+// The sound button's pressed state keeps its surface-active treatment: that
+// is on/off feedback, not tier chrome.
 
 export function MetronomeControls({
   bpm,
@@ -25,13 +33,20 @@ export function MetronomeControls({
   soundEnabled: boolean;
   onToggleSound: () => void;
 }) {
+  // aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
+  const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
   return (
     <div className="flex items-center gap-4">
       <button
         onClick={onReset}
         aria-label="Reset to start"
         title="Reset to start"
-        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover"
+        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold"
+        style={{
+          background: "var(--component-button-secondary-background)",
+          color: "var(--component-button-secondary-text)",
+          borderColor: "var(--component-button-secondary-border)",
+        }}
       >
         ⏮
       </button>
@@ -39,7 +54,13 @@ export function MetronomeControls({
       <button
         onClick={onToggle}
         aria-label={isPlaying ? "Pause" : "Play"}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover"
+        aria-keyshortcuts={playShortcut?.kbd.join(" ")}
+        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold"
+        style={{
+          background: "var(--component-button-primary-background)",
+          color: "var(--component-button-primary-text)",
+          borderColor: "transparent",
+        }}
       >
         {isPlaying ? "⏸ Pause" : "▶ Play"}
       </button>
@@ -65,10 +86,17 @@ export function MetronomeControls({
         aria-pressed={soundEnabled}
         title="Play the real pitch of each note while the metronome runs (beta)"
         className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold ${
-          soundEnabled
-            ? "border-surface-active bg-surface-active text-surface-active-text"
-            : "border-border bg-surface text-surface-text hover:bg-surface-hover"
+          soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
         }`}
+        style={
+          soundEnabled
+            ? undefined
+            : {
+                background: "var(--component-button-secondary-background)",
+                color: "var(--component-button-secondary-text)",
+                borderColor: "var(--component-button-secondary-border)",
+              }
+        }
       >
         MIDI sound
       </button>
