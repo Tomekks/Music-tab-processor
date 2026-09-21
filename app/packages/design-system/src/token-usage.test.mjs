@@ -69,6 +69,11 @@ for (const { leaf } of collectLeafPaths(tree)) {
 // matches, either a NEW orphan appeared (investigate and wire it up, or add
 // it here with a reason) or one of these got fixed (remove it -- don't
 // leave a stale exemption).
+// Dark.* leaves never get their own entries here: the test body normalizes
+// every actual orphan to its base path (strips a leading "dark.") before
+// comparing, mirroring the stripped-path usage detection in isOrphan above.
+// A dark override is therefore covered by -- or flagged together with -- its
+// base path's entry (Spec 0 amendment 2026-09-21).
 const KNOWN_ORPHANS = new Set([
   "semantic.state.focusOpacity",
   "component.slider.trackColor",
@@ -76,6 +81,11 @@ const KNOWN_ORPHANS = new Set([
   "semantic.space.2",
   "semantic.space.4",
   "semantic.space.8",
+  // Spec 0 additions — temporary orphans, wired up in specs 1+4/2/3.
+  "semantic.color.playbackActive", // wired up in specs 1+4/2/3
+  "semantic.color.onPlaybackActive", // wired up in specs 1+4/2/3
+  "semantic.color.loopRange", // wired up in specs 1+4/2/3
+  "semantic.state.loopRangeOpacity", // wired up in specs 1+4/2/3
 ]);
 
 function isOrphan(path) {
@@ -98,8 +108,17 @@ function isOrphan(path) {
 test("every semantic.*/component.* leaf (including dark.*) is referenced somewhere, except the documented KNOWN_ORPHANS", () => {
   const allPaths = collectLeafPaths(tree).map(({ path }) => path);
   const actualOrphans = allPaths.filter(isOrphan).sort();
+  // Normalize dark.* orphans to their base path before comparing (Spec 0
+  // amendment 2026-09-21): usage detection in isOrphan already operates on
+  // the stripped path, so known-orphan matching must too -- otherwise every
+  // dark override of an intentionally-unused base token would demand a
+  // duplicate entry. A dark override of a *used* base token still fails here
+  // (its normalized path is absent from KNOWN_ORPHANS), so nothing is masked.
+  const normalizedOrphans = [
+    ...new Set(actualOrphans.map((p) => (p.startsWith("dark.") ? p.slice("dark.".length) : p))),
+  ].sort();
   assert.deepEqual(
-    actualOrphans,
+    normalizedOrphans,
     [...KNOWN_ORPHANS].sort(),
     "orphan set changed from KNOWN_ORPHANS -- see this file's comment above KNOWN_ORPHANS",
   );

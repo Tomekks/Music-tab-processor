@@ -23,6 +23,13 @@ near-black surfaces with a soft lavender accent — utilitarian first, considere
   for a genuinely selected/pressed state, not a hover.
 - `border` — hairline dividers and outlines. Low contrast against `surface` by design; this app
   favors quiet structure over visible boxes.
+- `playback` tier — loop and playback identity, theme-aware via explicit dark overrides:
+  - `playbackActive` — active-step fill, currently hardcoded `var(--foreground)` at call sites with no semantic name.
+  - `onPlaybackActive` — text/numeral on the active fill (name matches the existing `onAccent` convention).
+  - `loopRange` — loop identity; replaces three ad-hoc `color-mix()` literals (SheetDiagram:254, FretboardDiagram:218, DetailToolbar:47).
+  - `state.loopRangeOpacity` — the 18% currently hardcoded in those three mixes, tokenized so opacity is owned too.
+  - Standardized wash (the only sanctioned wash going forward):
+    `color-mix(in srgb, var(--color-loop-range) var(--state-loop-range-opacity), transparent)`.
 
 ## Typography
 

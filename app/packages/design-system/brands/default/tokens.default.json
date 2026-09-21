@@ -18,7 +18,10 @@
       "surfaceText": { "$value": "{primitive.color.ink}", "$type": "color" },
       "surfaceHover": { "$value": "#f0efe9", "$type": "color" },
       "surfaceActive": { "$value": "{primitive.color.ink}", "$type": "color" },
-      "surfaceActiveText": { "$value": "{primitive.color.paper}", "$type": "color" }
+      "surfaceActiveText": { "$value": "{primitive.color.paper}", "$type": "color" },
+      "playbackActive": { "$value": "#141413", "$type": "color" },
+      "onPlaybackActive": { "$value": "#faf9f5", "$type": "color" },
+      "loopRange": { "$value": "{primitive.color.accent}", "$type": "color" }
     },
     "state": {
       "hoverOpacity": { "$value": "8%", "$type": "percentage" },
@@ -26,7 +29,8 @@
       "pressedOpacity": { "$value": "12%", "$type": "percentage" },
       "disabledOpacity": { "$value": "50%", "$type": "percentage" },
       "mutedTextOpacity": { "$value": "40%", "$type": "percentage" },
-      "mutedTextHoverOpacity": { "$value": "70%", "$type": "percentage" }
+      "mutedTextHoverOpacity": { "$value": "70%", "$type": "percentage" },
+      "loopRangeOpacity": { "$value": "18%", "$type": "percentage" }
     },
     "focus": {
       "ringWidth": { "$value": "2px", "$type": "dimension" },
@@ -91,7 +95,9 @@
         "surfaceText": { "$value": "{primitive.color.white}", "$type": "color" },
         "surfaceHover": { "$value": "#5c5c5c", "$type": "color" },
         "surfaceActive": { "$value": "{primitive.color.white}", "$type": "color" },
-        "surfaceActiveText": { "$value": "#212121", "$type": "color" }
+        "surfaceActiveText": { "$value": "#212121", "$type": "color" },
+        "playbackActive": { "$value": "#ededed", "$type": "color" },
+        "onPlaybackActive": { "$value": "#1c1d1f", "$type": "color" }
       }
     }
   }
