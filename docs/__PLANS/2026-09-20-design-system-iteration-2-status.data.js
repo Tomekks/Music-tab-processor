@@ -27,7 +27,7 @@ const PLAN_TASKS = [
   { id: "4",  name: "Dark/light theme switcher", status: "todo", detail: "Not started — independent, only end-user-visible task left" },
   { id: "5a", name: "Brand inheritance: parent resolution + merge", status: "done", detail: "<code>1ddd888</code> · 3 new tests" },
   { id: "5b", name: "Brand inheritance: reset-to-parent", status: "done", detail: "<code>5acd34f</code> · 5 new tests" },
-  { id: "5c", name: "Inherited vs. overridden editor UI", status: "progress", detail: "Landed <code>49cd7ad</code>, full inherited-field-editing support · 7 new tests — independent verification still pending" },
+  { id: "5c", name: "Inherited vs. overridden editor UI", status: "done", detail: "<code>49cd7ad</code>/<code>08df1aa</code>/<code>8bae5bf</code> · 7 new tests, 15/1-skip e2e — independently re-verified" },
   { id: "6",  name: "Token orphan-detection test", status: "done", detail: "<code>c2f3733</code> · 2 new tests, live gate on every token-touching task" },
   { id: "7",  name: "Per-component sidebar navigation", status: "done", detail: "<code>3f6789b</code> + bugfix rounds <code>842fe89</code>/<code>cfe4c3c</code> · UI only, no new unit tests" },
   { id: "8a", name: "Batch-write logic + route action", status: "done", detail: "<code>134e40d</code> · 7 new tests" },
