@@ -494,6 +494,37 @@ finds a concrete reason per-field-only is required.
       them.
 - [ ] Checkpoint commit.
 
+---
+
+### Task 9: Per-token descriptions, manually saved
+
+User-requested (2026-09-20), independent of liftkit/backlog/research and of Tasks 1-8 —
+**branches off `task/design-system-brand-data`, not off this plan's own Track B chain**
+(confirm that branch still holds `tokens.json`/`field-descriptors.mjs`/`token-writes.mjs`/
+`editor.tsx` before starting; if Task 7's sidebar hasn't landed there, scope this to "All
+variables" only — the sidebar view picks up descriptions for free once Task 7 lands, since it
+reads the same field data).
+
+**User story:** every variable in `/design-system` shows its current value plus a one-line
+"where this is actually used" note. Click in, edit the note, hit Save — descriptions never
+auto-save on blur, unlike value edits. Persists across reload, shows in every view.
+
+**Known issue to fix, not just implement around:** `token-writes.mjs`'s `stringifyTokens` only
+recognizes a 2-field (`$value`+`$type`) leaf shape and collapses it to one line; adding a 3rd
+field (`$description`) needs that matching logic extended, or every described leaf reformats to
+multi-line and the "diff shows only the edited line" acceptance check goes false.
+
+**Resolved, not a fix needed:** value-reset/promote-to-default already only ever touch `$value`,
+never the whole leaf — a description is never reset or cleared by those actions today. State this
+explicitly in the task's own spec as a documented decision, don't leave it as an unstated
+accident.
+
+**Spec not yet written** — draft discussion is in this session's history; write the real spec
+(scope/file allowlist/acceptance, S-tier per §3) immediately before this task starts, per this
+plan's usual rule (specs go stale fast — don't draft ahead of when work actually begins).
+
+---
+
 ## Self-Review
 
 **Spec coverage:** liftkit review findings map 1:1 — generative color → Task 1/1b, live preview →
