@@ -20,7 +20,6 @@
       "surfaceActive": { "$value": "{primitive.color.ink}", "$type": "color" },
       "surfaceActiveText": { "$value": "{primitive.color.paper}", "$type": "color" },
       "playbackActive": { "$value": "#141413", "$type": "color" },
-      "onPlaybackActive": { "$value": "#faf9f5", "$type": "color" },
       "loopRange": { "$value": "{primitive.color.accent}", "$type": "color" }
     },
     "state": {
@@ -96,8 +95,7 @@
         "surfaceHover": { "$value": "#5c5c5c", "$type": "color" },
         "surfaceActive": { "$value": "{primitive.color.white}", "$type": "color" },
         "surfaceActiveText": { "$value": "#212121", "$type": "color" },
-        "playbackActive": { "$value": "#ededed", "$type": "color" },
-        "onPlaybackActive": { "$value": "#1c1d1f", "$type": "color" }
+        "playbackActive": { "$value": "#ededed", "$type": "color" }
       }
     }
   }

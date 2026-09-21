@@ -83,7 +83,6 @@ const KNOWN_ORPHANS = new Set([
   "semantic.space.8",
   // Spec 0 additions — temporary orphans, wired up in specs 1+4/2/3.
   "semantic.color.playbackActive", // wired up in specs 1+4/2/3
-  "semantic.color.onPlaybackActive", // wired up in specs 1+4/2/3
   "semantic.color.loopRange", // wired up in specs 1+4/2/3
   "semantic.state.loopRangeOpacity", // wired up in specs 1+4/2/3
 ]);
