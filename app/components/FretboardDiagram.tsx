@@ -168,10 +168,15 @@ function FretboardControls({
   showHeader,
   highOnTop,
   onToggleHighOnTop,
+  showToggle,
 }: {
   showHeader: boolean;
   highOnTop: boolean;
   onToggleHighOnTop: () => void;
+  // False in /studio's controlled usage -- DetailToolbar owns the single
+  // control there (spec 7). Private to this file, mirroring SheetControls'
+  // own internal showOrientationToggle (not a public prop).
+  showToggle: boolean;
 }) {
   return (
     <div className="flex items-center justify-between mb-3">
@@ -182,7 +187,11 @@ function FretboardControls({
       ) : (
         <span />
       )}
-      <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      {showToggle ? (
+        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      ) : (
+        <span />
+      )}
     </div>
   );
 }
@@ -194,6 +203,8 @@ export function FretboardDiagram({
   bordered = true,
   showHeader = true,
   showCaption = true,
+  highOnTop: highOnTopProp,
+  onToggleHighOnTop: onToggleHighOnTopProp,
 }: {
   notes: TimedNote[];
   tuning: number[];
@@ -203,8 +214,18 @@ export function FretboardDiagram({
   bordered?: boolean;
   showHeader?: boolean;
   showCaption?: boolean;
+  // Orientation is uncontrolled (local state) by default -- mirrors
+  // SheetDiagram's isOrientationControlled pattern. /studio passes both of
+  // these down from StudioTabs so the single toggle can live in
+  // DetailToolbar instead (spec 7); the retired SongTabs card passes
+  // neither and keeps its own toggle, exactly as today.
+  highOnTop?: boolean;
+  onToggleHighOnTop?: () => void;
 }) {
-  const [highOnTop, setHighOnTop] = useState(true); // thin e on top, matches SheetDiagram's default
+  const [localHighOnTop, setLocalHighOnTop] = useState(true); // thin e on top, matches SheetDiagram's default
+  const isOrientationControlled = highOnTopProp !== undefined;
+  const highOnTop = isOrientationControlled ? highOnTopProp : localHighOnTop;
+  const toggleHighOnTop = isOrientationControlled ? onToggleHighOnTopProp! : () => setLocalHighOnTop((v) => !v);
 
   const nStrings = tuning.length;
   const steps = groupNotesByStep(notes);
@@ -222,7 +243,12 @@ export function FretboardDiagram({
           : { color: "var(--foreground)" }
       }
     >
-      <FretboardControls showHeader={showHeader} highOnTop={highOnTop} onToggleHighOnTop={() => setHighOnTop((v) => !v)} />
+      <FretboardControls
+        showHeader={showHeader}
+        highOnTop={highOnTop}
+        onToggleHighOnTop={toggleHighOnTop}
+        showToggle={!isOrientationControlled}
+      />
 
       {/* Wraps onto multiple rows instead of horizontally scrolling -- each
           Segment is FIXED_CELLS-wide for the common case (see lib/fretboard.ts),

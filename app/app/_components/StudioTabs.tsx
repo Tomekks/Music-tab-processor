@@ -16,6 +16,7 @@ export const TABS = ["Sheet", "Fretboard", "Ascii"] as const;
 export type Tab = (typeof TABS)[number];
 
 const SHORTCUTS_KEY = "tabbytab:shortcuts";
+const ORIENTATION_KEY = "tabbytab:orientation";
 
 const shortcutListeners = new Set<() => void>();
 function subscribeShortcuts(notify: () => void): () => void {
@@ -32,6 +33,27 @@ function getShortcutsSnapshot(): boolean {
   }
 }
 function getShortcutsServerSnapshot(): boolean {
+  return true;
+}
+
+// Orientation persistence (spec 7) uses the same idiom for the same reasons
+// (see the shortcuts comment below): server snapshot true matches SSR markup,
+// client snapshot reads the stored preference, guarded, never throws.
+const orientationListeners = new Set<() => void>();
+function subscribeOrientation(notify: () => void): () => void {
+  orientationListeners.add(notify);
+  return () => {
+    orientationListeners.delete(notify);
+  };
+}
+function getOrientationSnapshot(): boolean {
+  try {
+    return window.localStorage.getItem(ORIENTATION_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+function getOrientationServerSnapshot(): boolean {
   return true;
 }
 
@@ -54,8 +76,20 @@ export function StudioTabs({
   const [soundEnabled, setSoundEnabled] = useState(false); // beta, opt-in -- see MetronomeControls
   // Lifted out of SheetDiagram so its toggle button can render next to "Note
   // sound" in DetailToolbar instead of inside the Sheet view itself -- see
-  // SheetDiagram.tsx's highOnTop prop doc comment.
-  const [highOnTop, setHighOnTop] = useState(true);
+  // SheetDiagram.tsx's highOnTop prop doc comment. Spec 7 made this a
+  // persisted global ("tabbytab:orientation", default thin-e-on-top) driving
+  // both diagrams from the toolbar's single control -- see DiagramViewport's
+  // FretboardDiagram wiring and FretboardDiagram's controlled fallback.
+  const highOnTop = useSyncExternalStore(subscribeOrientation, getOrientationSnapshot, getOrientationServerSnapshot);
+  const toggleHighOnTop = () => {
+    const next = !highOnTop;
+    try {
+      window.localStorage.setItem(ORIENTATION_KEY, next ? "1" : "0");
+    } catch {
+      // Keep going -- the notify below still flips this session's state.
+    }
+    for (const notify of orientationListeners) notify();
+  };
   const { playMidiNotes } = useNoteSound();
 
   // Transport keyboard shortcuts (2026-09-10, opt-out 2026-09-21): left/right
@@ -133,7 +167,7 @@ export function StudioTabs({
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((v) => !v)}
         highOnTop={highOnTop}
-        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
+        onToggleHighOnTop={toggleHighOnTop}
         loopRange={metronome.loopRange}
         onClearLoop={() => metronome.setLoopRange(null)}
         shortcutsEnabled={shortcutsEnabled}
@@ -149,7 +183,7 @@ export function StudioTabs({
         loopRange={metronome.loopRange}
         onSetLoopRange={metronome.setLoopRange}
         highOnTop={highOnTop}
-        onToggleHighOnTop={() => setHighOnTop((v) => !v)}
+        onToggleHighOnTop={toggleHighOnTop}
       />
     </div>
   );

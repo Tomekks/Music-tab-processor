@@ -632,3 +632,115 @@ test.describe("spec 6 ascii banner", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 });
+
+// Spec 7 blocks (appended; earlier specs' blocks above untouched).
+
+const ORIENTATION_KEY = "tabbytab:orientation";
+const THIN_E_NAME = "Flip strings (currently thin e on top)";
+const THICK_E_NAME = "Flip strings (currently thick E on top)";
+
+/** Clear the persisted orientation, then load fresh: every block below starts
+ *  from the thin-e-on-top default regardless of order or retries. */
+async function gotoWithDefaultOrientation(page: Page): Promise<void> {
+  await gotoReady(page, "/");
+  await page.evaluate((key) => window.localStorage.removeItem(key), ORIENTATION_KEY);
+  await page.reload();
+  await gotoReady(page, "/");
+}
+
+/** Top string of the first diagram svg, via string-label DOM order (both
+ *  diagrams position monospace pitch-name labels with getDisplayRow):
+ *  "e" = thin e on top, "E" = thick E on top. */
+async function expectTopString(page: Page, expected: string): Promise<void> {
+  await expect(async () => {
+    const top = await page.evaluate(() => {
+      const svg = document.querySelector("svg");
+      if (!svg) return null;
+      const rows = Array.from(svg.querySelectorAll("text"))
+        .filter((el) => /^[A-Ga-g]$/.test((el.textContent ?? "").trim()))
+        .map((el) => ({ text: el.textContent!.trim(), y: el.getBoundingClientRect().y }));
+      rows.sort((a, b) => a.y - b.y);
+      return rows.length ? rows[0]!.text : null;
+    });
+    expect(top, "first diagram svg exposes a top string label").toBe(expected);
+  }).toPass({ timeout: 5000 });
+}
+
+test.describe("spec 7 orientation", () => {
+  test("single Flip strings control on every tab", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoWithDefaultOrientation(page);
+
+    for (const tab of ["Sheet", "Fretboard", "Ascii"] as const) {
+      await page.getByRole("tab", { name: tab }).click();
+      // Same toolbar resident, not per-view copies: exactly one match, and
+      // the old dynamic copy is gone everywhere.
+      const flip = page.getByRole("button", { name: /Flip strings/ });
+      await expect(flip).toHaveCount(1);
+      await expect(flip).toBeVisible();
+      await expect(flip).toHaveAttribute("aria-pressed", "true");
+      await expect(flip).toHaveAttribute("title", THIN_E_NAME);
+      await expect(flip).toHaveAccessibleName(THIN_E_NAME);
+      await expect(page.getByRole("button", { name: /Flip to/ })).toHaveCount(0);
+    }
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("flip on Sheet reflects on Fretboard and back", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoWithDefaultOrientation(page);
+
+    const flip = page.getByRole("button", { name: /Flip strings/ });
+    await expect(flip).toHaveAttribute("aria-pressed", "true");
+    await expectTopString(page, "e");
+
+    // Flip on Sheet: control state + Sheet rendering agree.
+    await flip.click();
+    await expect(flip).toHaveAttribute("aria-pressed", "false");
+    await expect(flip).toHaveAccessibleName(THICK_E_NAME);
+    await expect(flip).toHaveAttribute("title", THICK_E_NAME);
+    await expectTopString(page, "E");
+
+    // Fretboard follows without its own click.
+    await page.getByRole("tab", { name: "Fretboard" }).click();
+    await expectTopString(page, "E");
+
+    // Flip on the Fretboard tab (same toolbar control): both agree again.
+    await flip.click();
+    await expect(flip).toHaveAttribute("aria-pressed", "true");
+    await expect(flip).toHaveAccessibleName(THIN_E_NAME);
+    await expectTopString(page, "e");
+    await page.getByRole("tab", { name: "Sheet" }).click();
+    await expectTopString(page, "e");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("reload preserves the stored choice", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoWithDefaultOrientation(page);
+
+    const flip = page.getByRole("button", { name: /Flip strings/ });
+    await flip.click();
+    expect(await page.evaluate((key) => window.localStorage.getItem(key), ORIENTATION_KEY)).toBe("0");
+
+    await page.reload();
+    await gotoReady(page, "/");
+    await expect(page.getByRole("button", { name: /Flip strings/ })).toHaveAttribute("aria-pressed", "false");
+    await expectTopString(page, "E");
+
+    await page.getByRole("button", { name: /Flip strings/ }).click();
+    expect(await page.evaluate((key) => window.localStorage.getItem(key), ORIENTATION_KEY)).toBe("1");
+
+    await page.reload();
+    await gotoReady(page, "/");
+    await expect(page.getByRole("button", { name: /Flip strings/ })).toHaveAttribute("aria-pressed", "true");
+    await expectTopString(page, "e");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});

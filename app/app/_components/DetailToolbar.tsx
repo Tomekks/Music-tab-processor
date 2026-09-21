@@ -55,8 +55,11 @@ export function DetailToolbar({
   metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void; reset: () => void };
   soundEnabled: boolean;
   onToggleSound: () => void;
-  // Sheet-only (Fretboard owns its own separate orientation toggle, rendered
-  // inside FretboardDiagram itself) -- see SheetDiagram.tsx and DiagramViewport.tsx.
+  // Spec 7: the single orientation control -- always mounted on every tab
+  // (Sheet, Fretboard, Ascii), owned by StudioTabs as persisted global state.
+  // SheetDiagram and FretboardDiagram both follow it and suppress their own
+  // in-view toggles when controlled -- see StudioTabs.tsx and
+  // DiagramViewport.tsx.
   highOnTop: boolean;
   onToggleHighOnTop: () => void;
   // Loop range creation is Sheet-only (2026-09-10 drag-to-select, see
@@ -97,7 +100,7 @@ export function DetailToolbar({
             soundEnabled={soundEnabled}
             onToggleSound={onToggleSound}
           />
-          {active === "Sheet" && <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />}
+          <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
         </div>
       </div>
       <div className="flex items-center gap-3 text-xs text-foreground/60">
