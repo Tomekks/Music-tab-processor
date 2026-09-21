@@ -1,5 +1,11 @@
 # Task spec: Live, direct-DOM preview in the editor (Task 2)
 
+> **Landed:** commit `aa60b5c` — design-system workspace 85/85 passing (relocation confirmed
+> green before the editor changes). One real catch during verification: the embedded cleanup's
+> `return () => removeProperty(...)` failed typecheck (`removeProperty` returns a string,
+> violating `EffectCallback`) — fixed with braced bodies in both the implementation and this spec.
+> Archived per `WEB_APP_WORKFLOW.md` §5a.
+
 **Tier: S** — design-system/token/CSS work, no real user data or deploy involved, fully
 revertible via `git checkout` on the allowlist below + a rebuild. Full-tier risky-logic embedding
 still applies (see the three pieces below) — S only trims narrative, not correctness content.

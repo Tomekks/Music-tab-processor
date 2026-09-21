@@ -135,61 +135,11 @@ ESM). 23/23 tests passing. Archived spec: `docs/specs/_done/design-system-genera
 
 ### Task 2: Live, direct-DOM preview in the editor
 
-Today, seeing a color/slider change requires `postAction` → API writes `tokens.json` →
-`router.refresh()` re-reads the file → Next re-renders. That's a real round trip per edit
-(confirmed by reading `editor.tsx`'s `runWrite`). This task adds instant visual feedback by
-mutating `document.documentElement.style` directly as the user drags/types, before any network
-call — the same technique liftkit's `ThemeProvider` uses (`root.style.setProperty` in a `useEffect`
-reacting to local state), adapted to this editor's existing commit-on-blur/debounce model rather
-than replacing it.
-
-**Files:**
-- Modify: `app/app/design-system/editor.tsx` — `ColorRow` and `SliderRow`.
-
-**Interfaces:**
-- No new exported functions; this is UI-only. The CSS custom property name for a given field is
-  derivable from `FieldDescriptor.path` — confirm the exact kebab-case mapping
-  `build-tokens.mjs` uses (`--color-<kebab>` for `semantic.color.*`, `--<kebab>` for bare keys,
-  `--component-<component>-<kebab>` for `component.*` — read `generateCSS`'s `theme.push(...)`
-  lines directly, don't guess) before writing the spec for this task.
-
-**Design:**
-
-```tsx
-// Inside ColorRow, alongside the existing `text`/`setText` state:
-useEffect(() => {
-  document.documentElement.style.setProperty(cssVarNameFor(d), text);
-}, [text, d]);
-
-// Inside SliderRow, alongside `num`/`setNum`:
-useEffect(() => {
-  document.documentElement.style.setProperty(cssVarNameFor(d), `${num}${UNIT[d.$type]}`);
-}, [num, d]);
-```
-
-Where `cssVarNameFor(d: FieldDescriptor): string` is a small new helper co-located in
-`editor.tsx`, built from `d.path` — this is the part that needs `build-tokens.mjs`'s exact naming
-convention confirmed, not assumed.
-
-**Reverting a live-only preview on error/escape:** `ColorRow`'s existing `Escape` handler resets
-`text` to `d.value` — since the effect above re-runs whenever `text` changes, escaping already
-un-previews for free. Same for a failed `commit()`: `d.value` stays the old value, so the next
-`router.refresh()` (which happens even on failure paths that don't early-return before it) will
-naturally re-sync the inline style to the real committed value. Confirm this actually happens
-(it might not, if `runWrite`'s early `return` on `!result.ok` skips `router.refresh()` — check
-`editor.tsx`'s `runWrite` before assuming) — if it doesn't self-correct, this task needs an
-explicit "reset the inline style property back to `d.value` on write failure" step too.
-
-- [ ] Confirm the CSS var naming convention (read `build-tokens.mjs`, don't assume).
-- [ ] Confirm the error-path revert behavior (read `runWrite`, don't assume).
-- [ ] Implement `cssVarNameFor` + the two `useEffect`s.
-- [ ] Manual verification (no automated test — this is real-browser visual behavior, same
-      reasoning `ui-fretboard-playhead`'s spec used for skipping a test requirement): open
-      `/design-system`, drag a slider, confirm the change appears on the live editor page itself
-      instantly (the editor page uses the tokens too — its own `Button`/`Slider`/`ColorField` are
-      rendered with `@guitar-tabs/design-system` components), before the debounced commit fires.
-- [ ] `npm run verify`.
-- [ ] Checkpoint commit.
+**[Task 2] — Done**, committed as `aa60b5c`. `css-var-naming.mjs` extracted from `build-tokens.mjs`
+(client-safe, no `node:fs`); `ColorRow`/`SliderRow` set the CSS custom property live on
+`document.documentElement`, clean it up on unmount, revert local state on a failed write
+(`runWrite` now returns `Promise<boolean>`). 85/85 tests passing. Archived spec:
+`docs/specs/_done/design-system-live-preview.md`.
 
 ---
 
