@@ -483,6 +483,28 @@ plan's usual rule (specs go stale fast — don't draft ahead of when work actual
 
 ---
 
+### Task 10: Dark-theme values shown and editable next to light
+
+User-requested (2026-09-21), independent of Task 4 (app-wide theme toggle) despite both
+mentioning "dark"/"light" — unrelated features that happened to get tangled together in an early
+draft of Task 4's spec and were split apart once noticed.
+
+**User story:** every `semantic.color` field in `/design-system` shows its dark-theme override
+next to its light value on the same row, independently editable with its own Revert/Set-as-default
+— today the dark value is invisible, only changeable by hand-editing `tokens.json`.
+
+**Resolved, not a fix needed:** the write path (`applyWrite`/`applyReset`/`applySetAsDefault`/
+`applyResetAll`) already handles `dark.*` paths with zero changes — confirmed by reading
+`collectLeafPaths`, a generic path walker with no `dark`/`primitive` filtering. Only
+`field-descriptors.mjs` (which currently skips `dark.*` entirely) and `editor.tsx`'s UI need
+changes.
+
+**Spec written**: `docs/specs/design-system-dark-value-display.md`, ready to relay. Root-brand
+only — no child brand has ever defined a `dark` block, scoped out explicitly rather than left an
+unstated gap.
+
+---
+
 ## Self-Review
 
 **Spec coverage:** liftkit review findings map 1:1 — generative color → Task 1/1b, live preview →

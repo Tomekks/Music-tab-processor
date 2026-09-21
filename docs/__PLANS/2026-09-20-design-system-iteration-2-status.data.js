@@ -24,7 +24,7 @@ const PLAN_TASKS = [
   { id: "1b", name: "Wire generator into brand authoring + editor", status: "done", detail: "<code>3f3b19d</code> · 4 new tests" },
   { id: "2",  name: "Live, direct-DOM preview in the editor", status: "done", detail: "<code>aa60b5c</code> · UI only, no new tests" },
   { id: "3",  name: "Shared hover/press/focus state primitive", status: "done", detail: "<code>40d2fdd</code> · 3 new tests" },
-  { id: "4",  name: "Dark/light theme switcher", status: "todo", detail: "Not started — independent, only end-user-visible task left" },
+  { id: "4",  name: "Dark/light theme switcher", status: "progress", detail: "Spec ready (<code>825f929</code>), handed off — awaiting execution" },
   { id: "5a", name: "Brand inheritance: parent resolution + merge", status: "done", detail: "<code>1ddd888</code> · 3 new tests" },
   { id: "5b", name: "Brand inheritance: reset-to-parent", status: "done", detail: "<code>5acd34f</code> · 5 new tests" },
   { id: "5c", name: "Inherited vs. overridden editor UI", status: "done", detail: "<code>49cd7ad</code>/<code>08df1aa</code>/<code>8bae5bf</code> · 7 new tests, 15/1-skip e2e — independently re-verified" },
@@ -33,4 +33,5 @@ const PLAN_TASKS = [
   { id: "8a", name: "Batch-write logic + route action", status: "done", detail: "<code>134e40d</code> · 7 new tests" },
   { id: "8b", name: "Pending edits, scope choice, explicit Save", status: "done", detail: "<code>650310a</code> + follow-ups <code>4884412</code> · 0 new unit tests, 10 Playwright (1 fixme)" },
   { id: "9",  name: "Per-token descriptions, manually saved", status: "todo", detail: "Spec ready (<code>1d1d61a</code>), not yet handed off" },
+  { id: "10", name: "Dark-theme values shown next to light", status: "todo", detail: "Spec ready (this commit), split out of an early Task 4 draft — unrelated feature, not yet handed off" },
 ];
