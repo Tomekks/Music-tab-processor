@@ -7,6 +7,12 @@ import { defineConfig } from "@playwright/test";
 // main config's `npm run build`.
 export default defineConfig({
   testDir: "./e2e/design-system",
+  // Serial files: the specs mutate GLOBAL mutable state (active-brand.json,
+  // demo-child/tokens.json, generated CSS). Parallel workers interleave one
+  // file's brand flip with another file's default-brand assumptions — observed
+  // passing by scheduling luck once; never again by construction. The whole
+  // directory runs in ~20s, so nothing meaningful is lost.
+  workers: 1,
   webServer: {
     command: "npm run dev -- -p 3002",
     url: "http://localhost:3002",
