@@ -1,0 +1,71 @@
+:root {
+  --bg: #f7f7f8;
+  --card: #ffffff;
+  --border: #e2e2e5;
+  --text: #1c1d1f;
+  --muted: #6b6b70;
+  --done-bg: #e6f6ec;
+  --done-fg: #1a7f4a;
+  --progress-bg: #fff6e0;
+  --progress-fg: #92650a;
+  --todo-bg: #f0f0f2;
+  --todo-fg: #6b6b70;
+  --accent: #4a90d9;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a;
+    --card: #201f22;
+    --border: #34343a;
+    --text: #ededed;
+    --muted: #9a9aa2;
+    --done-bg: #113321;
+    --done-fg: #6bd99a;
+    --progress-bg: #332a10;
+    --progress-fg: #e0b84a;
+    --todo-bg: #262629;
+    --todo-fg: #9a9aa2;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding-block: 2.5rem;
+  padding-inline: 1rem;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+main { max-width: 640px; margin-inline: auto; }
+h1 { font-size: 1.3rem; margin: 0 0 0.25rem; }
+.subtitle { color: var(--muted); margin: 0 0 1.5rem; font-size: 0.9rem; }
+.progress-wrap {
+  background: var(--todo-bg);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+.progress-bar { height: 100%; background: var(--accent); border-radius: 999px; }
+.progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+ol { list-style: none; margin: 0; padding: 0; }
+li {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+.task-id { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; min-width: 2.2rem; }
+.task-body { flex: 1; min-width: 0; }
+.task-name { font-weight: 600; }
+.task-detail { color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem; }
+.task-detail code { background: var(--todo-bg); padding: 0.05rem 0.35rem; border-radius: 4px; font-size: 0.8em; }
+.status { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; white-space: nowrap; }
+.status.done { background: var(--done-bg); color: var(--done-fg); }
+.status.progress { background: var(--progress-bg); color: var(--progress-fg); }
+.status.todo { background: var(--todo-bg); color: var(--todo-fg); }
+footer { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); }
