@@ -45,6 +45,17 @@ When in doubt, pick the heavier tier.
   spec written for it later — the plan is where scope/sequencing gets decided, so that's also
   where "does this still make sense from the user's side" needs to be checkable, before a task's
   spec exists yet.
+- **Every plan gets a companion status page**, created alongside the plan, not after the fact:
+  `docs/superpowers/plans/<plan-slug>-status.html` (a ~15-line shell loading
+  `_shared/plan-status.css`/`.js` — copy an existing one as the starting point, it never changes
+  again once created) plus `<plan-slug>-status.data.js` (a plain `PLAN_META`/`PLAN_TASKS` array —
+  the only file that changes). Update the data file as part of each task's checkpoint commit, same
+  moment the plan doc's own task entry gets collapsed to one line (§5a) — same fact, two places,
+  one commit. **Deliberately not live-updating**: a page opened via `file://` can't read the
+  filesystem or git on its own, so this is a hand-kept snapshot, not a dashboard — don't build a
+  regeneration script or local server for this; the parsing risk (the plan's own status prose is
+  inconsistently worded — "Done", "[Task N] — Done", inline in a heading) outweighs the benefit of
+  automating something that's already cheap to keep current by hand.
 
 `systematic-debugging` and `requesting-code-review`/`receiving-code-review` remain available as
 optional tools for any tier, not mandatory gates.
