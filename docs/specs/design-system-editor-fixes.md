@@ -65,16 +65,21 @@ numbering; issue 4 (colour picker) is explicitly out of this spec — it changes
    app/packages/design-system/brands/default/tokens.json` — then confirm `git status` shows
    no `tokens.json` diff AND no Revert buttons remain. If buttons still blanket-show on a
    clean tree, STOP (see §5) — that would be a real bug contradicting §0's verdict.
-2. **Issue 1 diagnostic gate (runs in parallel — code fixes below do NOT wait for it):**
-   confirm both screenshots came from the same dev run (if not, re-test in one run first —
-   that alone separates HMR-staleness from a real bug). Then kill the dev server completely
-   and restart fresh (`npm run dev`, not HMR-resume), re-click each sidebar entry. If the
-   highlight now works → stale-HMR CSS: close issue 1 with no code change, plus a dated
-   one-line note in `app/status/engineering-practices.md` (repo convention for banked
-   lessons). If it persists → Inspect the un-highlighted entry and report its exact `class`
-   attribute plus computed `background-color`: `bg-surface-active` present-but-invisible ⇒
-   theme-scope/CSS investigation (new spec); absent ⇒ state bug contradicting §0 (stop,
-   re-read served bundle vs commit `3f6789b` before any edit).
+2. **Issue 1 diagnostic gate → RESOLVED 2026-09-21: scope-dead utilities, not state.**
+   Fresh-restart retest still showed no highlight on any entry, which killed the HMR theory
+   and forced a scope read: the sidebar used `bg-surface-active` / `text-surface-active-text`
+   / `text-surface-text/80` / `hover:bg-surface-hover`, but `--color-surface-*` vars exist
+   only under `[data-theme]` scopes (verified in `design-tokens.generated.css`), while
+   `/design-system` renders outside StudioShell's `data-theme` div (base `:root` scope —
+   `page.tsx` returns bare `<Editor>`). Every state class resolved to transparent; clicking
+   always worked, the paint could never appear. The Task 7 spec picked `surface*` classes
+   because the rest of the app lives under dark scope — nobody checked this route's scope.
+   Fix (same file, no scope change): active → `bg-foreground text-background`, idle →
+   `text-foreground/80` + a foreground wash
+   (`hover:bg-[color-mix(in_srgb,var(--foreground)_var(--state-hover-opacity),transparent)]`,
+   same construct as the shipped muted-text classes). All are bare `:root` tokens, so they
+   paint in every scope. The earlier screenshot's working "All" pill remains unexplained
+   (possibly a devtools-forced theme attribute that session) — named here, not blocking.
 
 ## 3. File allowlist
 

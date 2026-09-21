@@ -556,9 +556,15 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
                   className={cn(
                     "w-full rounded-md px-3 py-2 text-left text-sm font-medium",
                     FOCUS_RING,
+                    // NOTE: surface* utilities are unusable on this route.
+                    // --color-surface-* vars exist only under [data-theme] scopes,
+                    // and /design-system renders outside StudioShell's data-theme
+                    // div (base :root scope), where they resolve to transparent.
+                    // Foreground/background/state vars are bare :root tokens, so
+                    // they paint in every scope.
                     selectedView === item.key
-                      ? "bg-surface-active text-surface-active-text"
-                      : "text-surface-text/80 hover:bg-surface-hover",
+                      ? "bg-foreground text-background"
+                      : "text-foreground/80 hover:bg-[color-mix(in_srgb,var(--foreground)_var(--state-hover-opacity),transparent)]",
                   )}
                 >
                   {item.label}
