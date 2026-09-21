@@ -275,13 +275,15 @@ target that: what actually travels each turn, and what accumulates in the repo o
 
 - Visual regression testing (screenshot comparisons via Playwright) stays deferred — §3's
   Playwright requirement above is for interaction behavior, not pixel-level style.
-- **`app/playwright.config.ts`'s `webServer` runs `npm run build && npm run start` — a production
-  build. `/design-system` (and its API route) 404 under `NODE_ENV=production` by design (both gate
-  on it explicitly), so no Playwright spec can reach `/design-system` at all under the current
-  config.** A design-system-touching task's Playwright spec needs a second `webServer`/project
-  pointed at `next dev` (Playwright 1.63+ supports an array of `webServer` entries, each with its
-  own `command`/`url`) before it can run — fix this as part of whichever task first needs it,
-  rather than leaving every future design-system spec to rediscover the same blocker.
+- **Fixed:** `app/playwright.config.ts` now runs two `webServer`s — the original production build
+  on `:3000` (project `app`, matches `e2e/*.spec.ts` at the top level) and a `next dev` instance on
+  `:3002` (project `design-system`, matches `e2e/design-system/*.spec.ts`) for routes that 404
+  under `NODE_ENV=production`. Verified working: `npx playwright test --project=design-system`
+  against a throwaway smoke spec reached `/design-system` and passed.
+  **Known caveat, not fixed further (disproportionate effort for a single-owner project):** Next.js
+  refuses a second `next dev` in the same project directory even on a different port — if a manual
+  `npm run dev` is already running when the `design-system` project starts, its `webServer` fails
+  to boot. Stop any manual dev server before running `npm run test:e2e -- --project=design-system`.
 
 ## 7. Token discipline
 
