@@ -12,7 +12,18 @@ Written fresh against `app/app/design-system/editor.tsx` (668 lines, last touche
 `docs/specs/design-system-batch-write.md` (Task 8a, landed `134e40d`) — if either has changed
 since, stop and re-read before implementing.
 
-## 0. Context (read, don't re-derive)
+## 0. User story
+
+You're editing tokens in a component panel — say, Button. You change the primary background
+color and bump the padding. Both update the live preview instantly, but nothing writes to disk
+yet. For each change, you pick whether it applies only to this component (Exception) or to every
+component that shares that token (Brand-wide) — new edits default to whichever you picked last.
+You click "Save changes (2)" and both land together, or "Discard changes" to throw them away
+without asking. Switching to another component and back doesn't lose your unsaved edits. If two
+of your pending changes would collide — both trying to go brand-wide to the same shared token —
+Save refuses and tells you exactly which two conflict, instead of silently keeping only one.
+
+## 1. Context (read, don't re-derive)
 
 - **This only changes the per-component panel (`ComponentDetailView`, Task 7's UI), never "All
   variables."** `renderSection`/`FieldRow` calls in the `"all"` branch (lines 640, 644, all via
@@ -30,7 +41,7 @@ since, stop and re-read before implementing.
   `rawValue.startsWith("{")` (both already on `FieldDescriptor`, used today at lines 127/207).
   Target path for a `"brand"` edit: `d.rawValue.slice(1, -1)`.
 
-## 1. Scope
+## 2. Scope
 
 ### New Editor-level state (add alongside the existing `useState` block, ~line 367)
 
@@ -224,7 +235,7 @@ Only shown on a per-component view (matches Task 8's own scope: "for edits made 
 component panel") — not on "All variables," even if pending edits exist from another component;
 that's a deliberate scoping choice, not an oversight — state it as such if asked.
 
-## 2. Non-goals
+## 3. Non-goals
 
 - No change to `renderSection`/"All variables"'s own `FieldRow` calls — they keep calling
   `onCommitValue={runWrite}`, no `pending`/`onStage` props, unchanged behavior.
@@ -233,14 +244,14 @@ that's a deliberate scoping choice, not an oversight — state it as such if ask
 - No child-brand handling (Task 5c's concern, unaffected by this spec).
 - No debounce/timing change to `ColorRow`/`SliderRow` — only what "commit" does changes, not when.
 
-## 3. File allowlist
+## 4. File allowlist
 
 - `app/app/design-system/editor.tsx` only.
 
 No `.env`/credentials, no new npm dependency, no `tokens.json`/`tokens.default.json` edits by this
 spec itself (the manual check below writes to it, same as every prior UI task's check).
 
-## 4. Acceptance criteria
+## 5. Acceptance criteria
 
 - `npm run verify` passes. No automated test for this task (pure UI state, no DOM harness in this
   project, same reasoning every prior UI-only task in this plan used).
@@ -257,7 +268,7 @@ spec itself (the manual check below writes to it, same as every prior UI task's 
 - Self-check before reporting, per `docs/WEB_APP_WORKFLOW.md` §5 step 4's evidence format.
 - `tokens.json` restored to committed state after the manual check; checkpoint commit (not pushed).
 
-## 5. Stop-conditions
+## 6. Stop-conditions
 
 - If `editor.tsx`'s current shape (line numbers, `ColorRow`/`SliderRow`/`FieldRow` signatures,
   `postAction`'s body type) has drifted from what §1 describes, stop and confirm rather than
