@@ -1,5 +1,12 @@
 # Task spec: Design-system editor follow-up fixes (sidebar feedback batch)
 
+> **Landed:** commits `842fe89` (preview demo state, Preview heading, drag-safe rows) +
+> `cfe4c3c` (sidebar states swapped to root-scoped `bg-foreground`/`text-background` after
+> confirming `surface*` utilities resolve to transparent outside a `[data-theme]` scope) —
+> `npm run verify` green (unit 41/41, design-system 84/84). Colour picker and the
+> unexplained first-screenshot pill deferred (see plan Task 7 line). Archived per
+> `WEB_APP_WORKFLOW.md` §5a.
+
 **Tier: S** — single file (`editor.tsx`), dev-only UI, fully revertible via `git checkout`.
 Source: human QA feedback on the staged Task 7 build (2026-09-21), diagnosed against
 `editor.tsx` at commit `3f6789b` before writing. Issues 1–6 below are the reporter's

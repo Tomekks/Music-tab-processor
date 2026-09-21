@@ -322,55 +322,12 @@ finding for that task, not a flaw in this test, per the scoping rules above.
 
 ---
 
-### Task 7: Per-component sidebar navigation
-
-User-requested (2026-09-20), revised same day to add an explicit "All variables" entry — not from
-liftkit or research. Today's editor (`editor.tsx`) renders every section — semantic sections, then
-all four components' sections — as one long scrolling page. This task adds a sidebar with **five**
-entries: **All variables** (today's full flat page, unchanged, for global edits from one place)
-and the four `component.*` sections (`SECTIONS` entries with `group: "Components"` —
-`ColorField`, `Slider`, `SegmentedControl`, `Button`, i.e. `SECTIONS`' declared order; the
-task's own spec is authoritative on ordering) for narrower, single-component edits. "All variables"
-is a real, named, clickable sidebar item — not an implicit default/no-selection state — so the
-sidebar always shows the user exactly where they are and both scopes (global vs. per-component)
-are equally first-class, reachable the same way.
-
-**Files:**
-- Modify: `app/app/design-system/editor.tsx` — add a `selectedView: "all" | ComponentSectionKey`
-  state (default `"all"`); render a sidebar with all five entries alongside the existing content;
-  `"all"` renders exactly what the page renders today (all sections, unchanged); a component
-  selection renders only that component's fields (`fieldsFor(key)`) plus a live-rendered instance
-  of the actual component, instead of scrolling to find it in the flat list.
-- Modify: the per-component detail area also renders one live instance of the actual component
-  (`import { Button, ColorField, Slider, SegmentedControl } from "@guitar-tabs/design-system"`)
-  with representative sample props, so a token edit is visible on a real rendered instance, not
-  just as a hex/number in a field row — this is the live-preview gap from the start of this
-  conversation, now scoped to exactly the place it matters most (per-component editing). "All
-  variables" does not get this live-instance treatment — it's the global/bulk view, matching
-  today's page exactly.
-
-**Interfaces:** none new exported — this is a `editor.tsx`-internal restructuring. No change to
-`field-descriptors.mjs`, `token-writes.mjs`, or the API route.
-
-- [ ] Confirm current `editor.tsx` structure/props one more time immediately before writing this
-      task's spec (it will have changed if Tasks 1b/2 landed first — re-read, don't assume the
-      version described earlier in this plan is still current).
-- [ ] Implement the sidebar (five entries: "All variables" + four components) + `selectedView`
-      state.
-- [ ] Implement "All variables" as exactly today's page (a straight extraction, no behavior
-      change) and the per-component detail area's fields list (reuse `fieldsFor`/`FieldRow`
-      unchanged).
-- [ ] Add the live-rendered component instance to the per-component detail area, one per
-      component type (four small render branches, not a generic "renders any component"
-      abstraction — YAGNI until a fifth component exists).
-- [ ] `npm run verify`; manually click through "All variables" and all four components, confirm
-      "All variables"'s content column is pixel-identical to today's page's content (the page as a
-      whole also shows the new persistent sidebar — expected, see the task's own spec), and each
-      component's fields + live instance both render and update together.
-- [ ] Checkpoint commit.
-
-**A real spec for this task has been written** (per the execution loop, `WEB_APP_WORKFLOW.md` §5):
-`docs/specs/design-system-editor-sidebar.md`, ready to relay to the execution model.
+### Task 7: Per-component sidebar navigation — Done (`3f6789b` sidebar, `842fe89` editor
+fixes, `cfe4c3c` root-scoped sidebar states; verify unit 41/41 + design-system 84/84).
+Archived specs: `docs/specs/_done/design-system-editor-sidebar.md`,
+`docs/specs/_done/design-system-editor-fixes.md`. Deferred: colour picker on swatch click
+(own spec — changes shared `ColorField`, not `editor.tsx`); first-screenshot "All" pill
+unexplained (non-blocking, noted in the fixes spec).
 
 ---
 

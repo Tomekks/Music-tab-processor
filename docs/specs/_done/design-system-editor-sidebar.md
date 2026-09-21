@@ -1,5 +1,10 @@
 # Task spec: Per-component sidebar navigation (Task 7)
 
+> **Landed:** commit `3f6789b` — `editor.tsx` only (+208/−66), `npm run verify` green
+> (design-system 84/84). Follow-up fixes (preview demo state, drag-safe rows, root-scoped
+> sidebar states) landed separately as `842fe89` + `cfe4c3c`. Archived per
+> `WEB_APP_WORKFLOW.md` §5a.
+
 **Tier: S** — single file (`editor.tsx`), design-system/UI work, no real user data or deploy
 involved, fully revertible via `git checkout` + a rebuild. Sizable `Scope` below despite S tier —
 this is a real UI restructuring with several genuine scope decisions to pin down, not narrative;
