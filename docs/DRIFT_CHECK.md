@@ -27,6 +27,7 @@ Preferably not the same session that did the work being checked — a fresh read
 1. **Cold-discovery check.** Starting from nothing but "here's a repo, figure it out," can the checking agent find `START_HERE.md` and follow it unaided?
 2. **Spot-check** one or two recent commits: did each do only what its message claims?
 3. `git log` since the last check touching `AGENTS.md`'s hard rules (network exposure, system config, deletion) — was each flagged as such at the time?
+4. **Doc bloat.** `wc -w` the index files (`docs/DECISIONS.md`, `app/STATUS.md`, `docs/AUDIOPROCESSINGTOOLS.md`) plus anything else grown noticeably since the last check — past the split threshold in `docs/DOCUMENTATION_PRINCIPLES.md`? Any *why* that landed in a status file, or vice versa?
 
 ## Tier 2 — App track (skip entirely if no `app/` work happened since the last check)
 

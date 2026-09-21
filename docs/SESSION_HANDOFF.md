@@ -4,7 +4,7 @@ Two modes: **Quick checkpoint** (light, for casual pauses) and **Full handoff** 
 
 ## Quick checkpoint (a few minutes, low cost)
 
-1. Run the test suite (`.venv/bin/pytest pipeline/ -q`, plus `app/`'s test command once it has one). All green?
+1. Run the test suite (`.venv/bin/pytest pipeline/ -q`, plus `cd app && npm test`). All green?
 2. `git status --short` — working tree clean? Anything worth committing now?
 3. `git log --oneline -1` vs `git log --oneline origin/master -1` — local matches remote?
 4. `vercel ls` from inside `app/` (no `--logs`) — does the latest Production deployment show `Ready` and correspond to the current commit? Cheap, read-only, a few lines of output — same spirit as the git-sync check above, not a build audit.
@@ -25,7 +25,7 @@ Do the Quick checkpoint above first, then:
 5. Update `docs/PENDING_ACTIONS.md` — add anything newly discovered, check off anything resolved.
 6. Note any environment-specific quirks that won't carry over to a different session, tool, or machine, so the next one isn't confused by something that doesn't apply to them.
 7. Record the result in `docs/DRIFT_LOG.md`.
-8. Commit and push everything.
+8. Commit everything (checkpoint-style, per `AGENTS.md`), then ask before pushing — per `AGENTS.md`'s ask-every-time rule, a handoff doesn't imply push permission.
 9. Give a plain-language summary: what changed, what's flagged, what's the one next step.
 
 **Three things to explicitly ask about, never assume:**

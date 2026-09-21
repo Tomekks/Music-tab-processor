@@ -4,7 +4,7 @@ Files under `material-color-utilities/` are unmodified copies from the npm packa
 `@material/material-color-utilities@0.4.0` (Apache-2.0, upstream:
 https://github.com/material-foundation/material-color-utilities), vendored instead of
 installed as a dependency because the package cannot be `import`ed under plain Node.js ESM
-(see `docs/specs/design-system-generate-ramp.md` §0 for the full reason). Only the 8 files
+(see `docs/specs/_done/design-system-generate-ramp.md` §0 for the full reason). Only the 8 files
 this package's `generate-ramp.mjs` actually needs are included — the rest of the upstream
 package (color extraction from images, dynamic theming schemes, quantizers) isn't used here.
 
