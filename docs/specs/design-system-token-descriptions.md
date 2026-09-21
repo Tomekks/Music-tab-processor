@@ -2,12 +2,12 @@
 
 **Tier: S** — dev-only editor surface, no real user data, fully revertible via `git checkout`.
 User-requested, independent of liftkit/backlog/research and of Tasks 1-8's own feature logic —
-but **not independent of Task 8b at the file level**: both touch `editor.tsx`'s `FieldRow`. This
-spec's editor-side section (§2.4) is written against `editor.tsx` as it stood *before* 8b
-(commit `cfe4c3c`, 668 lines) — **land this task strictly after 8b's checkpoint commit, and
-re-read `editor.tsx` fresh immediately before implementing §2.4**, don't implement against the
-pre-8b line numbers cited there. §2.1–§2.3 (`token-writes.mjs`, `field-descriptors.mjs`,
-`route.ts`) are unaffected by 8b and safe to implement in either order.
+shares `editor.tsx`'s `FieldRow` with Tasks 8b and 5c at the file level, but not at the logic
+level (a description isn't a token value — no scope, no staging, no inheritance concept). **§2.4
+has been re-verified against the current, real post-8b/5c `editor.tsx`** (933 lines, `49cd7ad`) —
+both Task 8b and Task 5c have now landed, so this is no longer "re-read fresh before
+implementing," it's already current as of this revision. §2.1–§2.3 (`token-writes.mjs`,
+`field-descriptors.mjs`, `route.ts`) were never affected by either.
 
 **Correction to this task's earlier framing:** it was originally scoped as branching off
 `task/design-system-brand-data` on the assumption that branch was ahead of this one. Verified via
@@ -164,14 +164,19 @@ case "set-description": {
 Add `description` to the destructured request body and its type (alongside `edits` from Task 8a);
 import `applySetDescription` alongside the other `token-writes.mjs` imports.
 
-### 2.4 `editor.tsx` — **re-read fresh against post-8b code before implementing this section**
+### 2.4 `editor.tsx` — re-verified against post-8b/5c code (933 lines, `49cd7ad`)
 
-Add a description row inside `FieldRow`, under the existing control (after the `isAlias` caption
-line — both ColorRow's and SliderRow's caption sit at what was line 127/207 pre-8b), rendered
-**unconditionally for every `FieldRow`**, in both "All variables" and the per-component panel — no
-`pending`/staged-mode distinction; description saves are always immediate, deliberately decoupled
-from Task 8's batched value-staging model (the user story is explicit: description edits are
-their own separate explicit-Save action, not folded into Task 8's pending-edits Save bar):
+`FieldRow` (line 226) now carries far more than it did when this section was first drafted — 8b
+added `pending`/`onStage`/`onDiscardPending`/`onSetScope`, 5c added `isChildBrand`/`parentName`/
+`onResetToParent`. None of that changes this task's own logic (description saves stay fully
+independent of value staging and brand inheritance — a description isn't a token value, it has
+no scope/inherited concept), it only changes *where* `DescriptionRow` renders relative to the
+other conditional blocks already in `FieldRow`'s return. Render it **last**, after the existing
+`isChildBrand` caption, the alias scope-override control, and the non-alias caption (in that
+order, inside the same `<div className="min-w-0 flex-1">` — currently ends around line 311, right
+before the button-row's closing) — unconditionally, regardless of `isChildBrand`/`pending`/
+`d.isAlias`, so it always lands in the same visual spot no matter which of those other blocks are
+present for a given field:
 
 ```tsx
 function DescriptionRow({
@@ -297,10 +302,9 @@ No `.env`/credentials, no new npm dependency.
 
 ## 7. Stop-conditions
 
-- If `editor.tsx` doesn't match the post-8b state you re-read at implementation time (per this
-  spec's own instruction to re-read it fresh), stop and confirm the actual current shape before
-  wiring `FieldRow`'s two call sites — don't guess at how 8b's version of `FieldRow`'s props
-  looks.
+- If `editor.tsx` has changed since this spec's last revision (933 lines, `49cd7ad`), stop and
+  confirm the actual current shape before wiring `FieldRow`'s two call sites — don't guess at
+  what changed.
 - If any of the 6 seed leaves' real usage can't be confidently found via grep (e.g. it's used only
   through a dynamic class name or CSS variable indirection that doesn't grep cleanly), stop and
   ask rather than writing a guessed description — the spec's whole point is these must be real,
