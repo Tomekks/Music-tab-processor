@@ -246,27 +246,49 @@ that's a deliberate scoping choice, not an oversight — state it as such if ask
 
 ## 4. File allowlist
 
-- `app/app/design-system/editor.tsx` only.
+- `app/app/design-system/editor.tsx`
+- `app/e2e/design-system/staged-save.spec.ts` (new)
 
 No `.env`/credentials, no new npm dependency, no `tokens.json`/`tokens.default.json` edits by this
 spec itself (the manual check below writes to it, same as every prior UI task's check).
 
 ## 5. Acceptance criteria
 
-- `npm run verify` passes. No automated test for this task (pure UI state, no DOM harness in this
-  project, same reasoning every prior UI-only task in this plan used).
-- `git diff --stat` shows only `editor.tsx`.
-- **Human checkbox** (per the plan's own Task 8b list — not an execution-model criterion): open a
-  component view, edit two fields with different scopes (one Exception, one Brand-wide); confirm
-  neither writes to disk until Save is clicked (`git status` clean on `tokens.json` while pending);
-  confirm the Brand-wide edit changes a second component sharing that token after Save; confirm
-  clicking Revert on a pending (unsaved) edit discards the staged value without a server call;
-  confirm Revert on an already-saved (disk-modified) field still does a real reset; confirm
-  switching components and back preserves pending edits; confirm Discard clears them all; confirm
-  staging two Brand-wide edits that resolve to the same target blocks Save with a clear message
-  naming both fields.
+- `npm run verify` passes.
+- `git diff --stat` shows only `editor.tsx` plus the new Playwright spec below.
+- **Required: `app/e2e/design-system/staged-save.spec.ts`, run via `npm run test:e2e -- --project=design-system`**
+  (per `docs/WEB_APP_WORKFLOW.md` §3's Playwright rule — this task is interaction behavior end to
+  end, not visual judgment, so it does not get a human-checkbox-only check). Use real field pairs
+  already in `tokens.json` rather than inventing paths, so the spec exercises the actual cascade
+  logic:
+  - `component.colorField.radius` and `component.button.radius` both alias `semantic.radius.base`
+    (confirmed via the tree — `grep -n '"radius"' app/packages/design-system/brands/default/tokens.json`
+    if re-verifying). Both are `dimension` fields → render as `SliderRow`, labeled "Radius" in
+    their respective sections.
+  - `component.colorField.border` and `component.slider.trackColor` both alias
+    `semantic.color.border`. `color` fields → render as `ColorRow`, labeled "Border" and
+    "Track color".
+  - Test cases, each a real interaction, not a mock:
+    1. Open the Color Field section, edit "Radius" via its slider. Assert a "Save changes (1)"
+       button appears and `tokens.json` on disk is unchanged (no `POST` observed, or read the file
+       directly if running against a local checkout — implementer's choice, state which).
+    2. Click "Discard changes". Assert the Save bar disappears and the field shows its original
+       value.
+    3. Edit "Radius" again, set its scope to Brand-wide (per-field override control), click
+       "Save changes". Assert the request succeeds, then navigate to the Button section and assert
+       its "Radius" field now shows the same new value (the cascade — both alias the same target).
+    4. Revert the change afterward (via the now-real disk-level Revert) so the spec is idempotent
+       across runs — don't leave `tokens.json` modified between test runs.
+    5. Edit "Radius" in Color Field AND "Radius" in Button, both scoped Brand-wide, in the same
+       pending batch (navigate between them — pending edits persist, per §2). Click Save. Assert
+       it's rejected with a message naming both fields, and assert neither wrote to disk.
+    6. Discard both, confirming a clean end state.
+  - This spec's `webServer`/project (`design-system`, `:3002`) requires no manual `npm run dev`
+    running concurrently — see `docs/WEB_APP_WORKFLOW.md` §6's caveat; state this in the report if
+    it's hit.
 - Self-check before reporting, per `docs/WEB_APP_WORKFLOW.md` §5 step 4's evidence format.
-- `tokens.json` restored to committed state after the manual check; checkpoint commit (not pushed).
+- `tokens.json` restored to committed state after both the Playwright run and any manual
+  exploration; checkpoint commit (not pushed).
 
 ## 6. Stop-conditions
 
