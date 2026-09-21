@@ -76,6 +76,20 @@ function ColorRow({
   commit: (value: string) => Promise<boolean>;
 }) {
   const [text, setText] = useState(d.value);
+  // State (not a ref): the render-adjust below reads this during render, and
+  // refs are unreadable there per lint. Re-renders on focus change are trivial.
+  const [isFocused, setIsFocused] = useState(false);
+  // Adopt externally-changed values (revert/reset-all/generate) without
+  // remounting — never while the user is typing in this row, or keystrokes
+  // would be clobbered. Adjusted during render (not in an effect): setState
+  // in an effect trips the cascading-render lint rule, and this file already
+  // uses the render-adjust pattern for the reset-all disarm below. Rows are
+  // keyed on path only (see FieldRow call sites).
+  const [syncedSource, setSyncedSource] = useState(d.value);
+  if (syncedSource !== d.value && !isFocused) {
+    setSyncedSource(d.value);
+    setText(d.value);
+  }
   useEffect(() => {
     const varName = cssVarNameForPath(d.path)!;
     document.documentElement.style.setProperty(varName, text);
@@ -95,7 +109,11 @@ function ColorRow({
         e.preventDefault();
         void commitIfChanged();
       }}
+      onFocus={() => {
+        setIsFocused(true);
+      }}
       onBlur={(e) => {
+        setIsFocused(false);
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) void commitIfChanged();
       }}
       onKeyDown={(e) => {
@@ -125,6 +143,18 @@ function SliderRow({
   const initial = parseFloat(d.value);
   const [num, setNum] = useState(Number.isFinite(initial) ? initial : range.min);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // State (not a ref): read during render by the adjust below. Re-renders on
+  // drag start/end are trivial.
+  const [isDragging, setIsDragging] = useState(false);
+  // Adopt externally-changed values (revert/reset-all) without remounting —
+  // never mid-drag, or the thumb would snap back under the pointer. Adjusted
+  // during render (not in an effect) — same pattern and reason as ColorRow.
+  const [syncedSource, setSyncedSource] = useState(d.value);
+  if (syncedSource !== d.value && !isDragging) {
+    setSyncedSource(d.value);
+    const v = parseFloat(d.value);
+    if (Number.isFinite(v)) setNum(v);
+  }
   useEffect(() => {
     const varName = cssVarNameForPath(d.path)!;
     document.documentElement.style.setProperty(varName, `${num}${UNIT[d.$type]}`);
@@ -140,6 +170,20 @@ function SliderRow({
   );
   return (
     <>
+      {/* Pointer handlers live on this wrapper (not the <input> itself) because
+          the shared Slider component doesn't forward DOM props — pointer events
+          from the drag bubble up identically. */}
+      <div
+        onPointerDown={() => {
+          setIsDragging(true);
+        }}
+        onPointerUp={() => {
+          setIsDragging(false);
+        }}
+        onPointerCancel={() => {
+          setIsDragging(false);
+        }}
+      >
       <Slider
         label={d.label}
         value={num}
@@ -159,6 +203,7 @@ function SliderRow({
           }, 200);
         }}
       />
+      </div>
       {d.isAlias && <p className={cn(CAPTION, "mt-1")}>{d.rawValue}</p>}
     </>
   );
@@ -231,11 +276,18 @@ type ComponentSectionKey =
 
 function ComponentPreview({ sectionKey }: { sectionKey: ComponentSectionKey }) {
   const [demoTab, setDemoTab] = useState<"a" | "b">("a");
+  // Preview state is local-only demo state (like demoTab) — it moves the
+  // rendered instance without writing any token. A controlled component with
+  // a no-op onChange would be frozen by React definition.
+  const [demoSlider, setDemoSlider] = useState(50);
+  const [demoColor, setDemoColor] = useState("#4a90d9");
   switch (sectionKey) {
     case "component.colorField":
-      return <ColorField label="Sample" value="#4a90d9" onChange={() => {}} />;
+      return <ColorField label="Sample" value={demoColor} onChange={setDemoColor} />;
     case "component.slider":
-      return <Slider label="Sample" value={50} min={0} max={100} step={1} onChange={() => {}} />;
+      return (
+        <Slider label="Sample" value={demoSlider} min={0} max={100} step={1} onChange={setDemoSlider} />
+      );
     case "component.segmentedControl":
       return (
         <SegmentedControl
@@ -282,13 +334,14 @@ function ComponentDetailView({
   return (
     <section aria-label={heading}>
       <h2 className="text-lg font-semibold">{heading}</h2>
-      <div className="mt-3 rounded-md border border-border p-4">
+      <h3 className="mt-3 text-sm font-semibold text-surface-text/70">Preview</h3>
+      <div className="mt-2 rounded-md border border-border p-4">
         <ComponentPreview key={sectionKey} sectionKey={sectionKey} />
       </div>
       <div className="mt-4 divide-y divide-border">
         {fields.map((d) => (
           <FieldRow
-            key={`${d.path}:${d.value}`}
+            key={d.path}
             d={d}
             disabled={disabledPaths.has(d.path)}
             onCommitValue={onCommitValue}
@@ -472,7 +525,7 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
         <div className="divide-y divide-border">
           {fields.map((d) => (
             <FieldRow
-              key={`${d.path}:${d.value}`}
+              key={d.path}
               d={d}
               disabled={inFlight.has(d.path)}
               onCommitValue={runWrite}
