@@ -41,6 +41,10 @@ When in doubt, pick the heavier tier.
   fragment pays the full template weight and introduces its own seam-bug risk (an
   interface/ownership mismatch between fragments that didn't exist before the split, observed in
   practice). Split when there's a real boundary, not as a default reflex.
+- **Every task entry in the plan itself carries a one- or two-sentence user story**, not just the
+  spec written for it later — the plan is where scope/sequencing gets decided, so that's also
+  where "does this still make sense from the user's side" needs to be checkable, before a task's
+  spec exists yet.
 
 `systematic-debugging` and `requesting-code-review`/`receiving-code-review` remain available as
 optional tools for any tier, not mandatory gates.
@@ -105,6 +109,11 @@ history: a spec claimed "fully verified end-to-end," and the file it described c
 
 One markdown file per task in `docs/specs/`:
 
+0. **User story** — one short paragraph, plain language, from the person actually using the
+   result: what they do, what they see, what changes. Required on every spec (and on every task
+   entry in an Architectural-tier plan, per §2) — not just the UI ones. A one-line scope statement
+   tells you what files change; a user story is the check that the *feature* still makes sense
+   before writing the *mechanism* for it.
 1. **Scope** — exact files, explicit `.env`/credential exclusion.
 2. **Non-goals** — explicitly what not to touch.
 3. **Interface** — signatures/types/contract. For a change that matches an existing sibling
@@ -136,6 +145,15 @@ One markdown file per task in `docs/specs/`:
    generation check left `tokens.json` mutated, uncommitted, breaking 6 unrelated tests until
    `git checkout` + `npm run tokens:build` cleared it). Task 5b's spec got this right first;
    every later spec whose manual check touches a writing route repeats it, not just once.
+   **Any task that changes interactive UI behavior (not just visual style) gets a Playwright spec
+   in `app/e2e/`, not a human-checkbox-only check.** This project relied on manual staging checks
+   for Task 7's UI and still shipped real bugs (flaky slider drag, missing sidebar highlight) that
+   a scripted interaction — click, drag, assert the resulting DOM/network call — would have caught
+   before they reached a human at all. The human checkbox stays for genuinely subjective judgment
+   (does this color read as "accent," does this spacing look right) — it does not stay for
+   "does clicking X do Y," which Playwright checks strictly better than a human re-clicking through
+   a list. See the note below on `app/e2e/`'s current `webServer` gap before writing one against
+   `/design-system` specifically.
 8. **Definition of done** — `npm run verify` passes + `git diff --stat` matches the file
    allowlist + the human-checkbox manual check where relevant (per §7, not conflated with the
    self-check below) + **a self-check**: before reporting back, confirm every concrete claim the
@@ -255,9 +273,15 @@ target that: what actually travels each turn, and what accumulates in the repo o
 
 ## 6. Not yet in place
 
-- Visual regression testing (screenshot comparisons via Playwright) is deferred. Once built, it
-  slots into §3's Definition-of-done section as an added check — no rewrite of this document
-  needed.
+- Visual regression testing (screenshot comparisons via Playwright) stays deferred — §3's
+  Playwright requirement above is for interaction behavior, not pixel-level style.
+- **`app/playwright.config.ts`'s `webServer` runs `npm run build && npm run start` — a production
+  build. `/design-system` (and its API route) 404 under `NODE_ENV=production` by design (both gate
+  on it explicitly), so no Playwright spec can reach `/design-system` at all under the current
+  config.** A design-system-touching task's Playwright spec needs a second `webServer`/project
+  pointed at `next dev` (Playwright 1.63+ supports an array of `webServer` entries, each with its
+  own `command`/`url`) before it can run — fix this as part of whichever task first needs it,
+  rather than leaving every future design-system spec to rediscover the same blocker.
 
 ## 7. Token discipline
 
