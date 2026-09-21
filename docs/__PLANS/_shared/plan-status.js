@@ -7,7 +7,9 @@
 // filesystem or git; PLAN_TASKS is a plain hand-maintained array, kept
 // current as part of each task's checkpoint commit.
 
-document.title = `${PLAN_META.title} — Progress`;
+// Tab title stays the generic "Plan progress" (set in each plan's HTML) so
+// every plan's page reads the same in a list of open tabs — the specific
+// plan name lives in the on-page <h1> instead, not the title.
 
 const STATUS_LABEL = { done: "Done", progress: "In progress", todo: "Not started" };
 

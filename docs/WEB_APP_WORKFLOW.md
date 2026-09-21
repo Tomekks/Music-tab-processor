@@ -45,8 +45,10 @@ When in doubt, pick the heavier tier.
   spec written for it later — the plan is where scope/sequencing gets decided, so that's also
   where "does this still make sense from the user's side" needs to be checkable, before a task's
   spec exists yet.
-- **Every plan gets a companion status page**, created alongside the plan, not after the fact:
-  `docs/superpowers/plans/<plan-slug>-status.html` (a ~15-line shell loading
+- **Every plan gets a companion status page**, created alongside the plan, not after the fact,
+  living in `docs/__PLANS/` — separate from the plan doc itself (which stays in
+  `docs/superpowers/plans/`) so status pages have one common home regardless of which directory a
+  given plan's own `.md` lives in: `docs/__PLANS/<plan-slug>-status.html` (a ~15-line shell loading
   `_shared/plan-status.css`/`.js` — copy an existing one as the starting point, it never changes
   again once created) plus `<plan-slug>-status.data.js` (a plain `PLAN_META`/`PLAN_TASKS` array —
   the only file that changes). Update the data file as part of each task's checkpoint commit, same
