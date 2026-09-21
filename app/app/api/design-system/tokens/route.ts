@@ -7,6 +7,7 @@ import {
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
+  applyBatchWrite,
   applyGenerateFromSeed,
   applyReset,
   applyResetAll,
@@ -48,12 +49,13 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value, neutralSeed, accentSeed } = body as {
+    const { action, path, value, neutralSeed, accentSeed, edits } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
       neutralSeed?: unknown;
       accentSeed?: unknown;
+      edits?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
       return badRequest(ACTION_LIST_ERROR);
@@ -70,6 +72,18 @@ export async function POST(req: Request) {
           return badRequest('"write" requires "path" and "value" to be strings');
         }
         const result = applyWrite(readJson("tokens.json"), path, value);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
+      case "batch-write": {
+        if (!Array.isArray(edits)) {
+          return badRequest('"batch-write" requires "edits" to be an array');
+        }
+        const result = applyBatchWrite(readJson("tokens.json"), edits);
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
         }

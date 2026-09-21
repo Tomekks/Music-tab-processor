@@ -55,6 +55,11 @@ Implementation shape (match this exactly — it's the load-bearing logic, not a 
 1. If `edits` is not a non-empty array, return
    `{ ok: false, status: 400, error: '"edits" must be a non-empty array' }`.
 2. For each edit, in order:
+   - Each element must be an object — a null/non-object element must fail here as
+     `{ ok: false, status: 400, error: 'edit at index N: ...' }`, never reach property
+     access and surface as a 500 via the route's catch. Extra per-edit fields beyond
+     `path`/`value`/`scope` are ignored, matching the route's existing convention for
+     unrecognized top-level body fields.
    - `path`/`value` must be strings, `scope` must be `"exception"` or `"brand"` — else
      `{ ok: false, status: 400, error: 'edit at index N: ...' }` (name the index so a batch of
      several edits doesn't produce an ambiguous error).
@@ -79,7 +84,10 @@ Implementation shape (match this exactly — it's the load-bearing logic, not a 
    `getLeaf(tokens, targetPath).$value = value`. Return `{ ok: true, tokens }`.
 4. **Two edits in the same batch resolving to the same target path — last one wins**, applied in
    array order. Don't special-case or reject this; it's the same behavior a sequence of individual
-   `applyWrite` calls would already have.
+   `applyWrite` calls would already have. Handoff note for 8b (not handled here): same-target
+   collisions across *different* originating leaves (two brand-scoped edits via different
+   component leaves aliasing one semantic token with different values) also resolve last-wins,
+   silently dropping the first — 8a cannot resolve intent, so 8b's UI must warn on this case.
 
 ### `route.ts`
 
@@ -114,6 +122,8 @@ case "batch-write": {
 - No editor UI change (`editor.tsx` untouched — that's 8b).
 - No child-brand alias resolution (parent vs. child target ambiguity is a Task 5c decision,
   deliberately not addressed by this spec's `getLeaf`-on-the-request-brand's-own-tree logic).
+  Corollarily, on a sparse child tree a brand-scoped edit's target lookup fails closed with a
+  400 naming the target path — accepted until 5c, not a bug to work around here.
 - No new validation beyond what `validateWriteValue` already enforces per `$type`.
 
 ## 3. File allowlist
@@ -136,10 +146,11 @@ doesn't already have (e.g. a non-alias component leaf), don't build a second fix
 1. **All-valid batch applies every edit.** Two `"exception"` edits on different paths in one
    batch — both land in the returned tree, in one call.
 2. **One invalid edit in a batch of three applies none of them.** Middle edit references an
-   unknown path; assert the returned tree is `undefined`/absent (an `ApplyErr`) and — this is the
-   real point of the test — that a *separate* direct check confirms neither of the other two
-   edits' target values changed (i.e. don't just check the error shape, check nothing partially
-   applied by comparing against the original tree).
+   unknown path; assert an `ApplyErr` is returned (no `tokens` property) and — this is the real
+   point of the test — that the input tree is deep-unchanged against its pre-call state
+   (`assert.deepEqual(before, after)` on a snapshot taken before the call, same non-mutation
+   pattern as the existing `applyReset` test): validation runs fully before anything is
+   cloned or written, so atomicity is structural, not just error-shaped.
 3. **`"brand"`-scoped edit resolves to the alias target, not the originating path.** Using the
    fixture's `component.button.primaryBackground` (aliases `semantic.color.accent`): a
    `{ path: "component.button.primaryBackground", value: "#123456", scope: "brand" }` edit
@@ -151,6 +162,11 @@ doesn't already have (e.g. a non-alias component leaf), don't build a second fix
 5. **Empty `edits` array is rejected**, not treated as a no-op success.
 6. **Two edits in the same batch targeting the same resolved path — last one wins** (per §1 point
    4) — one direct test asserting this, so the behavior is documented, not just implied.
+7. **Non-object `edits` elements are rejected with 400**, not 500 — `null`, a string, and a
+   number element each produce `{ ok: false, status: 400 }` naming the index.
+8. **Existing `VALID_ACTIONS` count test updated to seven.** The test at
+   `token-writes.test.mjs:64` ("exactly the six known actions") breaks the moment
+   `"batch-write"` is appended — update its name and expected list in this task, not later.
 
 ## 5. Acceptance criteria
 

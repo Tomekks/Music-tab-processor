@@ -10,6 +10,7 @@ import {
   validateWriteValue,
   stringifyTokens,
   applyWrite,
+  applyBatchWrite,
   applyReset,
   applyResetAll,
   applySetAsDefault,
@@ -61,10 +62,10 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the six known actions", () => {
+test("VALID_ACTIONS lists exactly the seven known actions", () => {
   assert.deepEqual(
     [...VALID_ACTIONS].sort(),
-    ["generate-from-seed", "reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
+    ["batch-write", "generate-from-seed", "reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
   );
 });
 
@@ -336,4 +337,76 @@ test("applyGenerateFromSeed does not mutate the input tree", () => {
   const result = applyGenerateFromSeed(before, "#faf9f5", "#ae97f7");
   assert.equal(result.ok, true);
   assert.deepEqual(before, snapshot);
+});
+
+test("applyBatchWrite applies every edit in an all-valid batch in one call", () => {
+  const result = applyBatchWrite(tokensTree(), [
+    { path: "semantic.color.surface", value: "#000000", scope: "exception" },
+    { path: "semantic.state.hoverOpacity", value: "50%", scope: "exception" },
+  ]);
+  assert.equal(result.ok, true);
+  assert.equal(getLeaf(result.tokens, "semantic.color.surface").$value, "#000000");
+  assert.equal(getLeaf(result.tokens, "semantic.state.hoverOpacity").$value, "50%");
+});
+
+test("applyBatchWrite with one invalid edit applies none of them", () => {
+  const before = tokensTree();
+  const snapshot = structuredClone(before);
+  const result = applyBatchWrite(before, [
+    { path: "semantic.color.surface", value: "#000000", scope: "exception" },
+    { path: "semantic.nope", value: "#000000", scope: "exception" },
+    { path: "semantic.state.hoverOpacity", value: "50%", scope: "exception" },
+  ]);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /index 1/);
+  assert.equal("tokens" in result, false);
+  assert.deepEqual(before, snapshot);
+});
+
+test("applyBatchWrite resolves a brand-scoped edit to the alias target", () => {
+  const result = applyBatchWrite(tokensTree(), [
+    { path: "component.button.primaryBackground", value: "#123456", scope: "brand" },
+  ]);
+  assert.equal(result.ok, true);
+  assert.equal(getLeaf(result.tokens, "semantic.color.accent").$value, "#123456");
+  assert.equal(
+    getLeaf(result.tokens, "component.button.primaryBackground").$value,
+    "{semantic.color.accent}",
+  );
+});
+
+test("applyBatchWrite fails a brand-scoped edit on a non-alias leaf", () => {
+  const result = applyBatchWrite(tokensTree(), [
+    { path: "semantic.color.surface", value: "#123456", scope: "brand" },
+  ]);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /semantic\.color\.surface/);
+});
+
+test("applyBatchWrite rejects an empty edits array", () => {
+  for (const bad of [[], "nope", null]) {
+    const result = applyBatchWrite(tokensTree(), bad);
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 400);
+  }
+});
+
+test("applyBatchWrite lets the last of two same-target edits win", () => {
+  const result = applyBatchWrite(tokensTree(), [
+    { path: "semantic.color.surface", value: "#111111", scope: "exception" },
+    { path: "semantic.color.surface", value: "#222222", scope: "exception" },
+  ]);
+  assert.equal(result.ok, true);
+  assert.equal(getLeaf(result.tokens, "semantic.color.surface").$value, "#222222");
+});
+
+test("applyBatchWrite rejects non-object edits elements with 400, not 500", () => {
+  for (const badEdit of [null, "semantic.color.surface", 42]) {
+    const result = applyBatchWrite(tokensTree(), [badEdit]);
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 400);
+    assert.match(result.error, /index 0/);
+  }
 });

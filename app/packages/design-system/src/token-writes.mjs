@@ -4,7 +4,7 @@
 // by node --test without a running Next server.
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -175,6 +175,77 @@ export function applyWrite(tokensTree, path, value) {
   }
   const tokens = structuredClone(tokensTree);
   getLeaf(tokens, path).$value = value;
+  return { ok: true, tokens };
+}
+
+/**
+ * Apply a batch of edits atomically: validate every edit first; if any fails,
+ * return the FIRST failure and write nothing. A "brand"-scoped edit resolves
+ * to its alias target (read from the tree at that path) before writing; an
+ * "exception"-scoped edit writes `path` as-is. A "brand" edit whose leaf is
+ * not an alias fails the whole batch (fail-closed — there's nothing to
+ * cascade to). Two edits resolving to the same target path apply last-wins,
+ * in array order — 8b's UI owns warning on that case, not this function.
+ * @param {object} tokensTree live tokens.json tree (not mutated)
+ * @param {{ path: string, value: string, scope: "exception" | "brand" }[]} edits
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyBatchWrite(tokensTree, edits) {
+  if (!Array.isArray(edits) || edits.length === 0) {
+    return { ok: false, status: 400, error: '"edits" must be a non-empty array' };
+  }
+  const collected = [];
+  for (let i = 0; i < edits.length; i++) {
+    const edit = edits[i];
+    if (!edit || typeof edit !== "object") {
+      return {
+        ok: false,
+        status: 400,
+        error: `edit at index ${i}: must be an object with "path", "value" and "scope"`,
+      };
+    }
+    const { path, value, scope } = edit;
+    if (
+      typeof path !== "string" ||
+      typeof value !== "string" ||
+      (scope !== "exception" && scope !== "brand")
+    ) {
+      return {
+        ok: false,
+        status: 400,
+        error: `edit at index ${i}: "path" and "value" must be strings and "scope" must be "exception" or "brand"`,
+      };
+    }
+    const leaf = getLeaf(tokensTree, path);
+    if (!leaf) {
+      return { ok: false, status: 400, error: `edit at index ${i}: "${path}" is not a known token path` };
+    }
+    let targetPath = path;
+    let targetLeaf = leaf;
+    if (scope === "brand") {
+      if (typeof leaf.$value !== "string" || !leaf.$value.startsWith("{")) {
+        return {
+          ok: false,
+          status: 400,
+          error: `edit at index ${i}: "${path}" is not an alias — nothing to cascade to for a brand-wide edit`,
+        };
+      }
+      targetPath = leaf.$value.slice(1, -1);
+      targetLeaf = getLeaf(tokensTree, targetPath);
+      if (!targetLeaf) {
+        return { ok: false, status: 400, error: `edit at index ${i}: "${targetPath}" is not a known token path` };
+      }
+    }
+    const valid = validateWriteValue(targetLeaf, value);
+    if (!valid.ok) {
+      return { ok: false, status: 400, error: `edit at index ${i}: ${valid.error}` };
+    }
+    collected.push({ targetPath, value });
+  }
+  const tokens = structuredClone(tokensTree);
+  for (const { targetPath, value } of collected) {
+    getLeaf(tokens, targetPath).$value = value;
+  }
   return { ok: true, tokens };
 }
 
