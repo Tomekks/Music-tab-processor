@@ -1,36 +1,20 @@
 import { defineConfig } from "@playwright/test";
 
+// Design-system e2e specs (app/e2e/design-system/) run against a separate
+// config (playwright.design-system.config.ts) instead of a second project
+// here — Playwright boots every entry in `webServer` regardless of which
+// `--project` is selected, so folding both servers into one config meant
+// every design-system-only run still paid for a full production build.
 export default defineConfig({
   testDir: "./e2e",
-  webServer: [
-    {
-      command: "npm run build && npm run start",
-      url: "http://localhost:3000",
-      timeout: 120_000,
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      // Dev-only routes (e.g. /design-system) 404 under NODE_ENV=production
-      // by design (both the page and its API route gate on it explicitly) —
-      // this second server runs `next dev` on its own port so specs can
-      // reach them. Port 3002: 3000 is the prod server above, 3001 is
-      // `npm run stage`'s manual-staging port (package.json).
-      command: "npm run dev -- -p 3002",
-      url: "http://localhost:3002",
-      timeout: 120_000,
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
-  projects: [
-    {
-      name: "app",
-      testMatch: /e2e\/(?!design-system\/).*\.spec\.ts/,
-      use: { baseURL: "http://localhost:3000" },
-    },
-    {
-      name: "design-system",
-      testMatch: /e2e\/design-system\/.*\.spec\.ts/,
-      use: { baseURL: "http://localhost:3002" },
-    },
-  ],
+  testIgnore: /e2e\/design-system\/.*\.spec\.ts/,
+  webServer: {
+    command: "npm run build && npm run start",
+    url: "http://localhost:3000",
+    timeout: 120_000,
+    reuseExistingServer: !process.env.CI,
+  },
+  use: {
+    baseURL: "http://localhost:3000",
+  },
 });
