@@ -185,6 +185,21 @@ project with no other stakeholders.
    actual diff and test output before sending it** (§3's Definition-of-done addition) — does the
    file list, the test count, and every concrete claim actually match what's on disk. Reports
    pass/fail, the diff, and that self-check.
+
+   **Report format — every claim paired with its own evidence, so Claude's check in step 6 stays
+   a read, not a re-run.** This is §3's "no empirical claim without evidence" rule applied
+   specifically to this report:
+   - The full, unedited `git diff --stat` output — not a paraphrase.
+   - The tail of `npm run verify`'s actual output (the pass/fail lines), not just "it passed."
+   - Exact `file:line` for each change claimed, so it can be checked without re-reading the whole
+     file.
+   - Any test-count claim (e.g. "85/85 passing") quoted from the runner's own output line, not
+     restated from memory.
+   - An explicit "did not touch" list matching the file allowlist, not just what changed.
+   - Any judgment call made instead of asking a clarifying question (step 3), named explicitly —
+     not left implicit in the diff for Claude to notice on its own.
+   - Anywhere it couldn't actually verify a claim and is reporting a belief instead of a checked
+     fact, flagged as such rather than folded into the rest as if it were equally certain.
 5. You relay the result back to Claude.
 6. **Claude's check is narrow, not a re-run.** Confirm the claimed file list against
    `git diff --stat`, spot-check one or two of the report's specific claims, confirm the verify
