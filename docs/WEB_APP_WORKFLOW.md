@@ -64,17 +64,18 @@ Commit locally (not pushed) after every spec's `npm run verify` passes, before h
 next spec. Purpose: if the execution model goes rogue mid-task, there's a recent working
 checkpoint to roll back to, not just the state before the whole task started.
 
-**Ask-first applies to the commit that closes out a task, not to intermediate steps within
-verifying one.** Once a spec's acceptance criteria are independently confirmed (§5 step 4 —
-re-running the checks yourself, not just trusting the execution model's report), commit and
-report what was committed; don't pause to ask permission for that specific commit. This was
-tightened 2026-09-19 after a session where "ask-first" was written but not actually being
-followed in practice for these — the checkpoint commits are local-only and trivially reversible
-(`git reset`/`git reflog`), so the friction of asking every time wasn't earning its keep. The
-three-way push/deploy question below is unaffected — that one is still asked, every time.
+**Commit-and-report, not ask-first**, for a task's own local checkpoint — this is what a
+single-task local commit is for; ask-first is reserved for push/PR/multi-task actions (per
+`AGENTS.md`'s actual scope) and for anything irreversible or spanning more than the one task just
+completed. Tightened 2026-09-19 after a session where "ask-first" was written but not actually
+being followed in practice for these — the checkpoint commits are local-only and trivially
+reversible (`git reset`/`git reflog`), so the friction of asking every time wasn't earning its
+keep.
 
-Push and deploy timing is unchanged from `AGENTS.md`: asked once, at the very end, as the
-three-way push / push & deploy / skip question.
+Push and deploy timing follows `AGENTS.md`'s three-way question (push / push & deploy / skip),
+asked once at the end of the multi-task plan rather than per checkpoint — same exception as the
+commit rule above, same reason: asking per task on an 11-task plan is pure overhead for a hobby
+project with no other stakeholders.
 
 ## 5. Execution loop (Bounded and Architectural tasks)
 
