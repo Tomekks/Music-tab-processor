@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, ColorField, Slider } from "@guitar-tabs/design-system";
+import { Button, ColorField, SegmentedControl, Slider } from "@guitar-tabs/design-system";
 import { SECTIONS } from "../../packages/design-system/src/field-descriptors.mjs";
 import type { FieldDescriptor } from "../../packages/design-system/src/field-descriptors.mjs";
 import { cssVarNameForPath } from "../../packages/design-system/src/css-var-naming.mjs";
@@ -223,6 +223,90 @@ function FieldRow({
   );
 }
 
+type ComponentSectionKey =
+  | "component.colorField"
+  | "component.slider"
+  | "component.segmentedControl"
+  | "component.button";
+
+function ComponentPreview({ sectionKey }: { sectionKey: ComponentSectionKey }) {
+  const [demoTab, setDemoTab] = useState<"a" | "b">("a");
+  switch (sectionKey) {
+    case "component.colorField":
+      return <ColorField label="Sample" value="#4a90d9" onChange={() => {}} />;
+    case "component.slider":
+      return <Slider label="Sample" value={50} min={0} max={100} step={1} onChange={() => {}} />;
+    case "component.segmentedControl":
+      return (
+        <SegmentedControl
+          options={[
+            { value: "a", label: "A" },
+            { value: "b", label: "B" },
+          ]}
+          value={demoTab}
+          onChange={setDemoTab}
+          ariaLabel="Sample"
+        />
+      );
+    case "component.button":
+      return (
+        <div className="flex gap-3">
+          <Button variant="primary" onClick={() => {}}>Primary</Button>
+          <Button variant="secondary" onClick={() => {}}>Secondary</Button>
+        </div>
+      );
+  }
+}
+
+function ComponentDetailView({
+  sectionKey,
+  heading,
+  fields,
+  disabledPaths,
+  onCommitValue,
+  onRevert,
+  onPromote,
+  error,
+  feedback,
+}: {
+  sectionKey: ComponentSectionKey;
+  heading: string;
+  fields: FieldDescriptor[];
+  disabledPaths: Set<string>;
+  onCommitValue: (path: string, value: string) => Promise<boolean>;
+  onRevert: (path: string) => void;
+  onPromote: (path: string) => void;
+  error: string | null;
+  feedback: string | null;
+}) {
+  return (
+    <section aria-label={heading}>
+      <h2 className="text-lg font-semibold">{heading}</h2>
+      <div className="mt-3 rounded-md border border-border p-4">
+        <ComponentPreview key={sectionKey} sectionKey={sectionKey} />
+      </div>
+      <div className="mt-4 divide-y divide-border">
+        {fields.map((d) => (
+          <FieldRow
+            key={`${d.path}:${d.value}`}
+            d={d}
+            disabled={disabledPaths.has(d.path)}
+            onCommitValue={onCommitValue}
+            onRevert={onRevert}
+            onPromote={onPromote}
+          />
+        ))}
+      </div>
+      {feedback && (
+        <p aria-live="polite" className="mt-3 text-sm text-surface-text/70">{feedback}</p>
+      )}
+      {error && (
+        <p aria-live="polite" role="alert" className="mt-3 text-sm text-red-500">{error}</p>
+      )}
+    </section>
+  );
+}
+
 export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -231,6 +315,7 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   const [resetArmed, setResetArmed] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
   const [generateBusy, setGenerateBusy] = useState(false);
+  const [selectedView, setSelectedView] = useState<"all" | ComponentSectionKey>("all");
   // Seed inputs aren't token fields (no path/revert/modified-state) — they
   // start from the live resolved values and are never written back as tokens.
   const [neutralSeed, setNeutralSeed] = useState(
@@ -362,6 +447,19 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   const flat = SECTIONS.filter((s) => !s.group);
   const grouped = SECTIONS.filter((s) => s.group);
 
+  // Only the component.* groups get sidebar entries — a per-component view
+  // exists to pair a component's fields with a live-rendered instance of
+  // that component. Semantic tokens are cross-cutting (no single component
+  // to render) and stay exclusive to "All variables."
+  const sidebarItems: { key: "all" | ComponentSectionKey; label: string }[] = [
+    { key: "all", label: "All variables" },
+    ...grouped.map((s) => ({ key: s.key as ComponentSectionKey, label: s.heading })),
+  ];
+  // Fall back to the first component section instead of crashing if the key
+  // ever fails to match — selectedView can only come from sidebarItems, so
+  // this is unreachable in practice, but a lookup miss must not throw.
+  const selectedSection = grouped.find((s) => s.key === selectedView) ?? grouped[0];
+
   const renderSection = (key: string, Heading: "h2" | "h3", heading: string) => {
     const fields = fieldsFor(key);
     if (fields.length === 0) return null;
@@ -388,79 +486,123 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-8">
+    <main className="mx-auto w-full max-w-4xl px-6 py-8">
       <Link href="/" className={cn(MUTED_ACTION, "text-sm")}>
         ← Back
       </Link>
       <h1 className="mt-2 text-2xl font-bold">Design tokens</h1>
-      <p className="mt-1 text-sm text-surface-text/70">
-        Live brand values for the default brand. Edits write to <code>tokens.json</code> and
-        rebuild the stylesheet immediately.
-      </p>
-      <p className="mt-1 text-sm text-surface-text/70">
-        Note: this edits the brand&apos;s base values, and these previews render them as-is. The
-        running app renders the dark theme only, so base colors with dark overrides look different
-        there — theme-invariant tokens like <code>accent</code> update live everywhere.
-      </p>
+      <div className="mt-6 flex gap-8">
+        <nav aria-label="Design system sections" className="w-44 shrink-0">
+          <ul className="flex flex-col gap-1">
+            {sidebarItems.map((item) => (
+              <li key={item.key}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedView(item.key)}
+                  aria-current={selectedView === item.key ? "page" : undefined}
+                  className={cn(
+                    "w-full rounded-md px-3 py-2 text-left text-sm font-medium",
+                    FOCUS_RING,
+                    selectedView === item.key
+                      ? "bg-surface-active text-surface-active-text"
+                      : "text-surface-text/80 hover:bg-surface-hover",
+                  )}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="min-w-0 flex-1">
+          {selectedView === "all" ? (
+            <>
+              <p className="mt-1 text-sm text-surface-text/70">
+                Live brand values for the default brand. Edits write to <code>tokens.json</code> and
+                rebuild the stylesheet immediately.
+              </p>
+              <p className="mt-1 text-sm text-surface-text/70">
+                Note: this edits the brand&apos;s base values, and these previews render them as-is. The
+                running app renders the dark theme only, so base colors with dark overrides look different
+                there — theme-invariant tokens like <code>accent</code> update live everywhere.
+              </p>
 
-      <section aria-label="Generate from seed colors" className="mt-6">
-        <h2 className="text-lg font-semibold">Generate from seed colors</h2>
-        <p className={cn(CAPTION, "mt-1")}>
-          Pick a neutral seed and an accent seed to regenerate all 18 brand colors at once.
-        </p>
-        <div className="mt-3 flex flex-wrap items-end gap-3">
-          <ColorField
-            label="Neutral seed"
-            value={neutralSeed}
-            onChange={setNeutralSeed}
-            disabled={generateBusy}
-          />
-          <ColorField
-            label="Accent seed"
-            value={accentSeed}
-            onChange={setAccentSeed}
-            disabled={generateBusy}
-          />
-          <Button
-            variant="secondary"
-            disabled={generateBusy || !seedsValid}
-            onClick={runGenerate}
-          >
-            {generateBusy ? "Generating…" : "Generate from seeds"}
-          </Button>
+              <section aria-label="Generate from seed colors" className="mt-6">
+                <h2 className="text-lg font-semibold">Generate from seed colors</h2>
+                <p className={cn(CAPTION, "mt-1")}>
+                  Pick a neutral seed and an accent seed to regenerate all 18 brand colors at once.
+                </p>
+                <div className="mt-3 flex flex-wrap items-end gap-3">
+                  <ColorField
+                    label="Neutral seed"
+                    value={neutralSeed}
+                    onChange={setNeutralSeed}
+                    disabled={generateBusy}
+                  />
+                  <ColorField
+                    label="Accent seed"
+                    value={accentSeed}
+                    onChange={setAccentSeed}
+                    disabled={generateBusy}
+                  />
+                  <Button
+                    variant="secondary"
+                    disabled={generateBusy || !seedsValid}
+                    onClick={runGenerate}
+                  >
+                    {generateBusy ? "Generating…" : "Generate from seeds"}
+                  </Button>
+                </div>
+                {!seedsValid && (
+                  <p className={cn(CAPTION, "mt-1")}>Seeds must be 6-digit hex colors like #rrggbb.</p>
+                )}
+              </section>
+
+              <div className="mt-4 flex items-center gap-3">
+                <Button variant="secondary" disabled={resetBusy} onClick={runResetAll}>
+                  {resetArmed
+                    ? `Confirm reset of ${modifiedPaths.length} changed field${modifiedPaths.length === 1 ? "" : "s"}?`
+                    : "Reset all changes"}
+                </Button>
+                {feedback && (
+                  <p aria-live="polite" className="text-sm text-surface-text/70">
+                    {feedback}
+                  </p>
+                )}
+              </div>
+
+              {error && (
+                <p aria-live="polite" role="alert" className="mt-3 text-sm text-red-500">
+                  {error}
+                </p>
+              )}
+
+              <div className="mt-6 flex flex-col gap-8">
+                {flat.map((s) => renderSection(s.key, "h2", s.heading))}
+                <section aria-label="Components">
+                  <h2 className="text-lg font-semibold">Components</h2>
+                  <div className="mt-2 flex flex-col gap-6">
+                    {grouped.map((s) => renderSection(s.key, "h3", s.heading))}
+                  </div>
+                </section>
+              </div>
+            </>
+          ) : (
+            selectedSection && (
+              <ComponentDetailView
+                sectionKey={selectedView}
+                heading={selectedSection.heading}
+                fields={fieldsFor(selectedView)}
+                disabledPaths={inFlight}
+                onCommitValue={runWrite}
+                onRevert={runReset}
+                onPromote={runPromote}
+                error={error}
+                feedback={feedback}
+              />
+            )
+          )}
         </div>
-        {!seedsValid && (
-          <p className={cn(CAPTION, "mt-1")}>Seeds must be 6-digit hex colors like #rrggbb.</p>
-        )}
-      </section>
-
-      <div className="mt-4 flex items-center gap-3">
-        <Button variant="secondary" disabled={resetBusy} onClick={runResetAll}>
-          {resetArmed
-            ? `Confirm reset of ${modifiedPaths.length} changed field${modifiedPaths.length === 1 ? "" : "s"}?`
-            : "Reset all changes"}
-        </Button>
-        {feedback && (
-          <p aria-live="polite" className="text-sm text-surface-text/70">
-            {feedback}
-          </p>
-        )}
-      </div>
-
-      {error && (
-        <p aria-live="polite" role="alert" className="mt-3 text-sm text-red-500">
-          {error}
-        </p>
-      )}
-
-      <div className="mt-6 flex flex-col gap-8">
-        {flat.map((s) => renderSection(s.key, "h2", s.heading))}
-        <section aria-label="Components">
-          <h2 className="text-lg font-semibold">Components</h2>
-          <div className="mt-2 flex flex-col gap-6">
-            {grouped.map((s) => renderSection(s.key, "h3", s.heading))}
-          </div>
-        </section>
       </div>
     </main>
   );
