@@ -8,10 +8,10 @@ Part of `app/status/` — see `app/STATUS.md` for the index. **This is current s
 
 **Fretboard** (`components/FretboardDiagram.tsx`) — one small mini-fretboard per playback step, chained left to right, uniform `FIXED_CELLS`-wide window per segment (reopened from an earlier tight-fit-to-span rule, see `docs/decisions/display-modes.md`) except when a step's real span is wider, which is never truncated. Thin-e/thick-E toggle, now `components/StringOrientationToggle.tsx`, shared with `SheetDiagram`. Colors now use the real design-system tokens, same as `SheetDiagram`/`AsciiView` — the earlier hardcoded-color gap is closed. See `components/FretboardDiagram.RULES.md`.
 
-**Ascii** — the plain ASCII tab, unchanged, still the baseline/default-content display underneath everything else.
+**Ascii** (`app/app/_components/AsciiView.tsx`) — the plain ASCII tab: a static reference printout, deliberately without a playhead (`renderTab.ts` returns one opaque string with no per-step structure). A small `role="status"` banner above the text states playback continues on Sheet or Fretboard — announced once on mount, never updated per step.
 
 **Metronome** (`app/hooks/useMetronome.ts` + `components/MetronomeControls.tsx`) — play/pause, reset-to-start (2026-09-10, rewinds to step 0 and pauses), editable bpm (defaults to the song's own tempo). Drives a playhead on Sheet (dashed line, inverted note colors at the active step) via an optional `currentStep` prop — no playhead before the first press of Play.
 
 **Shared logic:** `pitchClassName`, `groupNotesByStep`, `getDisplayRow`, `chunk`, `stringThickness`, `computeStepsPerLine` all live in `lib/tabNotation.ts` (shared by Fretboard and Sheet), `lib/tabNotation.test.ts`. Fretboard-only logic (the per-step fret window) stays in `lib/fretboard.ts`.
 
-**Not built yet:** the metronome's playhead on Fretboard/Ascii, a sequential/step-through overview mode for Fretboard, real rhythm notation on Sheet, the design-system tokens applied to Ascii's own chrome (Fretboard's are done; Ascii's `<pre>` block already used them from the start, see `AsciiView.tsx`).
+**Not built yet:** the metronome's playhead on Fretboard (Ascii's was rejected in favor of the static-reference banner above), a sequential/step-through overview mode for Fretboard, real rhythm notation on Sheet, the design-system tokens applied to Ascii's own chrome (Fretboard's are done; Ascii's `<pre>` block already used them from the start, see `AsciiView.tsx`).
