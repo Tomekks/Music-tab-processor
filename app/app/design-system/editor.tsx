@@ -785,12 +785,8 @@ export function Editor({
                   className={cn(
                     "w-full rounded-md px-3 py-2 text-left text-sm font-medium",
                     FOCUS_RING,
-                    // NOTE: surface* utilities are unusable on this route.
-                    // --color-surface-* vars exist only under [data-theme] scopes,
-                    // and /design-system renders outside StudioShell's data-theme
-                    // div (base :root scope), where they resolve to transparent.
-                    // Foreground/background/state vars are bare :root tokens, so
-                    // they paint in every scope.
+                    // NOTE: this route is themed via ThemeProvider (on
+                    // documentElement) like every other route.
                     selectedView === item.key
                       ? "bg-foreground text-background"
                       : "text-foreground/80 hover:bg-[color-mix(in_srgb,var(--foreground)_var(--state-hover-opacity),transparent)]",
@@ -811,8 +807,9 @@ export function Editor({
               </p>
               <p className="mt-1 text-sm text-surface-text/70">
                 Note: this edits the brand&apos;s base values, and these previews render them as-is. The
-                running app renders the dark theme only, so base colors with dark overrides look different
-                there — theme-invariant tokens like <code>accent</code> update live everywhere.
+                running app follows the header&apos;s Light/Dark toggle — base values in light mode,
+                dark overrides in dark mode — and theme-invariant tokens like <code>accent</code> update
+                live everywhere.
               </p>
 
               {/* Seed generation and reset-all are root-brand actions: the route
