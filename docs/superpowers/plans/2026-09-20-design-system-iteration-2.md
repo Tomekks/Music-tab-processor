@@ -109,7 +109,7 @@ Tracks A and C can run interleaved with Track B; within a track, the order shown
 
 **Shared-file serialization across tracks:** `app/app/api/design-system/tokens/route.ts` and
 `app/packages/design-system/src/token-writes.mjs` are edited in a fixed order — `5b` has landed,
-`1b` is implemented and verified pending its checkpoint commit, next up: `8a`. (The order
+`1b` landed as `3f3b19d`, next up for those files: `8a`. (The order
 originally stated here was `1b → 5b → 8a`; it actually landed as `5b` then `1b`, which still
 avoided any collision, just not in the documented sequence — corrected here rather than left
 stale for `8a`'s benefit.) The `token-writes.mjs` additions are additive and low-risk, but
@@ -128,54 +128,8 @@ ESM). 23/23 tests passing. Archived spec: `docs/specs/_done/design-system-genera
 
 ### Task 1b: Wire the generator into brand authoring + editor
 
-Lets someone pick a neutral seed + accent seed and regenerate the brand's full color set, instead
-of hand-editing each of the ~18 color leaves individually.
-
-**Files:**
-- Modify: `app/app/api/design-system/tokens/route.ts` — new `action: "generate-from-seed"`
-  branch, `{ neutralSeed, accentSeed }` body, calls `generateNeutralRamp`/`generateAccentPair`
-  from Task 1, writes the results into `tokens.json`'s `semantic.color` and `dark.semantic.color`
-  exactly like `applyWrite` does today (reuse `stringifyTokens`, don't hand-roll JSON writing).
-- Modify: `app/packages/design-system/src/token-writes.mjs` — add
-  `applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed)`, following the existing
-  `applyWrite`/`applyResetAll` pattern (pure function, tempfile-round-trip tested).
-- Modify: `app/app/design-system/editor.tsx` — one new section at the top ("Generate from seed
-  colors"): two `ColorField`s (neutral, accent) + a `Button` that POSTs the new action. **`editor.tsx`
-  must not import `generate-ramp.mjs` (or anything that imports it) directly** — it only `POST`s
-  to the route and lets `route.ts`/`token-writes.mjs` call the generator server-side, same as
-  today's other actions. Confirmed nothing in the app imports `generate-ramp.mjs` yet, so its
-  vendored ~1MB (`src/vendor/material-color-utilities/`, Task 1) stays out of the client bundle by
-  construction — keep it that way; this task is the one place that constraint could get broken by
-  a convenient client-side "preview before saving" shortcut.
-- Test: `app/packages/design-system/src/token-writes.test.mjs` — add cases for
-  `applyGenerateFromSeed`.
-
-**Interfaces:**
-- Consumes: `generateNeutralRamp`, `generateAccentPair` (Task 1); `stringifyTokens`,
-  `getLeaf` (existing, `token-writes.mjs`).
-- Produces: `applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed): { ok: true, tree } |
-  { ok: false, error }` — same result shape as `applyWrite`, so `route.ts` handles it identically.
-
-- [ ] Write `token-writes.test.mjs` cases: valid seeds produce a tree with all 18 color leaves
-      populated and internally consistent (dark block only contains the theme-varying keys, same
-      invariant `build-tokens.mjs`'s `themeVaryingColorRef` already relies on).
-- [ ] Run, confirm failing.
-- [ ] Implement `applyGenerateFromSeed`.
-- [ ] Wire the route + editor UI.
-- [ ] Run `npm run verify`; manually generate from 2-3 seed pairs in the running editor, confirm
-      the live app (both `data-theme="light"` and `"dark"`, toggle via devtools until Task 4 ships
-      a real switcher) still reads correctly and passes the existing contrast test.
-- [ ] **Resolved decision: the checkpoint commit happens only after this manual eyeball check
-      confirms the generated colors read correctly — not immediately once `npm run verify`
-      passes.** Generated color values are exactly the kind of output that can pass an automated
-      contrast check while still looking visually wrong (hue drift, muddiness, a neutral ramp that
-      reads as tinted) — the eyeball check is the real gate here; `verify` is necessary but not
-      sufficient.
-- [ ] **Extend `contrast.test.mjs`'s hand-enumerated `PAIRS` array** if the generated ramp adds
-      any token leaf consumed in a pairing not already covered by `PAIRS` — a discipline check, not new tooling
-      (research finding: a hand-enumerated contrast test silently stops covering new pairs if
-      nobody remembers to extend it; make it a checklist item here rather than trusting memory).
-- [ ] Checkpoint commit.
+**Done**, committed as `3f3b19d` (seed section in the editor, `generate-from-seed` route action,
+`applyGenerateFromSeed` + 4 tests). Archived spec: `docs/specs/_done/design-system-generate-from-seed.md`.
 
 ---
 

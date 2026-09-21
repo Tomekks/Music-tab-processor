@@ -1,5 +1,7 @@
 # Task spec: Wire the seed-color generator into brand authoring + editor (Task 1b)
 
+**Landed:** committed as `3f3b19d` (+4 `applyGenerateFromSeed` cases, `npm run verify` green).
+
 Corresponds to Task 1b of `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md` (Track
 B, first task). Written against
 `app/packages/design-system/src/generate-ramp.mjs`,
