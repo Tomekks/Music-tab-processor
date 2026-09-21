@@ -271,11 +271,12 @@ schema extension — not this task's job). Archived spec:
 ancestors) + `route.ts` dispatch case. Archived spec:
 `docs/specs/_done/design-system-brand-reset-to-parent-5b.md`.
 
-**`[5c]`** (Track B, after Task 8b — see Tracks & sequencing)
-- [ ] Wire the editor UI's inherited/overridden distinction on top of Task 8's staged-edit model.
-- [ ] `npm run verify`; manually confirm inherited vs. overridden reads correctly, and that
-      staged-save (Task 8) still works correctly for a child-brand field.
-- [ ] Checkpoint commit.
+**`[5c]` — Done**, committed as `49cd7ad`/`08df1aa`. Full inherited-field editing with override
+creation on child brands (`ensureOwnLeaf`, `applyWrite`/`applyBatchWrite`'s `ownTree` param,
+`route.ts` child-brand guards, `isInheritedFromParent`). 98/98 unit tests, 15 passed/1 skipped
+(pre-existing fixme) on `app/e2e/design-system/inherited.spec.ts` + `staged-save.spec.ts` — both
+independently re-run and confirmed, not just reported. Archived spec:
+`docs/specs/_done/design-system-inherited-overridden-5c.md`.
 
 ---
 
