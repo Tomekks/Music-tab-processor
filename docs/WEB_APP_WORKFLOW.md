@@ -55,11 +55,30 @@ reading — an environment/runtime compatibility question ("does this package im
 Node ESM"), not a logic question ("is this merge function correct"). Scope a spike to answering
 that one question, then stop; it does not turn into building the feature.
 
-**Tier the template to the task's size and reversibility.** A single-file helper + its own test
-(a small, easily-revertible Bounded task) doesn't need all 9 sections below — Scope / File
-allowlist / Acceptance criteria is enough, roughly 60 lines. Reserve the full 9-section template
-for cross-file changes or anything hard to revert. Don't apply one template weight to every task
-regardless of size (observed cost: a 268-line spec for ~30 lines of real change).
+**Decide the tier first, as its own explicit line, before opening a single file to research.**
+"Tier: S/Full, because ___." Write it, then hold to it. If research later turns up a real risk,
+that risk becomes embedded risky-logic detail *inside* the tier already chosen — it does not
+silently upgrade the whole spec to Full. A genuine escalation is a visible, named decision
+("escalating S → Full because X"), not something that happens by drift mid-write. This exists
+because it kept not happening otherwise: the tiering rule below is easy to satisfy into Full by
+its letter ("cross-file") even for a small, fully-revertible change, once a real risk surfaces
+during research and gravity pulls toward "well, better be thorough."
+
+**What actually triggers Full, for this project specifically — not the generic rule.** This is a
+single-owner hobby project: no external users, no production data at stake for design-system/
+token/CSS/UI work. "Hard to revert" essentially never fires here — everything in that space is a
+`git checkout` on the task's own allowlisted files, plus a rebuild, away from fully undone. So:
+**Full tier is for a task that touches real user data (the song library, practice history, auth)
+or a deploy. Everything else defaults to S, regardless of file count**, unless the diff genuinely
+can't be undone by reverting the allowlisted files as a unit. A single-file helper + its own test
+doesn't need all 9 sections below — Scope / File allowlist / Acceptance criteria is enough,
+roughly 60 lines; multiple files touched for one small, fully-revertible UI/logic change (e.g.
+extracting a pure helper + wiring it into one client component) still defaults to S — trim the
+narrative sections, but embed any genuinely risky logic found during research exactly as Full
+tier would (§ below governs what never gets cut, regardless of tier). Don't apply one template
+weight to every task regardless of size (observed cost: a 268-line spec for ~30 lines of real
+change, and separately a 3-file, three-real-risk UI task that got the full 9-section treatment
+plus a full review round for what was, in the end, a ~40-line diff).
 
 **Trimming means cutting narration, never cutting verification of genuine correctness risk.**
 Cut: audit essays justifying a conclusion at paragraph length (a one-line scope statement is
@@ -133,13 +152,10 @@ not ask-first**, for a task's own local checkpoint — this is what a single-tas
 for; ask-first is reserved for push/PR/multi-task actions (per `AGENTS.md`'s actual scope) and for
 anything irreversible or spanning more than the one task just completed.
 
-Push and deploy timing is unchanged from `AGENTS.md`: asked once, at the very end, as the
-three-way push / push & deploy / skip question.
-
-**Log cost per commit.** One line alongside the checkpoint: tests added, review rounds, execution
-rounds this task took. Cheap to write, and it's the only way to know whether specs, reviews, or
-execution actually dominate cost on this plan — right now that's a feeling, and feelings get
-optimized superstitiously.
+Push and deploy timing follows `AGENTS.md`'s three-way question (push / push & deploy / skip),
+asked once at the end of the multi-task plan rather than per checkpoint — same exception as the
+commit rule above, same reason: asking per task on an 11-task plan is pure overhead for a hobby
+project with no other stakeholders.
 
 ## 5. Execution loop (Bounded and Architectural tasks)
 
@@ -159,7 +175,12 @@ optimized superstitiously.
    settle. It does not guess and proceed. You relay its questions back to Claude, Claude answers
    or amends the spec, you relay that back, and only then does it implement. Specs are still
    written to make this the exception, not the routine (per §3's template) — but when a genuine
-   ambiguity exists, asking is the required path, not a fallback.
+   ambiguity exists, asking is the required path, not a fallback. **A full pre-implementation
+   critique pass (the execution model reviewing the whole spec before touching code, distinct from
+   a genuine clarifying question) is a Full-tier step by default — skip it for S-tier specs.** The
+   round-trip it costs is exactly what tiering was meant to save; paying it on small tasks anyway
+   defeats the point. An S-tier spec still gets a genuine clarifying question if something's
+   actually blocking — it just doesn't get an unprompted full critique pass first.
 4. It implements, runs `npm run verify` itself, then **self-checks its own report against the
    actual diff and test output before sending it** (§3's Definition-of-done addition) — does the
    file list, the test count, and every concrete claim actually match what's on disk. Reports
