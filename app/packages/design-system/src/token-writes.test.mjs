@@ -410,3 +410,73 @@ test("applyBatchWrite rejects non-object edits elements with 400, not 500", () =
     assert.match(result.error, /index 0/);
   }
 });
+
+// Sparse child-brand own tree: only what this brand overrides.
+const ownTree = () => ({
+  semantic: {
+    color: {
+      surface: { $value: "#000000", $type: "color" },
+    },
+  },
+});
+
+test("applyWrite with ownTree creates a missing leaf with the merged $type", () => {
+  const mergedSnapshot = structuredClone(tokensTree());
+  const ownSnapshot = structuredClone(ownTree());
+  const result = applyWrite(
+    tokensTree(),
+    "component.button.primaryBackground",
+    "#123456",
+    ownTree(),
+  );
+  assert.equal(result.ok, true);
+  // Created in the OWN tree (which had no component branch at all) ...
+  assert.equal(
+    getLeaf(result.tokens, "component.button.primaryBackground").$value,
+    "#123456",
+  );
+  assert.equal(
+    getLeaf(result.tokens, "component.button.primaryBackground").$type,
+    "color",
+  );
+  // ... and neither input tree was mutated.
+  assert.deepEqual(tokensTree(), mergedSnapshot);
+  assert.deepEqual(ownTree(), ownSnapshot);
+});
+
+test("applyWrite with ownTree on an existing own path matches the 3-arg call", () => {
+  const viaOwn = applyWrite(
+    tokensTree(),
+    "semantic.color.surface",
+    "#123456",
+    ownTree(),
+  );
+  const direct = applyWrite(ownTree(), "semantic.color.surface", "#123456");
+  assert.equal(viaOwn.ok, true);
+  assert.deepEqual(viaOwn.tokens, direct.tokens);
+});
+
+test("applyBatchWrite with ownTree creates a brand target missing from own", () => {
+  const result = applyBatchWrite(
+    tokensTree(),
+    [
+      { path: "component.button.primaryBackground", value: "#123456", scope: "brand" },
+    ],
+    ownTree(),
+  );
+  assert.equal(result.ok, true);
+  // The alias target is created in the own tree ...
+  assert.equal(getLeaf(result.tokens, "semantic.color.accent").$value, "#123456");
+  assert.equal(getLeaf(result.tokens, "semantic.color.accent").$type, "color");
+  // ... while the originating path is left untouched there.
+  assert.equal(getLeaf(result.tokens, "component.button.primaryBackground"), null);
+});
+
+test("applyWrite with ownTree 400s on a malformed own tree instead of overwriting", () => {
+  const malformed = { semantic: "nope" };
+  const result = applyWrite(tokensTree(), "semantic.color.surface", "#123456", malformed);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /unexpected existing value/);
+  assert.deepEqual(malformed, { semantic: "nope" });
+});

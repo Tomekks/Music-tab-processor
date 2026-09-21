@@ -71,7 +71,18 @@ export async function POST(req: Request) {
         if (typeof path !== "string" || typeof value !== "string") {
           return badRequest('"write" requires "path" and "value" to be strings');
         }
-        const result = applyWrite(readJson("tokens.json"), path, value);
+        // Validate against the merged tree but write into the brand's own
+        // sparse file when it has a parent (same pattern "reset-to-parent"
+        // already uses) — an inherited path validates (it's in the merge) and
+        // is created as a real override; a root brand passes null and takes
+        // the unchanged branch.
+        const { tree: writeTree, parentBrandDir: writeParent } = resolveBrandTree(brandDir);
+        const result = applyWrite(
+          writeTree,
+          path,
+          value,
+          writeParent ? readJson("tokens.json") : null,
+        );
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
         }
@@ -83,7 +94,12 @@ export async function POST(req: Request) {
         if (!Array.isArray(edits)) {
           return badRequest('"batch-write" requires "edits" to be an array');
         }
-        const result = applyBatchWrite(readJson("tokens.json"), edits);
+        const { tree: batchTree, parentBrandDir: batchParent } = resolveBrandTree(brandDir);
+        const result = applyBatchWrite(
+          batchTree,
+          edits,
+          batchParent ? readJson("tokens.json") : null,
+        );
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
         }
@@ -95,6 +111,9 @@ export async function POST(req: Request) {
         if (typeof path !== "string") {
           return badRequest('"reset" requires "path" to be a string');
         }
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"reset" is not valid for a child brand — no defaults file exists');
+        }
         const result = applyReset(readJson("tokens.json"), readJson("tokens.default.json"), path);
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
@@ -104,6 +123,9 @@ export async function POST(req: Request) {
         return Response.json({ ok: true });
       }
       case "reset-all": {
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"reset-all" is not valid for a child brand — no defaults file exists');
+        }
         const result = applyResetAll(readJson("tokens.json"), readJson("tokens.default.json"));
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
@@ -131,6 +153,9 @@ export async function POST(req: Request) {
       case "set-as-default": {
         if (typeof path !== "string") {
           return badRequest('"set-as-default" requires "path" to be a string');
+        }
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"set-as-default" is not valid for a child brand — no defaults file exists');
         }
         const result = applySetAsDefault(
           readJson("tokens.json"),

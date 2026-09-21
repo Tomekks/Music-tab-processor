@@ -233,6 +233,9 @@ function FieldRow({
   onStage,
   onDiscardPending,
   onSetScope,
+  isChildBrand,
+  parentName,
+  onResetToParent,
 }: {
   d: FieldDescriptor;
   disabled: boolean;
@@ -246,6 +249,9 @@ function FieldRow({
   onStage?: (path: string, value: string) => void;
   onDiscardPending?: (path: string) => void;
   onSetScope?: (path: string, scope: "exception" | "brand") => void;
+  isChildBrand?: boolean;
+  parentName?: string | null;
+  onResetToParent?: (path: string) => void;
 }) {
   const range = rangeFor(d);
   // Staged mode is on iff onStage is passed (only from ComponentDetailView).
@@ -280,6 +286,11 @@ function FieldRow({
     <div className="flex items-start justify-between gap-3 py-2">
       <div className="min-w-0 flex-1">
         {control}
+        {isChildBrand && (
+          <p className={cn(CAPTION, "mt-1")}>
+            {d.isInheritedFromParent ? `Inherited from ${parentName ?? "parent"}` : "Overridden"}
+          </p>
+        )}
         {pending && d.isAlias && (
           <div className="mt-2">
             <SegmentedControl
@@ -299,20 +310,28 @@ function FieldRow({
           </p>
         )}
       </div>
-      {(d.isModified || pending) && (
+      {(d.isModified || pending || (isChildBrand && !d.isInheritedFromParent)) && (
         <div className="flex shrink-0 items-center gap-2 pt-1">
           <button
             type="button"
             disabled={disabled}
-            onClick={() => (pending ? onDiscardPending!(d.path) : onRevert(d.path))}
+            onClick={() => {
+              if (pending) return onDiscardPending!(d.path);
+              if (isChildBrand && !d.isInheritedFromParent) return onResetToParent!(d.path);
+              return onRevert(d.path);
+            }}
             aria-label={
-              pending ? `Discard staged change to ${d.label}` : `Revert ${d.label} to default`
+              pending
+                ? `Discard staged change to ${d.label}`
+                : isChildBrand && !d.isInheritedFromParent
+                  ? `Revert ${d.label} to parent`
+                  : `Revert ${d.label} to default`
             }
             className={MUTED_ACTION}
           >
             Revert
           </button>
-          {d.isModified && (
+          {d.isModified && !isChildBrand && (
             <button
               type="button"
               disabled={disabled}
@@ -383,6 +402,9 @@ function ComponentDetailView({
   onPromote,
   onDiscardPending,
   onSetScope,
+  isChildBrand,
+  parentName,
+  onResetToParent,
   error,
   feedback,
 }: {
@@ -397,6 +419,9 @@ function ComponentDetailView({
   onPromote: (path: string) => void;
   onDiscardPending: (path: string) => void;
   onSetScope: (path: string, scope: "exception" | "brand") => void;
+  isChildBrand: boolean;
+  parentName: string | null;
+  onResetToParent: (path: string) => void;
   error: string | null;
   feedback: string | null;
 }) {
@@ -419,6 +444,9 @@ function ComponentDetailView({
             pending={pendingEdits.get(d.path)}
             onDiscardPending={onDiscardPending}
             onSetScope={onSetScope}
+            isChildBrand={isChildBrand}
+            parentName={parentName}
+            onResetToParent={onResetToParent}
           />
         ))}
       </div>
@@ -432,7 +460,15 @@ function ComponentDetailView({
   );
 }
 
-export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
+export function Editor({
+  descriptors,
+  isChildBrand,
+  parentName,
+}: {
+  descriptors: FieldDescriptor[];
+  isChildBrand: boolean;
+  parentName: string | null;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -629,6 +665,22 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
     }
   }
 
+  async function runResetToParent(path: string) {
+    track(path);
+    setError(null);
+    setFeedback(null);
+    try {
+      const result = await postAction({ action: "reset-to-parent", path });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      router.refresh();
+    } finally {
+      untrack(path);
+    }
+  }
+
   async function runResetAll() {
     if (!resetArmed) {
       setResetArmed(true);
@@ -705,6 +757,9 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
               onCommitValue={runWrite}
               onRevert={runReset}
               onPromote={runPromote}
+              isChildBrand={isChildBrand}
+              parentName={parentName}
+              onResetToParent={runResetToParent}
             />
           ))}
         </div>
@@ -760,6 +815,12 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
                 there — theme-invariant tokens like <code>accent</code> update live everywhere.
               </p>
 
+              {/* Seed generation and reset-all are root-brand actions: the route
+                  rejects both for child brands (no seeding into a sparse tree,
+                  no defaults file to reset to), so hide them rather than offer
+                  buttons that can only fail. */}
+              {!isChildBrand && (
+              <>
               <section aria-label="Generate from seed colors" className="mt-6">
                 <h2 className="text-lg font-semibold">Generate from seed colors</h2>
                 <p className={cn(CAPTION, "mt-1")}>
@@ -803,6 +864,8 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
                   </p>
                 )}
               </div>
+              </>
+              )}
 
               {error && (
                 <p aria-live="polite" role="alert" className="mt-3 text-sm text-red-500">
@@ -854,6 +917,9 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
                   onPromote={runPromote}
                   onDiscardPending={discardPendingEdit}
                   onSetScope={setPendingScope}
+                  isChildBrand={isChildBrand}
+                  parentName={parentName}
+                  onResetToParent={runResetToParent}
                   error={error}
                   feedback={feedback}
                 />

@@ -159,13 +159,58 @@ export function validateWriteValue(leaf, value) {
 }
 
 /**
- * @param {object} tokensTree live tokens.json tree (not mutated)
+ * Ensure `path` exists as a leaf in `ownTree` (a SPARSE, already-cloned tree),
+ * creating intermediate objects and the leaf itself if missing — using
+ * `typeHint` ($type from the resolved/merged leaf) for the created leaf's
+ * $type, since a brand-new leaf has no $type of its own yet. A present-but-
+ * malformed value where an intermediate object or the leaf itself is expected
+ * is a malformed file, not a missing path: throw loudly (the caller maps it
+ * to 400) rather than silently overwriting unrelated data.
+ * @param {object} ownTree mutable — already a clone, this function mutates it
+ * @param {string} path
+ * @param {string} typeHint
+ * @returns {TokenLeaf} the (possibly newly-created) leaf, mutated by the caller
+ */
+function ensureOwnLeaf(ownTree, path, typeHint) {
+  const segments = path.split(".");
+  let node = ownTree;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const seg = segments[i];
+    if (node[seg] === undefined) {
+      node[seg] = {};
+    }
+    if (
+      node[seg] === null ||
+      typeof node[seg] !== "object" ||
+      Array.isArray(node[seg]) ||
+      "$value" in node[seg]
+    ) {
+      throw new Error(`unexpected existing value at "${segments.slice(0, i + 1).join(".")}" — expected an object`);
+    }
+    node = node[seg];
+  }
+  const last = segments.at(-1);
+  if (node[last] === undefined) {
+    node[last] = { $value: "", $type: typeHint };
+  } else if (node[last] === null || typeof node[last] !== "object" || !("$value" in node[last])) {
+    throw new Error(`unexpected existing value at "${path}" — expected a token leaf`);
+  }
+  return node[last];
+}
+
+/**
+ * @param {object} mergedTree live tokens.json tree (resolveBrandTree's `.tree`
+ *   for a child brand, or the root brand's own tokens.json directly) — the tree
+ *   paths are validated against; never mutated
  * @param {string} path
  * @param {string} value canonical string form, unit/suffix included
+ * @param {object | null} [ownTree] the child brand's own sparse tree to write
+ *   into — omitted/null for a root brand (then mergedTree is written, exactly
+ *   as before)
  * @returns {{ok: true, tokens: object} | ApplyErr}
  */
-export function applyWrite(tokensTree, path, value) {
-  const leaf = getLeaf(tokensTree, path);
+export function applyWrite(mergedTree, path, value, ownTree = null) {
+  const leaf = getLeaf(mergedTree, path);
   if (!leaf) {
     return { ok: false, status: 400, error: `"${path}" is not a known token path` };
   }
@@ -173,9 +218,19 @@ export function applyWrite(tokensTree, path, value) {
   if (!valid.ok) {
     return { ok: false, status: 400, error: valid.error };
   }
-  const tokens = structuredClone(tokensTree);
-  getLeaf(tokens, path).$value = value;
-  return { ok: true, tokens };
+  if (ownTree === null) {
+    // Root brand: byte-for-byte today's behavior, own === merged.
+    const tokens = structuredClone(mergedTree);
+    getLeaf(tokens, path).$value = value;
+    return { ok: true, tokens };
+  }
+  const own = structuredClone(ownTree);
+  try {
+    ensureOwnLeaf(own, path, leaf.$type).$value = value;
+  } catch (err) {
+    return { ok: false, status: 400, error: err instanceof Error ? err.message : String(err) };
+  }
+  return { ok: true, tokens: own };
 }
 
 /**
@@ -186,11 +241,16 @@ export function applyWrite(tokensTree, path, value) {
  * not an alias fails the whole batch (fail-closed — there's nothing to
  * cascade to). Two edits resolving to the same target path apply last-wins,
  * in array order — 8b's UI owns warning on that case, not this function.
- * @param {object} tokensTree live tokens.json tree (not mutated)
+ * @param {object} mergedTree live tokens.json tree (resolveBrandTree's `.tree`
+ *   for a child brand, or the root brand's own tokens.json directly) — every
+ *   edit is validated against this tree; never mutated
  * @param {{ path: string, value: string, scope: "exception" | "brand" }[]} edits
+ * @param {object | null} [ownTree] the child brand's own sparse tree to write
+ *   into — omitted/null for a root brand (then mergedTree is written, exactly
+ *   as before)
  * @returns {{ok: true, tokens: object} | ApplyErr}
  */
-export function applyBatchWrite(tokensTree, edits) {
+export function applyBatchWrite(mergedTree, edits, ownTree = null) {
   if (!Array.isArray(edits) || edits.length === 0) {
     return { ok: false, status: 400, error: '"edits" must be a non-empty array' };
   }
@@ -216,7 +276,7 @@ export function applyBatchWrite(tokensTree, edits) {
         error: `edit at index ${i}: "path" and "value" must be strings and "scope" must be "exception" or "brand"`,
       };
     }
-    const leaf = getLeaf(tokensTree, path);
+    const leaf = getLeaf(mergedTree, path);
     if (!leaf) {
       return { ok: false, status: 400, error: `edit at index ${i}: "${path}" is not a known token path` };
     }
@@ -231,7 +291,7 @@ export function applyBatchWrite(tokensTree, edits) {
         };
       }
       targetPath = leaf.$value.slice(1, -1);
-      targetLeaf = getLeaf(tokensTree, targetPath);
+      targetLeaf = getLeaf(mergedTree, targetPath);
       if (!targetLeaf) {
         return { ok: false, status: 400, error: `edit at index ${i}: "${targetPath}" is not a known token path` };
       }
@@ -240,13 +300,25 @@ export function applyBatchWrite(tokensTree, edits) {
     if (!valid.ok) {
       return { ok: false, status: 400, error: `edit at index ${i}: ${valid.error}` };
     }
-    collected.push({ targetPath, value });
+    collected.push({ targetPath, targetType: targetLeaf.$type, value });
   }
-  const tokens = structuredClone(tokensTree);
-  for (const { targetPath, value } of collected) {
-    getLeaf(tokens, targetPath).$value = value;
+  if (ownTree === null) {
+    // Root brand: byte-for-byte today's behavior, own === merged.
+    const tokens = structuredClone(mergedTree);
+    for (const { targetPath, value } of collected) {
+      getLeaf(tokens, targetPath).$value = value;
+    }
+    return { ok: true, tokens };
   }
-  return { ok: true, tokens };
+  const own = structuredClone(ownTree);
+  try {
+    for (const { targetPath, targetType, value } of collected) {
+      ensureOwnLeaf(own, targetPath, targetType).$value = value;
+    }
+  } catch (err) {
+    return { ok: false, status: 400, error: err instanceof Error ? err.message : String(err) };
+  }
+  return { ok: true, tokens: own };
 }
 
 /**
