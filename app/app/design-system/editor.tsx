@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, ColorField, Slider } from "@guitar-tabs/design-system";
 import { SECTIONS } from "../../packages/design-system/src/field-descriptors.mjs";
 import type { FieldDescriptor } from "../../packages/design-system/src/field-descriptors.mjs";
+import { cssVarNameForPath } from "../../packages/design-system/src/css-var-naming.mjs";
 import { cn } from "@/lib/cn";
 
 // Canonical wire form per $type — the client always sends the full string the
@@ -72,22 +73,30 @@ function ColorRow({
 }: {
   d: FieldDescriptor;
   disabled: boolean;
-  commit: (value: string) => void;
+  commit: (value: string) => Promise<boolean>;
 }) {
   const [text, setText] = useState(d.value);
-  const commitIfChanged = () => {
-    // Compare against the last committed prop, not a ref: a failed POST leaves
-    // d.value untouched, so tabbing back in retries instead of going silent.
-    if (text !== d.value) commit(text);
+  useEffect(() => {
+    const varName = cssVarNameForPath(d.path)!;
+    document.documentElement.style.setProperty(varName, text);
+    return () => {
+      document.documentElement.style.removeProperty(varName);
+    };
+  }, [text, d.path]);
+  const commitIfChanged = async () => {
+    if (text !== d.value) {
+      const ok = await commit(text);
+      if (!ok) setText(d.value);
+    }
   };
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        commitIfChanged();
+        void commitIfChanged();
       }}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) commitIfChanged();
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) void commitIfChanged();
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
@@ -111,11 +120,18 @@ function SliderRow({
   d: FieldDescriptor;
   range: Range;
   disabled: boolean;
-  commit: (value: string) => void;
+  commit: (value: string) => Promise<boolean>;
 }) {
   const initial = parseFloat(d.value);
   const [num, setNum] = useState(Number.isFinite(initial) ? initial : range.min);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const varName = cssVarNameForPath(d.path)!;
+    document.documentElement.style.setProperty(varName, `${num}${UNIT[d.$type]}`);
+    return () => {
+      document.documentElement.style.removeProperty(varName);
+    };
+  }, [num, d.path, d.$type]);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -134,7 +150,13 @@ function SliderRow({
         onChange={(n) => {
           setNum(n);
           if (timer.current) clearTimeout(timer.current);
-          timer.current = setTimeout(() => commit(`${n}${UNIT[d.$type]}`), 200);
+          timer.current = setTimeout(async () => {
+            const ok = await commit(`${n}${UNIT[d.$type]}`);
+            if (!ok) {
+              const reverted = parseFloat(d.value);
+              setNum(Number.isFinite(reverted) ? reverted : range.min);
+            }
+          }, 200);
         }}
       />
       {d.isAlias && <p className={cn(CAPTION, "mt-1")}>{d.rawValue}</p>}
@@ -151,7 +173,7 @@ function FieldRow({
 }: {
   d: FieldDescriptor;
   disabled: boolean;
-  onCommitValue: (path: string, value: string) => void;
+  onCommitValue: (path: string, value: string) => Promise<boolean>;
   onRevert: (path: string) => void;
   onPromote: (path: string) => void;
 }) {
@@ -246,7 +268,7 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
       return next;
     });
 
-  async function runWrite(path: string, value: string) {
+  async function runWrite(path: string, value: string): Promise<boolean> {
     track(path);
     setError(null);
     setFeedback(null);
@@ -254,9 +276,10 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
       const result = await postAction({ action: "write", path, value });
       if (!result.ok) {
         setError(result.error);
-        return;
+        return false;
       }
       router.refresh();
+      return true;
     } finally {
       untrack(path);
     }

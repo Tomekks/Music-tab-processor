@@ -14,13 +14,12 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
 import { deepMerge } from "./deep-merge.mjs";
+import { kebab, BARE_COLOR_KEYS, LEAF_NAME_MAP, colorPropName, cssVarNameForPath } from "./css-var-naming.mjs";
+
+export { cssVarNameForPath };
 
 const HERE = typeof import.meta.dirname === "string" ? import.meta.dirname : dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(HERE, "..");
-
-// Color keys that keep their bare CSS name instead of gaining a --color- prefix.
-// This is globals.css's real, provably-not-derivable inconsistency, not a guess.
-const BARE_COLOR_KEYS = new Set(["background", "foreground"]);
 
 // Color keys that never appear as bare :root properties — they only resolve
 // through [data-theme] scopes (and @theme inline aliases). Replicates the real
@@ -31,16 +30,6 @@ const THEME_ONLY_COLOR_KEYS = new Set([
   "surfaceActive",
   "surfaceActiveText",
 ]);
-
-// One-off leaf renames. Task 4: extend here, nowhere else.
-const LEAF_NAME_MAP = {
-  "radius.base": "radius",
-  "layout.sidebarWidth": "sidebar-width",
-};
-
-function kebab(name) {
-  return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-}
 
 // Every [pathArray, leaf] under obj whose leaf is a {$value, ...} token object.
 function collectLeaves(obj, prefix = []) {
@@ -54,53 +43,6 @@ function collectLeaves(obj, prefix = []) {
     }
   }
   return out;
-}
-
-function colorPropName(key) {
-  return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
-}
-
-/**
- * The exact CSS custom-property name generateCSS() emits for a given leaf
- * path (dot-joined, e.g. "semantic.color.accent", "component.button.
- * primaryBackground", "dark.semantic.color.surfaceHover"), or null for a
- * primitive.* leaf (alias-only by design, never emitted directly). Exported
- * (Task 6) so token-usage.test.mjs derives its expected var names from the
- * exact same logic generateCSS uses -- see that task's spec §0 for why a
- * second, independent copy of this naming logic was rejected.
- * @param {string} path
- * @returns {string | null}
- */
-export function cssVarNameForPath(path) {
-  const raw = path.startsWith("dark.") ? path.slice("dark.".length) : path;
-  const segments = raw.split(".");
-  const [top] = segments;
-  if (top === "primitive") return null;
-  if (top === "component") {
-    return `--${segments.map(kebab).join("-")}`;
-  }
-  // top === "semantic"
-  const section = segments[1];
-  const key = segments[segments.length - 1];
-  if (section === "color") {
-    return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
-  }
-  if (section === "state" || section === "focus") {
-    return `--${section}-${kebab(key)}`;
-  }
-  if (section === "radius") {
-    return `--${LEAF_NAME_MAP[`radius.${key}`] ?? `radius-${kebab(key)}`}`;
-  }
-  if (section === "space") {
-    return `--space-${key}`;
-  }
-  if (section === "layout") {
-    return `--${LEAF_NAME_MAP[`layout.${key}`] ?? kebab(key)}`;
-  }
-  if (section === "typography") {
-    return `--font-${kebab(key)}`;
-  }
-  return null;
 }
 
 // Task 4 §0(a): a component.* leaf whose $value is a direct single reference
