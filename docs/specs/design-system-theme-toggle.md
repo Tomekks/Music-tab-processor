@@ -8,10 +8,11 @@ lines), `app/app/layout.tsx` (32 lines), `app/app/design-system/page.tsx`, and
 
 ## 0. User story
 
-You open the app. It's always dark, regardless of your OS preference. With this task, a toggle in
-the header switches light/dark, persists across reloads, defaults to your system preference on
-first visit, and themes every route — including `/design-system`, which never renders the header
-at all.
+You open the app. It's always dark, regardless of your OS preference. With this task, the header
+shows "Light mode" and "Dark mode" side by side — the active one visually distinct — so you can
+see which you're in and switch to the other with one click, no separate menu to open. Your choice
+persists across reloads, defaults to your system preference on first visit, and themes every
+route — including `/design-system`, which never renders the header at all.
 
 ## 1. Context
 
@@ -112,24 +113,49 @@ only `AppHeader`'s toggle changes it, but every route reads the same DOM attribu
 
 ### `app/app/_components/ThemeToggle.tsx` (new)
 
+**Both values shown together, not one button naming the other state** (per direct instruction —
+you see "Light mode" and "Dark mode" side by side, the active one visually distinct, click either
+directly). Plain HTML/Tailwind, not the design-system package's `SegmentedControl` — checked, the
+app (outside the `/design-system` route itself) has never imported that package's React
+components, only its generated CSS tokens; pulling in a component-library dependency for a
+two-label toggle is a bigger step than this task needs, and the spec's own non-goals already rule
+out a new dependency:
+
 ```tsx
 "use client";
 import { useTheme } from "./ThemeProvider";
 
 export function ThemeToggle() {
   const { mode, toggle } = useTheme();
+  const ACTIVE = "font-semibold text-foreground";
+  const INACTIVE = "text-foreground/50 hover:text-foreground";
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      aria-label={`Switch to ${mode === "dark" ? "light" : "dark"} mode`}
-      className="text-sm text-foreground/70 hover:text-foreground"
-    >
-      {mode === "dark" ? "Light mode" : "Dark mode"}
-    </button>
+    <div className="flex items-center gap-1.5 text-sm">
+      <button
+        type="button"
+        onClick={() => mode !== "light" && toggle()}
+        aria-current={mode === "light" ? "true" : undefined}
+        className={mode === "light" ? ACTIVE : INACTIVE}
+      >
+        Light mode
+      </button>
+      <span className="text-foreground/30" aria-hidden>/</span>
+      <button
+        type="button"
+        onClick={() => mode !== "dark" && toggle()}
+        aria-current={mode === "dark" ? "true" : undefined}
+        className={mode === "dark" ? ACTIVE : INACTIVE}
+      >
+        Dark mode
+      </button>
+    </div>
   );
 }
 ```
+
+`toggle()` is still the same binary flip from `useThemeMode` (§2 above, unchanged) — each button
+just guards against calling it when it'd be a no-op (clicking the already-active label does
+nothing, not an accidental double-flip).
 
 ### `AppHeader.tsx`
 
