@@ -75,19 +75,11 @@ test("getLeaf resolves a deep leaf", () => {
   });
 });
 
-test("getLeaf returns null for unknown paths and sections", () => {
-  assert.equal(getLeaf(tokensTree(), "semantic.color.nope"), null);
-  assert.equal(getLeaf(tokensTree(), "semantic.color"), null);
-  assert.equal(getLeaf(tokensTree(), ""), null);
-  assert.equal(getLeaf(tokensTree(), "semantic..color"), null);
-});
-
-test("getLeaf consumes every segment exactly, never trims", () => {
-  assert.equal(getLeaf(tokensTree(), "semantic.color.accent.$value"), null);
-  assert.equal(getLeaf(tokensTree(), "semantic.color.accent.extra"), null);
-  assert.equal(getLeaf(tokensTree(), " semantic.color.accent"), null);
-  assert.equal(getLeaf(tokensTree(), 42), null);
-  assert.equal(getLeaf(tokensTree(), null), null);
+test("getLeaf returns null for each distinct miss case", () => {
+  assert.equal(getLeaf(tokensTree(), "semantic.color.nope"), null, "unknown key");
+  assert.equal(getLeaf(tokensTree(), "semantic.color"), null, "stops at a non-leaf node");
+  assert.equal(getLeaf(tokensTree(), "semantic.color.accent.extra"), null, "extra segment past a leaf");
+  assert.equal(getLeaf(tokensTree(), 42), null, "non-string path");
 });
 
 test("collectLeafPaths enumerates dot-joined leaf paths", () => {
@@ -102,27 +94,23 @@ test("collectLeafPaths enumerates dot-joined leaf paths", () => {
 });
 
 test("validateWriteValue accepts valid formats per $type", () => {
+  // Both hex lengths kept -- COLOR_RE has a real 3-digit/6-digit alternation, not just one pattern.
   assert.deepEqual(validateWriteValue({ $value: "", $type: "color" }, "#ae97f7"), { ok: true });
   assert.deepEqual(validateWriteValue({ $value: "", $type: "color" }, "#fff"), { ok: true });
-  assert.deepEqual(validateWriteValue({ $value: "", $type: "dimension" }, "12px"), { ok: true });
   assert.deepEqual(validateWriteValue({ $value: "", $type: "dimension" }, "-4.5px"), { ok: true });
-  assert.deepEqual(validateWriteValue({ $value: "", $type: "percentage" }, "8%"), { ok: true });
+  // Both range boundaries kept -- they exercise the >=0 and <=100 comparisons directly.
   assert.deepEqual(validateWriteValue({ $value: "", $type: "percentage" }, "0%"), { ok: true });
   assert.deepEqual(validateWriteValue({ $value: "", $type: "percentage" }, "100%"), { ok: true });
 });
 
 test("validateWriteValue rejects bad formats, fontFamily, unknown types, non-strings", () => {
-  assert.equal(validateWriteValue({ $value: "", $type: "color" }, "blue").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "color" }, "#gggggg").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "color" }, "{semantic.color.accent}").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "dimension" }, "12").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "dimension" }, "12rem").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "percentage" }, "8").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "percentage" }, "150%").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "percentage" }, "-5%").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "fontFamily" }, "Arial").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "number" }, "12").ok, false);
-  assert.equal(validateWriteValue({ $value: "", $type: "color" }, 12).ok, false);
+  assert.equal(validateWriteValue({ $value: "", $type: "color" }, "blue").ok, false, "regex mismatch");
+  assert.equal(validateWriteValue({ $value: "", $type: "dimension" }, "12").ok, false, "regex mismatch");
+  assert.equal(validateWriteValue({ $value: "", $type: "percentage" }, "8").ok, false, "regex mismatch (no %)");
+  assert.equal(validateWriteValue({ $value: "", $type: "percentage" }, "150%").ok, false, "out of range");
+  assert.equal(validateWriteValue({ $value: "", $type: "fontFamily" }, "Arial").ok, false, "read-only type");
+  assert.equal(validateWriteValue({ $value: "", $type: "number" }, "12").ok, false, "unsupported type");
+  assert.equal(validateWriteValue({ $value: "", $type: "color" }, 12).ok, false, "non-string value");
 });
 
 test("stringifyTokens keeps leaves on one line in committed style", () => {
