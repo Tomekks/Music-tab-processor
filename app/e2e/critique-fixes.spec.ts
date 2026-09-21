@@ -304,3 +304,217 @@ test.describe("spec 2 loop pill", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 });
+
+// Spec 5 blocks (appended; earlier specs' blocks above untouched).
+
+test.describe("spec 5 sidebar", () => {
+  test("desktop: geometry identical after the shell move", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Exactly one visible navigation landmark.
+    await expect(page.locator("nav:visible")).toHaveCount(1);
+    const nav = page.getByRole("navigation", { name: "Songs" });
+
+    // Token contract, both halves: root resolves 240px AND the nav
+    // declaration uses the var (a literal 240px passes only the first).
+    const rootVar = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--sidebar-width").trim(),
+    );
+    expect(rootVar).toBe("240px");
+    expect(await nav.getAttribute("style")).toContain("var(--sidebar-width, 240px)");
+    expect(await nav.evaluate((el) => getComputedStyle(el).width)).toBe("240px");
+
+    // Geometry: nav at x=0, top at header bottom, full content-row height.
+    // First <header> in DOM order is the app shell header (the detail pane
+    // renders its own song header further down).
+    const headerBox = await page.locator("header").first().boundingBox();
+    const navBox = await nav.boundingBox();
+    expect(headerBox, "header visible").not.toBeNull();
+    expect(navBox, "nav visible").not.toBeNull();
+    expect(navBox!.x).toBe(0);
+    expect(navBox!.y).toBeCloseTo(headerBox!.y + headerBox!.height, 0);
+    expect(navBox!.width).toBe(240);
+    const rowHeight = await nav.evaluate((el) => el.parentElement!.getBoundingClientRect().height);
+    expect(navBox!.height).toBeCloseTo(rowHeight, 0);
+
+    // Detail fills the rest; toggle hidden; no overflow.
+    const detailBox = await page.getByTestId("detail-column").boundingBox();
+    expect(detailBox, "detail visible").not.toBeNull();
+    expect(detailBox!.x).toBe(240);
+    expect(detailBox!.x + detailBox!.width).toBe(DESKTOP_VIEWPORT.width);
+    await expect(page.getByRole("button", { name: "Songs", exact: true })).toBeHidden();
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(DESKTOP_VIEWPORT.width);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("mobile: toggle opens drawer with nested nav, list scrolls internally", async ({ page }) => {
+    // Short viewport (DB holds 3 songs; quoted as evidence): the ~280px of
+    // drawer content must overflow the 240px-tall panel.
+    await page.setViewportSize({ width: 390, height: 240 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Desktop nav hidden; detail full width.
+    await expect(page.locator("nav:visible")).toHaveCount(0);
+    const detailBox = await page.getByTestId("detail-column").boundingBox();
+    expect(detailBox, "detail visible").not.toBeNull();
+    expect(detailBox!.x).toBe(0);
+    expect(detailBox!.x + detailBox!.width).toBe(390);
+
+    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    await expect(toggle).toBeVisible();
+    const toggleBox = await toggle.boundingBox();
+    expect(toggleBox!.height).toBeGreaterThanOrEqual(44);
+    expect(toggleBox!.width).toBeGreaterThanOrEqual(44);
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toHaveAttribute("aria-controls", "songs-drawer");
+
+    // Closed dialog: hidden with zero tab stops.
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    await expect(dialog).toBeHidden();
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("navigation", { name: "Songs" })).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Close songs" })).toBeVisible();
+
+    const scroller = dialog.locator("div.overflow-y-auto");
+    const overflow = await scroller.evaluate((el) => ({ sh: el.scrollHeight, ch: el.clientHeight }));
+    expect(overflow.sh, `3-song list overflows (scrollHeight=${overflow.sh}, clientHeight=${overflow.ch})`).toBeGreaterThan(
+      overflow.ch,
+    );
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("drawer focus: contained cycling, Escape and backdrop return focus", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    const closeBtn = dialog.getByRole("button", { name: "Close songs" });
+
+    // Open moves focus to the selected link (whichever the DB selects).
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('a[aria-current="true"]')).toBeFocused();
+
+    // Native containment both directions, starting from Close.
+    await closeBtn.focus();
+    await page.keyboard.press("Tab");
+    await expect(dialog.locator("a").first()).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(closeBtn).toBeFocused();
+    // Sweep: focus never lands on an interactive outside element. Verified
+    // live (twice, with and without tabindex on the dialog): Chromium's
+    // native modal wrap transiently touches BODY on the forward wrap, then
+    // re-enters -- so the assertion is "never outside", not "never body",
+    // plus proof the cycle returns inside.
+    const stops = new Set<string>();
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press("Tab");
+      const where = await page.evaluate(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body) return "body";
+        const d = document.getElementById("songs-drawer");
+        return d && d.contains(a) ? "inside" : `outside:${a.tagName}`;
+      });
+      expect(where.startsWith("outside"), `tab ${i} never lands outside`).toBe(false);
+      stops.add(where);
+    }
+    expect(stops.has("inside"), "focus returns into the dialog").toBe(true);
+
+    // Escape closes with focus back on the toggle.
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(toggle).toBeFocused();
+
+    // Backdrop click (right of the 288px panel) does the same.
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+    await page.mouse.click(360, 350);
+    await expect(dialog).toBeHidden();
+    await expect(toggle).toBeFocused();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("drawer with no links focuses the container", async ({ page }) => {
+    // Simulated-empty variant: emptying Turso would be a DB write (out of
+    // scope), so links are removed from the DOM to exercise the genuine
+    // no-link focus path in production code.
+    await page.setViewportSize({ width: 390, height: 700 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+
+    await page.evaluate(() => {
+      document.querySelectorAll("#songs-drawer a").forEach((a) => a.remove());
+    });
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeFocused();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("resize preserves drawer state both directions", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+
+    // To desktop: mobile tree inaccessible, desktop nav back.
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await expect(dialog).toBeHidden();
+    await expect(toggle).toBeHidden();
+    await expect(page.locator("nav:visible")).toHaveCount(1);
+
+    // Back to mobile: prior open state intact, native behavior verified.
+    await page.setViewportSize({ width: 390, height: 700 });
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(toggle).toBeFocused();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("selecting a song keeps the drawer open", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+
+    // All link assertions scoped via the dialog, never global selectors.
+    await dialog.getByRole("link", { name: /Friction/ }).click();
+    await expect(page).toHaveURL(/\?song=/);
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("link", { name: /Friction/ })).toHaveAttribute("aria-current", "true");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});
