@@ -745,6 +745,155 @@ test.describe("spec 7 orientation", () => {
   });
 });
 
+// Spec 8a blocks (appended; earlier specs' blocks above untouched).
+
+/** The tempo input -- same locator spec 1+4's native-arrows block uses. */
+function tempoInput(page: Page) {
+  return page.locator("label", { hasText: "Tempo" }).locator("input");
+}
+
+test.describe("spec 8a tempo honesty", () => {
+  test("clearing the field mid-playback never freezes playback", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    await page.getByRole("tab", { name: "Sheet" }).click();
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+    await expect(sheetPlayhead(page)).toBeAttached();
+
+    const tempo = tempoInput(page);
+    await tempo.fill("");
+    await expect(tempo, "clearing is draft-only, no commit").toHaveValue("");
+
+    // Baseline read AFTER the clear: both advances below are then proven to
+    // happen with the field empty (an advance before the clear proves nothing).
+    const x0 = await sheetPlayhead(page).getAttribute("x1");
+    const x1 = await waitPlayheadAdvance(page, x0);
+    expect(await tempo.inputValue(), "still empty at advance 1").toBe("");
+    const x2 = await waitPlayheadAdvance(page, x1);
+    expect(await tempo.inputValue(), "still empty at advance 2").toBe("");
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("Enter commits a valid tempo, keeps focus, commits exactly once", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    const tempo = tempoInput(page);
+    await tempo.fill("90");
+    await tempo.press("Enter");
+    await expect(tempo, "Enter keeps focus in the field").toBeFocused();
+    await expect(tempo).toHaveValue("90");
+
+    // Exactly one commit: the blur that follows Enter must not re-commit or
+    // revert the value (the suppression guard is what makes this hold).
+    await page.keyboard.press("Tab");
+    await expect(tempo, "no revert flicker after the Enter-then-blur").toHaveValue("90");
+
+    const x0 = await sheetPlayhead(page).getAttribute("x1");
+    await waitPlayheadAdvance(page, x0);
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("blur commits a valid tempo", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const tempo = tempoInput(page);
+    await tempo.fill("100");
+    await page.keyboard.press("Tab");
+    await expect(tempo).toHaveValue("100");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("positive out-of-range values clamp, each in a fresh setup", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const tempo = tempoInput(page);
+    const defaultBpm = await tempo.inputValue();
+
+    await tempo.fill("5");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("20");
+
+    // Fresh setup for the second clamp -- tempo changes playback speed, so a
+    // reload (resetting to the song's own tempo) instead of chaining values.
+    await page.reload();
+    await gotoReady(page, "/");
+    await expect(tempo).toHaveValue(defaultBpm);
+    await tempo.fill("999");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("300");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("clear-and-blur reverts to the established tempo; playback uninterrupted", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const tempo = tempoInput(page);
+    await tempo.fill("90");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("90");
+
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    await tempo.fill("");
+    await expect(tempo).toHaveValue("");
+    await page.keyboard.press("Tab");
+    await expect(tempo, "invalid input reverts, never commits").toHaveValue("90");
+
+    // Nothing was committed on the invalid path: the clock still runs at 90.
+    const xAfter = await sheetPlayhead(page).getAttribute("x1");
+    await waitPlayheadAdvance(page, xAfter);
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("spinner ArrowUp commits the stepped value on blur", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const tempo = tempoInput(page);
+    await tempo.fill("90");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("90");
+
+    await tempo.focus();
+    await page.keyboard.press("ArrowUp");
+    await expect(tempo, "stepper edits the draft").toHaveValue("91");
+    await page.keyboard.press("Tab");
+    await expect(tempo).toHaveValue("91");
+
+    // Prove the commit (not just draft text): the revert target is the
+    // committed bpm, so clear + blur must return the field to 91.
+    await tempo.fill("");
+    await page.keyboard.press("Tab");
+    await expect(tempo, "committed bpm is 91 (revert target)").toHaveValue("91");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});
+
 // Spec 8b blocks (appended; earlier specs' blocks above untouched).
 //
 // Live-data note: the suite runs against the real song list, so which art
