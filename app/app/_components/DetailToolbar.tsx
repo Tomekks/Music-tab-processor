@@ -17,6 +17,10 @@ import { TRANSPORT_SHORTCUTS, type ShortcutAction, type ShortcutDef } from "@/li
 // row 2 (flex-wrap -- the loop pill never overlaps the diagrams); the hint line +
 // opt-out switch below always render. Shortcut state lives in StudioTabs (props),
 // never here -- this file only renders what the map says.
+//
+// Pill (spec 2): always mounted in exactly one of two states -- set-range
+// clear-button or empty-state status text -- so the toolbar never reflows
+// between loop states. Wash styling belongs to spec 3; position/behavior here.
 
 // Fail-fast lookup: TRANSPORT_SHORTCUTS pins these actions, so a missing entry
 // is a code bug, not a render-time option.
@@ -55,9 +59,10 @@ export function DetailToolbar({
   // inside FretboardDiagram itself) -- see SheetDiagram.tsx and DiagramViewport.tsx.
   highOnTop: boolean;
   onToggleHighOnTop: () => void;
-  // Also Sheet-only (2026-09-10 drag-to-select, see SheetDiagram.RULES.md rule
-  // 10). Rendered here, before the Reset button, instead of inside the Sheet
-  // view itself -- see SheetDiagram.tsx's showOrientationToggle prop doc comment.
+  // Loop range creation is Sheet-only (2026-09-10 drag-to-select, see
+  // SheetDiagram.RULES.md rule 10) -- but the pill itself renders on every
+  // tab (spec 2): a set loop must stay visible and clearable outside Sheet,
+  // and the empty state doubles as loop-feature discovery.
   loopRange: LoopRange | null;
   onClearLoop: () => void;
   // Spec 1+4: owned by StudioTabs (opt-out state + persistence), rendered here.
@@ -69,7 +74,7 @@ export function DetailToolbar({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
         <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
         <div className="flex items-center gap-3 flex-wrap">
-          {active === "Sheet" && loopRange && (
+          {loopRange ? (
             <button
               onClick={onClearLoop}
               className="text-xs font-mono px-2 py-1 rounded-full"
@@ -78,6 +83,10 @@ export function DetailToolbar({
             >
               Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
             </button>
+          ) : (
+            <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60">
+              Loop: not selected
+            </span>
           )}
           <MetronomeControls
             bpm={metronome.bpm}
