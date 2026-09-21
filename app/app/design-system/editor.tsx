@@ -48,7 +48,9 @@ const CAPTION = "text-xs text-surface-text/60";
 
 type ApiResult = { ok: true; reset?: string[] } | { ok: false; error: string };
 
-async function postAction(body: Record<string, string>): Promise<ApiResult> {
+type PendingEdit = { value: string; scope: "exception" | "brand" };
+
+async function postAction(body: Record<string, unknown>): Promise<ApiResult> {
   let res: Response;
   try {
     res = await fetch("/api/design-system/tokens", {
@@ -68,27 +70,32 @@ async function postAction(body: Record<string, string>): Promise<ApiResult> {
 
 function ColorRow({
   d,
+  baseline,
   disabled,
   commit,
+  onCancelPending,
 }: {
   d: FieldDescriptor;
+  baseline: string;
   disabled: boolean;
   commit: (value: string) => Promise<boolean>;
+  onCancelPending?: () => void;
 }) {
-  const [text, setText] = useState(d.value);
+  const [text, setText] = useState(baseline);
   // State (not a ref): the render-adjust below reads this during render, and
   // refs are unreadable there per lint. Re-renders on focus change are trivial.
   const [isFocused, setIsFocused] = useState(false);
-  // Adopt externally-changed values (revert/reset-all/generate) without
-  // remounting — never while the user is typing in this row, or keystrokes
-  // would be clobbered. Adjusted during render (not in an effect): setState
-  // in an effect trips the cascading-render lint rule, and this file already
-  // uses the render-adjust pattern for the reset-all disarm below. Rows are
-  // keyed on path only (see FieldRow call sites).
-  const [syncedSource, setSyncedSource] = useState(d.value);
-  if (syncedSource !== d.value && !isFocused) {
-    setSyncedSource(d.value);
-    setText(d.value);
+  // Adopt externally-changed values (revert/reset-all/generate — or, in staged
+  // mode, stage/discard moving `baseline`) without remounting — never while the
+  // user is typing in this row, or keystrokes would be clobbered. Adjusted
+  // during render (not in an effect): setState in an effect trips the
+  // cascading-render lint rule, and this file already uses the render-adjust
+  // pattern for the reset-all disarm below. Rows are keyed on path only
+  // (see FieldRow call sites).
+  const [syncedSource, setSyncedSource] = useState(baseline);
+  if (syncedSource !== baseline && !isFocused) {
+    setSyncedSource(baseline);
+    setText(baseline);
   }
   useEffect(() => {
     const varName = cssVarNameForPath(d.path)!;
@@ -98,9 +105,9 @@ function ColorRow({
     };
   }, [text, d.path]);
   const commitIfChanged = async () => {
-    if (text !== d.value) {
+    if (text !== baseline) {
       const ok = await commit(text);
-      if (!ok) setText(d.value);
+      if (!ok) setText(baseline);
     }
   };
   return (
@@ -118,7 +125,11 @@ function ColorRow({
       }}
       onKeyDown={(e) => {
         if (e.key === "Escape") {
-          setText(d.value);
+          if (onCancelPending) {
+            onCancelPending();
+          } else {
+            setText(baseline);
+          }
           (e.target as HTMLElement).blur();
         }
       }}
@@ -131,28 +142,31 @@ function ColorRow({
 
 function SliderRow({
   d,
+  baseline,
   range,
   disabled,
   commit,
 }: {
   d: FieldDescriptor;
+  baseline: string;
   range: Range;
   disabled: boolean;
   commit: (value: string) => Promise<boolean>;
 }) {
-  const initial = parseFloat(d.value);
+  const initial = parseFloat(baseline);
   const [num, setNum] = useState(Number.isFinite(initial) ? initial : range.min);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // State (not a ref): read during render by the adjust below. Re-renders on
   // drag start/end are trivial.
   const [isDragging, setIsDragging] = useState(false);
-  // Adopt externally-changed values (revert/reset-all) without remounting —
-  // never mid-drag, or the thumb would snap back under the pointer. Adjusted
-  // during render (not in an effect) — same pattern and reason as ColorRow.
-  const [syncedSource, setSyncedSource] = useState(d.value);
-  if (syncedSource !== d.value && !isDragging) {
-    setSyncedSource(d.value);
-    const v = parseFloat(d.value);
+  // Adopt externally-changed values (revert/reset-all — or, in staged mode,
+  // stage/discard moving `baseline`) without remounting — never mid-drag, or
+  // the thumb would snap back under the pointer. Adjusted during render (not
+  // in an effect) — same pattern and reason as ColorRow.
+  const [syncedSource, setSyncedSource] = useState(baseline);
+  if (syncedSource !== baseline && !isDragging) {
+    setSyncedSource(baseline);
+    const v = parseFloat(baseline);
     if (Number.isFinite(v)) setNum(v);
   }
   useEffect(() => {
@@ -197,7 +211,7 @@ function SliderRow({
           timer.current = setTimeout(async () => {
             const ok = await commit(`${n}${UNIT[d.$type]}`);
             if (!ok) {
-              const reverted = parseFloat(d.value);
+              const reverted = parseFloat(baseline);
               setNum(Number.isFinite(reverted) ? reverted : range.min);
             }
           }, 200);
@@ -215,24 +229,44 @@ function FieldRow({
   onCommitValue,
   onRevert,
   onPromote,
+  pending,
+  onStage,
+  onDiscardPending,
+  onSetScope,
 }: {
   d: FieldDescriptor;
   disabled: boolean;
   onCommitValue: (path: string, value: string) => Promise<boolean>;
   onRevert: (path: string) => void;
   onPromote: (path: string) => void;
+  pending?: PendingEdit;
+  onStage?: (path: string, value: string) => void;
+  onDiscardPending?: (path: string) => void;
+  onSetScope?: (path: string, scope: "exception" | "brand") => void;
 }) {
   const range = rangeFor(d);
+  // Staged mode is on iff onStage is passed (only from ComponentDetailView).
+  // baseline is the row's "current committed value": the staged value when one
+  // exists, the disk value otherwise. All-value call sites pass no staged
+  // props, so baseline is d.value there — byte-for-byte today's behavior.
+  const baseline = pending?.value ?? d.value;
+  const commit = onStage
+    ? (value: string) => {
+        onStage!(d.path, value);
+        return Promise.resolve(true);
+      }
+    : (value: string) => onCommitValue(d.path, value);
   const control =
     d.$type === "color" ? (
-      <ColorRow d={d} disabled={disabled} commit={(value) => onCommitValue(d.path, value)} />
-    ) : range !== null ? (
-      <SliderRow
+      <ColorRow
         d={d}
-        range={range}
+        baseline={baseline}
         disabled={disabled}
-        commit={(value) => onCommitValue(d.path, value)}
+        commit={commit}
+        onCancelPending={pending ? () => onDiscardPending!(d.path) : undefined}
       />
+    ) : range !== null ? (
+      <SliderRow d={d} baseline={baseline} range={range} disabled={disabled} commit={commit} />
     ) : (
       <div>
         <p className="text-sm font-medium">{d.label}</p>
@@ -241,27 +275,51 @@ function FieldRow({
     );
   return (
     <div className="flex items-start justify-between gap-3 py-2">
-      <div className="min-w-0 flex-1">{control}</div>
-      {d.isModified && (
+      <div className="min-w-0 flex-1">
+        {control}
+        {pending && d.isAlias && (
+          <div className="mt-2">
+            <SegmentedControl
+              options={[
+                { value: "exception", label: "Exception" },
+                { value: "brand", label: "Brand-wide" },
+              ]}
+              value={pending.scope}
+              onChange={(v) => onSetScope!(d.path, v as "exception" | "brand")}
+              ariaLabel={`Scope for ${d.label}`}
+            />
+          </div>
+        )}
+        {pending && !d.isAlias && (
+          <p className={cn(CAPTION, "mt-1")}>
+            (exception only — not linked to a shared token)
+          </p>
+        )}
+      </div>
+      {(d.isModified || pending) && (
         <div className="flex shrink-0 items-center gap-2 pt-1">
           <button
             type="button"
             disabled={disabled}
-            onClick={() => onRevert(d.path)}
-            aria-label={`Revert ${d.label} to default`}
+            onClick={() => (pending ? onDiscardPending!(d.path) : onRevert(d.path))}
+            aria-label={
+              pending ? `Discard staged change to ${d.label}` : `Revert ${d.label} to default`
+            }
             className={MUTED_ACTION}
           >
             Revert
           </button>
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => onPromote(d.path)}
-            aria-label={`Set ${d.label} as new default`}
-            className={MUTED_ACTION}
-          >
-            Set as default
-          </button>
+          {d.isModified && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onPromote(d.path)}
+              aria-label={`Set ${d.label} as new default`}
+              className={MUTED_ACTION}
+            >
+              Set as default
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -315,9 +373,14 @@ function ComponentDetailView({
   heading,
   fields,
   disabledPaths,
+  saveBusy,
+  pendingEdits,
   onCommitValue,
+  onStage,
   onRevert,
   onPromote,
+  onDiscardPending,
+  onSetScope,
   error,
   feedback,
 }: {
@@ -325,9 +388,14 @@ function ComponentDetailView({
   heading: string;
   fields: FieldDescriptor[];
   disabledPaths: Set<string>;
+  saveBusy: boolean;
+  pendingEdits: Map<string, PendingEdit>;
   onCommitValue: (path: string, value: string) => Promise<boolean>;
+  onStage: (path: string, value: string) => void;
   onRevert: (path: string) => void;
   onPromote: (path: string) => void;
+  onDiscardPending: (path: string) => void;
+  onSetScope: (path: string, scope: "exception" | "brand") => void;
   error: string | null;
   feedback: string | null;
 }) {
@@ -343,10 +411,14 @@ function ComponentDetailView({
           <FieldRow
             key={d.path}
             d={d}
-            disabled={disabledPaths.has(d.path)}
+            disabled={disabledPaths.has(d.path) || saveBusy}
             onCommitValue={onCommitValue}
+            onStage={onStage}
             onRevert={onRevert}
             onPromote={onPromote}
+            pending={pendingEdits.get(d.path)}
+            onDiscardPending={onDiscardPending}
+            onSetScope={onSetScope}
           />
         ))}
       </div>
@@ -369,6 +441,9 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
   const [resetBusy, setResetBusy] = useState(false);
   const [generateBusy, setGenerateBusy] = useState(false);
   const [selectedView, setSelectedView] = useState<"all" | ComponentSectionKey>("all");
+  const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
+  const [bulkScope, setBulkScope] = useState<"exception" | "brand">("exception");
+  const [saveBusy, setSaveBusy] = useState(false);
   // Seed inputs aren't token fields (no path/revert/modified-state) — they
   // start from the live resolved values and are never written back as tokens.
   const [neutralSeed, setNeutralSeed] = useState(
@@ -452,6 +527,105 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
       router.refresh();
     } finally {
       untrack(path);
+    }
+  }
+
+  function stageEdit(path: string, value: string) {
+    setPendingEdits((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(path);
+      // A non-alias field can never go "brand" (nothing to cascade to) — force
+      // "exception" here, don't just trust bulkScope. Without this, setting the
+      // bulk default to Brand-wide and then editing any literal (non-alias)
+      // field stages a "brand" edit that 8a's all-or-nothing batch-write would
+      // reject at Save time, failing the whole batch over one field that
+      // should never have had the option.
+      const d = descriptors.find((x) => x.path === path);
+      const scope = existing?.scope ?? (d?.isAlias ? bulkScope : "exception");
+      next.set(path, { value, scope });
+      return next;
+    });
+  }
+
+  function setPendingScope(path: string, scope: "exception" | "brand") {
+    setPendingEdits((prev) => {
+      const existing = prev.get(path);
+      if (!existing) return prev;
+      const next = new Map(prev);
+      next.set(path, { ...existing, scope });
+      return next;
+    });
+  }
+
+  function discardPendingEdit(path: string) {
+    setPendingEdits((prev) => {
+      if (!prev.has(path)) return prev;
+      const next = new Map(prev);
+      next.delete(path);
+      return next;
+    });
+  }
+
+  function discardAllPending() {
+    setPendingEdits(new Map());
+  }
+
+  function sectionHeading(sectionKey: string): string {
+    return SECTIONS.find((s) => s.key === sectionKey)?.heading ?? sectionKey;
+  }
+
+  // F6: two pending "brand" edits resolving to the same alias target would
+  // silently last-wins server-side (8a spec, F6) — block Save instead. Labels
+  // are qualified with their section heading because two colliding fields are
+  // very plausibly named the same thing in different components.
+  function pendingCollisions(): { targetPath: string; labels: string[] }[] {
+    const byTarget = new Map<string, string[]>();
+    for (const [path, edit] of pendingEdits) {
+      if (edit.scope !== "brand") continue;
+      const d = descriptors.find((x) => x.path === path);
+      if (!d?.isAlias) continue; // defensive; UI never offers "brand" for a non-alias field
+      const target = d.rawValue.slice(1, -1);
+      const label = `${d.label} (${sectionHeading(d.section)})`;
+      byTarget.set(target, [...(byTarget.get(target) ?? []), label]);
+    }
+    return [...byTarget.entries()]
+      .filter(([, labels]) => labels.length > 1)
+      .map(([targetPath, labels]) => ({ targetPath, labels }));
+  }
+
+  async function runSaveAll() {
+    if (pendingEdits.size === 0) return;
+    const collisions = pendingCollisions();
+    if (collisions.length > 0) {
+      setError(
+        collisions
+          .map(
+            (c) =>
+              `${c.labels.join(" and ")} both target ${c.targetPath} as brand-wide edits — change one to Exception scope first.`,
+          )
+          .join(" "),
+      );
+      return;
+    }
+    setSaveBusy(true);
+    setError(null);
+    setFeedback(null);
+    try {
+      const edits = [...pendingEdits.entries()].map(([path, e]) => ({
+        path,
+        value: e.value,
+        scope: e.scope,
+      }));
+      const result = await postAction({ action: "batch-write", edits });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPendingEdits(new Map());
+      setFeedback(`Saved ${edits.length} field${edits.length === 1 ? "" : "s"}`);
+      router.refresh();
+    } finally {
+      setSaveBusy(false);
     }
   }
 
@@ -648,17 +822,43 @@ export function Editor({ descriptors }: { descriptors: FieldDescriptor[] }) {
             </>
           ) : (
             selectedSection && (
-              <ComponentDetailView
-                sectionKey={selectedView}
-                heading={selectedSection.heading}
-                fields={fieldsFor(selectedView)}
-                disabledPaths={inFlight}
-                onCommitValue={runWrite}
-                onRevert={runReset}
-                onPromote={runPromote}
-                error={error}
-                feedback={feedback}
-              />
+              <>
+                {pendingEdits.size > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-border p-3">
+                    <SegmentedControl
+                      options={[
+                        { value: "exception", label: "Exception" },
+                        { value: "brand", label: "Brand-wide" },
+                      ]}
+                      value={bulkScope}
+                      onChange={(v) => setBulkScope(v as "exception" | "brand")}
+                      ariaLabel="Default scope for new edits"
+                    />
+                    <Button variant="primary" disabled={saveBusy} onClick={runSaveAll}>
+                      {saveBusy ? "Saving…" : `Save changes (${pendingEdits.size})`}
+                    </Button>
+                    <Button variant="secondary" disabled={saveBusy} onClick={discardAllPending}>
+                      Discard changes
+                    </Button>
+                  </div>
+                )}
+                <ComponentDetailView
+                  sectionKey={selectedView}
+                  heading={selectedSection.heading}
+                  fields={fieldsFor(selectedView)}
+                  disabledPaths={inFlight}
+                  saveBusy={saveBusy}
+                  pendingEdits={pendingEdits}
+                  onCommitValue={runWrite}
+                  onStage={stageEdit}
+                  onRevert={runReset}
+                  onPromote={runPromote}
+                  onDiscardPending={discardPendingEdit}
+                  onSetScope={setPendingScope}
+                  error={error}
+                  feedback={feedback}
+                />
+              </>
             )
           )}
         </div>
