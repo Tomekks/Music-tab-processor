@@ -67,8 +67,15 @@ export function SongDetailPane({
           ) : (
             <h1 className="text-3xl font-bold leading-tight">{song.title}</h1>
           )}
+          {/* Metadata split (spec 8c): three labelled items, bullet separators
+              decorative (aria-hidden) -- visible text byte-identical to the
+              former single run-on string. */}
           <p className="text-sm text-foreground/60">
-            {formatSongLength(song.notes)} &bull; tuning {tuningLabel} &bull; {Math.round(song.tempoBpm)} bpm
+            <span aria-label="Song length">{formatSongLength(song.notes)}</span>
+            <span aria-hidden="true"> &bull; </span>
+            <span aria-label="Tuning">tuning {tuningLabel}</span>
+            <span aria-hidden="true"> &bull; </span>
+            <span aria-label="Tempo">{Math.round(song.tempoBpm)} bpm</span>
           </p>
         </div>
       </header>

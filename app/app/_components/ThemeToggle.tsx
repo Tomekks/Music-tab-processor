@@ -6,13 +6,16 @@ export function ThemeToggle() {
   const { mode, toggle } = useTheme();
   const ACTIVE = "font-semibold text-foreground";
   const INACTIVE = "text-foreground/50 hover:text-foreground";
+  // 44px touch targets (spec 8c): size utilities only -- text, aria-current,
+  // separator and row arrangement unchanged.
+  const TARGET = "inline-flex items-center justify-center min-h-[44px] min-w-[44px]";
   return (
     <div className="flex items-center gap-1.5 text-sm">
       <button
         type="button"
         onClick={() => mode !== "light" && toggle()}
         aria-current={mode === "light" ? "true" : undefined}
-        className={mode === "light" ? ACTIVE : INACTIVE}
+        className={`${TARGET} ${mode === "light" ? ACTIVE : INACTIVE}`}
       >
         Light mode
       </button>
@@ -23,7 +26,7 @@ export function ThemeToggle() {
         type="button"
         onClick={() => mode !== "dark" && toggle()}
         aria-current={mode === "dark" ? "true" : undefined}
-        className={mode === "dark" ? ACTIVE : INACTIVE}
+        className={`${TARGET} ${mode === "dark" ? ACTIVE : INACTIVE}`}
       >
         Dark mode
       </button>

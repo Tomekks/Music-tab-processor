@@ -84,14 +84,14 @@ export function MetronomeControls({
         onClick={onReset}
         aria-label="Reset to start"
         title="Reset to start"
-        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold"
+        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold"
         style={{
           background: "var(--component-button-secondary-background)",
           color: "var(--component-button-secondary-text)",
           borderColor: "var(--component-button-secondary-border)",
         }}
       >
-        ⏮
+        ⏮ Reset
       </button>
 
       <button

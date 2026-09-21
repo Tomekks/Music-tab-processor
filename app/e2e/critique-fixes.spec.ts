@@ -990,3 +990,94 @@ test.describe("spec 8b empty states", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 });
+
+// Spec 8c blocks (appended; earlier specs' blocks above untouched).
+//
+// Self-contained: theme is normalized through the UI (a Light mode click)
+// inside the block that measures it -- no localStorage assumptions, no test
+// order dependence, no spec-8b selectors or fixtures.
+
+test.describe("spec 8c control polish", () => {
+  test("theme toggles meet the 44px target, state semantics unchanged", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Normalize via the UI regardless of prior state.
+    const light = page.getByRole("button", { name: "Light mode" });
+    const dark = page.getByRole("button", { name: "Dark mode" });
+    await light.click();
+    await expect(light).toHaveAttribute("aria-current", "true");
+
+    for (const [label, target] of [["Light mode", light], ["Dark mode", dark]] as const) {
+      const box = await target.boundingBox();
+      expect(box, `${label} box exists`).not.toBeNull();
+      expect(box!.width, `${label} width`).toBeGreaterThanOrEqual(44);
+      expect(box!.height, `${label} height`).toBeGreaterThanOrEqual(44);
+    }
+
+    // Behavior unchanged: clicking Dark still flips the theme + aria-current.
+    await dark.click();
+    await expect(dark).toHaveAttribute("aria-current", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("Reset shows its label, meets the target, and still rewinds to the start", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Accessible name stays "Reset to start" (aria-label overrides content):
+    // locate by that name, assert the new visible content.
+    const reset = page.getByRole("button", { name: "Reset to start" });
+    await expect(reset).toHaveText("⏮ Reset");
+    const box = await reset.boundingBox();
+    expect(box, "Reset box exists").not.toBeNull();
+    expect(box!.width, "Reset width").toBeGreaterThanOrEqual(44);
+    expect(box!.height, "Reset height").toBeGreaterThanOrEqual(44);
+
+    // Existing behavior only. First reset (after one proven advance) lands
+    // definitively on the song's first step and pauses; stepping forward
+    // free-roam then proves the second reset returns to that same step.
+    await page.getByRole("button", { name: "Play" }).click();
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+    await expect(sheetPlayhead(page)).toBeAttached();
+    const xAdvanced = await waitPlayheadAdvance(page, await sheetPlayhead(page).getAttribute("x1"));
+    await reset.click();
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+    await expect.poll(async () => await sheetPlayhead(page).getAttribute("x1")).not.toBe(xAdvanced);
+    const xStep0 = await sheetPlayhead(page).getAttribute("x1");
+    expect(xStep0, "playhead readable at song start").not.toBeNull();
+
+    // Free-roam one step forward (ArrowRight pauses first), then reset back.
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(async () => await sheetPlayhead(page).getAttribute("x1")).not.toBe(xStep0);
+    await reset.click();
+    await expect.poll(async () => await sheetPlayhead(page).getAttribute("x1")).toBe(xStep0);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("header metadata is three labelled spans with unchanged visible text", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const meta = page.locator('header p:has(span[aria-label="Song length"])');
+    await expect(meta).toHaveCount(1);
+
+    // Exactly three labelled items, two decorative separators (aria-hidden).
+    await expect(meta.locator("span[aria-label]")).toHaveCount(3);
+    await expect(meta.locator('span[aria-hidden="true"]')).toHaveCount(2);
+    await expect(meta.locator('span[aria-label="Song length"]')).toHaveText(/^\d+:\d{2}$/);
+    await expect(meta.locator('span[aria-label="Tuning"]')).toHaveText(/^tuning [A-Ga-g]+(-[A-Ga-g]+)*$/);
+    await expect(meta.locator('span[aria-label="Tempo"]')).toHaveText(/^\d+ bpm$/);
+
+    // Visible text: the former single run-on pattern, unchanged.
+    await expect(meta).toHaveText(/^\d+:\d{2} • tuning [A-Ga-g]+(-[A-Ga-g]+)* • \d+ bpm$/);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});
