@@ -107,8 +107,7 @@ reopening that decision, not just adding a display mode.
   feature, not a rendering tweak.
 - **Lyrics** — not in the data model at all (no lyrics field anywhere in the
   pipeline or `tab.schema.json`); out of scope until/unless that changes.
-- **Playhead on Fretboard/Ascii too.** `useMetronome`'s `currentStep` is
-  generic and already usable by any view; only `SheetDiagram` consumes it
-  today. Extending the same highlight to the other two tabs is a real,
-  fairly cheap follow-up, not attempted here since the metronome controls
-  themselves are currently only shown on the Sheet tab.
+- **Playhead on Ascii.** `useMetronome`'s `currentStep` is generic and the
+  Fretboard now consumes it as an active segment ring. Ascii remains static:
+  `renderTab.ts` returns one opaque string, so its playback explanation lives
+  in `AsciiView`'s status banner instead of a per-step highlight.

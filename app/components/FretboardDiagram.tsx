@@ -20,9 +20,10 @@
 // DiagramViewport) can opt out of the redundant card/label exactly like it
 // already does for Sheet.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getStepWindow } from "@/lib/fretboard";
 import { getDisplayRow, groupNotesByStep, pitchClassName, stringThickness, type TimedNote } from "@/lib/tabNotation";
+import type { LoopRange } from "@/hooks/useMetronome";
 import { StringOrientationToggle } from "./StringOrientationToggle";
 
 const FRET_WIDTH = 26;
@@ -38,12 +39,18 @@ function Segment({
   tuning,
   highOnTop,
   active,
+  looped,
+  stepIndex,
+  segmentRef,
 }: {
   notes: { string: number; fret: number }[];
   nStrings: number;
   tuning: number[];
   highOnTop: boolean;
   active: boolean;
+  looped: boolean;
+  stepIndex: number;
+  segmentRef: (node: HTMLDivElement | null) => void;
 }) {
   // Uniform fixed-width window -- see FretboardDiagram.RULES.md rule 1.
   const { start, end } = getStepWindow(notes.map((n) => n.fret));
@@ -60,7 +67,17 @@ function Segment({
   const xForFret = (fret: number) => nutX + (fret - start + 0.5) * FRET_WIDTH;
 
   return (
-    <div className={`shrink-0 rounded-md bg-background p-1.5 ${active ? "border-2 border-foreground" : "border border-border"}`}>
+    <div
+      ref={segmentRef}
+      aria-current={active ? "true" : undefined}
+      data-step-index={stepIndex}
+      data-looped={looped ? "true" : undefined}
+      className="shrink-0 rounded-md border border-border bg-background p-1.5"
+      style={{
+        background: looped ? "color-mix(in srgb, var(--color-loop-range) var(--state-loop-range-opacity), transparent)" : undefined,
+        boxShadow: active ? "inset 0 0 0 2px var(--color-playback-active)" : undefined,
+      }}
+    >
       <svg width={width} height={height}>
         {/* nut, only when this window actually touches the top of the neck */}
         {start === 1 && (
@@ -200,6 +217,7 @@ export function FretboardDiagram({
   notes,
   tuning,
   currentStep = null,
+  loopRange = null,
   bordered = true,
   showHeader = true,
   showCaption = true,
@@ -209,6 +227,7 @@ export function FretboardDiagram({
   notes: TimedNote[];
   tuning: number[];
   currentStep?: number | null;
+  loopRange?: LoopRange | null;
   // Same meaning and same defaults as SheetDiagram's identical props -- see
   // its doc comment. DiagramViewport opts out of all three for both views.
   bordered?: boolean;
@@ -229,6 +248,12 @@ export function FretboardDiagram({
 
   const nStrings = tuning.length;
   const steps = groupNotesByStep(notes);
+  const segmentRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  useEffect(() => {
+    if (currentStep === null || currentStep < 0 || currentStep >= steps.length) return;
+    segmentRefs.current[currentStep]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [currentStep, steps.length]);
 
   return (
     <div
@@ -256,7 +281,19 @@ export function FretboardDiagram({
           chunk()/computeStepsPerLine() measurement. */}
       <div className="flex flex-wrap gap-2">
         {steps.map((step, i) => (
-          <Segment key={i} notes={step} nStrings={nStrings} tuning={tuning} highOnTop={highOnTop} active={i === currentStep} />
+          <Segment
+            key={i}
+            notes={step}
+            nStrings={nStrings}
+            tuning={tuning}
+            highOnTop={highOnTop}
+            active={i === currentStep}
+            looped={loopRange !== null && i >= loopRange.start && i <= loopRange.end}
+            stepIndex={i}
+            segmentRef={(node) => {
+              segmentRefs.current[i] = node;
+            }}
+          />
         ))}
       </div>
 

@@ -111,6 +111,63 @@ test.describe("spec 1+4 toolbar layout", () => {
   });
 });
 
+// Spec 3 blocks (written for the playback-state contract; Playwright execution
+// was explicitly skipped for this closeout and is reported as unverified).
+
+test.describe("spec 3 Fretboard playback state", () => {
+  test("active playback segment exposes one current step without changing segment sizes", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 320 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    await page.getByRole("button", { name: "Play" }).click();
+    await page.getByRole("tab", { name: "Fretboard" }).click();
+    const segments = page.locator("[data-step-index]");
+    await expect(segments.first()).toBeVisible();
+    const before = await segments.evaluateAll((nodes) => nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    }));
+
+    await expect.poll(async () => await page.locator('[aria-current="true"]').count(), { timeout: 30000 }).toBe(1);
+    const after = await segments.evaluateAll((nodes) => nodes.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    }));
+    expect(after).toHaveLength(before.length);
+    after.forEach((box, i) => {
+      expect(box.width).toBe(before[i].width);
+      expect(box.height).toBe(before[i].height);
+    });
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("looped Fretboard segments use the loop token wash", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    await page.getByRole("tab", { name: "Sheet" }).click();
+    await dragLoopOnFirstStaff(page);
+    await page.getByRole("tab", { name: "Fretboard" }).click();
+    const looped = page.locator('[data-looped="true"]');
+    await expect(looped.first()).toBeVisible();
+
+    const expected = await page.evaluate(() => {
+      const probe = document.createElement("div");
+      probe.style.background = "color-mix(in srgb, var(--color-loop-range) var(--state-loop-range-opacity), transparent)";
+      document.body.appendChild(probe);
+      const value = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return value;
+    });
+    expect(await looped.first().evaluate((node) => getComputedStyle(node).backgroundColor)).toBe(expected);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});
+
 test.describe("spec 1+4 shortcut scoping", () => {
   test("sidebar keys keep native behavior, transport unchanged", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);

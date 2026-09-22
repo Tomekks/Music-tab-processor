@@ -57,6 +57,7 @@ export function DiagramViewport({
           notes={notes}
           tuning={tuning}
           currentStep={currentStep}
+          loopRange={loopRange}
           bordered={false}
           showHeader={false}
           showCaption={false}

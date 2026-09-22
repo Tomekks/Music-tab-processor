@@ -74,6 +74,13 @@ separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
     is suppressed, when uncontrolled (retired `SongTabs` card, which passes
     neither) local `useState(true)` renders exactly as today.
 
+11. **Playback state uses independent visual layers.** Every segment keeps the
+    same `border` width; the active segment adds an inset
+    `--color-playback-active` ring and `aria-current="true"`, while a segment
+    inside the inclusive `loopRange` gets the tokenized loop wash. Both can be
+    present at once. The active segment scrolls into the nearest visible area
+    when playback selects it, including when the view mounts mid-playback.
+
 ## Ideas raised, not yet decided
 
 - Should there be a small fixed pixel padding around a 1-cell segment so the
