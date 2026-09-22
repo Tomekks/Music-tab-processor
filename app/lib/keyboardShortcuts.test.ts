@@ -67,7 +67,7 @@ const baseKey = (overrides = {}) => ({
   altKey: false,
   ...overrides,
 });
-const enabledInScope = { shortcutsEnabled: true, inScope: true };
+const enabledInScope = { inScope: true };
 
 test("shouldHandleKey: any meta/ctrl/alt modifier vetoes", () => {
   for (const mod of ["metaKey", "ctrlKey", "altKey"] as const) {
@@ -85,10 +85,9 @@ test("shouldHandleKey: editable targets keep native behavior", () => {
   );
 });
 
-test("shouldHandleKey: disabled or out-of-scope never handles", () => {
+test("shouldHandleKey: out-of-scope never handles", () => {
   const arrow = baseKey({ key: "ArrowLeft" });
-  assert.equal(shouldHandleKey(arrow, { tagName: "BUTTON" }, { shortcutsEnabled: false, inScope: true }), false);
-  assert.equal(shouldHandleKey(arrow, { tagName: "BUTTON" }, { shortcutsEnabled: true, inScope: false }), false);
+  assert.equal(shouldHandleKey(arrow, { tagName: "BUTTON" }, { inScope: false }), false);
 });
 
 test("shouldHandleKey: handles mapped keys, shiftKey ignored, others rejected", () => {

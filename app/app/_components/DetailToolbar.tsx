@@ -1,42 +1,39 @@
-import type { ReactNode } from "react";
 import { TabSelector } from "./TabSelector";
-import { MetronomeControls } from "@/components/MetronomeControls";
+import { ResetButton, PlayButton, TempoField, MidiButton } from "@/components/MetronomeControls";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import type { LoopRange } from "@/hooks/useMetronome";
 import type { Tab } from "./StudioTabs";
 import { TABS } from "./StudioTabs";
-import { TRANSPORT_SHORTCUTS, type ShortcutAction, type ShortcutDef } from "@/lib/keyboardShortcuts";
 
-// TabSelector and MetronomeControls are permanent siblings here, both always mounted
-// regardless of which tab is active -- this is the fix for the bug SongTabs.tsx has
-// today, where the metronome only mounts inside the Sheet tab's branch. Neither
-// component knows the other exists; this file is the only place that puts them next
-// to each other.
+// TabSelector and the transport rows are permanent siblings here, both always
+// mounted regardless of which tab is active -- this is the fix for the bug
+// SongTabs.tsx has today, where the metronome only mounts inside the Sheet
+// tab's branch. Neither component knows the other exists; this file is the
+// only place that puts them next to each other.
 //
-// Row 2 (spec 1+4): under md, TabSelector owns row 1 and the transport group wraps
-// row 2 (flex-wrap -- the loop pill never overlaps the diagrams); the hint line +
-// opt-out switch below always render. Shortcut state lives in StudioTabs (props),
-// never here -- this file only renders what the map says.
+// Row 1 (spec 1+4): under md, TabSelector owns row 1 and the transport group
+// wraps below it (flex-wrap -- the loop pill never overlaps the diagrams).
+// Shortcut state is gone (spec 8d removed the opt-out -- always on, hint
+// lives in the header now); this file only renders controls.
+//
+// TransportLayout (spec 8d, option A; responsive contract amended by the
+// 8d-wrap fix-spec): explicit row wrappers composing the MetronomeControls
+// pieces. Source order is the existing wide-screen order. Tabs always own
+// the first row; at xl and above the wrappers collapse via xl:contents into
+// one complete transport row below the tabs (pill, Reset, Play, Tempo, MIDI,
+// Flip -- the shared-row-with-tabs plan proved ~38px short even after the
+// final permitted xl spacing adjustment, measured slack 0.0px, so the
+// fix-spec relaxed 1280 to this two-row layout rather than shaving further).
+// Below xl the wrapper boxes remain full-width flex items with explicit
+// order: primary -> flip -> midi -> tempo (never emergent flex-wrap order --
+// parent-level order alone cannot place last-in-DOM Flip first-below while
+// all controls share one flex item). All controls keep shrink-0 content
+// widths; Flip (whose own file is out of the allowlist) is protected by its
+// full-width wrapper box.
 //
 // Pill (spec 2): always mounted in exactly one of two states -- set-range
 // clear-button or empty-state status text -- so the toolbar never reflows
 // between loop states. Wash styling belongs to spec 3; position/behavior here.
-
-// Fail-fast lookup: TRANSPORT_SHORTCUTS pins these actions, so a missing entry
-// is a code bug, not a render-time option.
-function shortcutFor(action: ShortcutAction): ShortcutDef {
-  const found = TRANSPORT_SHORTCUTS.find((s) => s.action === action);
-  if (!found) throw new Error(`TRANSPORT_SHORTCUTS is missing action: ${action}`);
-  return found;
-}
-
-const togglePlayHint = shortcutFor("toggle-play");
-const stepBackHint = shortcutFor("step-back");
-const stepForwardHint = shortcutFor("step-forward");
-
-function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="rounded border border-border bg-surface px-1 font-mono">{children}</kbd>;
-}
 export function DetailToolbar({
   active,
   onSelect,
@@ -47,8 +44,6 @@ export function DetailToolbar({
   onToggleHighOnTop,
   loopRange,
   onClearLoop,
-  shortcutsEnabled,
-  onToggleShortcuts,
 }: {
   active: Tab;
   onSelect: (tab: Tab) => void;
@@ -68,85 +63,72 @@ export function DetailToolbar({
   // and the empty state doubles as loop-feature discovery.
   loopRange: LoopRange | null;
   onClearLoop: () => void;
-  // Spec 1+4: owned by StudioTabs (opt-out state + persistence), rendered here.
-  shortcutsEnabled: boolean;
-  onToggleShortcuts: () => void;
 }) {
   return (
     <div className="border-t border-border px-8 py-4 flex flex-col gap-3">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+      <div className="flex flex-col gap-3 md:gap-6">
         <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
-        <div className="flex items-center gap-3 flex-wrap">
-          {loopRange ? (
-            <button
-              onClick={onClearLoop}
-              className="text-xs font-mono px-2 py-1 rounded-full"
-              style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
-              title="Clear loop"
-            >
-              Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
-            </button>
-          ) : (
-            <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60">
-              Loop: not selected
-            </span>
-          )}
-          <MetronomeControls
-            bpm={metronome.bpm}
-            onBpmChange={metronome.setBpm}
-            isPlaying={metronome.isPlaying}
-            onToggle={metronome.toggle}
-            onReset={metronome.reset}
-            soundEnabled={soundEnabled}
-            onToggleSound={onToggleSound}
-          />
-          <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
-        </div>
+        <TransportLayout
+          loopRange={loopRange}
+          onClearLoop={onClearLoop}
+          metronome={metronome}
+          soundEnabled={soundEnabled}
+          onToggleSound={onToggleSound}
+          highOnTop={highOnTop}
+          onToggleHighOnTop={onToggleHighOnTop}
+        />
       </div>
-      <div className="flex items-center gap-3 text-xs text-foreground/60">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={shortcutsEnabled}
-          onClick={onToggleShortcuts}
-          className="inline-flex items-center gap-2"
-        >
-          <span
-            aria-hidden="true"
-            className="inline-flex h-5 w-9 items-center rounded-full border px-0.5"
-            style={{
-              justifyContent: shortcutsEnabled ? "flex-end" : "flex-start",
-              background: shortcutsEnabled
-                ? "var(--component-button-primary-background)"
-                : "var(--component-button-secondary-background)",
-              borderColor: shortcutsEnabled
-                ? "var(--component-button-primary-background)"
-                : "var(--component-button-secondary-border)",
-            }}
+    </div>
+  );
+}
+
+function TransportLayout({
+  loopRange,
+  onClearLoop,
+  metronome,
+  soundEnabled,
+  onToggleSound,
+  highOnTop,
+  onToggleHighOnTop,
+}: {
+  loopRange: LoopRange | null;
+  onClearLoop: () => void;
+  metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void; reset: () => void };
+  soundEnabled: boolean;
+  onToggleSound: () => void;
+  highOnTop: boolean;
+  onToggleHighOnTop: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-3 basis-full xl:basis-auto order-1 xl:contents shrink-0">
+        {loopRange ? (
+          <button
+            onClick={onClearLoop}
+            className="text-xs font-mono px-2 py-1 rounded-full shrink-0"
+            style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
+            title="Clear loop"
           >
-            <span
-              className="h-3.5 w-3.5 rounded-full"
-              style={{
-                background: shortcutsEnabled
-                  ? "var(--component-button-primary-text)"
-                  : "var(--component-button-secondary-text)",
-              }}
-            />
-          </span>
-          Keyboard shortcuts
-        </button>
-        {shortcutsEnabled ? (
-          <p>
-            <Kbd>{togglePlayHint.kbd[0]}</Kbd> {togglePlayHint.label} <span aria-hidden="true">·</span>{" "}
-            <Kbd>
-              {stepBackHint.kbd[0]}/{stepForwardHint.kbd[0]}
-            </Kbd>{" "}
-            {stepBackHint.label}
-          </p>
+            Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
+          </button>
         ) : (
-          <p>Keyboard shortcuts off</p>
+          <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0">
+            Loop: not selected
+          </span>
         )}
+        <ResetButton onReset={metronome.reset} />
+        <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
       </div>
+      <div className="basis-full xl:basis-auto order-4 xl:contents shrink-0">
+        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+      </div>
+      <div className="basis-full xl:basis-auto order-3 xl:contents shrink-0">
+        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+      </div>
+      <div className="basis-full xl:basis-auto order-2 xl:contents shrink-0">
+        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      </div>
+
     </div>
   );
 }

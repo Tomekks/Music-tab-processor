@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { SongListRow, type SongListItem } from "./SongListRow";
+import { useDrawer, DRAWER_ID } from "./DrawerContext";
 
 // Sidebar-owned chrome (spec 5): the desktop <nav> below carries the exact
 // classes and width the app shell used to own (moved verbatim -- desktop
-// geometry must not move a pixel), hidden below md where the drawer toggle
-// takes over. The shell renders this component as a pure slot and never
-// names sidebar geometry again.
+// geometry must not move a pixel), hidden below md where the drawer's open
+// control takes over. The shell renders this component as a pure slot and
+// never names sidebar geometry again. Drawer open state + the toggle ref now
+// come from DrawerContext (spec 8d): the only open control is the header
+// island, so this file renders no toggle of its own.
 //
 // Mobile drawer: a native <dialog> owns focus containment -- no custom trap,
 // no resize listeners, no scroll-lock code (the shell's overflow-hidden
 // already prevents page scroll; the drawer list scrolls internally).
 // Selecting a song keeps the drawer open (links navigate, state untouched).
 
-const DRAWER_ID = "songs-drawer";
-
 export function SongListSidebar({ songs, selectedId }: { songs: SongListItem[]; selectedId: string | null }) {
-  const [open, setOpen] = useState(false);
+  const { open, closeDrawer, toggleRef } = useDrawer();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
 
   // Sync state to the element, guarded both ways so StrictMode
   // double-effects never throw InvalidStateError. Close order is fixed:
@@ -49,16 +49,6 @@ export function SongListSidebar({ songs, selectedId }: { songs: SongListItem[]; 
       >
         <SidebarList songs={songs} selectedId={selectedId} />
       </nav>
-      <button
-        ref={toggleRef}
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-expanded={open}
-        aria-controls={DRAWER_ID}
-        className="fixed left-4 top-16 z-30 md:hidden inline-flex h-11 min-w-11 items-center gap-2 rounded-full border border-border bg-surface px-3 text-sm font-semibold text-surface-text"
-      >
-        <span aria-hidden="true">☰</span> Songs
-      </button>
       <dialog
         ref={dialogRef}
         id={DRAWER_ID}
@@ -68,10 +58,10 @@ export function SongListSidebar({ songs, selectedId }: { songs: SongListItem[]; 
           // Prevent the native close so the sync effect below performs the
           // close + toggle-focus return deterministically (spec §3).
           e.preventDefault();
-          setOpen(false);
+          closeDrawer();
         }}
         onClick={(e) => {
-          if (e.target === e.currentTarget) setOpen(false);
+          if (e.target === e.currentTarget) closeDrawer();
         }}
         className="m-0 h-dvh max-h-dvh w-72 max-w-[85vw] z-50 bg-background p-0 text-foreground backdrop:bg-foreground/40 md:hidden"
       >
@@ -80,7 +70,7 @@ export function SongListSidebar({ songs, selectedId }: { songs: SongListItem[]; 
             <span className="text-sm font-semibold">Songs</span>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => closeDrawer()}
               className="rounded-md border border-border px-3 py-1.5 text-sm font-semibold"
             >
               Close songs

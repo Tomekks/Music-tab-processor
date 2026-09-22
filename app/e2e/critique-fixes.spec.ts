@@ -132,48 +132,11 @@ test.describe("spec 1+4 shortcut scoping", () => {
   });
 });
 
-test.describe("spec 1+4 shortcut opt-out", () => {
-  test("switch off kills in-scope keys, persists across reload", async ({ page }) => {
-    await page.setViewportSize(DESKTOP_VIEWPORT);
-    const { errors } = collectConsoleErrors(page);
-    await gotoReady(page, "/");
-
-    const evolves = page.getByRole("switch", { name: "Keyboard shortcuts" });
-    await expect(evolves).toHaveAttribute("aria-checked", "true");
-
-    // Arrows are live while opted in: starting playback, then stepping,
-    // stops it (observable via the Play label).
-    const play = page.getByRole("button", { name: "Play" });
-    await play.click();
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-    await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
-
-    // Opt out. Arrows on the focused Play button have no native activation,
-    // so "still paused/playing" proves our handler is dead, not native.
-    await evolves.click();
-    await expect(evolves).toHaveAttribute("aria-checked", "false");
-    await play.click();
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-    await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-
-    const stored = await page.evaluate(() => localStorage.getItem("tabbytab:shortcuts"));
-    expect(stored).toBe("0");
-
-    await page.reload();
-    await gotoReady(page, "/");
-    // Hydration-safe default (on) flips off via the mount effect -- retried.
-    await expect(page.getByRole("switch", { name: "Keyboard shortcuts" })).toHaveAttribute(
-      "aria-checked",
-      "false",
-    );
-
-    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
-  });
-});
-
 // Spec 2 blocks (appended; spec 1+4's blocks above untouched).
+// (Spec 8d amendment 1 of 2: the "spec 1+4 shortcut opt-out" describe that
+// lived here -- lines 135-174 -- is DELETED with the opt-out removal. The
+// stale-key behavior it used to cover is proven instead by spec 8d's
+// "stale opt-out key is ignored" block appended at the end of this file.)
 
 /**
  * Drags steps ~10%-60% across the first Sheet staff system and returns the
@@ -344,7 +307,9 @@ test.describe("spec 5 sidebar", () => {
     expect(detailBox, "detail visible").not.toBeNull();
     expect(detailBox!.x).toBe(240);
     expect(detailBox!.x + detailBox!.width).toBe(DESKTOP_VIEWPORT.width);
-    await expect(page.getByRole("button", { name: "Songs", exact: true })).toBeHidden();
+    // Spec 8d: the drawer open control lives in the header now -- hidden on
+    // desktop, and the sidebar renders no toggle of its own.
+    await expect(page.locator("header").getByRole("button", { name: "Songs", exact: true })).toBeHidden();
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollWidth).toBeLessThanOrEqual(DESKTOP_VIEWPORT.width);
 
@@ -365,7 +330,10 @@ test.describe("spec 5 sidebar", () => {
     expect(detailBox!.x).toBe(0);
     expect(detailBox!.x + detailBox!.width).toBe(390);
 
-    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    // Spec 8d: the toggle is the header island now -- exactly one Songs
+    // button on the page, and it lives in the header.
+    await expect(page.getByRole("button", { name: "Songs", exact: true })).toHaveCount(1);
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
     await expect(toggle).toBeVisible();
     const toggleBox = await toggle.boundingBox();
     expect(toggleBox!.height).toBeGreaterThanOrEqual(44);
@@ -397,7 +365,8 @@ test.describe("spec 5 sidebar", () => {
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    // Spec 8d: focus returns to the header button on every close path.
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
     const dialog = page.getByRole("dialog", { name: "Songs" });
     const closeBtn = dialog.getByRole("button", { name: "Close songs" });
 
@@ -454,7 +423,7 @@ test.describe("spec 5 sidebar", () => {
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
     const dialog = page.getByRole("dialog", { name: "Songs" });
     await toggle.click();
     await expect(dialog).toBeVisible();
@@ -476,7 +445,7 @@ test.describe("spec 5 sidebar", () => {
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
     const dialog = page.getByRole("dialog", { name: "Songs" });
     await toggle.click();
     await expect(dialog).toBeVisible();
@@ -503,7 +472,7 @@ test.describe("spec 5 sidebar", () => {
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const toggle = page.getByRole("button", { name: "Songs", exact: true });
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
     const dialog = page.getByRole("dialog", { name: "Songs" });
     await toggle.click();
     await expect(dialog).toBeVisible();
@@ -1078,6 +1047,352 @@ test.describe("spec 8c control polish", () => {
     // Visible text: the former single run-on pattern, unchanged.
     await expect(meta).toHaveText(/^\d+:\d{2} • tuning [A-Ga-g]+(-[A-Ga-g]+)* • \d+ bpm$/);
 
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+});
+
+// Spec 8d blocks (appended; spec-5 blocks above carry the quoted header-button
+// amendment instead of being restructured. Self-contained: theme state via
+// the UI, no order dependence, no cross-spec selectors).
+
+test.describe("spec 8d consolidation", () => {
+  test("stale opt-out key is ignored: shortcuts stay on", async ({ page, context }) => {
+    // A stored "0" from the retired opt-out must change nothing: shortcuts
+    // work, no off-state UI renders, and the key is left untouched (migration
+    // declined -- proven inert here, not just stated).
+    await context.addInitScript(() => window.localStorage.setItem("tabbytab:shortcuts", "0"));
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+    await page.reload();
+    await gotoReady(page, "/");
+
+    // (1) In-scope Space/arrows still work (Play/Pause-label pattern): Space
+    // on the focused Play button toggles exactly once, then ArrowRight steps
+    // (which pauses) -- a dead handler would leave Play / Pause respectively.
+    const play = page.getByRole("button", { name: "Play" });
+    await play.focus();
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+
+    // (2) The stale key is left untouched.
+    expect(await page.evaluate(() => localStorage.getItem("tabbytab:shortcuts"))).toBe("0");
+
+    // (3) No off-state UI exists anywhere.
+    await expect(page.getByText("Keyboard shortcuts off", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("switch", { name: "Keyboard shortcuts" })).toHaveCount(0);
+
+    // (4) Tempo keeps native arrows (editable-target rule survives the
+    // predicate change): Up bumps the value and never engages transport.
+    const tempo = page.locator("label", { hasText: "Tempo" }).locator("input");
+    await tempo.focus();
+    const before = Number(await tempo.inputValue());
+    await page.keyboard.press("ArrowUp");
+    expect(Number(await tempo.inputValue())).toBe(before + 1);
+    await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("header layout: Songs + hint visibility and DOM order", async ({ page }) => {
+    const { errors } = collectConsoleErrors(page);
+
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    await gotoReady(page, "/");
+    const header = page.locator("header").first();
+    const songsBtn = header.getByRole("button", { name: "Songs", exact: true });
+
+    // Desktop: Songs island hidden, hint visible with the exact static copy.
+    await expect(songsBtn).toBeHidden();
+    const hint = header.locator("p");
+    await expect(hint).toBeVisible();
+    await expect(hint).toHaveText("Space play/pause · ←/→ step");
+
+    // DOM order Songs -> title -> hint -> toggle holds at every width
+    // (asserted once here; order is viewport-independent).
+    const ordered = await header.evaluate((h) => {
+      const songs = h.querySelector('button[aria-controls="songs-drawer"]');
+      const title = h.querySelector('a[href="/"]');
+      const hintP = h.querySelector("p");
+      const toggle = h.querySelector('button:not([aria-controls="songs-drawer"])');
+      if (!songs || !title || !hintP || !toggle) return null;
+      const seq = [songs, title, hintP, toggle];
+      return seq.every(
+        (el, i) => i === 0 || seq[i - 1].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+    expect(ordered, "header DOM order is Songs -> title -> hint -> toggle").toBe(true);
+
+    // Below md the hint hides and the icon-only Songs button shows before
+    // the title (767 and 390 probe both sides of nothing -- md is 768, so
+    // both are drawer widths; 767 guards the boundary).
+    for (const width of [767, 390]) {
+      await page.setViewportSize({ width, height: 700 });
+      await expect(hint).toBeHidden();
+      await expect(songsBtn).toBeVisible();
+      // Icon-only: the button's whole text is the (aria-hidden) glyph; the
+      // accessible name still resolves to Songs (that's how this handle found
+      // it). It sits before the title in reading order.
+      expect((await songsBtn.textContent())?.trim()).toBe("☰");
+      const songsBox = await songsBtn.boundingBox();
+      const titleBox = await header.locator('a[href="/"]').boundingBox();
+      expect(songsBox, "songs button laid out").not.toBeNull();
+      expect(titleBox, "title laid out").not.toBeNull();
+      expect(songsBox!.x).toBeLessThan(titleBox!.x);
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(width);
+    }
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("drawer via header: Close-button path returns focus to the header button", async ({ page }) => {
+    // Spec-5's amended blocks own the Escape + backdrop paths; this block owns
+    // the remaining Close-songs path, so every close path is proven to land
+    // on the header button.
+    await page.setViewportSize({ width: 390, height: 700 });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const toggle = page.locator("header").getByRole("button", { name: "Songs", exact: true });
+    const dialog = page.getByRole("dialog", { name: "Songs" });
+    await toggle.click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Close songs" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(toggle).toBeFocused();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("hover: Play/Reset/MIDI filter responds, Flip background responds", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // Play/Reset/MIDI: idle filter none -> hovered non-none -> unhovered none
+    // (computed styles only, never class names).
+    const filterButtons = [
+      page.getByRole("button", { name: "Play" }),
+      page.getByRole("button", { name: "Reset to start" }),
+      page.getByRole("button", { name: "MIDI sound" }),
+    ];
+    for (const btn of filterButtons) {
+      const idle = await btn.evaluate((el) => getComputedStyle(el).filter);
+      expect(idle, "idle filter is none").toBe("none");
+      await btn.hover();
+      const hovered = await btn.evaluate((el) => getComputedStyle(el).filter);
+      expect(hovered, "hovered filter is non-none").not.toBe("none");
+      await page.mouse.move(4, 4);
+      const back = await btn.evaluate((el) => getComputedStyle(el).filter);
+      expect(back, "unhovered filter returns to none").toBe("none");
+    }
+
+    // Flip strings keeps its own mechanism: background-color change + return.
+    const flip = page.getByRole("button", { name: /Flip strings/ });
+    const bgIdle = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
+    await flip.hover();
+    const bgHovered = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bgHovered, "hovered background differs").not.toBe(bgIdle);
+    await page.mouse.move(4, 4);
+    const bgBack = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bgBack, "unhovered background returns").toBe(bgIdle);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("heights: Reset and Play measure equal", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const resetBox = await page.getByRole("button", { name: "Reset to start" }).boundingBox();
+    const playBox = await page.getByRole("button", { name: "Play" }).boundingBox();
+    expect(resetBox, "reset laid out").not.toBeNull();
+    expect(playBox, "play laid out").not.toBeNull();
+    test.info().annotations.push({
+      type: "spec-8d-heights",
+      description: `reset=${resetBox!.height}px play=${playBox!.height}px`,
+    });
+    expect(resetBox!.height, "Reset and Play heights equal").toBe(playBox!.height);
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  // Wrap-row helpers (8d-wrap fix-spec): each width below is its own
+  // independent test, so a failure at one width never hides the evidence
+  // from the others.
+  type RowBox = { x: number; y: number; width: number; height: number };
+
+  // Stable names, never DOM order: the pill (fresh page => unset span), the
+  // four named controls, and the tablist. Throws loudly when any is missing.
+  async function transportHandles(page: Page): Promise<Record<string, RowBox>> {
+    const raw: Record<string, RowBox | null> = {
+      tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
+      pill: await page.getByText("Loop: not selected", { exact: true }).boundingBox(),
+      reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
+      play: await page.getByRole("button", { name: "Play" }).boundingBox(),
+      tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+      midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+      flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
+    };
+    for (const [name, box] of Object.entries(raw)) {
+      expect(box, `${name} laid out`).not.toBeNull();
+    }
+    return raw as Record<string, RowBox>;
+  }
+
+  // Row clustering by bounding-box center-y (items-center aligns centers
+  // within a row; rows sit >=12px apart). Returns names per row, top first.
+  function rowsOf(boxes: Record<string, RowBox>): string[][] {
+    const entries = Object.entries(boxes).map(([name, b]) => ({ name, cy: b.y + b.height / 2 }));
+    entries.sort((a, b) => a.cy - b.cy);
+    const rows: string[][] = [];
+    for (const e of entries) {
+      const prev = rows[rows.length - 1];
+      if (!prev) {
+        rows.push([e.name]);
+        continue;
+      }
+      const prevCys = entries.filter((x) => prev.includes(x.name)).map((x) => x.cy);
+      const prevMean = prevCys.reduce((a, b) => a + b, 0) / prevCys.length;
+      if (Math.abs(e.cy - prevMean) <= 6) prev.push(e.name);
+      else rows.push([e.name]);
+    }
+    return rows.map((r) => r.sort());
+  }
+
+  // No control narrower than its content.
+  async function expectControlsFitContent(page: Page): Promise<void> {
+    const locs = [
+      page.getByRole("tablist", { name: "Tab display mode" }),
+      page.getByRole("button", { name: "Reset to start" }),
+      page.getByRole("button", { name: "Play" }),
+      page.locator("label", { hasText: "Tempo" }),
+      page.getByRole("button", { name: "MIDI sound" }),
+      page.getByRole("button", { name: /Flip strings/ }),
+    ];
+    for (const loc of locs) {
+      const fits = await loc.evaluate((el) => el.scrollWidth <= el.clientWidth + 1);
+      expect(fits, "control fits its content").toBe(true);
+    }
+  }
+
+  // Below xl every width shares one shape: tabs row alone, then the explicit
+  // transport rows pill+Reset+Play / Flip / MIDI / Tempo.
+  const STACKED_ROWS = [["tabs"], ["pill", "play", "reset"], ["flip"], ["midi"], ["tempo"]];
+
+  async function expectStackedRows(page: Page, width: number, height: number): Promise<void> {
+    await page.setViewportSize({ width, height });
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+    const b = await transportHandles(page);
+    expect(rowsOf(b), `${width}: deliberate rows`).toEqual(STACKED_ROWS);
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(width);
+    await expectControlsFitContent(page);
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  }
+
+  test("wrap rows: xl tabs row plus complete transport row", async ({ page }) => {
+    // 8d-wrap fix-spec fallback (measured: shared-row slack 0.0px even after
+    // the final permitted xl spacing adjustment): at xl the tabs own the
+    // first row and the collapsed wrappers form one complete transport row
+    // below them. The compact spacing was reverted with the fallback -- this
+    // asserts the relaxed contract, with slack reported, never bar-gated.
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+    const b = await transportHandles(page);
+    expect(rowsOf(b), "1280: tabs row + complete transport row").toEqual([
+      ["tabs"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
+    ]);
+    const detailBox = await page.getByTestId("detail-column").boundingBox();
+    expect(detailBox, "detail laid out").not.toBeNull();
+    const lastRight = Math.max(
+      ...["pill", "reset", "play", "tempo", "midi", "flip"].map((n) => b[n].x + b[n].width),
+    );
+    const slack = detailBox!.x + detailBox!.width - 32 - lastRight;
+    test.info().annotations.push({
+      type: "spec-8d-xl-slack",
+      description: `slack=${slack.toFixed(1)}px`,
+    });
+    expect(slack, "transport row stays inside the toolbar content").toBeGreaterThanOrEqual(0);
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(DESKTOP_VIEWPORT.width);
+    await expectControlsFitContent(page);
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("wrap rows: 1024 tabs own row, explicit transport rows", async ({ page }) => {
+    await expectStackedRows(page, 1024, 800);
+  });
+
+  test("wrap rows: 767 deliberate rows", async ({ page }) => {
+    await expectStackedRows(page, 767, 700);
+  });
+
+  test("wrap rows: 390 deliberate rows", async ({ page }) => {
+    await expectStackedRows(page, 390, 700);
+  });
+
+  test("wrap rows: tabs hold their row across transport-state changes", async ({ page }) => {
+    // 8d-wrap fix-spec: no cross-width equality (the song header legitimately
+    // wraps at 390, outside every allowlist). Instead, at each width
+    // independently, tabs must not move when transport state changes. The
+    // song stays fixed per width (Friction, longest per quoted DB evidence)
+    // so only transport changes can move the tabs.
+    const { errors } = collectConsoleErrors(page);
+    for (const [width, height] of [
+      [DESKTOP_VIEWPORT.width, DESKTOP_VIEWPORT.height],
+      [1024, 800],
+      [767, 700],
+      [390, 700],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await gotoReady(page, "/");
+      if (width < 768) {
+        await page.locator("header").getByRole("button", { name: "Songs", exact: true }).click();
+        await expect(page.getByRole("dialog", { name: "Songs" })).toBeVisible();
+      }
+      await page.getByRole("navigation", { name: "Songs" }).getByRole("link", { name: /Friction/ }).click();
+      // Navigation race guards: the old song's toolbar also shows Play +
+      // empty-loop text, so prove the new song arrived (URL + its own
+      // toolbar mount) before measuring. Below md, close the drawer first --
+      // the open modal makes the background inert and poisons measurement.
+      await expect(page).toHaveURL(/\?song=/);
+      if (width < 768) {
+        await page.keyboard.press("Escape");
+        await expect(page.getByRole("dialog", { name: "Songs" })).toBeHidden();
+      }
+      await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
+      await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+      await expect(page.getByRole("tablist", { name: "Tab display mode" })).toBeVisible();
+
+      const tabsY = async () =>
+        (await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox())!.y;
+      const y0 = await tabsY();
+
+      // Widest pill state change: unset span -> set-range button -> unset.
+      await dragLoopOnFirstStaff(page);
+      const y1 = await tabsY();
+      await page.getByRole("button", { name: /Loop: steps/ }).click();
+      await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+      const y2 = await tabsY();
+
+      // Play/Pause label swap + a control hover.
+      await page.getByRole("button", { name: "Play" }).click();
+      await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+      const y3 = await tabsY();
+      await page.getByRole("button", { name: /Flip strings/ }).hover();
+      const y4 = await tabsY();
+
+      for (const y of [y1, y2, y3, y4]) expect(y, `tabs y stable at ${width}`).toBe(y0);
+    }
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 });

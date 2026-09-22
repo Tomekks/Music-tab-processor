@@ -3,40 +3,63 @@
 import { useEffect, useRef, useState } from "react";
 import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
-// Presentational only -- takes bpm/isPlaying/onToggle/onBpmChange as props
-// rather than owning the useMetronome hook itself, so this stays swappable
-// independently of the timing logic (same "one interface, swappable
-// implementation" principle as the rest of this app). Bpm defaults to the
-// song's own tempo (set by the caller), editable here.
+// Transport pieces, composed by DetailToolbar's TransportLayout (spec 8d) --
+// split out of the old single MetronomeControls composite (sole consumer was
+// DetailToolbar -- verified, no retired-card usage) so each row owns its
+// controls. Presentational only: takes values/callbacks as props rather than
+// owning the useMetronome hook itself, so this stays swappable independently
+// of the timing logic (same "one interface, swappable implementation"
+// principle as the rest of this app). Bpm defaults to the song's own tempo
+// (set by the caller), editable in TempoField.
 //
 // Tiers (spec 1+4): Play is the primary action (component.button primary
 // tokens); Reset + sound rest on the secondary (ghost) tier via the
 // component.button secondary tokens -- token vars only, no color literals.
 // The sound button's pressed state keeps its surface-active treatment: that
-// is on/off feedback, not tier chrome.
+// is on/off feedback, not tier chrome. Reset and Play share min-h-[44px] so
+// their measured heights match; Play/Reset/MIDI gain a visible brightness
+// hover like Flip strings' background hover (measured, never class names).
 
-export function MetronomeControls({
-  bpm,
-  onBpmChange,
-  isPlaying,
-  onToggle,
-  onReset,
-  soundEnabled,
-  onToggleSound,
-}: {
-  bpm: number;
-  onBpmChange: (bpm: number) => void;
-  isPlaying: boolean;
-  onToggle: () => void;
-  onReset: () => void;
-  // Note-accurate playback sound (2026-09-10, beta) -- off by default since
-  // it's new; see hooks/useNoteSound.ts for what it actually plays.
-  soundEnabled: boolean;
-  onToggleSound: () => void;
-}) {
-  // aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
-  const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
+// aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
+const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
 
+export function ResetButton({ onReset }: { onReset: () => void }) {
+  return (
+    <button
+      onClick={onReset}
+      aria-label="Reset to start"
+      title="Reset to start"
+      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold hover:brightness-110 shrink-0"
+      style={{
+        background: "var(--component-button-secondary-background)",
+        color: "var(--component-button-secondary-text)",
+        borderColor: "var(--component-button-secondary-border)",
+      }}
+    >
+      ⏮ Reset
+    </button>
+  );
+}
+
+export function PlayButton({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      aria-label={isPlaying ? "Pause" : "Play"}
+      aria-keyshortcuts={playShortcut?.kbd.join(" ")}
+      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0"
+      style={{
+        background: "var(--component-button-primary-background)",
+        color: "var(--component-button-primary-text)",
+        borderColor: "transparent",
+      }}
+    >
+      {isPlaying ? "⏸ Pause" : "▶ Play"}
+    </button>
+  );
+}
+
+export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bpm: number) => void }) {
   // Tempo draft-state (spec 8a): THIS INPUT never calls onBpmChange from
   // onChange -- typing/clearing/spinning edit local draft text only. Commits
   // happen on blur/Enter through commit(): empty/non-finite/<=0 reverts to the
@@ -79,74 +102,56 @@ export function MetronomeControls({
     if (source === "enter") enterCommittedRef.current = String(clamped);
   };
   return (
-    <div className="flex items-center gap-4">
-      <button
-        onClick={onReset}
-        aria-label="Reset to start"
-        title="Reset to start"
-        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold"
-        style={{
-          background: "var(--component-button-secondary-background)",
-          color: "var(--component-button-secondary-text)",
-          borderColor: "var(--component-button-secondary-border)",
+    <label className="flex items-center gap-2 text-sm text-surface-text shrink-0">
+      Tempo
+      <input
+        type="number"
+        min={20}
+        max={300}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => commit("blur")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit("enter");
+          }
         }}
-      >
-        ⏮ Reset
-      </button>
+        className="w-16 rounded border border-border bg-surface px-2 py-1 text-sm text-surface-text"
+      />
+      bpm
+    </label>
+  );
+}
 
-      <button
-        onClick={onToggle}
-        aria-label={isPlaying ? "Pause" : "Play"}
-        aria-keyshortcuts={playShortcut?.kbd.join(" ")}
-        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold"
-        style={{
-          background: "var(--component-button-primary-background)",
-          color: "var(--component-button-primary-text)",
-          borderColor: "transparent",
-        }}
-      >
-        {isPlaying ? "⏸ Pause" : "▶ Play"}
-      </button>
-
-      <label className="flex items-center gap-2 text-sm text-surface-text">
-        Tempo
-        <input
-          type="number"
-          min={20}
-          max={300}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => commit("blur")}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commit("enter");
+export function MidiButton({
+  soundEnabled,
+  onToggleSound,
+}: {
+  // Note-accurate playback sound (2026-09-10, beta) -- off by default since
+  // it's new; see hooks/useNoteSound.ts for what it actually plays.
+  soundEnabled: boolean;
+  onToggleSound: () => void;
+}) {
+  return (
+    <button
+      onClick={onToggleSound}
+      aria-pressed={soundEnabled}
+      title="Play the real pitch of each note while the metronome runs (beta)"
+      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold hover:brightness-110 shrink-0 ${
+        soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
+      }`}
+      style={
+        soundEnabled
+          ? undefined
+          : {
+              background: "var(--component-button-secondary-background)",
+              color: "var(--component-button-secondary-text)",
+              borderColor: "var(--component-button-secondary-border)",
             }
-          }}
-          className="w-16 rounded border border-border bg-surface px-2 py-1 text-sm text-surface-text"
-        />
-        bpm
-      </label>
-
-      <button
-        onClick={onToggleSound}
-        aria-pressed={soundEnabled}
-        title="Play the real pitch of each note while the metronome runs (beta)"
-        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold ${
-          soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
-        }`}
-        style={
-          soundEnabled
-            ? undefined
-            : {
-                background: "var(--component-button-secondary-background)",
-                color: "var(--component-button-secondary-text)",
-                borderColor: "var(--component-button-secondary-border)",
-              }
-        }
-      >
-        MIDI sound
-      </button>
-    </div>
+      }
+    >
+      MIDI sound
+    </button>
   );
 }

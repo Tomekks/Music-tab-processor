@@ -54,10 +54,10 @@ export function shouldHandleKey(
     shiftKey?: boolean;
   },
   target: { tagName?: string; isContentEditable?: boolean } | null,
-  opts: { shortcutsEnabled: boolean; inScope: boolean },
+  opts: { inScope: boolean },
 ): boolean {
   if (e.metaKey || e.ctrlKey || e.altKey) return false;
-  if (!opts.shortcutsEnabled || !opts.inScope) return false;
+  if (!opts.inScope) return false;
   if (isEditableTarget(target)) return false;
   // shiftKey deliberately ignored (matches today's listener; editable
   // targets are excluded anyway, so Shift+arrows in text fields stay native).
