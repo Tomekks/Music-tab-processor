@@ -65,9 +65,8 @@ reopening that decision, not just adding a display mode.
    (background/foreground swapped) so the active notes visibly pop. The
    component has zero timing logic of its own — see `app/hooks/useMetronome.ts`
    and the "Metronome" note in `docs/DECISIONS.md` for why that's a separate,
-   independent module. No playhead is drawn until the metronome has actually
-   been started at least once (`currentStep` is `null` until then), so the
-   view doesn't show a cursor before anyone's pressed play.
+    independent module. The first step is selected by default on song open,
+    so the playhead sits at the first note before anyone's pressed play.
 9. **Manual step navigation (2026-09-10), owned by `useMetronome`, driven
    from `StudioTabs.tsx`, not this component.** Left/right arrow keys call
    `stepBy(±1)` (clamped, not wrapped); space calls `toggle()`. Skipped

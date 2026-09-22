@@ -129,7 +129,10 @@ test.describe("spec 3 Fretboard playback state", () => {
       return { width: box.width, height: box.height };
     }));
 
-    await expect.poll(async () => await page.locator('[aria-current="true"]').count(), { timeout: 30000 }).toBe(1);
+    // Scoped to Fretboard steps: the page legitimately carries other
+    // aria-current="true" markers (selected song row x2 -- desktop nav +
+    // mounted mobile drawer -- plus the active theme-toggle button).
+    await expect.poll(async () => await page.locator('[data-step-index][aria-current="true"]').count(), { timeout: 30000 }).toBe(1);
     const after = await segments.evaluateAll((nodes) => nodes.map((node) => {
       const box = node.getBoundingClientRect();
       return { width: box.width, height: box.height };
