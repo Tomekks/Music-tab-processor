@@ -138,7 +138,7 @@ export function MidiButton({
       onClick={onToggleSound}
       aria-pressed={soundEnabled}
       title="Play the real pitch of each note while the metronome runs (beta)"
-      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-semibold hover:brightness-110 shrink-0 ${
+      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0 ${
         soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
       }`}
       style={

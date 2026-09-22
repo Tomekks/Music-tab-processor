@@ -17,19 +17,22 @@ import { TABS } from "./StudioTabs";
 // lives in the header now); this file only renders controls.
 //
 // TransportLayout (spec 8d, option A; responsive contract amended by the
-// 8d-wrap fix-spec): explicit row wrappers composing the MetronomeControls
-// pieces. Source order is the existing wide-screen order. Tabs always own
-// the first row; at xl and above the wrappers collapse via xl:contents into
-// one complete transport row below the tabs (pill, Reset, Play, Tempo, MIDI,
-// Flip -- the shared-row-with-tabs plan proved ~38px short even after the
-// final permitted xl spacing adjustment, measured slack 0.0px, so the
-// fix-spec relaxed 1280 to this two-row layout rather than shaving further).
-// Below xl the wrapper boxes remain full-width flex items with explicit
-// order: primary -> flip -> midi -> tempo (never emergent flex-wrap order --
-// parent-level order alone cannot place last-in-DOM Flip first-below while
-// all controls share one flex item). All controls keep shrink-0 content
-// widths; Flip (whose own file is out of the allowlist) is protected by its
-// full-width wrapper box.
+// 8d-wrap fix-spec and live bug reports): explicit row wrappers composing
+// the MetronomeControls pieces. Tabs always own the first row; at xl and
+// above the wrappers collapse via xl:contents into one complete transport
+// row below the tabs (Reset, Play, Flip, MIDI, Tempo, Loop -- the
+// shared-row-with-tabs plan proved ~38px short even after the final
+// permitted xl spacing adjustment, measured slack 0.0px, so the fix-spec
+// relaxed 1280 to this two-row layout rather than shaving further). Below
+// xl the wrappers are content-width flow items (never basis-full: forcing
+// each box full-width stacked Flip/MIDI/Tempo into a solo column instead of
+// letting them fill the second row one by one, reported as a live bug with
+// screenshot) with explicit order: primary -> flip -> midi -> tempo -> pill
+// (parent-level order is what lets Flip lead below xl while all controls
+// share one flex container). The loop pill sits in its own wrapper last per
+// the bug report. All controls keep shrink-0 content widths; Flip (whose
+// own file is out of the allowlist) is protected by its wrapper box. Reset,
+// Play, MIDI, and Flip share min-h-[44px] so no button renders larger.
 //
 // Pill (spec 2): always mounted in exactly one of two states -- set-range
 // clear-button or empty-state status text -- so the toolbar never reflows
@@ -101,7 +104,20 @@ function TransportLayout({
 }) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
-      <div className="flex items-center gap-3 basis-full xl:basis-auto order-1 xl:contents shrink-0">
+      <div className="flex items-center gap-3 order-1 xl:contents shrink-0">
+        <ResetButton onReset={metronome.reset} />
+        <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
+      </div>
+      <div className="order-2 xl:contents shrink-0">
+        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      </div>
+      <div className="order-3 xl:contents shrink-0">
+        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+      </div>
+      <div className="order-4 xl:contents shrink-0">
+        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+      </div>
+      <div className="order-5 xl:contents shrink-0">
         {loopRange ? (
           <button
             onClick={onClearLoop}
@@ -116,19 +132,7 @@ function TransportLayout({
             Loop: not selected
           </span>
         )}
-        <ResetButton onReset={metronome.reset} />
-        <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
       </div>
-      <div className="basis-full xl:basis-auto order-4 xl:contents shrink-0">
-        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
-      </div>
-      <div className="basis-full xl:basis-auto order-3 xl:contents shrink-0">
-        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
-      </div>
-      <div className="basis-full xl:basis-auto order-2 xl:contents shrink-0">
-        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
-      </div>
-
     </div>
   );
 }

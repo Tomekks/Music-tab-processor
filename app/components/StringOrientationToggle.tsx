@@ -15,7 +15,7 @@ export function StringOrientationToggle({ highOnTop, onToggle }: { highOnTop: bo
       aria-pressed={highOnTop}
       title={`Flip strings (currently ${stateWords} on top)`}
       aria-label={`Flip strings (currently ${stateWords} on top)`}
-      className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
+      className="inline-flex items-center gap-1.5 rounded-md border border-surface bg-surface px-3 py-1.5 min-h-[44px] text-sm font-semibold text-surface-text hover:bg-surface-hover hover:border-surface-hover"
     >
       Flip strings
     </button>

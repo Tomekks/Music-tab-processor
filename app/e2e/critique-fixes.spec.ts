@@ -1253,20 +1253,25 @@ test.describe("spec 8d consolidation", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
-  test("heights: Reset and Play measure equal", async ({ page }) => {
+  test("heights: Reset, Play, MIDI, and Flip measure equal", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const resetBox = await page.getByRole("button", { name: "Reset to start" }).boundingBox();
-    const playBox = await page.getByRole("button", { name: "Play" }).boundingBox();
-    expect(resetBox, "reset laid out").not.toBeNull();
-    expect(playBox, "play laid out").not.toBeNull();
+    // Live bug report: Reset/Play rendered larger than MIDI/Flip. All four
+    // share min-h-[44px]; measured equality proves no button stands out.
+    const names = ["Reset to start", "Play", "MIDI sound", /Flip strings/] as const;
+    const heights: number[] = [];
+    for (const name of names) {
+      const box = await page.getByRole("button", { name }).boundingBox();
+      expect(box, `${String(name)} laid out`).not.toBeNull();
+      heights.push(box!.height);
+    }
     test.info().annotations.push({
       type: "spec-8d-heights",
-      description: `reset=${resetBox!.height}px play=${playBox!.height}px`,
+      description: `reset=${heights[0]}px play=${heights[1]}px midi=${heights[2]}px flip=${heights[3]}px`,
     });
-    expect(resetBox!.height, "Reset and Play heights equal").toBe(playBox!.height);
+    for (const h of heights) expect(h, "all four button heights equal").toBe(heights[0]);
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -1309,16 +1314,15 @@ test.describe("spec 8d consolidation", () => {
     }
   }
 
-  // Below xl every width shares one shape: tabs row alone, then the explicit
-  // transport rows pill+Reset+Play / Flip / MIDI / Tempo.
-  const STACKED_ROWS = [["tabs"], ["pill", "play", "reset"], ["flip"], ["midi"], ["tempo"]];
-
-  async function expectStackedRows(page: Page, width: number, height: number): Promise<void> {
+  // Below xl the wrappers flow: tabs row alone, then controls fill row by
+  // row in explicit order (primary -> flip -> pill -> midi -> tempo). Row
+  // membership is emergent from real widths, pinned per width below.
+  async function expectFlowRows(page: Page, width: number, height: number, expected: string[][]): Promise<void> {
     await page.setViewportSize({ width, height });
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
     const b = await transportHandles(page);
-    expect(rowsOf(b), `${width}: deliberate rows`).toEqual(STACKED_ROWS);
+    expect(rowsOf(b), `${width}: flow rows`).toEqual(expected);
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollWidth).toBeLessThanOrEqual(width);
     await expectControlsFitContent(page);
@@ -1356,16 +1360,23 @@ test.describe("spec 8d consolidation", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
-  test("wrap rows: 1024 tabs own row, explicit transport rows", async ({ page }) => {
-    await expectStackedRows(page, 1024, 800);
+  test("wrap rows: 1024 tabs own row, flow rows below", async ({ page }) => {
+    await expectFlowRows(page, 1024, 800, [
+      ["tabs"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
+    ]);
   });
 
-  test("wrap rows: 767 deliberate rows", async ({ page }) => {
-    await expectStackedRows(page, 767, 700);
+  test("wrap rows: 767 flow rows", async ({ page }) => {
+    await expectFlowRows(page, 767, 700, [
+      ["tabs"],
+      ["flip", "midi", "play", "reset", "tempo"],
+      ["pill"],
+    ]);
   });
 
-  test("wrap rows: 390 deliberate rows", async ({ page }) => {
-    await expectStackedRows(page, 390, 700);
+  test("wrap rows: 390 flow rows", async ({ page }) => {
+    await expectFlowRows(page, 390, 700, [["tabs"], ["flip", "play", "reset"], ["midi", "tempo"], ["pill"]]);
   });
 
   test("wrap rows: tabs hold their row across transport-state changes", async ({ page }) => {
