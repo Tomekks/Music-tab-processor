@@ -111,8 +111,8 @@ test.describe("spec 1+4 toolbar layout", () => {
   });
 });
 
-// Spec 3 blocks (written for the playback-state contract; Playwright execution
-// was explicitly skipped for this closeout and is reported as unverified).
+// Spec 3 blocks (written for the playback-state contract; executed green
+// 2026-09-22: 2/2 after the default-first-step + selector-scoping fix).
 
 test.describe("spec 3 Fretboard playback state", () => {
   test("active playback segment exposes one current step without changing segment sizes", async ({ page }) => {
