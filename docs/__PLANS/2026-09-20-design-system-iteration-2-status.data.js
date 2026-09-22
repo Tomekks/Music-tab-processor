@@ -24,7 +24,7 @@ const PLAN_TASKS = [
   { id: "1b", name: "Wire generator into brand authoring + editor", status: "done", detail: "<code>3f3b19d</code> · 4 new tests" },
   { id: "2",  name: "Live, direct-DOM preview in the editor", status: "done", detail: "<code>aa60b5c</code> · UI only, no new tests" },
   { id: "3",  name: "Shared hover/press/focus state primitive", status: "done", detail: "<code>40d2fdd</code> · 3 new tests" },
-  { id: "4",  name: "Dark/light theme switcher", status: "progress", detail: "<code>e0ac89e</code>, 98/98 + 4/4 Playwright independently re-verified — human visual checkbox (Sheet/Fretboard/ASCII/design-system in both themes) still open, deferred to next session" },
+  { id: "4",  name: "Dark/light theme switcher", status: "done", detail: "<code>e0ac89e</code> · UI + 3 Playwright, 98/98 + 4/4 e2e, human visual checkbox passed — closed" },
   { id: "5a", name: "Brand inheritance: parent resolution + merge", status: "done", detail: "<code>1ddd888</code> · 3 new tests" },
   { id: "5b", name: "Brand inheritance: reset-to-parent", status: "done", detail: "<code>5acd34f</code> · 5 new tests" },
   { id: "5c", name: "Inherited vs. overridden editor UI", status: "done", detail: "<code>49cd7ad</code>/<code>08df1aa</code>/<code>8bae5bf</code> · 7 new tests, 15/1-skip e2e — independently re-verified" },

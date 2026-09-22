@@ -219,3 +219,6 @@ becomes simply false — rewrite or delete per what actually reads best once bot
 - If `ThemeProvider`'s mount in `layout.tsx` produces a hydration warning beyond the single
   accepted first-paint flash (§2's comment), stop and ask — that would mean the SSR-seed
   assumption doesn't hold the way this spec expects.
+
+---
+**Landed:** commit `e0ac89e` (+3 Playwright tests in `app/e2e/theme-toggle.spec.ts`); closed with status-page flip — `npm run verify` 98/98 + e2e 4/4 passing, human visual checkbox (all views, both themes) passed, no code changes at close.
