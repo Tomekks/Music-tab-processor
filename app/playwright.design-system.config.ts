@@ -15,7 +15,11 @@ export default defineConfig({
   workers: 1,
   webServer: {
     command: "npm run dev -- -p 3002",
-    url: "http://localhost:3002",
+    // Readiness probe hits /design-system, NOT /: the home page constructs
+    // the Turso client at module load (db/client.ts), so probing / in an
+    // env without TURSO_* (e.g. CI) crashes the probe forever. /design-system
+    // never imports the db client -- the only route this config tests.
+    url: "http://localhost:3002/design-system",
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
