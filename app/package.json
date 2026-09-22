@@ -20,7 +20,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "verify": "bash scripts/verify.sh",
     "verify:full": "bash scripts/verify.sh --full",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:design-system": "playwright test --config=playwright.design-system.config.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

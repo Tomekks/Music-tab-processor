@@ -22,6 +22,8 @@ import { resolveValue } from "./resolve.mjs";
  * @property {string} rawValue the literal $value in tokens.json — may be "{...}"
  * @property {boolean} isModified rawValue differs from the default file's rawValue
  * @property {boolean} isAlias rawValue starts with "{"
+ * @property {boolean} isInheritedFromParent leaf is absent from the brand's own
+ *   sparse tree (always false for a root brand call without ownTree)
  */
 
 /** @type {SectionMeta[]} Declared render order — never object insertion order. */
@@ -60,11 +62,15 @@ export function humanize(segment) {
  * enumerates after "8" regardless of insertion order); colors/fonts keep
  * schema order. Unknown top-level branches throw loudly: a new schema branch
  * needs its own review, not silent inclusion or silent omission.
- * @param {object} tokensTree live tokens.json tree (not mutated)
- * @param {object} defaultsTree tokens.default.json tree (not mutated)
+ * @param {object} tokensTree live, MERGED tree (resolveBrandTree's `.tree` for
+ *   a child brand, or a root brand's own tokens.json directly)
+ * @param {object} defaultsTree tokens.default.json tree — ignored when `ownTree`
+ *   is provided (a child brand has no defaults file; see isModified below)
+ * @param {object | null} [ownTree] the child brand's own SPARSE tokens.json,
+ *   or omitted/null for a root brand
  * @returns {FieldDescriptor[]}
  */
-export function buildFieldDescriptors(tokensTree, defaultsTree) {
+export function buildFieldDescriptors(tokensTree, defaultsTree, ownTree = null) {
   const known = new Set(SECTIONS.map((s) => s.key));
   /** @type {Map<string, FieldDescriptor[]>} */
   const bySection = new Map(SECTIONS.map((s) => [s.key, []]));
@@ -84,8 +90,9 @@ export function buildFieldDescriptors(tokensTree, defaultsTree) {
       $type: leaf.$type,
       value: String(resolveValue(tokensTree, leaf.$value)),
       rawValue,
-      isModified: defRaw === null ? true : rawValue !== defRaw,
+      isModified: ownTree ? false : defRaw === null ? true : rawValue !== defRaw,
       isAlias: rawValue.startsWith("{"),
+      isInheritedFromParent: ownTree !== null && getLeaf(ownTree, path) === null,
     });
   }
   const numericFirst = (/** @type {FieldDescriptor[]} */ fields) => {

@@ -41,7 +41,7 @@ const FALLBACK_GAP_SEC = 0.5;
 export function useMetronome(defaultBpm: number, stepCount: number, stepTimes: number[]) {
   const [bpm, setBpm] = useState(() => Math.round(defaultBpm) || 60);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); // true once play has been pressed at least once
+  const [hasStarted, setHasStarted] = useState(true); // first step selected by default on song open (no "never started" state)
   const [currentStep, setCurrentStep] = useState(0);
   const [loopRange, setLoopRange] = useState<LoopRange | null>(null);
   // Mirrors currentStep so the scheduling effect below can read the latest
@@ -142,9 +142,10 @@ export function useMetronome(defaultBpm: number, stepCount: number, stepTimes: n
     [stepCount],
   );
 
-  // Null (not 0) until the first play, so a consumer can tell "never
-  // started" apart from "paused at the first step" and choose not to draw
-  // a playhead prematurely.
+  // Always a real step index (never null -- the first step is selected by
+  // default on song open, so the playhead is visible before anyone presses
+  // play). Consumers still guard null for safety, and an empty song yields
+  // no segments to mark either way.
   return {
     bpm,
     setBpm,

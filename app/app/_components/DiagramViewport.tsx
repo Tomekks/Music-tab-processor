@@ -53,7 +53,17 @@ export function DiagramViewport({
         />
       )}
       {active === "Fretboard" && (
-        <FretboardDiagram notes={notes} tuning={tuning} currentStep={currentStep} bordered={false} showHeader={false} showCaption={false} />
+        <FretboardDiagram
+          notes={notes}
+          tuning={tuning}
+          currentStep={currentStep}
+          loopRange={loopRange}
+          bordered={false}
+          showHeader={false}
+          showCaption={false}
+          highOnTop={highOnTop}
+          onToggleHighOnTop={onToggleHighOnTop}
+        />
       )}
       {active === "Ascii" && <AsciiView asciiTab={asciiTab} />}
     </div>

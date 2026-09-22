@@ -1,15 +1,42 @@
 import { TabSelector } from "./TabSelector";
-import { MetronomeControls } from "@/components/MetronomeControls";
+import { ResetButton, PlayButton, TempoField, MidiButton } from "@/components/MetronomeControls";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import type { LoopRange } from "@/hooks/useMetronome";
 import type { Tab } from "./StudioTabs";
 import { TABS } from "./StudioTabs";
 
-// TabSelector and MetronomeControls are permanent siblings here, both always mounted
-// regardless of which tab is active -- this is the fix for the bug SongTabs.tsx has
-// today, where the metronome only mounts inside the Sheet tab's branch. Neither
-// component knows the other exists; this file is the only place that puts them next
-// to each other.
+// TabSelector and the transport rows are permanent siblings here, both always
+// mounted regardless of which tab is active -- this is the fix for the bug
+// SongTabs.tsx has today, where the metronome only mounts inside the Sheet
+// tab's branch. Neither component knows the other exists; this file is the
+// only place that puts them next to each other.
+//
+// Row 1 (spec 1+4): under md, TabSelector owns row 1 and the transport group
+// wraps below it (flex-wrap -- the loop pill never overlaps the diagrams).
+// Shortcut state is gone (spec 8d removed the opt-out -- always on, hint
+// lives in the header now); this file only renders controls.
+//
+// TransportLayout (spec 8d, option A; responsive contract amended by the
+// 8d-wrap fix-spec and live bug reports): explicit row wrappers composing
+// the MetronomeControls pieces. Tabs always own the first row; at xl and
+// above the wrappers collapse via xl:contents into one complete transport
+// row below the tabs (Reset, Play, Flip, MIDI, Tempo, Loop -- the
+// shared-row-with-tabs plan proved ~38px short even after the final
+// permitted xl spacing adjustment, measured slack 0.0px, so the fix-spec
+// relaxed 1280 to this two-row layout rather than shaving further). Below
+// xl the wrappers are content-width flow items (never basis-full: forcing
+// each box full-width stacked Flip/MIDI/Tempo into a solo column instead of
+// letting them fill the second row one by one, reported as a live bug with
+// screenshot) with explicit order: primary -> flip -> midi -> tempo -> pill
+// (parent-level order is what lets Flip lead below xl while all controls
+// share one flex container). The loop pill sits in its own wrapper last per
+// the bug report. All controls keep shrink-0 content widths; Flip (whose
+// own file is out of the allowlist) is protected by its wrapper box. Reset,
+// Play, MIDI, and Flip share min-h-[44px] so no button renders larger.
+//
+// Pill (spec 2): always mounted in exactly one of two states -- set-range
+// clear-button or empty-state status text -- so the toolbar never reflows
+// between loop states. Wash styling belongs to spec 3; position/behavior here.
 export function DetailToolbar({
   active,
   onSelect,
@@ -26,40 +53,85 @@ export function DetailToolbar({
   metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void; reset: () => void };
   soundEnabled: boolean;
   onToggleSound: () => void;
-  // Sheet-only (Fretboard owns its own separate orientation toggle, rendered
-  // inside FretboardDiagram itself) -- see SheetDiagram.tsx and DiagramViewport.tsx.
+  // Spec 7: the single orientation control -- always mounted on every tab
+  // (Sheet, Fretboard, Ascii), owned by StudioTabs as persisted global state.
+  // SheetDiagram and FretboardDiagram both follow it and suppress their own
+  // in-view toggles when controlled -- see StudioTabs.tsx and
+  // DiagramViewport.tsx.
   highOnTop: boolean;
   onToggleHighOnTop: () => void;
-  // Also Sheet-only (2026-09-10 drag-to-select, see SheetDiagram.RULES.md rule
-  // 10). Rendered here, before the Reset button, instead of inside the Sheet
-  // view itself -- see SheetDiagram.tsx's showOrientationToggle prop doc comment.
+  // Loop range creation is Sheet-only (2026-09-10 drag-to-select, see
+  // SheetDiagram.RULES.md rule 10) -- but the pill itself renders on every
+  // tab (spec 2): a set loop must stay visible and clearable outside Sheet,
+  // and the empty state doubles as loop-feature discovery.
   loopRange: LoopRange | null;
   onClearLoop: () => void;
 }) {
   return (
-    <div className="border-t border-border px-8 py-4 flex items-center justify-between gap-6">
-      <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
-      <div className="flex items-center gap-3">
-        {active === "Sheet" && loopRange && (
+    <div className="border-t border-border px-8 py-4 flex flex-col gap-3">
+      <div className="flex flex-col gap-3 md:gap-6">
+        <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
+        <TransportLayout
+          loopRange={loopRange}
+          onClearLoop={onClearLoop}
+          metronome={metronome}
+          soundEnabled={soundEnabled}
+          onToggleSound={onToggleSound}
+          highOnTop={highOnTop}
+          onToggleHighOnTop={onToggleHighOnTop}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TransportLayout({
+  loopRange,
+  onClearLoop,
+  metronome,
+  soundEnabled,
+  onToggleSound,
+  highOnTop,
+  onToggleHighOnTop,
+}: {
+  loopRange: LoopRange | null;
+  onClearLoop: () => void;
+  metronome: { bpm: number; setBpm: (bpm: number) => void; isPlaying: boolean; toggle: () => void; reset: () => void };
+  soundEnabled: boolean;
+  onToggleSound: () => void;
+  highOnTop: boolean;
+  onToggleHighOnTop: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-3 order-1 xl:contents shrink-0">
+        <ResetButton onReset={metronome.reset} />
+        <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
+      </div>
+      <div className="order-2 xl:contents shrink-0">
+        <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
+      </div>
+      <div className="order-3 xl:contents shrink-0">
+        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+      </div>
+      <div className="order-4 xl:contents shrink-0">
+        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+      </div>
+      <div className="order-5 xl:contents shrink-0">
+        {loopRange ? (
           <button
             onClick={onClearLoop}
-            className="text-xs font-mono px-2 py-1 rounded-full"
+            className="text-xs font-mono px-2 py-1 rounded-full shrink-0"
             style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
             title="Clear loop"
           >
             Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
           </button>
+        ) : (
+          <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0">
+            Loop: not selected
+          </span>
         )}
-        <MetronomeControls
-          bpm={metronome.bpm}
-          onBpmChange={metronome.setBpm}
-          isPlaying={metronome.isPlaying}
-          onToggle={metronome.toggle}
-          onReset={metronome.reset}
-          soundEnabled={soundEnabled}
-          onToggleSound={onToggleSound}
-        />
-        {active === "Sheet" && <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />}
       </div>
     </div>
   );

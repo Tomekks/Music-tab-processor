@@ -143,3 +143,46 @@ test("unknown top-level branches throw loudly instead of rendering or vanishing"
   tokens.experimental = { foo: { $value: "1px", $type: "dimension" } };
   assert.throws(() => buildFieldDescriptors(tokens, defaultsTree()), /Unknown token section/);
 });
+
+// Sparse child-brand own tree: only what this brand overrides.
+const ownTree = () => ({
+  semantic: {
+    color: {
+      surface: { $value: "#000000", $type: "color" },
+    },
+  },
+});
+
+test("ownTree marks present leaves overridden and absent leaves inherited", () => {
+  const fields = buildFieldDescriptors(tokensTree(), defaultsTree(), ownTree());
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  assert.equal(byPath["semantic.color.surface"].isInheritedFromParent, false);
+  assert.equal(byPath["semantic.color.accent"].isInheritedFromParent, true);
+  assert.equal(
+    byPath["component.button.primaryBackground"].isInheritedFromParent,
+    true,
+  );
+});
+
+test("ownTree forces isModified false even where raw values differ", () => {
+  const fields = buildFieldDescriptors(tokensTree(), defaultsTree(), ownTree());
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  // surface's own raw ("#000000") differs from the defaults raw — still not
+  // "modified": there is no child-level defaults file to differ from.
+  assert.equal(byPath["semantic.color.surface"].isModified, false);
+  assert.equal(byPath["semantic.color.accent"].isModified, false);
+});
+
+test("without ownTree every leaf is root-brand shaped", () => {
+  const fields = buildFieldDescriptors(tokensTree(), defaultsTree());
+  assert.ok(fields.every((f) => f.isInheritedFromParent === false));
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  assert.equal(byPath["semantic.color.surface"].isModified, false);
+  const edited = tokensTree();
+  edited.semantic.color.surface.$value = "#000000";
+  const editedFields = buildFieldDescriptors(edited, defaultsTree());
+  assert.equal(
+    editedFields.find((f) => f.path === "semantic.color.surface").isModified,
+    true,
+  );
+});

@@ -35,3 +35,23 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci
       - run: npm run verify:full
+
+  e2e-design-system:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # Same pin/cache convention as the verify job above.
+          node-version-file: ".nvmrc"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # No TURSO_* placeholders needed here (unlike verify above): this runs
+      # `next dev`, not a production build, against /design-system only — a
+      # route that never imports the db client.
+      - run: npm run test:e2e:design-system

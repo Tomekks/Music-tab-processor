@@ -2,8 +2,9 @@
 // No filesystem access, no network, no mutation of the input trees —
 // route.ts owns HTTP + disk and delegates here. All functions are importable
 // by node --test without a running Next server.
+import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -158,13 +159,58 @@ export function validateWriteValue(leaf, value) {
 }
 
 /**
- * @param {object} tokensTree live tokens.json tree (not mutated)
+ * Ensure `path` exists as a leaf in `ownTree` (a SPARSE, already-cloned tree),
+ * creating intermediate objects and the leaf itself if missing — using
+ * `typeHint` ($type from the resolved/merged leaf) for the created leaf's
+ * $type, since a brand-new leaf has no $type of its own yet. A present-but-
+ * malformed value where an intermediate object or the leaf itself is expected
+ * is a malformed file, not a missing path: throw loudly (the caller maps it
+ * to 400) rather than silently overwriting unrelated data.
+ * @param {object} ownTree mutable — already a clone, this function mutates it
+ * @param {string} path
+ * @param {string} typeHint
+ * @returns {TokenLeaf} the (possibly newly-created) leaf, mutated by the caller
+ */
+function ensureOwnLeaf(ownTree, path, typeHint) {
+  const segments = path.split(".");
+  let node = ownTree;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const seg = segments[i];
+    if (node[seg] === undefined) {
+      node[seg] = {};
+    }
+    if (
+      node[seg] === null ||
+      typeof node[seg] !== "object" ||
+      Array.isArray(node[seg]) ||
+      "$value" in node[seg]
+    ) {
+      throw new Error(`unexpected existing value at "${segments.slice(0, i + 1).join(".")}" — expected an object`);
+    }
+    node = node[seg];
+  }
+  const last = segments.at(-1);
+  if (node[last] === undefined) {
+    node[last] = { $value: "", $type: typeHint };
+  } else if (node[last] === null || typeof node[last] !== "object" || !("$value" in node[last])) {
+    throw new Error(`unexpected existing value at "${path}" — expected a token leaf`);
+  }
+  return node[last];
+}
+
+/**
+ * @param {object} mergedTree live tokens.json tree (resolveBrandTree's `.tree`
+ *   for a child brand, or the root brand's own tokens.json directly) — the tree
+ *   paths are validated against; never mutated
  * @param {string} path
  * @param {string} value canonical string form, unit/suffix included
+ * @param {object | null} [ownTree] the child brand's own sparse tree to write
+ *   into — omitted/null for a root brand (then mergedTree is written, exactly
+ *   as before)
  * @returns {{ok: true, tokens: object} | ApplyErr}
  */
-export function applyWrite(tokensTree, path, value) {
-  const leaf = getLeaf(tokensTree, path);
+export function applyWrite(mergedTree, path, value, ownTree = null) {
+  const leaf = getLeaf(mergedTree, path);
   if (!leaf) {
     return { ok: false, status: 400, error: `"${path}" is not a known token path` };
   }
@@ -172,9 +218,107 @@ export function applyWrite(tokensTree, path, value) {
   if (!valid.ok) {
     return { ok: false, status: 400, error: valid.error };
   }
-  const tokens = structuredClone(tokensTree);
-  getLeaf(tokens, path).$value = value;
-  return { ok: true, tokens };
+  if (ownTree === null) {
+    // Root brand: byte-for-byte today's behavior, own === merged.
+    const tokens = structuredClone(mergedTree);
+    getLeaf(tokens, path).$value = value;
+    return { ok: true, tokens };
+  }
+  const own = structuredClone(ownTree);
+  try {
+    ensureOwnLeaf(own, path, leaf.$type).$value = value;
+  } catch (err) {
+    return { ok: false, status: 400, error: err instanceof Error ? err.message : String(err) };
+  }
+  return { ok: true, tokens: own };
+}
+
+/**
+ * Apply a batch of edits atomically: validate every edit first; if any fails,
+ * return the FIRST failure and write nothing. A "brand"-scoped edit resolves
+ * to its alias target (read from the tree at that path) before writing; an
+ * "exception"-scoped edit writes `path` as-is. A "brand" edit whose leaf is
+ * not an alias fails the whole batch (fail-closed — there's nothing to
+ * cascade to). Two edits resolving to the same target path apply last-wins,
+ * in array order — 8b's UI owns warning on that case, not this function.
+ * @param {object} mergedTree live tokens.json tree (resolveBrandTree's `.tree`
+ *   for a child brand, or the root brand's own tokens.json directly) — every
+ *   edit is validated against this tree; never mutated
+ * @param {{ path: string, value: string, scope: "exception" | "brand" }[]} edits
+ * @param {object | null} [ownTree] the child brand's own sparse tree to write
+ *   into — omitted/null for a root brand (then mergedTree is written, exactly
+ *   as before)
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyBatchWrite(mergedTree, edits, ownTree = null) {
+  if (!Array.isArray(edits) || edits.length === 0) {
+    return { ok: false, status: 400, error: '"edits" must be a non-empty array' };
+  }
+  const collected = [];
+  for (let i = 0; i < edits.length; i++) {
+    const edit = edits[i];
+    if (!edit || typeof edit !== "object") {
+      return {
+        ok: false,
+        status: 400,
+        error: `edit at index ${i}: must be an object with "path", "value" and "scope"`,
+      };
+    }
+    const { path, value, scope } = edit;
+    if (
+      typeof path !== "string" ||
+      typeof value !== "string" ||
+      (scope !== "exception" && scope !== "brand")
+    ) {
+      return {
+        ok: false,
+        status: 400,
+        error: `edit at index ${i}: "path" and "value" must be strings and "scope" must be "exception" or "brand"`,
+      };
+    }
+    const leaf = getLeaf(mergedTree, path);
+    if (!leaf) {
+      return { ok: false, status: 400, error: `edit at index ${i}: "${path}" is not a known token path` };
+    }
+    let targetPath = path;
+    let targetLeaf = leaf;
+    if (scope === "brand") {
+      if (typeof leaf.$value !== "string" || !leaf.$value.startsWith("{")) {
+        return {
+          ok: false,
+          status: 400,
+          error: `edit at index ${i}: "${path}" is not an alias — nothing to cascade to for a brand-wide edit`,
+        };
+      }
+      targetPath = leaf.$value.slice(1, -1);
+      targetLeaf = getLeaf(mergedTree, targetPath);
+      if (!targetLeaf) {
+        return { ok: false, status: 400, error: `edit at index ${i}: "${targetPath}" is not a known token path` };
+      }
+    }
+    const valid = validateWriteValue(targetLeaf, value);
+    if (!valid.ok) {
+      return { ok: false, status: 400, error: `edit at index ${i}: ${valid.error}` };
+    }
+    collected.push({ targetPath, targetType: targetLeaf.$type, value });
+  }
+  if (ownTree === null) {
+    // Root brand: byte-for-byte today's behavior, own === merged.
+    const tokens = structuredClone(mergedTree);
+    for (const { targetPath, value } of collected) {
+      getLeaf(tokens, targetPath).$value = value;
+    }
+    return { ok: true, tokens };
+  }
+  const own = structuredClone(ownTree);
+  try {
+    for (const { targetPath, targetType, value } of collected) {
+      ensureOwnLeaf(own, targetPath, targetType).$value = value;
+    }
+  } catch (err) {
+    return { ok: false, status: 400, error: err instanceof Error ? err.message : String(err) };
+  }
+  return { ok: true, tokens: own };
 }
 
 /**
@@ -232,4 +376,95 @@ export function applySetAsDefault(tokensTree, defaultsTree, path) {
   const defaults = structuredClone(defaultsTree);
   getLeaf(defaults, path).$value = leaf.$value;
   return { ok: true, defaults };
+}
+
+/**
+ * Delete a leaf from a CHILD brand's own tokens.json tree -- not copy a
+ * value, delete -- so it goes back to inheriting the parent brand's value
+ * (including any future changes to it), rather than freezing a snapshot the
+ * way applyReset's tokens.default.json copy does. Also prunes any ancestor
+ * object left empty by the deletion, so the child's tokens.json only ever
+ * contains leaves it genuinely still overrides -- no empty scaffolding.
+ * @param {object} tokensTree the CHILD brand's own live tokens.json tree (not mutated) --
+ *   NOT the merged/resolved tree; a sparse tree containing only overrides
+ * @param {string} path
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyResetToParent(tokensTree, path) {
+  const leaf = getLeaf(tokensTree, path);
+  if (!leaf) {
+    return {
+      ok: false,
+      status: 400,
+      error: `"${path}" is not present in this brand's own tokens.json -- nothing to reset (it's already inherited, or not a valid path)`,
+    };
+  }
+  const tokens = structuredClone(tokensTree);
+  const segments = path.split(".");
+  const chain = [tokens];
+  for (let i = 0; i < segments.length - 1; i++) {
+    chain.push(chain[i][segments[i]]);
+  }
+  delete chain[chain.length - 1][segments[segments.length - 1]];
+  for (let i = chain.length - 1; i > 0; i--) {
+    if (Object.keys(chain[i]).length === 0) {
+      delete chain[i - 1][segments[i - 1]];
+    } else {
+      break;
+    }
+  }
+  return { ok: true, tokens };
+}
+
+const SEED_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+const NEUTRAL_KEYS = [
+  "background", "foreground", "border", "surface",
+  "surfaceText", "surfaceHover", "surfaceActive", "surfaceActiveText",
+];
+
+/**
+ * @param {object} tokensTree live tokens.json tree (not mutated)
+ * @param {string} neutralSeed 6-digit hex, e.g. "#faf9f5"
+ * @param {string} accentSeed 6-digit hex, e.g. "#ae97f7"
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed) {
+  if (!SEED_COLOR_RE.test(neutralSeed) || !SEED_COLOR_RE.test(accentSeed)) {
+    return {
+      ok: false,
+      status: 400,
+      error: `expected 6-digit hex colors like #rrggbb, got ${JSON.stringify(neutralSeed)} / ${JSON.stringify(accentSeed)}`,
+    };
+  }
+  const ramp = generateNeutralRamp(neutralSeed);
+  const { accent, onAccent } = generateAccentPair(accentSeed);
+  for (const hex of [...Object.values(ramp.light), ...Object.values(ramp.dark), accent, onAccent]) {
+    if (typeof hex !== "string" || !SEED_COLOR_RE.test(hex)) {
+      return {
+        ok: false,
+        status: 500,
+        error: `generator produced a non-hex value ${JSON.stringify(hex)} -- not writing anything (see stop-conditions)`,
+      };
+    }
+  }
+  const writes = [
+    ...NEUTRAL_KEYS.map((key) => [`semantic.color.${key}`, ramp.light[key]]),
+    ["semantic.color.accent", accent],
+    ["semantic.color.onAccent", onAccent],
+    ...NEUTRAL_KEYS.map((key) => [`dark.semantic.color.${key}`, ramp.dark[key]]),
+  ];
+  for (const [path] of writes) {
+    if (!getLeaf(tokensTree, path)) {
+      return {
+        ok: false,
+        status: 400,
+        error: `"${path}" is missing from this brand's tokens.json -- generate-from-seed requires the full default-brand leaf set, not a sparse child brand`,
+      };
+    }
+  }
+  const tokens = structuredClone(tokensTree);
+  for (const [path, hex] of writes) {
+    getLeaf(tokens, path).$value = hex;
+  }
+  return { ok: true, tokens };
 }

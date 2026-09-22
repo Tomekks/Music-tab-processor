@@ -33,11 +33,11 @@ Review what the 12 pipeline tests and the app's node --test suite actually catch
 ### 3. Living tech-spec-per-feature convention
 **Status:** Considered · **Priority:** Unranked · **Effort:** M (ongoing)
 
-docs/specs/ currently holds one-off mechanical specs written before pipeline-stage work, not maintained after. This proposes the same for app features, kept updated as behavior changes.
+docs/specs/ (and docs/specs/_done/ for landed ones) currently holds one-off mechanical specs written before pipeline-stage work, not maintained after. This proposes the same for app features, kept updated as behavior changes.
 
 - **Pros:** A precise "how this is supposed to behave" reference a memoryless agent could read instead of reverse-engineering it from source.
 - **Cons:** Real overlap risk — component RULES.md already covers "how it renders", STATUS.md already covers "what's true now". A third parallel living doc per feature is close to what the "three homes" rule exists to prevent.
-- **Related:** `docs/DOCUMENTATION_PRINCIPLES.md`, `docs/specs/_TEMPLATE.md`
+- **Related:** `docs/DOCUMENTATION_PRINCIPLES.md`, `docs/WEB_APP_WORKFLOW.md` §3 (spec template)
 
 ### 4. "Strategist + cheap executor" AI workflow, as a reusable tool
 **Status:** Idea · **Priority:** Unranked · **Effort:** L
@@ -139,6 +139,8 @@ The real s01–s05 pipeline has only ever been run on Mister Sandman and a synth
 
 ### 14. Design system: one main source + resettable per-surface child overrides
 **Status:** Idea · **Priority:** High · **Effort:** L
+
+**Update 2026-09-20 (Task 5a):** parent-resolution/merge is now implemented (`resolveBrandTree` in `app/packages/design-system/src/build-tokens.mjs`, proven by a synthetic `brands/demo-child/` brand) — the "Cons" mechanism question is resolved as build-time, structural (absent leaf = inherited). Reset-to-parent (`applyResetToParent`) follows as Task 5b; editor UI as 5c. The backlog-board's own migration is still open and now understood to need a schema extension first (its ~27-role palette + status colors + serif/sans scale don't fit the current token schema) — see `docs/specs/_done/design-system-brand-inheritance-5a.md` §0. Not done.
 
 One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.
 

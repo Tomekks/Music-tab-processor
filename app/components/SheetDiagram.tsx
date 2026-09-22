@@ -143,8 +143,8 @@ function System({
           y={PAD_TOP - 6}
           width={(band.end - band.start + 1) * stepWidth}
           height={height - PAD_TOP - PAD_BOTTOM + 12}
-          fill="var(--color-accent)"
-          fillOpacity={0.15}
+          fill="var(--color-loop-range)"
+           style={{ fillOpacity: "var(--state-loop-range-opacity)" }}
         />
       )}
 

@@ -3,11 +3,15 @@ import { join } from "node:path";
 import {
   buildActiveBrand,
   resolveBrandDir,
+  resolveBrandTree,
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
+  applyBatchWrite,
+  applyGenerateFromSeed,
   applyReset,
   applyResetAll,
+  applyResetToParent,
   applySetAsDefault,
   applyWrite,
   stringifyTokens,
@@ -29,6 +33,8 @@ function badRequest(error: string) {
   return Response.json({ ok: false, error }, { status: 400 });
 }
 
+const ACTION_LIST_ERROR = `action must be one of: ${VALID_ACTIONS.join(", ")}`;
+
 export async function POST(req: Request) {
   if (process.env.NODE_ENV === "production") {
     return new Response(null, { status: 404 });
@@ -43,13 +49,16 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value } = body as {
+    const { action, path, value, neutralSeed, accentSeed, edits } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
+      neutralSeed?: unknown;
+      accentSeed?: unknown;
+      edits?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
-      return badRequest("action must be one of: write, reset, reset-all, set-as-default");
+      return badRequest(ACTION_LIST_ERROR);
     }
     // All file paths resolve from the active brand at request time — the
     // string "brands/default" appears nowhere here, so a second brand keeps
@@ -62,7 +71,35 @@ export async function POST(req: Request) {
         if (typeof path !== "string" || typeof value !== "string") {
           return badRequest('"write" requires "path" and "value" to be strings');
         }
-        const result = applyWrite(readJson("tokens.json"), path, value);
+        // Validate against the merged tree but write into the brand's own
+        // sparse file when it has a parent (same pattern "reset-to-parent"
+        // already uses) — an inherited path validates (it's in the merge) and
+        // is created as a real override; a root brand passes null and takes
+        // the unchanged branch.
+        const { tree: writeTree, parentBrandDir: writeParent } = resolveBrandTree(brandDir);
+        const result = applyWrite(
+          writeTree,
+          path,
+          value,
+          writeParent ? readJson("tokens.json") : null,
+        );
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
+      case "batch-write": {
+        if (!Array.isArray(edits)) {
+          return badRequest('"batch-write" requires "edits" to be an array');
+        }
+        const { tree: batchTree, parentBrandDir: batchParent } = resolveBrandTree(brandDir);
+        const result = applyBatchWrite(
+          batchTree,
+          edits,
+          batchParent ? readJson("tokens.json") : null,
+        );
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
         }
@@ -74,6 +111,9 @@ export async function POST(req: Request) {
         if (typeof path !== "string") {
           return badRequest('"reset" requires "path" to be a string');
         }
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"reset" is not valid for a child brand — no defaults file exists');
+        }
         const result = applyReset(readJson("tokens.json"), readJson("tokens.default.json"), path);
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
@@ -83,6 +123,9 @@ export async function POST(req: Request) {
         return Response.json({ ok: true });
       }
       case "reset-all": {
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"reset-all" is not valid for a child brand — no defaults file exists');
+        }
         const result = applyResetAll(readJson("tokens.json"), readJson("tokens.default.json"));
         if (!result.ok) {
           return Response.json({ ok: false, error: result.error }, { status: result.status });
@@ -91,9 +134,28 @@ export async function POST(req: Request) {
         buildActiveBrand();
         return Response.json({ ok: true, reset: result.reset });
       }
+      case "reset-to-parent": {
+        if (typeof path !== "string") {
+          return badRequest('"reset-to-parent" requires "path" to be a string');
+        }
+        const { parentBrandDir } = resolveBrandTree(brandDir);
+        if (!parentBrandDir) {
+          return badRequest('"reset-to-parent" is not valid for a brand with no parent');
+        }
+        const result = applyResetToParent(readJson("tokens.json"), path);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
       case "set-as-default": {
         if (typeof path !== "string") {
           return badRequest('"set-as-default" requires "path" to be a string');
+        }
+        if (resolveBrandTree(brandDir).parentBrandDir) {
+          return badRequest('"set-as-default" is not valid for a child brand — no defaults file exists');
         }
         const result = applySetAsDefault(
           readJson("tokens.json"),
@@ -106,11 +168,27 @@ export async function POST(req: Request) {
         atomicWriteString(join(brandDir, "tokens.default.json"), stringifyTokens(result.defaults));
         return Response.json({ ok: true });
       }
+      case "generate-from-seed": {
+        if (typeof neutralSeed !== "string" || typeof accentSeed !== "string") {
+          return badRequest('"generate-from-seed" requires "neutralSeed" and "accentSeed" to be strings');
+        }
+        const { parentBrandDir } = resolveBrandTree(brandDir);
+        if (parentBrandDir) {
+          return badRequest('"generate-from-seed" is not valid for a child brand — generate on its parent brand instead');
+        }
+        const result = applyGenerateFromSeed(readJson("tokens.json"), neutralSeed, accentSeed);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        buildActiveBrand();
+        return Response.json({ ok: true });
+      }
       default: {
         // Unreachable: VALID_ACTIONS gate above rejects anything else. Kept so
         // a future action added to VALID_ACTIONS without a case here fails
         // loudly at request time instead of falling through silently.
-        return badRequest("action must be one of: write, reset, reset-all, set-as-default");
+        return badRequest(ACTION_LIST_ERROR);
       }
     }
   } catch (err) {

@@ -35,7 +35,7 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
           // eslint-disable-next-line @next/next/no-img-element
           <img src={song.coverArtUrl} alt="" className="w-12 h-12 shrink-0 object-cover rounded-[var(--radius)]" />
         ) : (
-          <div className="w-10 h-10 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
+          <div className="w-12 h-12 shrink-0 bg-foreground/10 rounded-[var(--radius)]" aria-hidden="true" />
         )}
         <div className="min-w-0 flex flex-col">
           {/* Always rendered, even with no artist data -- reserves the same

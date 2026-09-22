@@ -46,6 +46,10 @@ separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
    `components/StringOrientationToggle.tsx`, shared verbatim with
    `SheetDiagram` (2026-09-10) — both views need the identical control, so
    there's exactly one implementation instead of two that could drift apart.
+   Spec 7 (2026-09-21) moved the single instance to `DetailToolbar` on every
+   tab (visible label exactly `Flip strings`); the in-view toggle here
+   renders only for the uncontrolled fallback (retired `SongTabs` card) —
+   see rule 10.
 8. **Colors come from the real design-system tokens (2026-09-10)** — same
    `var(--background)`/`var(--foreground)`/`border-border` as `SheetDiagram`
    and `AsciiView`, replacing hardcoded zinc/white. This is what actually
@@ -60,6 +64,22 @@ separately from `app/STATUS.md`. Implementation lives in `app/lib/fretboard.ts`
    shows what a "Fretboard, in order" title or caption would repeat, and the
    outer card is redundant once this is the only content in the tab's
    scroll region.
+10. **Orientation is a persisted global owned by `StudioTabs`, not per-view
+    state (spec 7, 2026-09-21).** `localStorage "tabbytab:orientation"`
+    (`"1"` = thin e on top, default; `"0"` = thick E on top) drives both
+    diagrams from the toolbar's single `Flip strings` control, which renders
+    on every tab; Ascii is unaffected. `FretboardDiagram` accepts optional
+    `highOnTop`/`onToggleHighOnTop` (mirroring `SheetDiagram`'s
+    `isOrientationControlled` pattern): when controlled the in-view toggle
+    is suppressed, when uncontrolled (retired `SongTabs` card, which passes
+    neither) local `useState(true)` renders exactly as today.
+
+11. **Playback state uses independent visual layers.** Every segment keeps the
+    same `border` width; the active segment adds an inset
+    `--color-playback-active` ring and `aria-current="true"`, while a segment
+    inside the inclusive `loopRange` gets the tokenized loop wash. Both can be
+    present at once. The active segment scrolls into the nearest visible area
+    when playback selects it, including when the view mounts mid-playback.
 
 ## Ideas raised, not yet decided
 

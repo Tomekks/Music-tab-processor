@@ -2,6 +2,8 @@
 
 What actually happens, in order, from "I want a UI/functionality change" to it being live — every tool, skill, and gate that fires, and whether it's real today or still in the plan. Read this to check the facts before approving a visual version.
 
+**Note (2026-09-20):** for `app/` work, `docs/WEB_APP_WORKFLOW.md` is the governing doc — this file's app/ rows are background. Pipeline process is Superpowers-driven per `AGENTS.md`.
+
 **Status key:** 🟢 LIVE (true right now) · 🟡 PLANNED (in `docs/superpowers/plans/2026-09-10-app-quality-gates.md`, not built yet) · 🔵 CONDITIONAL (only fires in specific situations, not every change) · ⏱️ BACKGROUND (runs on its own schedule, not part of the per-change sequence)
 
 ---

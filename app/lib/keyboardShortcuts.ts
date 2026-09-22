@@ -17,3 +17,49 @@ export function isEditableTarget(target: { tagName?: string; isContentEditable?:
   const tag = target.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || Boolean(target.isContentEditable);
 }
+
+// Spec 1+4: the single truth table for transport shortcuts. Arrows match by
+// e.key; Space matches by e.code (layout-independent -- hence no key field).
+// Handled-key knowledge lives ONLY here: the StudioTabs listener dispatches
+// via matchTransportShortcut, and hints/aria-keyshortcuts render from these
+// entries -- nothing re-lists keys.
+export type ShortcutAction = "step-back" | "step-forward" | "toggle-play";
+
+export interface ShortcutDef {
+  key?: string;
+  code?: string;
+  action: ShortcutAction;
+  kbd: string[];
+  label: string;
+}
+
+export const TRANSPORT_SHORTCUTS: ShortcutDef[] = [
+  { key: "ArrowLeft", action: "step-back", kbd: ["←"], label: "step" },
+  { key: "ArrowRight", action: "step-forward", kbd: ["→"], label: "step" },
+  { code: "Space", action: "toggle-play", kbd: ["Space"], label: "play/pause" },
+];
+
+/** Pure key matching against the map (no modifiers/scope/editable checks). */
+export function matchTransportShortcut(e: { key: string; code: string }): ShortcutDef | undefined {
+  return TRANSPORT_SHORTCUTS.find((s) => (s.key !== undefined ? e.key === s.key : e.code === s.code));
+}
+
+export function shouldHandleKey(
+  e: {
+    key: string;
+    code: string;
+    metaKey: boolean;
+    ctrlKey: boolean;
+    altKey: boolean;
+    shiftKey?: boolean;
+  },
+  target: { tagName?: string; isContentEditable?: boolean } | null,
+  opts: { inScope: boolean },
+): boolean {
+  if (e.metaKey || e.ctrlKey || e.altKey) return false;
+  if (!opts.inScope) return false;
+  if (isEditableTarget(target)) return false;
+  // shiftKey deliberately ignored (matches today's listener; editable
+  // targets are excluded anyway, so Shift+arrows in text fields stay native).
+  return matchTransportShortcut(e) !== undefined;
+}
