@@ -17,21 +17,58 @@ function hexToRgb(hex: string): string {
   return `rgb(${(n >> 16) & 0xff}, ${(n >> 8) & 0xff}, ${n & 0xff})`;
 }
 
+type RowBox = { x: number; y: number; width: number; height: number };
+
+// Row clustering by bounding-box center-y (items-center aligns centers
+// within a row; rows sit >=12px apart). Returns names per row, top first.
+// Hoisted top-level (8d-wrap fix-spec, third amendment exception) so the two
+// amended row assertions below share the exact mechanism with spec 8d.
+function rowsOf(boxes: Record<string, RowBox>): string[][] {
+  const entries = Object.entries(boxes).map(([name, b]) => ({ name, cy: b.y + b.height / 2 }));
+  entries.sort((a, b) => a.cy - b.cy);
+  const rows: string[][] = [];
+  for (const e of entries) {
+    const prev = rows[rows.length - 1];
+    if (!prev) {
+      rows.push([e.name]);
+      continue;
+    }
+    const prevCys = entries.filter((x) => prev.includes(x.name)).map((x) => x.cy);
+    const prevMean = prevCys.reduce((a, b) => a + b, 0) / prevCys.length;
+    if (Math.abs(e.cy - prevMean) <= 6) prev.push(e.name);
+    else rows.push([e.name]);
+  }
+  return rows.map((r) => r.sort());
+}
+
 test.describe("spec 1+4 toolbar layout", () => {
-  test("1280px: tabs and transport share one row", async ({ page }) => {
+  // Amended by the 8d-wrap fix-spec (third amendment exception, granted):
+  // the shared-row contract is retired. Fallback contract: tabs own row 1,
+  // the complete transport occupies row 2, no horizontal overflow.
+  test("1280px: tabs own row 1, complete transport row 2, no overflow", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const tabs = page.getByRole("tablist", { name: "Tab display mode" });
-    const play = page.getByRole("button", { name: "Play" });
-    const tb = await tabs.boundingBox();
-    const pb = await play.boundingBox();
-    expect(tb, "tablist visible").not.toBeNull();
-    expect(pb, "Play visible").not.toBeNull();
-    // One row: the two vertical ranges overlap.
-    expect(tb!.y).toBeLessThan(pb!.y + pb!.height);
-    expect(pb!.y).toBeLessThan(tb!.y + tb!.height);
+    const raw: Record<string, RowBox | null> = {
+      tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
+      pill: await page.getByText("Loop: not selected", { exact: true }).boundingBox(),
+      reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
+      play: await page.getByRole("button", { name: "Play" }).boundingBox(),
+      tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+      midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+      flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
+    };
+    for (const [name, box] of Object.entries(raw)) {
+      expect(box, `${name} laid out`).not.toBeNull();
+    }
+    expect(rowsOf(raw as Record<string, RowBox>), "1280: tabs row + complete transport row").toEqual([
+      ["tabs"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
+    ]);
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(DESKTOP_VIEWPORT.width);
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -219,8 +256,8 @@ test.describe("spec 2 loop pill", () => {
   });
 
   // layout-rerun (discharges the obligation pinned in specs 1+4 §10 and 3 §10):
-  // spec 1+4's row assertions, repeated with the every-tab pill set and
-  // unset, at both breakpoints.
+  // the fallback row assertions, repeated with the every-tab pill set and
+  // unset, at both breakpoints (desktop: tabs row + transport row).
   test("layout-rerun: every-tab pill preserves rows in both states", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
@@ -228,17 +265,29 @@ test.describe("spec 2 loop pill", () => {
 
     await page.getByRole("navigation", { name: "Songs" }).getByRole("link", { name: /Friction/ }).click();
     await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
-    await dragLoopOnFirstStaff(page);
+    const setPillText = await dragLoopOnFirstStaff(page);
 
-    const assertOneRow = async () => {
-      const tabs = page.getByRole("tablist", { name: "Tab display mode" });
-      const play = page.getByRole("button", { name: "Play" });
-      const tb = await tabs.boundingBox();
-      const pb = await play.boundingBox();
-      expect(tb, "tablist visible").not.toBeNull();
-      expect(pb, "Play visible").not.toBeNull();
-      expect(tb!.y).toBeLessThan(pb!.y + pb!.height);
-      expect(pb!.y).toBeLessThan(tb!.y + tb!.height);
+    // Amended by the 8d-wrap fix-spec (third amendment exception, granted):
+    // desktop follows the fallback contract in both loop states -- tabs row,
+    // then the complete transport row (loop set: pill button; loop unset:
+    // status span -- both must hold the same structure).
+    const assertTwoRows = async (pillName: string) => {
+      const raw: Record<string, RowBox | null> = {
+        tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
+        pill: await page.getByText(pillName, { exact: true }).boundingBox(),
+        reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
+        play: await page.getByRole("button", { name: "Play" }).boundingBox(),
+        tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+        midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+        flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
+      };
+      for (const [name, box] of Object.entries(raw)) {
+        expect(box, `${name} laid out`).not.toBeNull();
+      }
+      expect(rowsOf(raw as Record<string, RowBox>), `desktop two rows (pill: ${pillName})`).toEqual([
+        ["tabs"],
+        ["flip", "midi", "pill", "play", "reset", "tempo"],
+      ]);
     };
     const assertStackedNoOverflow = async (width: number) => {
       const tabs = page.getByRole("tablist", { name: "Tab display mode" });
@@ -252,17 +301,17 @@ test.describe("spec 2 loop pill", () => {
       expect(scrollWidth).toBeLessThanOrEqual(width);
     };
 
-    // Loop set: desktop one row, narrow stacked.
-    await assertOneRow();
+    // Loop set: desktop two rows, narrow stacked.
+    await assertTwoRows(setPillText);
     await page.setViewportSize(NARROW_VIEWPORT);
     await assertStackedNoOverflow(NARROW_VIEWPORT.width);
 
-    // Loop cleared: narrow stacked, desktop one row.
+    // Loop cleared: narrow stacked, desktop two rows.
     await page.getByRole("button", { name: /Loop: steps/ }).click();
     await expectEmptyPill(page);
     await assertStackedNoOverflow(NARROW_VIEWPORT.width);
     await page.setViewportSize(DESKTOP_VIEWPORT);
-    await assertOneRow();
+    await assertTwoRows("Loop: not selected");
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -1224,9 +1273,8 @@ test.describe("spec 8d consolidation", () => {
 
   // Wrap-row helpers (8d-wrap fix-spec): each width below is its own
   // independent test, so a failure at one width never hides the evidence
-  // from the others.
-  type RowBox = { x: number; y: number; width: number; height: number };
-
+  // from the others. RowBox/rowsOf live top-level (shared with the two
+  // amended row assertions above).
   // Stable names, never DOM order: the pill (fresh page => unset span), the
   // four named controls, and the tablist. Throws loudly when any is missing.
   async function transportHandles(page: Page): Promise<Record<string, RowBox>> {
@@ -1243,26 +1291,6 @@ test.describe("spec 8d consolidation", () => {
       expect(box, `${name} laid out`).not.toBeNull();
     }
     return raw as Record<string, RowBox>;
-  }
-
-  // Row clustering by bounding-box center-y (items-center aligns centers
-  // within a row; rows sit >=12px apart). Returns names per row, top first.
-  function rowsOf(boxes: Record<string, RowBox>): string[][] {
-    const entries = Object.entries(boxes).map(([name, b]) => ({ name, cy: b.y + b.height / 2 }));
-    entries.sort((a, b) => a.cy - b.cy);
-    const rows: string[][] = [];
-    for (const e of entries) {
-      const prev = rows[rows.length - 1];
-      if (!prev) {
-        rows.push([e.name]);
-        continue;
-      }
-      const prevCys = entries.filter((x) => prev.includes(x.name)).map((x) => x.cy);
-      const prevMean = prevCys.reduce((a, b) => a + b, 0) / prevCys.length;
-      if (Math.abs(e.cy - prevMean) <= 6) prev.push(e.name);
-      else rows.push([e.name]);
-    }
-    return rows.map((r) => r.sort());
   }
 
   // No control narrower than its content.
