@@ -286,9 +286,16 @@ function DescriptionRow({
 }) {
   const [text, setText] = useState(d.description);
   const [saving, setSaving] = useState(false);
-  useEffect(() => {
+  // Adopt an externally-changed description (a successful save triggers
+  // router.refresh(), updating d.description) without remounting. Adjusted
+  // during render (not in an effect): setState in an effect trips the
+  // cascading-render lint rule — same render-adjust pattern ColorRow and
+  // SliderRow already use, above.
+  const [syncedSource, setSyncedSource] = useState(d.description);
+  if (syncedSource !== d.description) {
+    setSyncedSource(d.description);
     setText(d.description);
-  }, [d.description]);
+  }
   const dirty = text !== d.description;
   return (
     <div className="mt-1 flex items-center gap-2">

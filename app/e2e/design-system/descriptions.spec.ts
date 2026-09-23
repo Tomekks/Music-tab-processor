@@ -48,12 +48,11 @@ const sidebar = (page: Page) =>
 const section = (page: Page, heading: string) =>
   page.getByRole("region", { name: heading, exact: true });
 
+// "Description for <label>" is already unique within a single section (only
+// one field per section shares a given label) -- no row-level scoping
+// needed beyond the section itself.
 const descriptionInput = (page: Page, sectionHeading: string, label: string) =>
-  section(page, sectionHeading)
-    .locator("div.flex.items-start.justify-between.gap-3.py-2", {
-      has: page.getByText(label, { exact: true }),
-    })
-    .getByLabel(`Description for ${label}`);
+  section(page, sectionHeading).getByLabel(`Description for ${label}`);
 
 test.beforeAll(() => {
   // Fail fast on leftover dirt -- same discipline as every prior spec that
