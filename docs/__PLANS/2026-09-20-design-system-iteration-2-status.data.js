@@ -33,5 +33,5 @@ const PLAN_TASKS = [
   { id: "8a", name: "Batch-write logic + route action", status: "done", detail: "<code>134e40d</code> · 7 new tests" },
   { id: "8b", name: "Pending edits, scope choice, explicit Save", status: "done", detail: "<code>650310a</code> + follow-ups <code>4884412</code> · 0 new unit tests, 10 Playwright (1 fixme)" },
   { id: "9",  name: "Per-token descriptions, manually saved", status: "todo", detail: "Spec ready (<code>1d1d61a</code>), not yet handed off" },
-  { id: "10", name: "Dark-theme values shown next to light", status: "todo", detail: "Spec ready (this commit), split out of an early Task 4 draft — unrelated feature, not yet handed off" },
+  { id: "10", name: "Dark-theme values shown next to light", status: "done", detail: "<code>787ad88</code> · 3 new tests, 4 new e2e, human visual checkbox passed via screenshot" },
 ];
