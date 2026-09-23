@@ -64,6 +64,12 @@ optional tools for any tier, not mandatory gates.
 
 ## 3. Spec template (Bounded and Architectural tasks)
 
+**Before drafting Scope/Interface below, read the actual current files the task touches — don't
+rely on `app/status/*.md` or a prior spec's description of them.** Those go stale (confirmed
+2026-09-20: a spec was written for "add the Fretboard playhead" when it had already shipped
+under different filenames, because the task was drafted from a stale status doc instead of the
+live code).
+
 Write the spec from reading the current code — not from building, running, or testing a
 prototype of the change. An implementation the execution model hasn't produced yet doesn't need
 Claude to have already built it once; that's the same work paid for twice. **The one exception is
