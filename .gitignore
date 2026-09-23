@@ -35,6 +35,14 @@ case study prmpting.md
 # Personal skill definitions for various AI tools -- local-only, not this project's code.
 /Skills/
 
+# Skill-manager local cache and lockfile -- local-only, not this project's code.
+/.agents/
+/skills-lock.json
+
+# Nested git worktrees kept inside the repo folder for convenience -- each is
+# its own git checkout on its own branch, not part of this repo's tree.
+/.worktrees/
+
 # Scratch space for trying out architecture ideas before they're a real plan -- local-only.
 /_architecture_playground/
 

@@ -126,3 +126,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Narrow widths read as deliberate rows, route `/`.
   * [ ] Hover states uniform; header row calm on mobile and desktop.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `54dd73f/6633159`; deployed to production via PR #23/#24 (2026-09-22).

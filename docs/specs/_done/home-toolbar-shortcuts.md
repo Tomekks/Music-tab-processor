@@ -121,3 +121,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Hint line legible, not noisy.
   * [ ] Narrow rows breathe (767px).
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `0df7fae`; deployed to production via PR #23/#24 (2026-09-22).

@@ -98,3 +98,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Loop wash readable on both views without obscuring fret dots.
   * [ ] Dark theme equally legible.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check (including an unproven scroll without the explicit callout) with Failure Details filled.
+
+---
+**Landed:** commit `3983306/5eef051/a2b155b`; deployed to production via PR #23/#24 (2026-09-22).

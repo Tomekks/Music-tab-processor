@@ -93,3 +93,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Theme typeface renders in dark theme, route `/`.
   * [ ] Nothing else visibly changed.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `3763bf1/5c8d8fd`; deployed to production via PR #23/#24 (2026-09-22).

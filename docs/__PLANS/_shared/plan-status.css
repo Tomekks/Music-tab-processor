@@ -10,6 +10,8 @@
   --progress-fg: #92650a;
   --todo-bg: #f0f0f2;
   --todo-fg: #6b6b70;
+  --skipped-bg: #f0f0f2;
+  --skipped-fg: #9a5b3d;
   --accent: #4a90d9;
 }
 @media (prefers-color-scheme: dark) {
@@ -25,6 +27,8 @@
     --progress-fg: #e0b84a;
     --todo-bg: #262629;
     --todo-fg: #9a9aa2;
+    --skipped-bg: #2e241f;
+    --skipped-fg: #d99a6b;
   }
 }
 * { box-sizing: border-box; }
@@ -68,4 +72,5 @@ li {
 .status.done { background: var(--done-bg); color: var(--done-fg); }
 .status.progress { background: var(--progress-bg); color: var(--progress-fg); }
 .status.todo { background: var(--todo-bg); color: var(--todo-fg); }
+.status.skipped { background: var(--skipped-bg); color: var(--skipped-fg); }
 footer { margin-top: 2rem; font-size: 0.8rem; color: var(--muted); }

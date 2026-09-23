@@ -106,3 +106,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] One `Flip strings` control reads calm on all three tabs, route `/`.
   * [ ] Flip reads instantly on both diagrams; reload preserves choice.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `b985667`; deployed to production via PR #23/#24 (2026-09-22).

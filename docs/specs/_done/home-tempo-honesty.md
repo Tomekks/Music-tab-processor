@@ -115,3 +115,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Clear-type-commit feels normal, route `/`.
   * [ ] Invalid input visibly reverts; spinner feels normal.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `fc724f5`; deployed to production via PR #23/#24 (2026-09-22).

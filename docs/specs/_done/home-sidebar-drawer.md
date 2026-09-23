@@ -99,3 +99,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Drawer feels native at 390px (backdrop, motion, toggle reach), route `/`.
   * [ ] Desktop indistinguishable from today side-by-side.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `05bb18b`; deployed to production via PR #23/#24 (2026-09-22).

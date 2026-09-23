@@ -10,6 +10,14 @@ This repo's coding agent runs the [Superpowers](https://github.com/obra/superpow
 
 What does **not** defer to any skill, ever: every rule in "Safety & trust principles" below, and everything specific to this repo's own structure (`contracts/`, per-stage `STATUS.md`, the app/ preview-and-shipping gate). Those bind regardless of what a skill would otherwise do on its own.
 
+## Project scale and engineering posture
+
+This is a single-maintainer, hobby-scale project with a publicly reachable app, not a multi-team product with enterprise SLA, compliance, or operational requirements. Optimize for the smallest reliable, comprehensible, reversible solution that solves the concrete problem while preserving the repo's existing module boundaries.
+
+Do not add enterprise-oriented infrastructure, generalized abstractions, speculative extension points, or coordination ceremony without a concrete need. Prefer existing dependencies, direct cohesive code, focused tests, and the repo's existing verification commands over building framework-like solutions for hypothetical future consumers.
+
+This is a default proportionality rule, not a veto: explicit user requirements, real security/data/deployment/accessibility risks, and existing repository gates take priority. Documentation remains part of the deliverable because future sessions and agents must be able to understand and continue the project.
+
 ## How to work in this repo
 
 - **Task sizing and planning follow `superpowers:brainstorming` → `superpowers:writing-plans`.** Brainstorm intent before creative/feature work, then break it into a written plan of small, independently verifiable steps before touching code — no monolithic generation.
