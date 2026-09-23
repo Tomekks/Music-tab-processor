@@ -13,6 +13,7 @@ import {
   applyResetAll,
   applyResetToParent,
   applySetAsDefault,
+  applySetDescription,
   applyWrite,
   stringifyTokens,
 } from "../../../../packages/design-system/src/token-writes.mjs";
@@ -49,13 +50,14 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value, neutralSeed, accentSeed, edits } = body as {
+    const { action, path, value, neutralSeed, accentSeed, edits, description } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
       neutralSeed?: unknown;
       accentSeed?: unknown;
       edits?: unknown;
+      description?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
       return badRequest(ACTION_LIST_ERROR);
@@ -182,6 +184,20 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        return Response.json({ ok: true });
+      }
+      case "set-description": {
+        if (typeof path !== "string" || typeof description !== "string") {
+          return badRequest('"set-description" requires "path" and "description" to be strings');
+        }
+        const result = applySetDescription(readJson("tokens.json"), path, description);
+        if (!result.ok) {
+          return Response.json({ ok: false, error: result.error }, { status: result.status });
+        }
+        atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
+        // Deliberately no buildActiveBrand() here -- a description never
+        // affects generated CSS (build-tokens.mjs never reads $description),
+        // so calling it would just be a wasted rebuild.
         return Response.json({ ok: true });
       }
       default: {

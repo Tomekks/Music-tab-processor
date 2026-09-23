@@ -35,6 +35,7 @@ import { resolveValue } from "./resolve.mjs";
  *   sparse tree (always false for a root brand call without ownTree)
  * @property {DarkValue} [dark] the dark-theme counterpart at "dark.<path>", when
  *   one exists in tokensTree — root-brand only, see buildFieldDescriptors
+ * @property {string} description leaf.$description, or "" when absent
  */
 
 /** @type {SectionMeta[]} Declared render order — never object insertion order. */
@@ -104,6 +105,7 @@ export function buildFieldDescriptors(tokensTree, defaultsTree, ownTree = null) 
       isModified: ownTree ? false : defRaw === null ? true : rawValue !== defRaw,
       isAlias: rawValue.startsWith("{"),
       isInheritedFromParent: ownTree !== null && getLeaf(ownTree, path) === null,
+      description: leaf.$description ?? "",
     };
     // Dark-theme counterpart, root-brand only — a child brand never has a
     // `dark` block, so this lookup naturally misses and `dark` stays absent.

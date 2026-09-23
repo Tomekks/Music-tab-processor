@@ -254,6 +254,7 @@ function DarkValueColumn({
     isModified: d.isModified,
     isAlias: d.isAlias,
     isInheritedFromParent: false,
+    description: "",
   };
   return (
     <div className="min-w-0 flex-1">
@@ -273,6 +274,55 @@ function DarkValueColumn({
   );
 }
 
+// A description isn't a token value -- no scope, no staging, no inheritance
+// concept -- so its save is always immediate and independent of Task 8's
+// pending-edit model, regardless of which FieldRow call site renders it.
+function DescriptionRow({
+  d,
+  onSave,
+}: {
+  d: FieldDescriptor;
+  onSave: (path: string, description: string) => Promise<boolean>;
+}) {
+  const [text, setText] = useState(d.description);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    setText(d.description);
+  }, [d.description]);
+  const dirty = text !== d.description;
+  return (
+    <div className="mt-1 flex items-center gap-2">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={200}
+        placeholder="Where is this used?"
+        aria-label={`Description for ${d.label}`}
+        className={cn(
+          CAPTION,
+          "min-w-0 flex-1 border-b border-transparent bg-transparent focus:border-border",
+          FOCUS_RING,
+        )}
+      />
+      {dirty && (
+        <button
+          type="button"
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            await onSave(d.path, text);
+            setSaving(false);
+          }}
+          className={MUTED_ACTION}
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function FieldRow({
   d,
   disabled,
@@ -286,6 +336,7 @@ function FieldRow({
   isChildBrand,
   parentName,
   onResetToParent,
+  onSetDescription,
 }: {
   d: FieldDescriptor;
   disabled: boolean;
@@ -302,6 +353,7 @@ function FieldRow({
   isChildBrand?: boolean;
   parentName?: string | null;
   onResetToParent?: (path: string) => void;
+  onSetDescription: (path: string, description: string) => Promise<boolean>;
 }) {
   const range = rangeFor(d);
   // Staged mode is on iff onStage is passed (only from ComponentDetailView).
@@ -359,6 +411,7 @@ function FieldRow({
             (exception only — not linked to a shared token)
           </p>
         )}
+        <DescriptionRow d={d} onSave={onSetDescription} />
       </div>
       {d.dark && (
         <DarkValueColumn
@@ -464,6 +517,7 @@ function ComponentDetailView({
   isChildBrand,
   parentName,
   onResetToParent,
+  onSetDescription,
   error,
   feedback,
 }: {
@@ -481,6 +535,7 @@ function ComponentDetailView({
   isChildBrand: boolean;
   parentName: string | null;
   onResetToParent: (path: string) => void;
+  onSetDescription: (path: string, description: string) => Promise<boolean>;
   error: string | null;
   feedback: string | null;
 }) {
@@ -506,6 +561,7 @@ function ComponentDetailView({
             isChildBrand={isChildBrand}
             parentName={parentName}
             onResetToParent={onResetToParent}
+            onSetDescription={onSetDescription}
           />
         ))}
       </div>
@@ -740,6 +796,23 @@ export function Editor({
     }
   }
 
+  async function runSetDescription(path: string, description: string): Promise<boolean> {
+    track(path);
+    setError(null);
+    setFeedback(null);
+    try {
+      const result = await postAction({ action: "set-description", path, description });
+      if (!result.ok) {
+        setError(result.error);
+        return false;
+      }
+      router.refresh();
+      return true;
+    } finally {
+      untrack(path);
+    }
+  }
+
   async function runResetAll() {
     if (!resetArmed) {
       setResetArmed(true);
@@ -819,6 +892,7 @@ export function Editor({
               isChildBrand={isChildBrand}
               parentName={parentName}
               onResetToParent={runResetToParent}
+              onSetDescription={runSetDescription}
             />
           ))}
         </div>
@@ -976,6 +1050,7 @@ export function Editor({
                   isChildBrand={isChildBrand}
                   parentName={parentName}
                   onResetToParent={runResetToParent}
+                  onSetDescription={runSetDescription}
                   error={error}
                   feedback={feedback}
                 />

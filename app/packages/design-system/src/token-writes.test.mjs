@@ -16,6 +16,7 @@ import {
   applySetAsDefault,
   applyResetToParent,
   applyGenerateFromSeed,
+  applySetDescription,
 } from "./token-writes.mjs";
 import { deepMerge } from "./deep-merge.mjs";
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
@@ -62,10 +63,19 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the seven known actions", () => {
+test("VALID_ACTIONS lists exactly the eight known actions", () => {
   assert.deepEqual(
     [...VALID_ACTIONS].sort(),
-    ["batch-write", "generate-from-seed", "reset", "reset-all", "reset-to-parent", "set-as-default", "write"],
+    [
+      "batch-write",
+      "generate-from-seed",
+      "reset",
+      "reset-all",
+      "reset-to-parent",
+      "set-as-default",
+      "set-description",
+      "write",
+    ],
   );
 });
 
@@ -123,6 +133,23 @@ test("stringifyTokens keeps leaves on one line in committed style", () => {
     '{\n  "semantic": {\n    "color": {\n      "accent": { "$value": "#ae97f7", "$type": "color" }\n    }\n  }\n}\n',
   );
   assert.match(out, /\{ "\$value": "#ae97f7", "\$type": "color" \}/);
+  assert.doesNotMatch(out, /\{\n\s*"\$value"/);
+});
+
+test("stringifyTokens keeps a described leaf on one line too, undescribed leaves unaffected", () => {
+  const out = stringifyTokens({
+    semantic: {
+      color: {
+        accent: { $value: "#ae97f7", $type: "color", $description: "active tab text" },
+        surface: { $value: "#ffffff", $type: "color" },
+      },
+    },
+  });
+  assert.match(
+    out,
+    /\{ "\$value": "#ae97f7", "\$type": "color", "\$description": "active tab text" \}/,
+  );
+  assert.match(out, /\{ "\$value": "#ffffff", "\$type": "color" \}/);
   assert.doesNotMatch(out, /\{\n\s*"\$value"/);
 });
 
@@ -204,6 +231,38 @@ test("applySetAsDefault writes only the defaults tree", () => {
   assert.equal(result.defaults.semantic.color.surface.$value, "#000000");
   assert.ok(!("tokens" in result));
   assert.equal(defaults.semantic.color.surface.$value, "#ffffff");
+});
+
+test("applySetDescription writes $description as the leaf's last key", () => {
+  const before = tokensTree();
+  const snapshot = structuredClone(before);
+  const result = applySetDescription(before, "semantic.color.accent", "active tab text");
+  assert.equal(result.ok, true);
+  assert.equal(result.tokens.semantic.color.accent.$description, "active tab text");
+  assert.deepEqual(Object.keys(result.tokens.semantic.color.accent), ["$value", "$type", "$description"]);
+  assert.deepEqual(before, snapshot);
+});
+
+test("applySetDescription rejects an unknown path, a non-string, and an over-length description", () => {
+  assert.deepEqual(applySetDescription(tokensTree(), "semantic.nope", "x"), {
+    ok: false,
+    status: 400,
+    error: '"semantic.nope" is not a known token path',
+  });
+  const nonString = applySetDescription(tokensTree(), "semantic.color.accent", 5);
+  assert.equal(nonString.ok, false);
+  assert.equal(nonString.status, 400);
+  const tooLong = applySetDescription(tokensTree(), "semantic.color.accent", "x".repeat(201));
+  assert.equal(tooLong.ok, false);
+  assert.match(tooLong.error, /200 characters or fewer \(got 201\)/);
+});
+
+test("applySetDescription with an empty string clears an existing description", () => {
+  const tokens = tokensTree();
+  tokens.semantic.color.accent.$description = "stale note";
+  const result = applySetDescription(tokens, "semantic.color.accent", "");
+  assert.equal(result.ok, true);
+  assert.ok(!("$description" in result.tokens.semantic.color.accent));
 });
 
 test("tempfile round-trip: no-op transform is byte-identical", () => {
