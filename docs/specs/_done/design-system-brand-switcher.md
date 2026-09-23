@@ -288,3 +288,6 @@ No `.env`/credentials, no new npm dependency.
 - If a third brand directory exists under `brands/` at implementation time (not just `default`
   and `demo-child`), the acceptance criteria's exact-list assertion needs updating to match reality
   — stop and confirm the real current brand list rather than hardcoding today's two.
+
+---
+**Landed:** commit `95caf0b`; deployed pending push. 3 new build-tokens.test.mjs cases, 2 new field-descriptors.test.mjs cases (humanize hyphen fix), 6 new e2e cases (app/e2e/design-system/brand-switcher.spec.ts), `npm run verify:full` PASS, human visual checkbox passed via screenshot on both real brands.
