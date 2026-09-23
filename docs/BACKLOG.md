@@ -133,7 +133,7 @@ The real s01–s05 pipeline has only ever been run on Mister Sandman and a synth
 ### 14. Design system: one main source + resettable per-surface child overrides
 **Status:** Idea · **Priority:** High · **Effort:** L
 
-**Update 2026-09-20 (Task 5a):** parent-resolution/merge is now implemented (`resolveBrandTree` in `app/packages/design-system/src/build-tokens.mjs`, proven by a synthetic `brands/demo-child/` brand) — the "Cons" mechanism question is resolved as build-time, structural (absent leaf = inherited). Reset-to-parent (`applyResetToParent`) follows as Task 5b; editor UI as 5c. The backlog-board's own migration is still open and now understood to need a schema extension first (its ~27-role palette + status colors + serif/sans scale don't fit the current token schema) — see `docs/specs/_done/design-system-brand-inheritance-5a.md` §0. Not done.
+**Update 2026-09-23:** the core mechanism is now fully done (Tasks 5a/5b/5c: parent-resolution/merge, reset-to-parent, and inherited/overridden editor UI, all shipped and proven via a synthetic `brands/demo-child/` brand) — the "Cons" mechanism question is resolved as build-time, structural (absent leaf = inherited). What's left is user-facing brand management (create/switch/delete a brand through the UI, instead of hand-editing files) — scoped and sized in `docs/superpowers/plans/2026-09-23-design-system-brand-management.md`, decisions locked in `docs/adr/0001-brand-management-architecture.md`. The backlog-board's own migration is deliberately excluded from that plan (backlog-board is being deprecated) and from this item going forward.
 
 One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.
 
@@ -160,15 +160,8 @@ A simple local-only web UI — pick an audio file, click a button, kick off proc
 - **Cons:** Real design/build effort; a write-capable local UI is new attack surface if ever exposed beyond localhost.
 - **Related:** `docs/decisions/backlog-and-scope.md`
 
-### 17. Apply design-system tokens to Fretboard and Ascii
-**Status:** Idea · **Priority:** Unranked · **Effort:** S–M
-
-FretboardDiagram.tsx's colors are still hardcoded, unlike SheetDiagram.tsx which is already wired to the real tokens.
-
-- **Pros:** Sheet already proves the approach works; makes theming (e.g. dark mode) consistent across all three views instead of one.
-- **Cons:** Needs the design-token playground's values to actually be settled first, or this risks being redone once tokens change.
-- **Dependencies:** Design-system token playground reaching stable values
-- **Related:** `app/status/song-views.md`, `app/status/design-system.md`
+### 17. Apply design-system tokens to Fretboard and Ascii — Done
+Moved to `## Archive` 2026-09-23: verified both `FretboardDiagram.tsx` and `AsciiView.tsx` already use real tokens throughout (`var(--foreground)`, `var(--background)`, `border-border`, etc.) — zero hardcoded hex/rgb colors found in either file, or in `SheetDiagram.tsx`. This entry was stale; likely resolved as a side effect of the home-critique-fixes plan's Spec 3 (Fretboard playback-state color).
 
 ### 18. Synthesized audio playback of the tab
 **Status:** Idea · **Priority:** Unranked · **Effort:** Unknown — scope and approach not decided
@@ -236,6 +229,9 @@ Moot: `app/lib/spotify.ts` was deleted when metadata lookup moved to publish tim
 
 ### 26. Enforce CI with branch protection — Done
 Shipped 2026-09-10: "Protect master" ruleset active, requires the `verify` check via PR (verified via API 2026-09-20).
+
+### 17. Apply design-system tokens to Fretboard and Ascii — Done
+Verified 2026-09-23: `FretboardDiagram.tsx` and `AsciiView.tsx` both use real tokens throughout (`var(--foreground)`, `var(--background)`, `border-border`) — zero hardcoded hex/rgb colors in either, or in `SheetDiagram.tsx`. Entry was stale, likely resolved as a side effect of the home-critique-fixes plan's Spec 3 (Fretboard playback-state color).
 
 ### 27. Add the Playwright home-page smoke test — Done
 Shipped: `app/e2e/home.spec.ts` exists (home page loads, no console error), run via `npm run test:e2e`. Not yet folded into `verify.sh`/CI — see `app/status/engineering-practices.md`.
