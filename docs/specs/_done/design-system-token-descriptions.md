@@ -312,3 +312,6 @@ No `.env`/credentials, no new npm dependency.
 - If `stringifyTokens`'s regex fix doesn't cleanly round-trip an existing *undescribed* leaf
   (i.e. the 2-field case regresses), stop — that would corrupt every other leaf in `tokens.json`
   on the next write, not just the ones this task touches.
+
+---
+**Landed:** commits `7482d25`/`020d8c8`; deployed pending push. 6 new token-writes.test.mjs cases, 4 new e2e cases (app/e2e/design-system/descriptions.spec.ts), 6 real seeded descriptions (accent, background, foreground, border, surface, surfaceText -- each verified via grep against real call sites, see commit body), `npm run verify:full` PASS, human visual checkbox passed via screenshot.
