@@ -79,3 +79,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Banner reads as calm information (not error/CTA), route `/`.
   * [ ] `<pre>` rendering unchanged.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `68d81c0`; deployed to production via PR #23/#24 (2026-09-22).

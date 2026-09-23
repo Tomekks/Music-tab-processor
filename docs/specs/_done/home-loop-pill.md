@@ -85,3 +85,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Pill and empty state read as one stable toolbar resident, route `/`.
   * [ ] Muted empty state doesn't look broken or disabled-confusing.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `cbe24e3`; deployed to production via PR #23/#24 (2026-09-22).

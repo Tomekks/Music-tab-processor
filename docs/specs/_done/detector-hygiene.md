@@ -48,3 +48,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
 * Checks rows: Required verification (before/after `detect --json app/` outputs, quoted) | E2E `N/A` | Staging/build `N/A` (no app change — say so explicitly) | Diff check (`git diff --stat` shows only `.impeccable/config.json`).
 * No Runtime Evidence section (no server used). No Human Review section (nothing renders differently).
 * Status: `COMPLETE` when the residual is named and empty as ordered (post-spec-0); `BLOCKED` with Failure Details if noise persists or the residual names an unexpected finding.
+
+---
+**Landed:** commit `3983306` (bundled into the spec-3 "Implement Fretboard playback state styling" commit rather than its own); `.impeccable/config.json` exists in the repo matching this spec exactly. Deployed to production via PR #23/#24 (2026-09-22).

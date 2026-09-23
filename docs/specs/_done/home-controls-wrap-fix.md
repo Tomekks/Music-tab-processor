@@ -123,3 +123,6 @@ commit (this fix is verified by e2e only; checkpoint stays with spec 8d).
 * Any urge to narrow labels/controls/targets, restyle, or move breakpoints
   other than the prescribed md→xl parent flip → stop, out of scope.
 * Anything ambiguous → ask.
+
+---
+**Landed:** commit `6633159`; deployed to production via PR #23/#24 (2026-09-22).

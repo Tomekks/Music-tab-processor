@@ -95,3 +95,6 @@ File the report exactly per `_architecture_playground/toms-scripts/EXECUTION_REP
   * [ ] Empty guidance calm and actionable on desktop and in the drawer, route `/`.
   * [ ] Rows hold still as art loads.
 * Status: `AUTOMATED_GREEN_HUMAN_PENDING` while any checkbox is unticked; `BLOCKED` on any failed/not-run required check with Failure Details filled.
+
+---
+**Landed:** commit `b887ea9/4884412`; deployed to production via PR #23/#24 (2026-09-22).

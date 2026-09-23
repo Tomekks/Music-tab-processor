@@ -1,7 +1,7 @@
 // Shared renderer for every plan's status page. Reads two globals set by the
 // per-plan <slug>-status.data.js, loaded before this script:
 //   PLAN_META  = { title, planFile }
-//   PLAN_TASKS = [{ id, name, status: "done"|"progress"|"todo", detail }]
+//   PLAN_TASKS = [{ id, name, status: "done"|"progress"|"todo"|"skipped", detail }]
 // Adding a feature (a filter, a timestamp, a link) means editing this file
 // once -- every plan's page picks it up on next open. Nothing here reads the
 // filesystem or git; PLAN_TASKS is a plain hand-maintained array, kept
@@ -11,12 +11,13 @@
 // every plan's page reads the same in a list of open tabs — the specific
 // plan name lives in the on-page <h1> instead, not the title.
 
-const STATUS_LABEL = { done: "Done", progress: "In progress", todo: "Not started" };
+const STATUS_LABEL = { done: "Done", progress: "In progress", todo: "Not started", skipped: "Skipped" };
 
 function render() {
   const done = PLAN_TASKS.filter((t) => t.status === "done").length;
   const progress = PLAN_TASKS.filter((t) => t.status === "progress").length;
-  const todo = PLAN_TASKS.length - done - progress;
+  const skipped = PLAN_TASKS.filter((t) => t.status === "skipped").length;
+  const todo = PLAN_TASKS.length - done - progress - skipped;
   const pct = Math.round((done / PLAN_TASKS.length) * 100);
 
   document.getElementById("title").textContent = PLAN_META.title;
@@ -26,7 +27,8 @@ function render() {
   document.getElementById("progress-label").textContent =
     `${done} of ${PLAN_TASKS.length} done` +
     (progress ? ` · ${progress} in progress` : "") +
-    (todo ? ` · ${todo} not started` : "");
+    (todo ? ` · ${todo} not started` : "") +
+    (skipped ? ` · ${skipped} skipped` : "");
 
   const list = document.getElementById("tasks");
   list.innerHTML = "";
