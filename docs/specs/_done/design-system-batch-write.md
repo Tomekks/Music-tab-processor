@@ -187,3 +187,6 @@ doesn't already have (e.g. a non-alias component leaf), don't build a second fix
 - If validating the batch requires touching `field-descriptors.mjs` or any file outside the
   allowlist, stop and ask — this spec was scoped assuming alias detection is re-derivable from
   the raw tree alone (`$value.startsWith("{")`), not from `FieldDescriptor`.
+
+---
+**Landed:** commit `134e40d` (Iteration 2, Task 8a). `applyBatchWrite` confirmed in active use.

@@ -640,3 +640,6 @@ need the directive.
   task starts** (verify `git status` is clean on `task/design-system-brand-data` first — if it
   isn't, `git checkout --` may overshoot into uncommitted Task 1–3 work; commit or stash those
   first, per `[[checkpoint-commit-policy]]`).
+
+---
+**Landed:** commit `602d268` (Iteration 1, Task 4). ColorField/Slider/SegmentedControl/Button confirmed in active use throughout this session's design-system work.

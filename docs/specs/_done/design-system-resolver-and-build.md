@@ -380,3 +380,6 @@ check exists to guard against) + `npm run verify` passes with the new step inclu
 - If the golden-output test's actual `generateCSS()` result doesn't match §3's pinned CSS on the
   first honest attempt, stop and ask which one is wrong — don't edit the fixture to match
   whatever the code produced without checking it against §3's reasoning first.
+
+---
+**Landed:** commit `2a0dd1e` (Iteration 1, Task 2). `resolve.mjs`/`build-tokens.mjs` confirmed in active use throughout this session's design-system work.

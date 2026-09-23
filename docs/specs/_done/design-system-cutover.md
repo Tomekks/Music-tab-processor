@@ -224,3 +224,6 @@ checkpoint commit (ask-first per `AGENTS.md`).
   app/packages/design-system/src/build-tokens.mjs app/.gitignore` restores the pre-cutover state
   exactly; no manual reconstruction needed. Use this to get back to a known-good state before
   re-attempting, rather than debugging forward from a half-applied edit.
+
+---
+**Landed:** commit `5f68e79` (Iteration 1, Task 3). Cutover confirmed complete -- no hand-rolled tokens remain.
