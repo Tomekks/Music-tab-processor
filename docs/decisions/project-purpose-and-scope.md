@@ -8,6 +8,12 @@ The goal is "what's the easiest way for a beginner guitarist to play something r
 
 This project also has a second, explicit purpose: it's a public demonstration of the developer's ability to direct AI tools, as a designer, not a professional software engineer. That's why the repo structure and documentation quality matter as much as the running app — the repo itself is part of the deliverable.
 
+## Scale and proportionality
+
+This is a single-maintainer, hobby-scale project with a publicly reachable app. It is not a multi-team product with enterprise SLA, compliance, or operational requirements. Engineering decisions should therefore favor the smallest reliable, comprehensible, reversible solution for the concrete need rather than speculative scale, generalized abstractions, enterprise infrastructure, or process designed for many contributors.
+
+That context does not lower the bar for security, data integrity, accessibility, user-visible behavior, deployment safety, or verification. It changes proportionality: use the existing dependencies, module boundaries, test commands, and staging workflow before introducing new machinery. Documentation remains important because the repository is itself a deliverable and must be understandable to future sessions and agents.
+
 ## What stays local-only, and why
 
 Source audio, separated stems, MIDI transcriptions, generated tab data, and reference images (`research/00_spike/audio/`, `output/`, `fretboard/`) are excluded from the public GitHub repo (see `.gitignore`). A MIDI or tab derived from a copyrighted song is a derivative work in the same category as a tab itself — fine to keep and use locally, not something to publish. Only the text analysis describing what was tried and found (`RESULTS.md`, `README.md`) is public, since it doesn't reproduce any song's actual content.
