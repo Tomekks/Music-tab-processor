@@ -37,7 +37,7 @@
       "ringColor": { "$value": "{semantic.color.accent}", "$type": "color" }
     },
     "radius": {
-      "base": { "$value": "12px", "$type": "dimension" }
+      "base": { "$value": "8px", "$type": "dimension" }
     },
     "space": {
       "1": { "$value": "4px", "$type": "dimension" },

@@ -81,8 +81,8 @@ test.beforeAll(() => {
   // here with a clear message instead of mid-test.
   const tokens = readTokens();
   const base = leaf(tokens, "semantic.radius.base").$value;
-  if (base !== "12px") {
-    throw new Error(`precondition: semantic.radius.base is ${base}, expected 12px`);
+  if (base !== "8px") {
+    throw new Error(`precondition: semantic.radius.base is ${base}, expected 8px`);
   }
 });
 
@@ -109,7 +109,7 @@ test("1. staging a slider edit shows Save but writes nothing to disk", async ({
   // post on — only then does "no POST" mean anything.
   await page.waitForTimeout(1000);
   expect(posts).toEqual([]);
-  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("8px");
   expect(
     leaf(readTokens(), "component.colorField.radius").$value,
   ).toBe("{semantic.radius.base}");
@@ -130,7 +130,7 @@ test("2. Discard clears the staged edit and restores the field", async ({
   const slider = section(page, "Color Field")
     .locator("label", { hasText: "Radius" })
     .locator('input[type="range"]');
-  await expect(slider).toHaveValue("12");
+  await expect(slider).toHaveValue("8");
 });
 
 test("3. brand-wide Save cascades to the sharing component", async ({
@@ -166,7 +166,7 @@ test("4. reverting restores a fully clean tree", async ({ page }) => {
   await revertButton.click();
   await (await revertResponse).ok();
   const tokens = readTokens();
-  expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(tokens, "semantic.radius.base").$value).toBe("8px");
   expect(leaf(tokens, "component.colorField.radius").$value).toBe(
     "{semantic.radius.base}",
   );
@@ -196,7 +196,7 @@ test("5. colliding brand-wide edits are refused and write nothing", async ({
   await expect(alert).toContainText("Radius (Color Field)");
   await expect(alert).toContainText("Radius (Button)");
   const tokens = readTokens();
-  expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(tokens, "semantic.radius.base").$value).toBe("8px");
   expect(leaf(tokens, "component.colorField.radius").$value).toBe(
     "{semantic.radius.base}",
   );
@@ -213,7 +213,7 @@ test("6. discarding the colliding batch ends clean", async ({ page }) => {
     page.getByRole("button", { name: /Save changes/ }),
   ).toHaveCount(0);
   const tokens = readTokens();
-  expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(tokens, "semantic.radius.base").$value).toBe("8px");
 });
 
 test("7. staging a color edit shows Save but writes nothing to disk", async ({
@@ -252,7 +252,7 @@ test("8. a non-alias field can only stage as exception, even under bulk Brand-wi
   await page.getByRole("button", { name: "Save changes (1)" }).click();
   await (await firstSave).ok();
   expect(leaf(readTokens(), "component.button.radius").$value).toBe("13px");
-  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("8px");
   // The bulk toggle lives in the Save bar, which needs a staged edit to
   // exist — stage a throwaway, flip bulk to Brand-wide, then discard it.
   await setSlider(page, "Button", "Padding X", 20);
@@ -277,7 +277,7 @@ test("8. a non-alias field can only stage as exception, even under bulk Brand-wi
   // Exception semantics: the origin leaf was written, the shared target not.
   const tokens = readTokens();
   expect(leaf(tokens, "component.button.radius").$value).toBe("14px");
-  expect(leaf(tokens, "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(tokens, "semantic.radius.base").$value).toBe("8px");
   // Revert the origin leaf: restores the alias, tree fully clean again.
   const revertResponse = postTokensRequest(page);
   await section(page, "Button")
@@ -288,7 +288,7 @@ test("8. a non-alias field can only stage as exception, even under bulk Brand-wi
   expect(leaf(clean, "component.button.radius").$value).toBe(
     "{semantic.radius.base}",
   );
-  expect(leaf(clean, "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(clean, "semantic.radius.base").$value).toBe("8px");
 });
 
 test("9. a per-field override does not move the bulk default", async ({
@@ -318,7 +318,7 @@ test("9. a per-field override does not move the bulk default", async ({
     page.getByRole("button", { name: /Save changes/ }),
   ).toHaveCount(0);
   // Nothing was ever saved: the tree is untouched.
-  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("12px");
+  expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("8px");
 });
 
 test("10. All-variables edits still auto-commit with no Save bar", async ({
