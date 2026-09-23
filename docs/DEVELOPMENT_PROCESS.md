@@ -50,10 +50,10 @@ What actually happens, in order, from "I want a UI/functionality change" to it b
 
 | Step | Status | What happens |
 |---|---|---|
-| `git push` | 🟢 LIVE | Explicit ask, every time — same rule as commit. |
-| **CI** (`.github/workflows/ci.yml`, `verify` job) | 🟡 PLANNED (Task 3) | Runs `npm run verify` on a clean checkout. **Blocked on a human step first:** `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` must exist as GitHub Actions secrets, or every run fails regardless of code quality (confirmed empirically this session). |
-| **Branch protection requiring the `verify` check** | 🟡 PLANNED (Task 4) | Needs Task 3 green at least once, *and* an explicit decision: this mechanism is PR-shaped — adopting it means branch → PR → merge, not direct pushes to `master` as today. Not implemented until that's agreed separately. |
-| **`superpowers:finishing-a-development-branch`** | 🔵 CONDITIONAL | Only relevant if the work happened on a branch/worktree — decides merge-locally vs. PR vs. keep-as-is. For today's direct-to-`master` work, this is a no-op (confirmed earlier this session: nothing to clean up). |
+| `git push` | 🟢 LIVE | Explicit ask, every time — same rule as commit. Direct pushes to `master` are now rejected (see branch protection row below) — push to a branch, then open a PR. |
+| **CI** (`.github/workflows/ci.yml`, `verify` job) | 🟢 LIVE | Runs `npm run verify` on a clean checkout, on every PR. |
+| **Branch protection requiring the `verify` check** | 🟢 LIVE | Confirmed by an actual rejected push, 2026-09-20 (`GH013: Repository rule violations ... Required status check "verify" is expected`). `master` is PR-only now — a direct `git push origin master` is always rejected regardless of content. |
+| **`superpowers:finishing-a-development-branch`** | 🔵 CONDITIONAL | Now the normal path for `app/` work, since direct-to-`master` pushes no longer succeed: branch → PR → merge. Only skip it for something that doesn't need its own branch/worktree at all. |
 
 ## 6. `app/`-specific staging and deploy
 
@@ -67,8 +67,8 @@ What actually happens, in order, from "I want a UI/functionality change" to it b
 
 | Step | Status | What happens |
 |---|---|---|
-| **Dependabot** | 🟡 PLANNED (Task 2) | Weekly, automatic PRs for vulnerable `app/` npm dependencies. |
-| **Playwright smoke test** | 🟡 PLANNED (Task 5) | One test today (home page loads, no console error); run manually via `npm run test:e2e`, not yet folded into `verify.sh`. |
+| **Dependabot** | 🟢 LIVE | Weekly, automatic PRs for vulnerable `app/` npm dependencies (`.github/dependabot.yml`). |
+| **Playwright smoke test** | 🟢 LIVE, but manual | `app/e2e/home.spec.ts` (home page loads, no console error); run via `npm run test:e2e`, not yet folded into `verify.sh`/CI. |
 | **CodeScene audit** | 🟢 LIVE, but manual/periodic | Last run 2026-09-09, whole repo. No fixed cadence — re-run when `app/` has grown enough to be worth it. |
 | **`docs/DRIFT_CHECK.md`** | 🟢 LIVE, but manual/periodic | Run at natural pause points (end of a phase, before a public push, after a long gap) — not per-change. |
 
@@ -97,8 +97,8 @@ flowchart TD
     J -.->|non-trivial change| RC[requesting/receiving-code-review]
     J --> K[Push - explicit ask first]
     RC --> K
-    K --> L["CI: verify job*"]
-    L --> M{"branch protection*\n(pending PR-workflow decision)"}
+    K --> L["CI: verify job (PR-only, master push rejected otherwise)"]
+    L --> M{"branch protection: verify check required"}
     M --> N[npm run stage - real local build]
     N --> O{Push to git? / Push and deploy? / Skip?}
     O -->|deploy| P[vercel deploy --prod]
@@ -106,7 +106,7 @@ flowchart TD
     O -->|skip| R[keep iterating locally]
 
     classDef planned stroke-dasharray: 5 5;
-    class F,H,L,M planned;
+    class F,H planned;
 ```
 
 `*` = marked planned/partial in the table above, not fully live yet.
