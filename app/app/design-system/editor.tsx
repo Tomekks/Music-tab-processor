@@ -223,6 +223,56 @@ function SliderRow({
   );
 }
 
+// Dark-value's own Revert/Set-as-default never involves staging, child-brand
+// inheritance, or scope override — reusing FieldRow wholesale would drag in
+// all of that conditional logic for a case that can never need it. A
+// focused sibling component keeps the diff small and the dark column's
+// behavior obviously simple.
+function DarkValueColumn({
+  d,
+  disabled,
+  onCommitValue,
+  onRevert,
+  onPromote,
+}: {
+  d: NonNullable<FieldDescriptor["dark"]>;
+  disabled: boolean;
+  onCommitValue: (path: string, value: string) => Promise<boolean>;
+  onRevert: (path: string) => void;
+  onPromote: (path: string) => void;
+}) {
+  // ColorRow needs a full FieldDescriptor shape -- every dark leaf is $type
+  // "color" (all 8 today are under semantic.color), so this cast is safe,
+  // not a workaround for a real type mismatch.
+  const asDescriptor: FieldDescriptor = {
+    path: d.path,
+    section: "semantic.color",
+    label: "Dark",
+    $type: "color",
+    value: d.value,
+    rawValue: d.rawValue,
+    isModified: d.isModified,
+    isAlias: d.isAlias,
+    isInheritedFromParent: false,
+  };
+  return (
+    <div className="min-w-0 flex-1">
+      <ColorRow d={asDescriptor} baseline={d.value} disabled={disabled} commit={(v) => onCommitValue(d.path, v)} />
+      {d.isAlias && <p className={cn(CAPTION, "mt-1")}>{d.rawValue}</p>}
+      {d.isModified && (
+        <div className="mt-1 flex items-center gap-2">
+          <button type="button" disabled={disabled} onClick={() => onRevert(d.path)} className={MUTED_ACTION}>
+            Revert
+          </button>
+          <button type="button" disabled={disabled} onClick={() => onPromote(d.path)} className={MUTED_ACTION}>
+            Set as default
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FieldRow({
   d,
   disabled,
@@ -310,6 +360,15 @@ function FieldRow({
           </p>
         )}
       </div>
+      {d.dark && (
+        <DarkValueColumn
+          d={d.dark}
+          disabled={disabled}
+          onCommitValue={onCommitValue!}
+          onRevert={onRevert}
+          onPromote={onPromote}
+        />
+      )}
       {(d.isModified || pending || (isChildBrand && !d.isInheritedFromParent)) && (
         <div className="flex shrink-0 items-center gap-2 pt-1">
           <button
