@@ -219,6 +219,9 @@ Type-definitions/runtime version mismatch in `app/package.json`, not currently c
 ### 31. `app/package.json` missing a `"type"` field
 `node --test` reparses `.ts` test files as ES modules every run with a small performance warning, because `package.json` doesn't declare its module type. Cosmetic/perf only, not a correctness issue.
 
+### 32. Audit and refactor `editor.tsx`'s `FieldRow` (flagged 2026-09-23, after Task 10)
+`FieldRow` has grown to ~12 props and branches on staged-vs-immediate write mode, child-brand inheritance, dark-value display, and per-token descriptions all in one component — every design-system capability (Tasks 5c, 7, 8b, 10, 9) got bolted onto the same shared row instead of being decomposed. Still correct and each addition landed cleanly, but it's the one place in the design system showing real organic-growth strain (`editor.tsx` itself is pushing ~1,000 lines). Propose an efficient, modular split before the editor's UI polish pass — without breaking the staged-save/inheritance/dark-value/description behavior already tested end-to-end.
+
 ---
 
 ## Archive
