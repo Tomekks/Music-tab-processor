@@ -3,7 +3,9 @@ import { join } from "node:path";
 import {
   buildActiveBrand,
   resolveBrandDir,
+  resolveBrandDirForSlug,
   resolveBrandTree,
+  listBrands,
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
@@ -50,7 +52,7 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value, neutralSeed, accentSeed, edits, description } = body as {
+    const { action, path, value, neutralSeed, accentSeed, edits, description, brand } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
@@ -58,14 +60,25 @@ export async function POST(req: Request) {
       accentSeed?: unknown;
       edits?: unknown;
       description?: unknown;
+      brand?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
       return badRequest(ACTION_LIST_ERROR);
     }
-    // All file paths resolve from the active brand at request time — the
-    // string "brands/default" appears nowhere here, so a second brand keeps
-    // working without touching this route.
-    const brandDir = resolveBrandDir();
+    // Resolves to a specific brand when the request names one (the editor's
+    // brand switcher, Task 1), otherwise falls back to the active brand --
+    // the string "brands/default" appears nowhere here, so a second brand
+    // keeps working without touching this route.
+    let brandDir: string;
+    if (typeof brand === "string") {
+      try {
+        brandDir = resolveBrandDirForSlug(brand);
+      } catch {
+        return badRequest(`Unknown brand "${brand}"`);
+      }
+    } else {
+      brandDir = resolveBrandDir();
+    }
     const readJson = (name: string) => JSON.parse(readFileSync(join(brandDir, name), "utf8"));
 
     switch (action) {
@@ -199,6 +212,9 @@ export async function POST(req: Request) {
         // affects generated CSS (build-tokens.mjs never reads $description),
         // so calling it would just be a wasted rebuild.
         return Response.json({ ok: true });
+      }
+      case "list-brands": {
+        return Response.json({ ok: true, brands: listBrands() });
       }
       default: {
         // Unreachable: VALID_ACTIONS gate above rejects anything else. Kept so

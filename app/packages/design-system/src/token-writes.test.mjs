@@ -63,12 +63,13 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the eight known actions", () => {
+test("VALID_ACTIONS lists exactly the nine known actions", () => {
   assert.deepEqual(
     [...VALID_ACTIONS].sort(),
     [
       "batch-write",
       "generate-from-seed",
+      "list-brands",
       "reset",
       "reset-all",
       "reset-to-parent",
