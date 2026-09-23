@@ -180,3 +180,6 @@ No `.env`/credentials, no new npm dependency, no `token-writes.mjs`/`route.ts` c
   (contradicting §1's "all 8 are under semantic.color, all color type" claim), stop — the
   `asDescriptor` cast in §2 assumes this is always true; don't guess at Slider/other handling for
   a case this spec never designed for.
+
+---
+**Landed:** commit `787ad88`; deployed pending push. 3 new field-descriptors.test.mjs cases, 4 new e2e cases (app/e2e/design-system/dark-values.spec.ts), `npm run verify:full` PASS, human visual checkbox passed via screenshot. Note: the spec claimed "exactly 8" dark leaves; the real count is 9 (`playbackActive` added since) — didn't affect correctness, implementation is generic over count.

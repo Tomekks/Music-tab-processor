@@ -32,6 +32,6 @@ const PLAN_TASKS = [
   { id: "7",  name: "Per-component sidebar navigation", status: "done", detail: "<code>3f6789b</code> + bugfix rounds <code>842fe89</code>/<code>cfe4c3c</code> · UI only, no new unit tests" },
   { id: "8a", name: "Batch-write logic + route action", status: "done", detail: "<code>134e40d</code> · 7 new tests" },
   { id: "8b", name: "Pending edits, scope choice, explicit Save", status: "done", detail: "<code>650310a</code> + follow-ups <code>4884412</code> · 0 new unit tests, 10 Playwright (1 fixme)" },
-  { id: "9",  name: "Per-token descriptions, manually saved", status: "todo", detail: "Spec ready (<code>1d1d61a</code>), not yet handed off" },
-  { id: "10", name: "Dark-theme values shown next to light", status: "todo", detail: "Spec ready (this commit), split out of an early Task 4 draft — unrelated feature, not yet handed off" },
+  { id: "9",  name: "Per-token descriptions, manually saved", status: "done", detail: "<code>7482d25</code>/<code>020d8c8</code> · 6 new tests, 4 new e2e, 6 real seeded descriptions, human visual checkbox passed via screenshot" },
+  { id: "10", name: "Dark-theme values shown next to light", status: "done", detail: "<code>787ad88</code> · 3 new tests, 4 new e2e, human visual checkbox passed via screenshot" },
 ];

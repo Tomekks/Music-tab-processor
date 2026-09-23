@@ -173,6 +173,38 @@ test("ownTree forces isModified false even where raw values differ", () => {
   assert.equal(byPath["semantic.color.accent"].isModified, false);
 });
 
+test("a leaf with a dark counterpart carries a populated dark field", () => {
+  const fields = buildFieldDescriptors(tokensTree(), defaultsTree());
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  const surface = byPath["semantic.color.surface"];
+  assert.ok(surface.dark);
+  assert.equal(surface.dark.path, "dark.semantic.color.surface");
+  assert.equal(surface.dark.value, "#535353");
+  assert.equal(surface.dark.rawValue, "#535353");
+  assert.equal(surface.dark.isAlias, false);
+  // defaultsTree() has no dark block at all -- absent default means modified,
+  // same "no comparison target" rule the base leaf already follows.
+  assert.equal(surface.dark.isModified, true);
+});
+
+test("a leaf with no dark counterpart has dark undefined", () => {
+  const fields = buildFieldDescriptors(tokensTree(), defaultsTree());
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  assert.equal(byPath["semantic.color.accent"].dark, undefined);
+});
+
+test("dark attachment matches by full path, not by leaf name", () => {
+  // component.button.primaryBackground and semantic.color.surface both end in
+  // a leaf name that isn't "surface" for the button one -- the real guard
+  // here is that a dark.* leaf only attaches to the light leaf at the exact
+  // same path, never by matching the last segment alone.
+  const tokens = tokensTree();
+  const fields = buildFieldDescriptors(tokens, defaultsTree());
+  const byPath = Object.fromEntries(fields.map((f) => [f.path, f]));
+  assert.equal(byPath["component.button.primaryBackground"].dark, undefined);
+  assert.equal(byPath["semantic.space.1_5"].dark, undefined);
+});
+
 test("without ownTree every leaf is root-brand shaped", () => {
   const fields = buildFieldDescriptors(tokensTree(), defaultsTree());
   assert.ok(fields.every((f) => f.isInheritedFromParent === false));

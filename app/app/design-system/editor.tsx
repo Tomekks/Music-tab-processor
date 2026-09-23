@@ -223,6 +223,113 @@ function SliderRow({
   );
 }
 
+// Dark-value's own Revert/Set-as-default never involves staging, child-brand
+// inheritance, or scope override — reusing FieldRow wholesale would drag in
+// all of that conditional logic for a case that can never need it. A
+// focused sibling component keeps the diff small and the dark column's
+// behavior obviously simple.
+function DarkValueColumn({
+  d,
+  disabled,
+  onCommitValue,
+  onRevert,
+  onPromote,
+}: {
+  d: NonNullable<FieldDescriptor["dark"]>;
+  disabled: boolean;
+  onCommitValue: (path: string, value: string) => Promise<boolean>;
+  onRevert: (path: string) => void;
+  onPromote: (path: string) => void;
+}) {
+  // ColorRow needs a full FieldDescriptor shape -- every dark leaf is $type
+  // "color" (all 8 today are under semantic.color), so this cast is safe,
+  // not a workaround for a real type mismatch.
+  const asDescriptor: FieldDescriptor = {
+    path: d.path,
+    section: "semantic.color",
+    label: "Dark",
+    $type: "color",
+    value: d.value,
+    rawValue: d.rawValue,
+    isModified: d.isModified,
+    isAlias: d.isAlias,
+    isInheritedFromParent: false,
+    description: "",
+  };
+  return (
+    <div className="min-w-0 flex-1">
+      <ColorRow d={asDescriptor} baseline={d.value} disabled={disabled} commit={(v) => onCommitValue(d.path, v)} />
+      {d.isAlias && <p className={cn(CAPTION, "mt-1")}>{d.rawValue}</p>}
+      {d.isModified && (
+        <div className="mt-1 flex items-center gap-2">
+          <button type="button" disabled={disabled} onClick={() => onRevert(d.path)} className={MUTED_ACTION}>
+            Revert
+          </button>
+          <button type="button" disabled={disabled} onClick={() => onPromote(d.path)} className={MUTED_ACTION}>
+            Set as default
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// A description isn't a token value -- no scope, no staging, no inheritance
+// concept -- so its save is always immediate and independent of Task 8's
+// pending-edit model, regardless of which FieldRow call site renders it.
+function DescriptionRow({
+  d,
+  onSave,
+}: {
+  d: FieldDescriptor;
+  onSave: (path: string, description: string) => Promise<boolean>;
+}) {
+  const [text, setText] = useState(d.description);
+  const [saving, setSaving] = useState(false);
+  // Adopt an externally-changed description (a successful save triggers
+  // router.refresh(), updating d.description) without remounting. Adjusted
+  // during render (not in an effect): setState in an effect trips the
+  // cascading-render lint rule — same render-adjust pattern ColorRow and
+  // SliderRow already use, above.
+  const [syncedSource, setSyncedSource] = useState(d.description);
+  if (syncedSource !== d.description) {
+    setSyncedSource(d.description);
+    setText(d.description);
+  }
+  const dirty = text !== d.description;
+  return (
+    <div className="mt-1 flex items-center gap-2">
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={200}
+        placeholder="Where is this used?"
+        aria-label={`Description for ${d.label}`}
+        className={cn(
+          CAPTION,
+          "min-w-0 flex-1 border-b border-transparent bg-transparent focus:border-border",
+          FOCUS_RING,
+        )}
+      />
+      {dirty && (
+        <button
+          type="button"
+          disabled={saving}
+          onClick={async () => {
+            setSaving(true);
+            await onSave(d.path, text);
+            setSaving(false);
+          }}
+          className={MUTED_ACTION}
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function FieldRow({
   d,
   disabled,
@@ -236,6 +343,7 @@ function FieldRow({
   isChildBrand,
   parentName,
   onResetToParent,
+  onSetDescription,
 }: {
   d: FieldDescriptor;
   disabled: boolean;
@@ -252,6 +360,7 @@ function FieldRow({
   isChildBrand?: boolean;
   parentName?: string | null;
   onResetToParent?: (path: string) => void;
+  onSetDescription: (path: string, description: string) => Promise<boolean>;
 }) {
   const range = rangeFor(d);
   // Staged mode is on iff onStage is passed (only from ComponentDetailView).
@@ -309,7 +418,17 @@ function FieldRow({
             (exception only — not linked to a shared token)
           </p>
         )}
+        <DescriptionRow d={d} onSave={onSetDescription} />
       </div>
+      {d.dark && (
+        <DarkValueColumn
+          d={d.dark}
+          disabled={disabled}
+          onCommitValue={onCommitValue!}
+          onRevert={onRevert}
+          onPromote={onPromote}
+        />
+      )}
       {(d.isModified || pending || (isChildBrand && !d.isInheritedFromParent)) && (
         <div className="flex shrink-0 items-center gap-2 pt-1">
           <button
@@ -405,6 +524,7 @@ function ComponentDetailView({
   isChildBrand,
   parentName,
   onResetToParent,
+  onSetDescription,
   error,
   feedback,
 }: {
@@ -422,6 +542,7 @@ function ComponentDetailView({
   isChildBrand: boolean;
   parentName: string | null;
   onResetToParent: (path: string) => void;
+  onSetDescription: (path: string, description: string) => Promise<boolean>;
   error: string | null;
   feedback: string | null;
 }) {
@@ -447,6 +568,7 @@ function ComponentDetailView({
             isChildBrand={isChildBrand}
             parentName={parentName}
             onResetToParent={onResetToParent}
+            onSetDescription={onSetDescription}
           />
         ))}
       </div>
@@ -681,6 +803,23 @@ export function Editor({
     }
   }
 
+  async function runSetDescription(path: string, description: string): Promise<boolean> {
+    track(path);
+    setError(null);
+    setFeedback(null);
+    try {
+      const result = await postAction({ action: "set-description", path, description });
+      if (!result.ok) {
+        setError(result.error);
+        return false;
+      }
+      router.refresh();
+      return true;
+    } finally {
+      untrack(path);
+    }
+  }
+
   async function runResetAll() {
     if (!resetArmed) {
       setResetArmed(true);
@@ -760,6 +899,7 @@ export function Editor({
               isChildBrand={isChildBrand}
               parentName={parentName}
               onResetToParent={runResetToParent}
+              onSetDescription={runSetDescription}
             />
           ))}
         </div>
@@ -917,6 +1057,7 @@ export function Editor({
                   isChildBrand={isChildBrand}
                   parentName={parentName}
                   onResetToParent={runResetToParent}
+                  onSetDescription={runSetDescription}
                   error={error}
                   feedback={feedback}
                 />

@@ -4,7 +4,7 @@
 // by node --test without a running Next server.
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -31,21 +31,27 @@ export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "
  * narrowing gives TypeScript a definite type) or ApplyErr.
  */
 
-// Matches one expanded leaf object as JSON.stringify(tree, null, 2) emits it:
+// Matches one expanded leaf object as JSON.stringify(tree, null, 2) emits it,
+// with an optional third $description field (always last when present --
+// applySetDescription below always assigns it as a new property, never an
+// in-place update, so JSON.stringify emits $value, $type, $description in
+// that order):
 // {
 //   "$value": <scalar>,
-//   "$type": "<type>"
+//   "$type": "<type>"[,
+//   "$description": "<string>"]
 // }
 // $value is a JSON string (possibly with escapes) or a JSON number.
 const EXPANDED_LEAF_RE =
-  /{\n([ \t]*)"\$value": ((?:"(?:[^"\\\n]|\\.)*"|-?\d+(?:\.\d+)?)),\n\1"\$type": ("(?:[^"\\\n]|\\.)*")\n[ \t]*}/g;
+  /{\n([ \t]*)"\$value": ((?:"(?:[^"\\\n]|\\.)*"|-?\d+(?:\.\d+)?)),\n\1"\$type": ("(?:[^"\\\n]|\\.)*")(?:,\n\1"\$description": ("(?:[^"\\\n]|\\.)*"))?\n[ \t]*}/g;
 
 /**
  * Serialize a token tree exactly in the committed files' style: 2-space
- * indent, every {$value, $type} leaf on ONE line, single trailing newline.
- * Plain JSON.stringify(tree, null, 2) expands each leaf to four lines and
- * would reformat the whole file on the first write — verified against the
- * real tokens.json while writing Task 5, so this exists instead.
+ * indent, every {$value, $type} (or {$value, $type, $description}) leaf on
+ * ONE line, single trailing newline. Plain JSON.stringify(tree, null, 2)
+ * expands each leaf to four (or five) lines and would reformat the whole
+ * file on the first write — verified against the real tokens.json while
+ * writing Task 5, so this exists instead.
  * @param {object} tree
  * @returns {string}
  */
@@ -53,7 +59,10 @@ export function stringifyTokens(tree) {
   return (
     JSON.stringify(tree, null, 2).replace(
       EXPANDED_LEAF_RE,
-      '{ "$value": $2, "$type": $3 }',
+      (_match, _indent, value, type, description) =>
+        description
+          ? `{ "$value": ${value}, "$type": ${type}, "$description": ${description} }`
+          : `{ "$value": ${value}, "$type": ${type} }`,
     ) + "\n"
   );
 }
@@ -376,6 +385,46 @@ export function applySetAsDefault(tokensTree, defaultsTree, path) {
   const defaults = structuredClone(defaultsTree);
   getLeaf(defaults, path).$value = leaf.$value;
   return { ok: true, defaults };
+}
+
+const DESCRIPTION_MAX_LENGTH = 200;
+
+/**
+ * A description is never touched by applyReset/applySetAsDefault -- both
+ * write only `.$value` on the target leaf, already, today, with no change
+ * needed here.
+ * @param {object} tokensTree live tokens.json tree (not mutated)
+ * @param {string} path
+ * @param {string} description empty string clears an existing description
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applySetDescription(tokensTree, path, description) {
+  const leaf = getLeaf(tokensTree, path);
+  if (!leaf) {
+    return { ok: false, status: 400, error: `"${path}" is not a known token path` };
+  }
+  if (typeof description !== "string") {
+    return { ok: false, status: 400, error: '"description" must be a string' };
+  }
+  if (description.length > DESCRIPTION_MAX_LENGTH) {
+    return {
+      ok: false,
+      status: 400,
+      error: `description must be ${DESCRIPTION_MAX_LENGTH} characters or fewer (got ${description.length})`,
+    };
+  }
+  const tokens = structuredClone(tokensTree);
+  const target = getLeaf(tokens, path);
+  if (description === "") {
+    delete target.$description;
+  } else {
+    // Assign as a new property, not an update to an existing key, so it's
+    // always the last key JSON.stringify emits — stringifyTokens's regex
+    // above depends on $value, $type, $description appearing in that order.
+    delete target.$description;
+    target.$description = description;
+  }
+  return { ok: true, tokens };
 }
 
 /**

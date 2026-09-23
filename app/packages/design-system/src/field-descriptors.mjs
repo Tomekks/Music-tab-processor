@@ -13,6 +13,15 @@ import { resolveValue } from "./resolve.mjs";
  */
 
 /**
+ * @typedef {object} DarkValue
+ * @property {string} path e.g. "dark.semantic.color.accent"
+ * @property {string} value resolved display value
+ * @property {string} rawValue literal $value, may be "{...}"
+ * @property {boolean} isModified
+ * @property {boolean} isAlias
+ */
+
+/**
  * @typedef {object} FieldDescriptor
  * @property {string} path dot-joined path, e.g. "component.button.primaryBackground"
  * @property {string} section matches a SECTIONS[].key
@@ -24,6 +33,9 @@ import { resolveValue } from "./resolve.mjs";
  * @property {boolean} isAlias rawValue starts with "{"
  * @property {boolean} isInheritedFromParent leaf is absent from the brand's own
  *   sparse tree (always false for a root brand call without ownTree)
+ * @property {DarkValue} [dark] the dark-theme counterpart at "dark.<path>", when
+ *   one exists in tokensTree — root-brand only, see buildFieldDescriptors
+ * @property {string} description leaf.$description, or "" when absent
  */
 
 /** @type {SectionMeta[]} Declared render order — never object insertion order. */
@@ -83,7 +95,7 @@ export function buildFieldDescriptors(tokensTree, defaultsTree, ownTree = null) 
     const defLeaf = getLeaf(defaultsTree, path);
     const rawValue = String(leaf.$value);
     const defRaw = defLeaf ? String(defLeaf.$value) : null;
-    bySection.get(section).push({
+    const descriptor = {
       path,
       section,
       label: humanize(path.split(".").at(-1)),
@@ -93,7 +105,25 @@ export function buildFieldDescriptors(tokensTree, defaultsTree, ownTree = null) 
       isModified: ownTree ? false : defRaw === null ? true : rawValue !== defRaw,
       isAlias: rawValue.startsWith("{"),
       isInheritedFromParent: ownTree !== null && getLeaf(ownTree, path) === null,
-    });
+      description: leaf.$description ?? "",
+    };
+    // Dark-theme counterpart, root-brand only — a child brand never has a
+    // `dark` block, so this lookup naturally misses and `dark` stays absent.
+    const darkPath = `dark.${path}`;
+    const darkLeaf = getLeaf(tokensTree, darkPath);
+    if (darkLeaf) {
+      const darkDefLeaf = getLeaf(defaultsTree, darkPath);
+      const darkRawValue = String(darkLeaf.$value);
+      const darkDefRaw = darkDefLeaf ? String(darkDefLeaf.$value) : null;
+      descriptor.dark = {
+        path: darkPath,
+        value: String(resolveValue(tokensTree, darkLeaf.$value)),
+        rawValue: darkRawValue,
+        isModified: ownTree ? false : darkDefRaw === null ? true : darkRawValue !== darkDefRaw,
+        isAlias: darkRawValue.startsWith("{"),
+      };
+    }
+    bySection.get(section).push(descriptor);
   }
   const numericFirst = (/** @type {FieldDescriptor[]} */ fields) => {
     const numeric = fields
