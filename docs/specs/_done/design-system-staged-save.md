@@ -363,3 +363,6 @@ spec itself (the manual check below writes to it, same as every prior UI task's 
 - If the collision-blocking message in `runSaveAll` can't cleanly identify both colliding fields
   by label (e.g. a path with no matching descriptor), stop and ask rather than guessing a fallback
   label.
+
+---
+**Landed:** commits `650310a`/`4884412` (Iteration 2, Task 8b). Staged-save flow confirmed in active use throughout this session's Tasks 9/10 work and their e2e suites.

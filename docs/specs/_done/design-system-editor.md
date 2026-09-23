@@ -378,3 +378,6 @@ made routinely per `docs/WEB_APP_WORKFLOW.md` §4 once verified — see
   (plus `git checkout -- app/packages/design-system/package.json` if §1's `exports` fix was
   applied). Manual-test residue in `tokens.json` goes via `git checkout --` per §8, same as
   every prior task on this branch.
+
+---
+**Landed:** commit `c22d574` (Iteration 1, Task 6). `/design-system` editor confirmed live and extended multiple times this session (Tasks 9, 10).

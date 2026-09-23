@@ -390,3 +390,6 @@ functions into one shared, exported helper (`resolve.mjs` is the natural home, s
 owns reference-path/tree semantics) the next time any of them needs to change — not done here, to
 keep this task's diff to the files it actually needs. If a shared `getLeaf(tree, path)` is ever
 wanted too, that's additive on top of whatever consolidation happens, not part of it.
+
+---
+**Landed:** commit `aebc3ed` (Iteration 1, Task 5). `app/app/api/design-system/tokens/route.ts` confirmed in active use and extended multiple times this session (set-description, dark-value handling).

@@ -345,3 +345,6 @@ matches the allowlist (8 files: 6 new, 2 modified) + the manual diff check above
 - If anything about `onAccent`'s computed value seems wrong on inspection (it should read as a
   dark, near-black ink tone, not anything else), stop and ask before proceeding — don't
   recompute a different value unprompted.
+
+---
+**Landed:** commit `cbe9898` (Iteration 1, Task 1). Verified live: this project's workspace scaffold and brand data are in active use throughout the design system.
