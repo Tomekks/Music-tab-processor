@@ -14,7 +14,7 @@ const PLAN_TASKS = [
   { id: "4", name: "Delete brand", status: "done", detail: "<code>9de4f55</code> · soft delete (rename to .trash-*), recoverable by hand" },
   { id: "4.5", name: "editor.tsx modular split", status: "done", detail: "<code>6816a39</code> · docs/BACKLOG.md #32 · Editor complexity 20 -> 17, full e2e suite 34/34 re-run, zero test-file diffs" },
   { id: "4.6", name: "Rider: undeployed-changes indicator", status: "done", detail: "<code>3e798af</code> · badge+banner folded into brand-switcher.tsx (adapted for post-4.5 layout); found & fixed a real .needs-deploy cross-spec leak along the way" },
-  { id: "4.7", name: "Decouple test fixtures from real brands/", status: "todo", detail: "Discovered verifying 4.5 (<code>1ab56cd</code> fixed the immediate breakage); demo-child itself still relied on as permanent by several test files" },
-  { id: "5", name: "Editor UI: generalize beyond \"the default brand\"", status: "todo", detail: "Blocked on: 4.5 (done); should land after 4.7 too, since it touches test files 4.7 also affects" },
+  { id: "4.7", name: "Self-heal the demo-child test fixture", status: "done", detail: "<code>8fdbaf8</code> · git-checkout-restore in each dependent file's setup, not full per-test provisioning (scope call under a token budget constraint); verified by deliberately rm -rf'ing the fixture and rerunning" },
+  { id: "5", name: "Editor UI: generalize beyond \"the default brand\"", status: "todo", detail: "Blocked on: 4.5, 4.7 (both done) -- ready to start" },
   { id: "6", name: "Deferred: simultaneous multi-brand CSS for live apps", status: "todo", detail: "Deliberately deferred until a real second consumer (e.g. the control panel) exists -- not scheduled" },
 ];
