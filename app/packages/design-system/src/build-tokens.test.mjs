@@ -262,8 +262,18 @@ test("cssVarNameForPath agrees with generateCSS's real output for every default-
   }
 });
 
-test("listBrands returns every real brand directory, sorted", () => {
-  assert.deepEqual(listBrands(), ["default", "demo-child"]);
+// Not an exact-list assertion: any brand except "default" can legitimately be
+// deleted (or a new one created) by a real user at any time, so a real,
+// permanent third+ brand existing here is expected, not a fixture-hygiene
+// failure. "default" is the one brand guaranteed to always exist; "demo-child"
+// is a checked-in fixture other tests (inheritance, dark-value, etc.) still
+// depend on -- both are asserted present. Sort order is checked structurally
+// (matches Array.prototype.sort, not a hardcoded list).
+test("listBrands returns every real brand directory, sorted, including at least default and demo-child", () => {
+  const brands = listBrands();
+  assert.ok(brands.includes("default"));
+  assert.ok(brands.includes("demo-child"));
+  assert.deepEqual(brands, [...brands].sort());
 });
 
 test("resolveBrandDirForSlug matches resolveBrandDir for the currently active brand", () => {

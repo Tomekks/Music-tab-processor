@@ -11,10 +11,17 @@ import { join } from "node:path";
 // serially; keep it that way).
 const BRANDS_DIR = join(process.cwd(), "packages/design-system/brands");
 const ACTIVE_BRAND_PATH = "packages/design-system/active-brand.json";
-const KNOWN_BRANDS = new Set(["default", "demo-child"]);
+// Snapshotted in beforeAll, not hardcoded: any brand except "default" can be
+// freely created or deleted by a real user at any time (that's the actual
+// product rule — see docs/superpowers/plans/2026-09-23-design-system-brand-management.md),
+// so a real, permanent third+ brand existing alongside "demo-child" is
+// expected, not a fixture-hygiene failure this spec should refuse to run
+// against. This spec only needs to guarantee it doesn't leave anything NEW
+// behind, not that the world matches some fixed list.
+let knownBrands: Set<string>;
 
 function extraBrandEntries(): string[] {
-  return readdirSync(BRANDS_DIR).filter((name) => !KNOWN_BRANDS.has(name));
+  return readdirSync(BRANDS_DIR).filter((name) => !knownBrands.has(name));
 }
 
 test.beforeAll(() => {
@@ -23,10 +30,7 @@ test.beforeAll(() => {
   } catch {
     throw new Error(`${ACTIVE_BRAND_PATH} has uncommitted changes — revert before running this spec`);
   }
-  const extra = extraBrandEntries();
-  if (extra.length > 0) {
-    throw new Error(`Unexpected entries under brands/: ${extra.join(", ")} — clean up before running this spec`);
-  }
+  knownBrands = new Set(readdirSync(BRANDS_DIR));
 });
 
 test.afterEach(() => {
