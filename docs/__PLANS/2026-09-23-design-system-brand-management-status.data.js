@@ -11,6 +11,7 @@ const PLAN_TASKS = [
   { id: "2", name: "Create brand: New", status: "todo", detail: "Batched with 3, 4 into one spec (low seam-risk, see plan's Sequencing note)" },
   { id: "3", name: "Create brand: Duplicate", status: "todo", detail: "Batched with 2, 4 into one spec" },
   { id: "4", name: "Delete brand", status: "todo", detail: "Batched with 2, 3 into one spec" },
-  { id: "5", name: "Editor UI: generalize beyond \"the default brand\"", status: "todo", detail: "Blocked on: 1, 2, 3, 4" },
+  { id: "4.5", name: "editor.tsx modular split", status: "todo", detail: "docs/BACKLOG.md #32 -- blocked on 2, 3, 4 landing so the split reflects the file's final shape" },
+  { id: "5", name: "Editor UI: generalize beyond \"the default brand\"", status: "todo", detail: "Blocked on: 1, 2, 3, 4, 4.5" },
   { id: "6", name: "Deferred: simultaneous multi-brand CSS for live apps", status: "todo", detail: "Deliberately deferred until a real second consumer (e.g. the control panel) exists -- not scheduled" },
 ];
