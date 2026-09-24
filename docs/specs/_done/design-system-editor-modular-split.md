@@ -240,3 +240,15 @@ Nothing else — `page.tsx` needs no change (§1), no test file needs a change (
   citations.
 - If `FieldRow`'s complexity warning changes (better or worse) as a side effect of the split, that's
   a sign something didn't move as cleanly as planned — stop and look, don't just note it and move on.
+
+---
+**Landed:** commits `6816a39` (split), `1ab56cd` (unrelated test-fragility fix, discovered while
+verifying this task — see its own message). `npm run typecheck` clean, `npm run verify` 125/125 PASS,
+full design-system e2e suite 34/34 PASS (1 pre-existing unrelated skip), every spec file's diff
+against this task empty. `Editor` complexity 20 → 17 (ESLint); `FieldRow`'s 24 unchanged as expected;
+`renderBrandActionRow`'s old complexity-12 warning gone entirely in its new home. Human checkbox:
+screenshotted before/after, identical. One real thing discovered mid-verification, not part of this
+task's own scope: a real user brand ("heyhey") created while manually testing broke two tests that
+assumed a fixed brand list — fixed in `1ab56cd`, and surfaced a bigger follow-up (demo-child is a
+checked-in fixture living in the same live, user-deletable `brands/` directory as real data) filed as
+a new task, not fixed here.

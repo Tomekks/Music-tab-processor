@@ -58,6 +58,14 @@ Flagged in the backlog after Task 10: `FieldRow` has grown to ~12 props branchin
 
 **Size: Bounded.** Pure reorganization — no behavior change, no new logic. The risk is entirely mechanical (import wiring, prop threading across the new file boundaries), not conceptual.
 
+### Task 4.7 — Decouple test fixtures from the real `brands/` directory
+
+*User story: as the brand maintainer, deleting any brand I own (including one I forgot was there) never breaks the test suite, because tests never depend on a permanent brand existing in the same real, user-visible directory as my own data.*
+
+Discovered while verifying Task 4.5: creating a real brand ("heyhey") through the UI broke two tests that assumed a fixed, closed brand list — an assumption that directly contradicts the app's own rule (every brand except Main is freely creatable/deletable, down to zero). The narrow instances were fixed in commit `1ab56cd`, but `demo-child` itself — a checked-in fixture living in the same live, user-deletable `brands/` directory as real data — is still relied on as "permanent" by several other test files (`dark-values.spec.ts`, `inherited.spec.ts`, `descriptions.spec.ts`, and likely others). Fix: those tests create and clean up their own temporary child-brand fixture, the same pattern `brand-crud.spec.ts`'s own tests already use (`__test-tmp-*` brands, created and destroyed per test) — not a permanent fixture anywhere in `brands/`.
+
+**Size: Bounded.** Mechanical rewrite of each affected test's setup/teardown; no application code changes expected.
+
 ### Task 5 — Editor UI: generalize beyond "the default brand"
 
 *User story: as the brand maintainer, everything I see and edit while a non-Main brand is selected is unambiguously that brand's own state, with nothing hardcoded to assume Main is the only brand that exists.*
@@ -76,7 +84,7 @@ The editor's own copy currently says "Live brand values for **the default brand*
 
 ## Sequencing
 
-1 → 2 → 3 → 4 → 4.5 → 5, in order (each depends on the brand switcher existing to be testable end-to-end; 4.5 depends on 2/3/4's new UI landing first, so its split reflects the file's real final shape instead of needing a second pass). 6 is independent and deferred — pick it up separately when a real second consumer exists, not as part of this pass.
+1 → 2 → 3 → 4 → 4.5 → 5, in order (each depends on the brand switcher existing to be testable end-to-end; 4.5 depends on 2/3/4's new UI landing first, so its split reflects the file's real final shape instead of needing a second pass). 4.7 is independent of that chain — it's a test-hygiene fix, not a feature — but should land before Task 5's audit if practical, since 5 also touches test files that may be affected. 6 is independent and deferred — pick it up separately when a real second consumer exists, not as part of this pass.
 
 ## Verification shape (every task)
 
