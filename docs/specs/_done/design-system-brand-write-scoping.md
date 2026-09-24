@@ -103,3 +103,10 @@ No `.env`/credentials, no new npm dependency.
 - If `route.ts` does **not** already support a `brand` field on every action when you check it fresh
   (i.e. this spec's "no server-side change needed" claim turns out wrong), stop — that's a bigger
   task than this spec scopes, and Tasks 2/3/4's spec assumes this claim holds.
+
+---
+**Landed:** commit `fb6da24`; deployed pending push. 1 new e2e case (`brand-switcher.spec.ts` #7),
+no unit test needed (client-only change). `npm run verify` 109/109 PASS, full design-system e2e
+suite 30/30 PASS (1 pre-existing unrelated skip) — re-run in full after this landed, not just the
+one extended file, since the change touches shared `postAction` call sites every other
+design-system e2e spec also exercises.

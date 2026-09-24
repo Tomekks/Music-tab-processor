@@ -500,3 +500,22 @@ neither needs to change for this task (page.tsx gains a prop only when the deplo
   `default`/`demo-child`), that's fine for this task (nothing here hardcodes a brand count) — but
   confirm none of them is already named with this spec's own temp-test prefix, or with a
   `.tmp-`/`.trash-` prefix, before using one.
+
+---
+**Landed:** commit `9de4f55`; deployed pending push. 16 new unit tests (4 `css-var-naming.test.mjs`
+— new file; 4 `validateBrandName`; 4 `applyDuplicateBrand`; 4 brand-lifecycle in
+`build-tokens.test.mjs`), `npm run verify` 125/125 PASS. New `brand-crud.spec.ts` 4/4 PASS; full
+design-system e2e suite re-run after landing, 34/34 PASS (1 pre-existing unrelated skip) — no
+regressions in `brand-switcher`/`dark-values`/`descriptions`/`inherited`/`staged-save`.
+
+**Human checkbox — done, with one honest caveat.** New UI (brand nav row, inline New/Duplicate/Delete
+forms, confirm-delete text) renders cleanly, doesn't break the brand nav layout, autofocus and
+disabled-state behavior confirmed via screenshot. The spec's own "duplicated brand's dark-mode
+rendering actually looks correct" clause turned out to not be directly checkable through the editor's
+own UI: `FieldRow` displays an alias field's *resolved* value only (no per-field theme toggle in this
+tool, for any brand, not just duplicates — pre-existing, unrelated to this task), so toggling
+`data-theme` client-side changes the editor's own chrome but not what a field's input shows. The
+actual correctness claim (the theme-varying alias stays unresolved in the written `tokens.json`, so
+`generateCSS`'s already-proven `var()`-alias mechanism keeps working on the real generated CSS) is
+verified by the unit tests and the e2e file-content check instead — the stronger evidence for this
+specific claim regardless.
