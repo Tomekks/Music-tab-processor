@@ -9,7 +9,7 @@
 // layout.sidebarWidth -> --sidebar-width. Task 4 adds the component.* var()
 // alias branch in the marked loop below; nothing else in this file changes.
 
-import { readFileSync, existsSync, writeFileSync, readdirSync, mkdirSync, renameSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, readdirSync, mkdirSync, renameSync, unlinkSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
@@ -137,6 +137,24 @@ export function resolveBrandTree(brandDir) {
   }
   const parentTokens = JSON.parse(readFileSync(join(parentBrandDir, "tokens.json"), "utf8"));
   return { tree: deepMerge(parentTokens, tokens), parentBrandDir };
+}
+
+// "Undeployed changes" bookkeeping: the mere existence of a per-brand
+// sentinel file is the flag -- no shared file, so two brands' flags can
+// never race on the same read-modify-write.
+export function markNeedsDeploy(brandDir) {
+  writeFileSync(join(brandDir, ".needs-deploy"), "");
+}
+
+export function clearNeedsDeploy(brandDir) {
+  const flagPath = join(brandDir, ".needs-deploy");
+  if (existsSync(flagPath)) unlinkSync(flagPath);
+}
+
+export function readDeployStatus() {
+  return Object.fromEntries(
+    listBrands().map((slug) => [slug, existsSync(join(PACKAGE_ROOT, "brands", slug, ".needs-deploy"))]),
+  );
 }
 
 // If the brand being deleted is the one active-brand.json currently names,

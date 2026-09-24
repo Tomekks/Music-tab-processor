@@ -11,6 +11,9 @@ import {
   commitBrandCreation,
   trashBrandDir,
   resetActiveBrandIfDeleted,
+  markNeedsDeploy,
+  clearNeedsDeploy,
+  readDeployStatus,
 } from "./build-tokens.mjs";
 import { join, dirname } from "node:path";
 import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync } from "node:fs";
@@ -353,5 +356,44 @@ test("resetActiveBrandIfDeleted is a no-op when the deleted slug isn't the activ
     assert.equal(readFileSync(activeBrandPath(), "utf8"), original);
   } finally {
     writeFileSync(activeBrandPath(), original);
+  }
+});
+
+test("markNeedsDeploy/clearNeedsDeploy/readDeployStatus round-trip on a real temp brand", () => {
+  const slug = tempSlug();
+  try {
+    const tmpDir = beginBrandCreation(slug);
+    writeFileSync(join(tmpDir, "tokens.json"), "{}\n");
+    commitBrandCreation(tmpDir, slug);
+    const brandDir = join(brandsDir(), slug);
+
+    assert.equal(readDeployStatus()[slug], false);
+
+    markNeedsDeploy(brandDir);
+    assert.ok(existsSync(join(brandDir, ".needs-deploy")));
+    assert.equal(readDeployStatus()[slug], true);
+
+    clearNeedsDeploy(brandDir);
+    assert.equal(existsSync(join(brandDir, ".needs-deploy")), false);
+    assert.equal(readDeployStatus()[slug], false);
+  } finally {
+    for (const name of readdirSync(brandsDir())) {
+      if (name.includes(slug)) rmSync(join(brandsDir(), name), { recursive: true, force: true });
+    }
+  }
+});
+
+test("clearNeedsDeploy is a no-op (never throws) when no flag is set", () => {
+  const slug = tempSlug();
+  try {
+    const tmpDir = beginBrandCreation(slug);
+    writeFileSync(join(tmpDir, "tokens.json"), "{}\n");
+    commitBrandCreation(tmpDir, slug);
+    const brandDir = join(brandsDir(), slug);
+    assert.doesNotThrow(() => clearNeedsDeploy(brandDir));
+  } finally {
+    for (const name of readdirSync(brandsDir())) {
+      if (name.includes(slug)) rmSync(join(brandsDir(), name), { recursive: true, force: true });
+    }
   }
 });

@@ -9,12 +9,14 @@ import { postAction } from "./actions";
 export function BrandSwitcher({
   brands,
   selectedBrand,
+  needsDeploy,
   blocked,
   blockedReason,
   onError,
 }: {
   brands: string[];
   selectedBrand: string;
+  needsDeploy: Record<string, boolean>;
   blocked: boolean;
   blockedReason: string | undefined;
   onError: (message: string | null) => void;
@@ -23,10 +25,21 @@ export function BrandSwitcher({
   const [brandAction, setBrandAction] = useState<"new" | "duplicate" | "delete" | null>(null);
   const [brandActionInput, setBrandActionInput] = useState("");
   const [brandActionBusy, setBrandActionBusy] = useState(false);
+  const [confirmingDeploy, setConfirmingDeploy] = useState(false);
   const brandActionInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (brandAction) brandActionInputRef.current?.focus();
   }, [brandAction]);
+
+  async function markDeployed() {
+    const result = await postAction({ action: "mark-deployed", brand: selectedBrand });
+    if (result.ok) {
+      setConfirmingDeploy(false);
+      router.refresh();
+    } else {
+      onError(result.error);
+    }
+  }
 
   function cancelBrandAction() {
     setBrandAction(null);
@@ -166,10 +179,18 @@ export function BrandSwitcher({
     <>
       <nav aria-label="Brands" className="mt-4 flex flex-wrap items-center gap-3">
         {brands.map((slug) => {
+          const badge = needsDeploy[slug] && (
+            <span
+              aria-hidden
+              title="Has changes that may not be deployed yet"
+              className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]"
+            />
+          );
           if (slug === selectedBrand) {
             return (
-              <span key={slug} aria-current="page" className="text-sm font-semibold">
+              <span key={slug} aria-current="page" className="flex items-center gap-1.5 text-sm font-semibold">
                 {humanize(slug)}
+                {badge}
               </span>
             );
           }
@@ -178,20 +199,49 @@ export function BrandSwitcher({
               <span
                 key={slug}
                 title={blockedReason}
-                className={cn(MUTED_ACTION, "text-sm cursor-not-allowed opacity-[var(--state-disabled-opacity)]")}
+                className={cn(MUTED_ACTION, "flex items-center gap-1.5 text-sm cursor-not-allowed opacity-[var(--state-disabled-opacity)]")}
               >
                 {humanize(slug)}
+                {badge}
               </span>
             );
           }
           return (
-            <Link key={slug} href={`/design-system?brand=${slug}`} className={cn(MUTED_ACTION, "text-sm")}>
+            <Link key={slug} href={`/design-system?brand=${slug}`} className={cn(MUTED_ACTION, "flex items-center gap-1.5 text-sm")}>
               {humanize(slug)}
+              {badge}
             </Link>
           );
         })}
       </nav>
       <div className="mt-2 flex flex-wrap items-center gap-3">{renderBrandActionRow()}</div>
+      {needsDeploy[selectedBrand] && (
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          {confirmingDeploy ? (
+            <>
+              <span className={CAPTION}>Have these changes been deployed?</span>
+              <button type="button" onClick={markDeployed} className={cn(MUTED_ACTION, "text-sm")}>
+                Yes
+              </button>
+              <button type="button" onClick={() => setConfirmingDeploy(false)} className={cn(MUTED_ACTION, "text-sm")}>
+                No
+              </button>
+            </>
+          ) : (
+            <>
+              <span className={CAPTION}>This brand has changes that may not be deployed yet.</span>
+              <button
+                type="button"
+                aria-label="Dismiss undeployed-changes notice"
+                onClick={() => setConfirmingDeploy(true)}
+                className={cn(MUTED_ACTION, "text-sm")}
+              >
+                ×
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </>
   );
 }

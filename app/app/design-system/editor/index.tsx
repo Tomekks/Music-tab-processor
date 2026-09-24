@@ -17,12 +17,14 @@ export function Editor({
   parentName,
   brands,
   selectedBrand,
+  needsDeploy,
 }: {
   descriptors: FieldDescriptor[];
   isChildBrand: boolean;
   parentName: string | null;
   brands: string[];
   selectedBrand: string;
+  needsDeploy: Record<string, boolean>;
 }) {
   const [selectedView, setSelectedView] = useState<"all" | ComponentSectionKey>("all");
   const {
@@ -112,6 +114,7 @@ export function Editor({
       <BrandSwitcher
         brands={brands}
         selectedBrand={selectedBrand}
+        needsDeploy={needsDeploy}
         blocked={pendingEdits.size > 0 || inFlight.size > 0}
         blockedReason={
           pendingEdits.size > 0

@@ -6,7 +6,7 @@ import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 import { resolveValue } from "./resolve.mjs";
 import { themeVaryingColorRef } from "./css-var-naming.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description", "list-brands", "create-brand", "duplicate-brand", "delete-brand"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description", "list-brands", "create-brand", "duplicate-brand", "delete-brand", "mark-deployed"];
 
 /**
  * @typedef {object} TokenLeaf

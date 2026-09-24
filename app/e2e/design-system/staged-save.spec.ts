@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Request, type Response } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Staged-save end to end (Task 8b): pending edits, scope choice, explicit Save.
 // Runs against `next dev` on :3002 (see playwright.design-system.config.ts) so
@@ -84,6 +84,16 @@ test.beforeAll(() => {
   if (base !== "8px") {
     throw new Error(`precondition: semantic.radius.base is ${base}, expected 8px`);
   }
+});
+
+test.afterAll(() => {
+  // This file has no other cleanup hook -- each test restores tokens.json's
+  // *content* by reverting through the app's own UI actions, by design. But
+  // .needs-deploy (Task 4.6) is a separate, gitignored sentinel those UI
+  // reverts don't necessarily clear (only "Reset all changes" does) -- unlink
+  // it explicitly here or it leaks into every later spec file's run.
+  const flagPath = join(process.cwd(), dirname(TOKENS_PATH), ".needs-deploy");
+  if (existsSync(flagPath)) unlinkSync(flagPath);
 });
 
 test.beforeEach(async ({ page }) => {

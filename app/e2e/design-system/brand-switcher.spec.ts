@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Response, type Route } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Brand switcher: list + select (Task 1). Runs against `next dev` on :3002
 // (see playwright.design-system.config.ts). Tests 5 and 7 write real state
@@ -63,6 +63,11 @@ test.beforeAll(() => {
 test.afterEach(() => {
   for (const path of REAL_WRITE_PATHS) {
     execSync(`git checkout -- ${path}`, { cwd: process.cwd() });
+    // .needs-deploy is gitignored -- git checkout can't touch it. A real
+    // write here (tests 5, 7) now also marks it (Task 4.6); unlink it
+    // explicitly or it leaks into every later spec file's run.
+    const flagPath = join(process.cwd(), dirname(path), ".needs-deploy");
+    if (existsSync(flagPath)) unlinkSync(flagPath);
   }
 });
 

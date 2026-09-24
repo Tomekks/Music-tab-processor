@@ -44,6 +44,9 @@ yarn-error.log*
 # generated design tokens (rebuilt by tokens:build on predev/prebuild/prestage)
 /app/design-tokens.generated.css
 
+# design-system per-brand "needs deploy" bookkeeping -- transient, never committed
+/packages/design-system/brands/*/.needs-deploy
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Response } from "@playwright/test";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Inherited vs. overridden UI on a child brand (Task 5c). There is no in-UI
 // brand switcher, so this spec owns its fixture lifecycle: it points
@@ -98,6 +98,12 @@ test.afterAll(() => {
   // Checkout first, THEN rebuild — the build reads active-brand.json, so it
   // must already point at default again for the CSS to come back right.
   sh(`git checkout -- ${ACTIVE_BRAND_PATH} ${CHILD_TOKENS_PATH}`);
+  // .needs-deploy is gitignored -- git checkout can't touch it. Real writes
+  // in this file (against demo-child, via active-brand.json) now also mark
+  // it (Task 4.6); unlink it explicitly or it leaks into every later spec
+  // file's run.
+  const flagPath = join(process.cwd(), dirname(CHILD_TOKENS_PATH), ".needs-deploy");
+  if (existsSync(flagPath)) unlinkSync(flagPath);
   sh("npm run tokens:build");
   assertCleanTrees();
 });

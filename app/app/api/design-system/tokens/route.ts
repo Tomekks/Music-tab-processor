@@ -10,6 +10,9 @@ import {
   commitBrandCreation,
   trashBrandDir,
   resetActiveBrandIfDeleted,
+  markNeedsDeploy,
+  clearNeedsDeploy,
+  readDeployStatus,
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
@@ -111,6 +114,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "batch-write": {
@@ -128,6 +132,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "reset": {
@@ -143,6 +148,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "reset-all": {
@@ -155,6 +161,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        clearNeedsDeploy(brandDir);
         return Response.json({ ok: true, reset: result.reset });
       }
       case "reset-to-parent": {
@@ -171,6 +178,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "set-as-default": {
@@ -205,6 +213,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "set-description": {
@@ -222,7 +231,7 @@ export async function POST(req: Request) {
         return Response.json({ ok: true });
       }
       case "list-brands": {
-        return Response.json({ ok: true, brands: listBrands() });
+        return Response.json({ ok: true, brands: listBrands(), needsDeploy: readDeployStatus() });
       }
       case "create-brand": {
         if (typeof name !== "string") {
@@ -234,6 +243,7 @@ export async function POST(req: Request) {
         writeFileSync(join(tmpDir, "brand.json"), JSON.stringify({ parent: "default" }, null, 2) + "\n");
         writeFileSync(join(tmpDir, "tokens.json"), stringifyTokens({}));
         commitBrandCreation(tmpDir, validated.slug);
+        markNeedsDeploy(resolveBrandDirForSlug(validated.slug));
         return Response.json({ ok: true, slug: validated.slug });
       }
       case "duplicate-brand": {
@@ -254,6 +264,7 @@ export async function POST(req: Request) {
         writeFileSync(join(tmpDir, "brand.json"), JSON.stringify({ parent: "default" }, null, 2) + "\n");
         writeFileSync(join(tmpDir, "tokens.json"), stringifyTokens(frozen.tokens));
         commitBrandCreation(tmpDir, validated.slug);
+        markNeedsDeploy(resolveBrandDirForSlug(validated.slug));
         return Response.json({ ok: true, slug: validated.slug });
       }
       case "delete-brand": {
@@ -271,6 +282,10 @@ export async function POST(req: Request) {
         }
         trashBrandDir(brand);
         if (resetActiveBrandIfDeleted(brand)) buildActiveBrand();
+        return Response.json({ ok: true });
+      }
+      case "mark-deployed": {
+        clearNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       default: {
