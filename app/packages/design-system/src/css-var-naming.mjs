@@ -21,6 +21,22 @@ export function colorPropName(key) {
   return BARE_COLOR_KEYS.has(key) ? `--${key}` : `--color-${kebab(key)}`;
 }
 
+// A component.* leaf whose $value is a direct single reference to a
+// theme-varying semantic color (a key present in the dark override block)
+// must stay a live alias (emitted as var(--color-x), or in this module's
+// other caller, copied as-is) instead of a resolved literal -- the alias
+// re-resolves live, so [data-theme] overrides flow through automatically.
+// Anything else (non-color leaves, theme-invariant colors like
+// accent/onAccent) resolves to a literal exactly as before. Shared by
+// generateCSS (build-tokens.mjs) and applyDuplicateBrand (token-writes.mjs)
+// so the two never define this rule differently.
+export function themeVaryingColorRef(leaf, themeVaryingKeys) {
+  if (typeof leaf.$value !== "string") return null;
+  const m = /^\{\s*semantic\.color\.([A-Za-z0-9_]+)\s*\}$/.exec(leaf.$value);
+  if (!m) return null;
+  return themeVaryingKeys.has(m[1]) ? m[1] : null;
+}
+
 /**
  * The exact CSS custom-property name generateCSS() emits for a given leaf
  * path (dot-joined, e.g. "semantic.color.accent", "component.button.

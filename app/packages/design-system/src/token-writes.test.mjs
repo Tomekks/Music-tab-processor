@@ -17,6 +17,8 @@ import {
   applyResetToParent,
   applyGenerateFromSeed,
   applySetDescription,
+  validateBrandName,
+  applyDuplicateBrand,
 } from "./token-writes.mjs";
 import { deepMerge } from "./deep-merge.mjs";
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
@@ -63,13 +65,17 @@ const defaultsTree = () => ({
   },
 });
 
-test("VALID_ACTIONS lists exactly the nine known actions", () => {
+test("VALID_ACTIONS lists exactly the thirteen known actions", () => {
   assert.deepEqual(
     [...VALID_ACTIONS].sort(),
     [
       "batch-write",
+      "create-brand",
+      "delete-brand",
+      "duplicate-brand",
       "generate-from-seed",
       "list-brands",
+      "mark-deployed",
       "reset",
       "reset-all",
       "reset-to-parent",
@@ -539,4 +545,103 @@ test("applyWrite with ownTree 400s on a malformed own tree instead of overwritin
   assert.equal(result.status, 400);
   assert.match(result.error, /unexpected existing value/);
   assert.deepEqual(malformed, { semantic: "nope" });
+});
+
+test("validateBrandName derives a slug from a free-text name", () => {
+  const result = validateBrandName("Movie Site Dark", ["default"]);
+  assert.equal(result.ok, true);
+  assert.equal(result.slug, "movie-site-dark");
+});
+
+test("validateBrandName rejects an empty or whitespace-only name", () => {
+  assert.equal(validateBrandName("", []).ok, false);
+  assert.equal(validateBrandName("   ", []).ok, false);
+});
+
+test("validateBrandName rejects a name with no alphanumeric characters", () => {
+  const result = validateBrandName("!!!", []);
+  assert.equal(result.ok, false);
+  assert.match(result.error, /no letters or numbers/);
+});
+
+test("validateBrandName rejects a name whose derived slug collides, case-insensitively", () => {
+  const result = validateBrandName("Default", ["default"]);
+  assert.equal(result.ok, false);
+  assert.match(result.error, /already exists/);
+});
+
+// Dedicated fixture for applyDuplicateBrand: every alias resolves cleanly
+// (unlike tokensTree()'s deliberately-unresolvable "accent" leaf, used
+// elsewhere for validation-only tests), plus one theme-varying color alias
+// so both branches of the freeze/keep-alias split are exercised.
+const duplicateSourceTree = () => ({
+  semantic: {
+    color: {
+      surfaceText: { $value: "#141413", $type: "color" },
+    },
+    radius: {
+      base: { $value: "8px", $type: "dimension" },
+    },
+  },
+  dark: {
+    semantic: {
+      color: {
+        surfaceText: { $value: "#faf9f5", $type: "color" },
+      },
+    },
+  },
+  component: {
+    button: {
+      radius: { $value: "{semantic.radius.base}", $type: "dimension" },
+    },
+    colorField: {
+      text: {
+        $value: "{semantic.color.surfaceText}",
+        $type: "color",
+        $description: "follows the theme-varying surface text color",
+      },
+    },
+  },
+});
+
+test("applyDuplicateBrand freezes a non-theme-varying alias to its resolved literal", () => {
+  const result = applyDuplicateBrand(duplicateSourceTree());
+  assert.equal(result.ok, true);
+  assert.deepEqual(getLeaf(result.tokens, "component.button.radius"), {
+    $value: "8px",
+    $type: "dimension",
+  });
+});
+
+test("applyDuplicateBrand keeps a theme-varying color alias unresolved, preserves its $description", () => {
+  const result = applyDuplicateBrand(duplicateSourceTree());
+  assert.equal(result.ok, true);
+  assert.deepEqual(getLeaf(result.tokens, "component.colorField.text"), {
+    $value: "{semantic.color.surfaceText}",
+    $type: "color",
+    $description: "follows the theme-varying surface text color",
+  });
+});
+
+test("applyDuplicateBrand passes plain literal leaves through unchanged", () => {
+  const result = applyDuplicateBrand(duplicateSourceTree());
+  assert.equal(result.ok, true);
+  assert.deepEqual(getLeaf(result.tokens, "semantic.color.surfaceText"), {
+    $value: "#141413",
+    $type: "color",
+  });
+});
+
+test("applyDuplicateBrand returns ok:false (not a thrown error) for a genuinely broken alias", () => {
+  const broken = {
+    semantic: {
+      color: {
+        accent: { $value: "{primitive.color.accent}", $type: "color" },
+      },
+    },
+  };
+  const result = applyDuplicateBrand(broken);
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.match(result.error, /not found|does not resolve/);
 });

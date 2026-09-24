@@ -6,10 +6,18 @@ import {
   resolveBrandDirForSlug,
   resolveBrandTree,
   listBrands,
+  beginBrandCreation,
+  commitBrandCreation,
+  trashBrandDir,
+  resetActiveBrandIfDeleted,
+  markNeedsDeploy,
+  clearNeedsDeploy,
+  readDeployStatus,
 } from "../../../../packages/design-system/src/build-tokens.mjs";
 import {
   VALID_ACTIONS,
   applyBatchWrite,
+  applyDuplicateBrand,
   applyGenerateFromSeed,
   applyReset,
   applyResetAll,
@@ -18,6 +26,7 @@ import {
   applySetDescription,
   applyWrite,
   stringifyTokens,
+  validateBrandName,
 } from "../../../../packages/design-system/src/token-writes.mjs";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +61,7 @@ export async function POST(req: Request) {
     if (body === null || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Request body must be a JSON object");
     }
-    const { action, path, value, neutralSeed, accentSeed, edits, description, brand } = body as {
+    const { action, path, value, neutralSeed, accentSeed, edits, description, brand, name, source } = body as {
       action?: unknown;
       path?: unknown;
       value?: unknown;
@@ -61,6 +70,8 @@ export async function POST(req: Request) {
       edits?: unknown;
       description?: unknown;
       brand?: unknown;
+      name?: unknown;
+      source?: unknown;
     };
     if (typeof action !== "string" || !VALID_ACTIONS.includes(action)) {
       return badRequest(ACTION_LIST_ERROR);
@@ -103,6 +114,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "batch-write": {
@@ -120,6 +132,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "reset": {
@@ -135,6 +148,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "reset-all": {
@@ -147,6 +161,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        clearNeedsDeploy(brandDir);
         return Response.json({ ok: true, reset: result.reset });
       }
       case "reset-to-parent": {
@@ -163,6 +178,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "set-as-default": {
@@ -197,6 +213,7 @@ export async function POST(req: Request) {
         }
         atomicWriteString(join(brandDir, "tokens.json"), stringifyTokens(result.tokens));
         buildActiveBrand();
+        markNeedsDeploy(brandDir);
         return Response.json({ ok: true });
       }
       case "set-description": {
@@ -214,7 +231,62 @@ export async function POST(req: Request) {
         return Response.json({ ok: true });
       }
       case "list-brands": {
-        return Response.json({ ok: true, brands: listBrands() });
+        return Response.json({ ok: true, brands: listBrands(), needsDeploy: readDeployStatus() });
+      }
+      case "create-brand": {
+        if (typeof name !== "string") {
+          return badRequest('"create-brand" requires "name" to be a string');
+        }
+        const validated = validateBrandName(name, listBrands());
+        if (!validated.ok) return badRequest(validated.error);
+        const tmpDir = beginBrandCreation(validated.slug);
+        writeFileSync(join(tmpDir, "brand.json"), JSON.stringify({ parent: "default" }, null, 2) + "\n");
+        writeFileSync(join(tmpDir, "tokens.json"), stringifyTokens({}));
+        commitBrandCreation(tmpDir, validated.slug);
+        markNeedsDeploy(resolveBrandDirForSlug(validated.slug));
+        return Response.json({ ok: true, slug: validated.slug });
+      }
+      case "duplicate-brand": {
+        if (typeof name !== "string") {
+          return badRequest('"duplicate-brand" requires "name" to be a string');
+        }
+        if (typeof source !== "string" || !listBrands().includes(source)) {
+          return badRequest(`"duplicate-brand" requires "source" to name an existing brand`);
+        }
+        const validated = validateBrandName(name, listBrands());
+        if (!validated.ok) return badRequest(validated.error);
+        const { tree: sourceTree } = resolveBrandTree(resolveBrandDirForSlug(source));
+        const frozen = applyDuplicateBrand(sourceTree);
+        if (!frozen.ok) {
+          return Response.json({ ok: false, error: frozen.error }, { status: frozen.status });
+        }
+        const tmpDir = beginBrandCreation(validated.slug);
+        writeFileSync(join(tmpDir, "brand.json"), JSON.stringify({ parent: "default" }, null, 2) + "\n");
+        writeFileSync(join(tmpDir, "tokens.json"), stringifyTokens(frozen.tokens));
+        commitBrandCreation(tmpDir, validated.slug);
+        markNeedsDeploy(resolveBrandDirForSlug(validated.slug));
+        return Response.json({ ok: true, slug: validated.slug });
+      }
+      case "delete-brand": {
+        // Deliberately does NOT fall back to the generic brandDir resolved above --
+        // that fallback resolves to the ACTIVE brand when "brand" is omitted, which
+        // would make an omitted field silently delete whatever's currently active.
+        if (typeof brand !== "string") {
+          return badRequest('"delete-brand" requires "brand" to be a string');
+        }
+        if (brand === "default") {
+          return badRequest("The default brand can't be deleted");
+        }
+        if (!listBrands().includes(brand)) {
+          return badRequest(`Unknown brand "${brand}"`);
+        }
+        trashBrandDir(brand);
+        if (resetActiveBrandIfDeleted(brand)) buildActiveBrand();
+        return Response.json({ ok: true });
+      }
+      case "mark-deployed": {
+        clearNeedsDeploy(brandDir);
+        return Response.json({ ok: true });
       }
       default: {
         // Unreachable: VALID_ACTIONS gate above rejects anything else. Kept so

@@ -241,3 +241,16 @@ No `.env`/credentials, no new npm dependency.
   goes.
 - If any of the files this spec touches has changed shape since this spec's read (§0's line counts)
   beyond what this spec itself describes, stop and confirm the actual current structure first.
+
+---
+**Landed:** commit `3e798af`; deployed pending push. `editor.tsx` no longer existed (Task 4.5 split
+it first, as this spec's own dependency note anticipated) — badge and banner folded into
+`brand-switcher.tsx` instead of `index.tsx`, since it already owns brand-identity state and the
+router/postAction calls; a deliberate adaptation, not a literal port. `npm run verify` 127/127 PASS.
+Full design-system e2e suite 38/38 PASS (1 pre-existing unrelated skip), including new
+`deploy-status.spec.ts` (4/4). One real bug found running the full suite (not caught by this spec's
+own tests in isolation): `.needs-deploy` is gitignored, so five older specs' git-checkout cleanup
+couldn't touch it, leaking a stray sentinel into every later spec file's run — fixed by adding
+explicit unlink cleanup to `brand-switcher`/`dark-values`/`inherited`/`staged-save.spec.ts` (outside
+this spec's original allowlist, but a direct, inseparable consequence of this task's own change).
+Human checkbox: badge + banner screenshotted, clearly legible.

@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Response } from "@playwright/test";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Inherited vs. overridden UI on a child brand (Task 5c). There is no in-UI
 // brand switcher, so this spec owns its fixture lifecycle: it points
@@ -60,6 +60,11 @@ async function postTokensRequest(page: Page) {
 }
 
 test.beforeAll(() => {
+  // Self-heal, don't assume (Task 4.7): demo-child is a checked-in fixture
+  // this whole file depends on, but a real user can delete it through the
+  // app at any time. Restore it from git before taking ownership below,
+  // regardless of its current on-disk state.
+  sh("git checkout HEAD -- packages/design-system/brands/demo-child/");
   // Fail fast on leftover dirt — then take ownership of the fixture.
   try {
     assertCleanTrees();
@@ -98,6 +103,12 @@ test.afterAll(() => {
   // Checkout first, THEN rebuild — the build reads active-brand.json, so it
   // must already point at default again for the CSS to come back right.
   sh(`git checkout -- ${ACTIVE_BRAND_PATH} ${CHILD_TOKENS_PATH}`);
+  // .needs-deploy is gitignored -- git checkout can't touch it. Real writes
+  // in this file (against demo-child, via active-brand.json) now also mark
+  // it (Task 4.6); unlink it explicitly or it leaks into every later spec
+  // file's run.
+  const flagPath = join(process.cwd(), dirname(CHILD_TOKENS_PATH), ".needs-deploy");
+  if (existsSync(flagPath)) unlinkSync(flagPath);
   sh("npm run tokens:build");
   assertCleanTrees();
 });

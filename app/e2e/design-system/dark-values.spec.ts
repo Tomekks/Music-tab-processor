@@ -1,7 +1,7 @@
 import { test, expect, type Page, type Response } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 // Dark-theme values shown and editable next to light (Task 10). Runs against
 // `next dev` on :3002 (see playwright.design-system.config.ts), against real
@@ -85,6 +85,11 @@ test.afterEach(() => {
   // Restore real state regardless of pass/fail -- same as every prior spec
   // that writes to tokens.json for real.
   execSync(`git checkout -- ${TOKENS_PATH}`, { cwd: process.cwd() });
+  // .needs-deploy is gitignored -- git checkout can't touch it. A real write
+  // here now also marks it (Task 4.6); unlink it explicitly or it leaks into
+  // every later spec file's run.
+  const flagPath = join(process.cwd(), dirname(TOKENS_PATH), ".needs-deploy");
+  if (existsSync(flagPath)) unlinkSync(flagPath);
 });
 
 test.beforeEach(async ({ page }) => {

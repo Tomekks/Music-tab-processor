@@ -6,6 +6,7 @@ import {
   resolveBrandDirForSlug,
   resolveBrandTree,
   listBrands,
+  readDeployStatus,
 } from "../../packages/design-system/src/build-tokens.mjs";
 import { buildFieldDescriptors } from "../../packages/design-system/src/field-descriptors.mjs";
 import { Editor } from "./editor";
@@ -22,6 +23,7 @@ export default async function DesignSystemPage({
   }
   const { brand: rawBrand } = await searchParams;
   const brands = listBrands();
+  const needsDeploy = readDeployStatus();
   let brandDir: string;
   let selectedBrand: string;
   if (typeof rawBrand === "string") {
@@ -54,6 +56,7 @@ export default async function DesignSystemPage({
       parentName={parentBrandDir ? basename(parentBrandDir) : null}
       brands={brands}
       selectedBrand={selectedBrand}
+      needsDeploy={needsDeploy}
     />
   );
 }
