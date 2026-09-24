@@ -4,12 +4,15 @@ import { execSync } from "node:child_process";
 import { join } from "node:path";
 
 // Brand switcher: list + select (Task 1). Runs against `next dev` on :3002
-// (see playwright.design-system.config.ts). Only one test (5) writes real
-// state (to prove the in-flight guard) — same real-write discipline as
-// staged-save.spec.ts/dark-values.spec.ts/descriptions.spec.ts, on the same
-// file, so this spec must not run concurrently with them (the design-system
-// Playwright config runs files serially; keep it that way).
+// (see playwright.design-system.config.ts). Tests 5 and 7 write real state
+// (to prove the in-flight guard, and the write-scoping fix respectively) —
+// same real-write discipline as staged-save.spec.ts/dark-values.spec.ts/
+// descriptions.spec.ts, on the same files, so this spec must not run
+// concurrently with them (the design-system Playwright config runs files
+// serially; keep it that way).
 const TOKENS_PATH = "packages/design-system/brands/default/tokens.json";
+const DEMO_CHILD_TOKENS_PATH = "packages/design-system/brands/demo-child/tokens.json";
+const REAL_WRITE_PATHS = [TOKENS_PATH, DEMO_CHILD_TOKENS_PATH];
 
 type Leaf = { $value: string; $type: string };
 type Tokens = { [key: string]: Tokens | Leaf };
@@ -18,8 +21,8 @@ function isLeaf(node: Tokens | Leaf): node is Leaf {
   return "$value" in node;
 }
 
-function readTokens(): Tokens {
-  return JSON.parse(readFileSync(join(process.cwd(), TOKENS_PATH), "utf8")) as Tokens;
+function readTokens(path: string = TOKENS_PATH): Tokens {
+  return JSON.parse(readFileSync(join(process.cwd(), path), "utf8")) as Tokens;
 }
 
 function leaf(tokens: Tokens, path: string): Leaf {
@@ -48,17 +51,19 @@ const sidebar = (page: Page) =>
 const colorSection = (page: Page) => page.getByRole("region", { name: "Color", exact: true });
 
 test.beforeAll(() => {
-  try {
-    execSync(`git diff --quiet -- ${TOKENS_PATH}`, { cwd: process.cwd() });
-  } catch {
-    throw new Error(
-      `${TOKENS_PATH} has uncommitted changes — revert them before running this spec`,
-    );
+  for (const path of REAL_WRITE_PATHS) {
+    try {
+      execSync(`git diff --quiet -- ${path}`, { cwd: process.cwd() });
+    } catch {
+      throw new Error(`${path} has uncommitted changes — revert them before running this spec`);
+    }
   }
 });
 
 test.afterEach(() => {
-  execSync(`git checkout -- ${TOKENS_PATH}`, { cwd: process.cwd() });
+  for (const path of REAL_WRITE_PATHS) {
+    execSync(`git checkout -- ${path}`, { cwd: process.cwd() });
+  }
 });
 
 test("1. both real brands appear in the switcher, current selection is not a link", async ({
@@ -154,4 +159,21 @@ test("5. an in-flight write blocks switching until it resolves", async ({ page }
 test("6. navigating to an unknown brand slug 404s", async ({ page }) => {
   const response = await page.goto("/design-system?brand=nope", { timeout: 90_000 });
   expect(response?.status()).toBe(404);
+});
+
+test("7. editing a field on a selected non-default brand writes to that brand's own tokens.json, not default's", async ({
+  page,
+}) => {
+  await page.goto("/design-system?brand=demo-child", { timeout: 90_000 });
+  const hex = colorSection(page).locator("label", { hasText: "Border" }).locator('input[type="text"]');
+  await hex.fill("#abcdef");
+  const writeResponse = postTokensRequest(page);
+  await hex.press("Enter");
+  await (await writeResponse).ok();
+
+  const childTokens = readTokens(DEMO_CHILD_TOKENS_PATH);
+  expect(leaf(childTokens, "semantic.color.border").$value).toBe("#abcdef");
+
+  const defaultTokens = readTokens(TOKENS_PATH);
+  expect(leaf(defaultTokens, "semantic.color.border").$value).not.toBe("#abcdef");
 });

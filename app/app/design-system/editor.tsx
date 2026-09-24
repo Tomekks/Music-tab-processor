@@ -648,7 +648,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "write", path, value });
+      const result = await postAction({ action: "write", path, value, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return false;
@@ -665,7 +665,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "reset", path });
+      const result = await postAction({ action: "reset", path, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -681,7 +681,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "set-as-default", path });
+      const result = await postAction({ action: "set-as-default", path, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -778,7 +778,7 @@ export function Editor({
         value: e.value,
         scope: e.scope,
       }));
-      const result = await postAction({ action: "batch-write", edits });
+      const result = await postAction({ action: "batch-write", edits, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -796,7 +796,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "reset-to-parent", path });
+      const result = await postAction({ action: "reset-to-parent", path, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -812,7 +812,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "set-description", path, description });
+      const result = await postAction({ action: "set-description", path, description, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return false;
@@ -834,7 +834,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "reset-all" });
+      const result = await postAction({ action: "reset-all", brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -853,7 +853,7 @@ export function Editor({
     setError(null);
     setFeedback(null);
     try {
-      const result = await postAction({ action: "generate-from-seed", neutralSeed, accentSeed });
+      const result = await postAction({ action: "generate-from-seed", neutralSeed, accentSeed, brand: selectedBrand });
       if (!result.ok) {
         setError(result.error);
         return;
