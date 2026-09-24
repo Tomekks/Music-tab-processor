@@ -7,8 +7,13 @@ import {
   resolveBrandTree,
   cssVarNameForPath,
   listBrands,
+  beginBrandCreation,
+  commitBrandCreation,
+  trashBrandDir,
+  resetActiveBrandIfDeleted,
 } from "./build-tokens.mjs";
 import { join, dirname } from "node:path";
+import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { collectLeafPaths } from "./token-writes.mjs";
 
 // Expected output: captured from the real generateCSS(resolveBrandDir())
@@ -267,4 +272,76 @@ test("resolveBrandDirForSlug matches resolveBrandDir for the currently active br
 
 test("resolveBrandDirForSlug throws the same 'Unknown brand' shape as resolveBrandDir", () => {
   assert.throws(() => resolveBrandDirForSlug("nope"), /Unknown brand "nope" \(looked for/);
+});
+
+const brandsDir = () => dirname(resolveBrandDir());
+const packageRoot = () => dirname(brandsDir());
+const activeBrandPath = () => join(packageRoot(), "active-brand.json");
+// Never a name a real feature brand could plausibly use.
+const tempSlug = () => `__test-tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}__`;
+
+test("beginBrandCreation + commitBrandCreation publish a new real brand atomically, listBrands excludes the staging dir", () => {
+  const slug = tempSlug();
+  try {
+    const tmpDir = beginBrandCreation(slug);
+    assert.ok(existsSync(tmpDir));
+    // The staging dir is dot-prefixed -- listBrands() must not see it yet.
+    assert.equal(listBrands().includes(slug), false);
+    writeFileSync(join(tmpDir, "tokens.json"), "{}\n");
+    commitBrandCreation(tmpDir, slug);
+    assert.equal(existsSync(tmpDir), false);
+    assert.ok(listBrands().includes(slug));
+    assert.equal(
+      readdirSync(brandsDir()).some((name) => name.startsWith(".tmp-") && name.includes(slug)),
+      false,
+    );
+  } finally {
+    rmSync(join(brandsDir(), slug), { recursive: true, force: true });
+    for (const name of readdirSync(brandsDir())) {
+      if (name.includes(slug)) rmSync(join(brandsDir(), name), { recursive: true, force: true });
+    }
+  }
+});
+
+test("trashBrandDir moves a brand out from under listBrands() without deleting it from disk", () => {
+  const slug = tempSlug();
+  try {
+    const tmpDir = beginBrandCreation(slug);
+    writeFileSync(join(tmpDir, "tokens.json"), "{}\n");
+    commitBrandCreation(tmpDir, slug);
+    assert.ok(listBrands().includes(slug));
+
+    const trashDir = trashBrandDir(slug);
+    assert.equal(listBrands().includes(slug), false);
+    assert.ok(existsSync(trashDir));
+    assert.ok(existsSync(join(trashDir, "tokens.json")));
+  } finally {
+    for (const name of readdirSync(brandsDir())) {
+      if (name.includes(slug)) rmSync(join(brandsDir(), name), { recursive: true, force: true });
+    }
+  }
+});
+
+test("resetActiveBrandIfDeleted resets active-brand.json to default when it names the deleted slug", () => {
+  const original = readFileSync(activeBrandPath(), "utf8");
+  const slug = tempSlug();
+  try {
+    writeFileSync(activeBrandPath(), JSON.stringify({ brand: slug }, null, 2) + "\n");
+    const didReset = resetActiveBrandIfDeleted(slug);
+    assert.equal(didReset, true);
+    assert.deepEqual(JSON.parse(readFileSync(activeBrandPath(), "utf8")), { brand: "default" });
+  } finally {
+    writeFileSync(activeBrandPath(), original);
+  }
+});
+
+test("resetActiveBrandIfDeleted is a no-op when the deleted slug isn't the active brand", () => {
+  const original = readFileSync(activeBrandPath(), "utf8");
+  try {
+    const didReset = resetActiveBrandIfDeleted("some-other-brand-entirely");
+    assert.equal(didReset, false);
+    assert.equal(readFileSync(activeBrandPath(), "utf8"), original);
+  } finally {
+    writeFileSync(activeBrandPath(), original);
+  }
 });

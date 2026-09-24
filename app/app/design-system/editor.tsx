@@ -46,7 +46,7 @@ const MUTED_ACTION = cn(
 );
 const CAPTION = "text-xs text-surface-text/60";
 
-type ApiResult = { ok: true; reset?: string[] } | { ok: false; error: string };
+type ApiResult = { ok: true; reset?: string[]; slug?: string } | { ok: false; error: string };
 
 type PendingEdit = { value: string; scope: "exception" | "brand" };
 
@@ -606,6 +606,13 @@ export function Editor({
   const [pendingEdits, setPendingEdits] = useState<Map<string, PendingEdit>>(() => new Map());
   const [bulkScope, setBulkScope] = useState<"exception" | "brand">("exception");
   const [saveBusy, setSaveBusy] = useState(false);
+  const [brandAction, setBrandAction] = useState<"new" | "duplicate" | "delete" | null>(null);
+  const [brandActionInput, setBrandActionInput] = useState("");
+  const [brandActionBusy, setBrandActionBusy] = useState(false);
+  const brandActionInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (brandAction) brandActionInputRef.current?.focus();
+  }, [brandAction]);
   // Seed inputs aren't token fields (no path/revert/modified-state) — they
   // start from the live resolved values and are never written back as tokens.
   const [neutralSeed, setNeutralSeed] = useState(
@@ -865,6 +872,147 @@ export function Editor({
     }
   }
 
+  function cancelBrandAction() {
+    setBrandAction(null);
+    setBrandActionInput("");
+  }
+
+  async function submitBrandAction() {
+    if (brandAction === "new" || brandAction === "duplicate") {
+      setBrandActionBusy(true);
+      setError(null);
+      try {
+        const result = await postAction(
+          brandAction === "new"
+            ? { action: "create-brand", name: brandActionInput }
+            : { action: "duplicate-brand", name: brandActionInput, source: selectedBrand },
+        );
+        if (result.ok) {
+          router.push(`/design-system?brand=${(result as { slug: string }).slug}`);
+        } else {
+          setError(result.error);
+        }
+      } finally {
+        setBrandActionBusy(false);
+      }
+      return;
+    }
+    if (brandAction === "delete") {
+      setBrandActionBusy(true);
+      setError(null);
+      try {
+        const result = await postAction({ action: "delete-brand", brand: selectedBrand });
+        if (result.ok) {
+          router.push("/design-system?brand=default");
+        } else {
+          setError(result.error);
+        }
+      } finally {
+        setBrandActionBusy(false);
+      }
+    }
+  }
+
+  function renderBrandActionRow() {
+    const blocked = pendingEdits.size > 0 || inFlight.size > 0;
+    const blockedReason = pendingEdits.size > 0
+      ? "Save or discard your pending changes first"
+      : inFlight.size > 0
+        ? "Wait for the current change to finish saving"
+        : undefined;
+
+    if (brandAction === null) {
+      return (
+        <>
+          <button
+            type="button"
+            disabled={blocked}
+            title={blockedReason}
+            onClick={() => setBrandAction("new")}
+            className={cn(MUTED_ACTION, "text-sm")}
+          >
+            New brand
+          </button>
+          <button
+            type="button"
+            disabled={blocked}
+            title={blockedReason}
+            onClick={() => setBrandAction("duplicate")}
+            className={cn(MUTED_ACTION, "text-sm")}
+          >
+            Duplicate this brand
+          </button>
+          {selectedBrand !== "default" && (
+            <button
+              type="button"
+              disabled={blocked}
+              title={blockedReason}
+              onClick={() => setBrandAction("delete")}
+              className={cn(MUTED_ACTION, "text-sm")}
+            >
+              Delete this brand
+            </button>
+          )}
+        </>
+      );
+    }
+
+    if (brandAction === "delete") {
+      return (
+        <>
+          <span className={CAPTION}>
+            {`Type "${selectedBrand}" to confirm — the brand's short name, not "${humanize(selectedBrand)}"`}
+          </span>
+          <input
+            ref={brandActionInputRef}
+            type="text"
+            value={brandActionInput}
+            onChange={(e) => setBrandActionInput(e.target.value)}
+            aria-label="Type brand name to confirm deletion"
+            className={cn(CAPTION, "min-w-0 flex-1 border-b border-transparent focus:border-border", FOCUS_RING)}
+          />
+          <button
+            type="button"
+            disabled={brandActionInput !== selectedBrand || brandActionBusy}
+            onClick={submitBrandAction}
+            className={cn(MUTED_ACTION, "text-sm")}
+          >
+            {brandActionBusy ? "Deleting…" : "Confirm delete"}
+          </button>
+          <button type="button" onClick={cancelBrandAction} className={cn(MUTED_ACTION, "text-sm")}>
+            Cancel
+          </button>
+        </>
+      );
+    }
+
+    // brandAction is "new" or "duplicate"
+    return (
+      <>
+        <input
+          ref={brandActionInputRef}
+          type="text"
+          value={brandActionInput}
+          onChange={(e) => setBrandActionInput(e.target.value)}
+          placeholder={brandAction === "new" ? "Untitled brand" : undefined}
+          aria-label={brandAction === "new" ? "New brand name" : "Duplicate brand name"}
+          className={cn(CAPTION, "min-w-0 flex-1 border-b border-transparent focus:border-border", FOCUS_RING)}
+        />
+        <button
+          type="button"
+          disabled={brandActionBusy}
+          onClick={submitBrandAction}
+          className={cn(MUTED_ACTION, "text-sm")}
+        >
+          {brandActionBusy ? "Creating…" : "Create"}
+        </button>
+        <button type="button" onClick={cancelBrandAction} className={cn(MUTED_ACTION, "text-sm")}>
+          Cancel
+        </button>
+      </>
+    );
+  }
+
   const fieldsFor = (key: string) => descriptors.filter((d) => d.section === key);
   const flat = SECTIONS.filter((s) => !s.group);
   const grouped = SECTIONS.filter((s) => s.group);
@@ -950,6 +1098,7 @@ export function Editor({
           );
         })}
       </nav>
+      <div className="mt-2 flex flex-wrap items-center gap-3">{renderBrandActionRow()}</div>
       <div className="mt-6 flex gap-8">
         <nav aria-label="Design system sections" className="w-44 shrink-0">
           <ul className="flex flex-col gap-1">

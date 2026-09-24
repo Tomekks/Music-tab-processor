@@ -3,8 +3,10 @@
 // route.ts owns HTTP + disk and delegates here. All functions are importable
 // by node --test without a running Next server.
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
+import { resolveValue } from "./resolve.mjs";
+import { themeVaryingColorRef } from "./css-var-naming.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description", "list-brands"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description", "list-brands", "create-brand", "duplicate-brand", "delete-brand"];
 
 /**
  * @typedef {object} TokenLeaf
@@ -514,6 +516,60 @@ export function applyGenerateFromSeed(tokensTree, neutralSeed, accentSeed) {
   const tokens = structuredClone(tokensTree);
   for (const [path, hex] of writes) {
     getLeaf(tokens, path).$value = hex;
+  }
+  return { ok: true, tokens };
+}
+
+/**
+ * @param {unknown} name free-text brand display name
+ * @param {string[]} existingSlugs current brand directory names (from listBrands())
+ * @returns {{ok: true, slug: string} | {ok: false, error: string}}
+ */
+export function validateBrandName(name, existingSlugs) {
+  if (typeof name !== "string" || name.trim().length === 0) {
+    return { ok: false, error: '"name" must be a non-empty string' };
+  }
+  const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  if (slug.length === 0) {
+    return { ok: false, error: `"${name}" has no letters or numbers to build a brand slug from` };
+  }
+  if (existingSlugs.includes(slug)) {
+    return { ok: false, error: `A brand named "${slug}" already exists` };
+  }
+  return { ok: true, slug };
+}
+
+/**
+ * Freeze a source brand's fully-merged tree into a fully-populated
+ * (non-sparse) tree for a new Duplicate brand -- every leaf's $value resolved
+ * to its literal, EXCEPT a component.* leaf aliasing a theme-varying semantic
+ * color (per themeVaryingColorRef), which keeps its alias string so
+ * [data-theme="dark"] overrides keep working on the duplicate. That kept
+ * alias now points at the duplicate's own already-frozen copy of that
+ * semantic color -- no ongoing link back to the source brand.
+ * @param {object} mergedTree resolveBrandTree(...).tree of the SOURCE brand — already
+ *   fully resolved against its own parent if it has one; never mutated
+ * @returns {{ok: true, tokens: object} | ApplyErr}
+ */
+export function applyDuplicateBrand(mergedTree) {
+  const themeVaryingKeys = new Set(Object.keys(mergedTree.dark?.semantic?.color ?? {}));
+  const tokens = {};
+  try {
+    for (const { path, leaf } of collectLeafPaths(mergedTree)) {
+      const segments = path.split(".");
+      let node = tokens;
+      for (let i = 0; i < segments.length - 1; i++) {
+        node = node[segments[i]] ??= {};
+      }
+      const themeKey = themeVaryingColorRef(leaf, themeVaryingKeys);
+      const frozen = themeKey
+        ? { $value: leaf.$value, $type: leaf.$type }
+        : { $value: resolveValue(mergedTree, leaf.$value), $type: leaf.$type };
+      if (leaf.$description) frozen.$description = leaf.$description;
+      node[segments.at(-1)] = frozen;
+    }
+  } catch (err) {
+    return { ok: false, status: 400, error: err instanceof Error ? err.message : String(err) };
   }
   return { ok: true, tokens };
 }

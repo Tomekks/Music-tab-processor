@@ -9,12 +9,12 @@
 // layout.sidebarWidth -> --sidebar-width. Task 4 adds the component.* var()
 // alias branch in the marked loop below; nothing else in this file changes.
 
-import { readFileSync, existsSync, writeFileSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, readdirSync, mkdirSync, renameSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
 import { deepMerge } from "./deep-merge.mjs";
-import { kebab, BARE_COLOR_KEYS, LEAF_NAME_MAP, colorPropName, cssVarNameForPath } from "./css-var-naming.mjs";
+import { kebab, BARE_COLOR_KEYS, LEAF_NAME_MAP, colorPropName, cssVarNameForPath, themeVaryingColorRef } from "./css-var-naming.mjs";
 
 export { cssVarNameForPath };
 
@@ -45,20 +45,6 @@ function collectLeaves(obj, prefix = []) {
   return out;
 }
 
-// Task 4 §0(a): a component.* leaf whose $value is a direct single reference
-// to a theme-varying semantic color (a key present in the dark override
-// block) emits a var() alias to that color's own CSS variable instead of a
-// resolved literal. The alias re-resolves live, so [data-theme] overrides
-// flow through automatically — no per-theme duplication needed. Anything
-// else (non-color leaves, theme-invariant colors like accent/onAccent)
-// resolves to a literal exactly as before.
-function themeVaryingColorRef(leaf, themeVaryingKeys) {
-  if (typeof leaf.$value !== "string") return null;
-  const m = /^\{\s*semantic\.color\.([A-Za-z0-9_]+)\s*\}$/.exec(leaf.$value);
-  if (!m) return null;
-  return themeVaryingKeys.has(m[1]) ? m[1] : null;
-}
-
 // Read active-brand.json and return the absolute path of that brand's directory.
 // Paths resolve from this file's location, never process.cwd(), so the build
 // script (Task 3), the API route (Task 5), and tests all get the same answer.
@@ -84,11 +70,40 @@ export function resolveBrandDirForSlug(slug) {
 }
 
 // Every brand slug (directory name) under brands/, sorted alphabetically.
+// Dot-prefixed directories are excluded -- staging (.tmp-*) and trash
+// (.trash-*) directories used by brand creation/deletion (below) must never
+// appear as real, selectable brands.
 export function listBrands() {
   return readdirSync(join(PACKAGE_ROOT, "brands"), { withFileTypes: true })
-    .filter((e) => e.isDirectory())
+    .filter((e) => e.isDirectory() && !e.name.startsWith("."))
     .map((e) => e.name)
     .sort();
+}
+
+// Atomic brand creation: stage every file in a hidden, not-yet-public
+// directory, then publish with a single renameSync -- the same
+// same-filesystem atomic-rename trick route.ts's atomicWriteString already
+// uses for individual files, one level up. A crash mid-staging leaves an
+// orphaned .tmp-* directory that listBrands() already filters out and
+// nothing else ever reads -- never a half-formed real brand.
+export function beginBrandCreation(slug) {
+  const tmpDir = join(PACKAGE_ROOT, "brands", `.tmp-${slug}-${process.pid}-${Date.now()}`);
+  mkdirSync(tmpDir);
+  return tmpDir;
+}
+
+export function commitBrandCreation(tmpDir, slug) {
+  renameSync(tmpDir, join(PACKAGE_ROOT, "brands", slug));
+}
+
+// Soft delete: rename out of brands/ instead of removing, so a confirmed
+// delete is still recoverable (manually, by renaming back) rather than
+// permanent.
+export function trashBrandDir(slug) {
+  const brandDir = resolveBrandDirForSlug(slug);
+  const trashDir = join(PACKAGE_ROOT, "brands", `.trash-${slug}-${Date.now()}`);
+  renameSync(brandDir, trashDir);
+  return trashDir;
 }
 
 // Resolves a brand's full token tree, following its `brand.json`'s `parent`
@@ -122,6 +137,17 @@ export function resolveBrandTree(brandDir) {
   }
   const parentTokens = JSON.parse(readFileSync(join(parentBrandDir, "tokens.json"), "utf8"));
   return { tree: deepMerge(parentTokens, tokens), parentBrandDir };
+}
+
+// If the brand being deleted is the one active-brand.json currently names,
+// reset it to "default" so a future buildActiveBrand()/resolveBrandDir() call
+// never throws "Unknown brand" for a directory that no longer exists.
+export function resetActiveBrandIfDeleted(deletedSlug) {
+  const activePath = join(PACKAGE_ROOT, "active-brand.json");
+  const parsed = JSON.parse(readFileSync(activePath, "utf8"));
+  if (parsed.brand !== deletedSlug) return false;
+  writeFileSync(activePath, JSON.stringify({ brand: "default" }, null, 2) + "\n");
+  return true;
 }
 
 export function generateCSS(brandDir) {
