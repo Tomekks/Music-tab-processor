@@ -9,7 +9,7 @@
 // layout.sidebarWidth -> --sidebar-width. Task 4 adds the component.* var()
 // alias branch in the marked loop below; nothing else in this file changes.
 
-import { readFileSync, existsSync, writeFileSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveValue } from "./resolve.mjs";
@@ -70,6 +70,25 @@ export function resolveBrandDir() {
     throw new Error(`Unknown brand "${parsed.brand}" (looked for ${brandDir})`);
   }
   return brandDir;
+}
+
+// Resolve a specific brand by slug, independent of active-brand.json --
+// lets a caller (the editor's brand switcher, Task 1) operate on a brand
+// other than the currently active one without touching that file.
+export function resolveBrandDirForSlug(slug) {
+  const brandDir = join(PACKAGE_ROOT, "brands", slug);
+  if (!existsSync(brandDir)) {
+    throw new Error(`Unknown brand "${slug}" (looked for ${brandDir})`);
+  }
+  return brandDir;
+}
+
+// Every brand slug (directory name) under brands/, sorted alphabetically.
+export function listBrands() {
+  return readdirSync(join(PACKAGE_ROOT, "brands"), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
 }
 
 // Resolves a brand's full token tree, following its `brand.json`'s `parent`

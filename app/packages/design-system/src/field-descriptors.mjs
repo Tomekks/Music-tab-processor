@@ -54,13 +54,17 @@ export const SECTIONS = [
 ];
 
 /**
- * "primaryBackground" -> "Primary background"; "1_5" -> "1.5".
+ * "primaryBackground" -> "Primary background"; "1_5" -> "1.5";
+ * "demo-child" -> "Demo child". No existing token path segment contains a
+ * hyphen (schema uses camelCase/underscore only) -- this branch exists for
+ * kebab-case brand slugs (Task 1's brand switcher), not field paths.
  * @param {string} segment
  * @returns {string}
  */
 export function humanize(segment) {
   const spaced = segment
     .replace(/_/g, ".")
+    .replace(/-/g, " ")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .toLowerCase();
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);

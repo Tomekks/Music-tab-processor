@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateCSS, resolveBrandDir, resolveBrandTree, cssVarNameForPath } from "./build-tokens.mjs";
+import {
+  generateCSS,
+  resolveBrandDir,
+  resolveBrandDirForSlug,
+  resolveBrandTree,
+  cssVarNameForPath,
+  listBrands,
+} from "./build-tokens.mjs";
 import { join, dirname } from "node:path";
 import { collectLeafPaths } from "./token-writes.mjs";
 
@@ -248,4 +255,16 @@ test("cssVarNameForPath agrees with generateCSS's real output for every default-
       `${path} -> "${varName}" not found as a declared property in generateCSS's real output`,
     );
   }
+});
+
+test("listBrands returns every real brand directory, sorted", () => {
+  assert.deepEqual(listBrands(), ["default", "demo-child"]);
+});
+
+test("resolveBrandDirForSlug matches resolveBrandDir for the currently active brand", () => {
+  assert.equal(resolveBrandDirForSlug("default"), resolveBrandDir());
+});
+
+test("resolveBrandDirForSlug throws the same 'Unknown brand' shape as resolveBrandDir", () => {
+  assert.throws(() => resolveBrandDirForSlug("nope"), /Unknown brand "nope" \(looked for/);
 });

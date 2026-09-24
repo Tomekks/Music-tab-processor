@@ -70,6 +70,11 @@ test("humanize renders labels the spec's way", () => {
   assert.equal(humanize("swatchSize"), "Swatch size");
 });
 
+test("humanize converts a kebab-case brand slug to a spaced label", () => {
+  assert.equal(humanize("demo-child"), "Demo child");
+  assert.equal(humanize("default"), "Default");
+});
+
 test("SECTIONS lists 11 keys with the Components umbrella last", () => {
   assert.equal(SECTIONS.length, 11);
   assert.deepEqual(

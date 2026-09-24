@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, ColorField, SegmentedControl, Slider } from "@guitar-tabs/design-system";
-import { SECTIONS } from "../../packages/design-system/src/field-descriptors.mjs";
+import { SECTIONS, humanize } from "../../packages/design-system/src/field-descriptors.mjs";
 import type { FieldDescriptor } from "../../packages/design-system/src/field-descriptors.mjs";
 import { cssVarNameForPath } from "../../packages/design-system/src/css-var-naming.mjs";
 import { cn } from "@/lib/cn";
@@ -586,10 +586,14 @@ export function Editor({
   descriptors,
   isChildBrand,
   parentName,
+  brands,
+  selectedBrand,
 }: {
   descriptors: FieldDescriptor[];
   isChildBrand: boolean;
   parentName: string | null;
+  brands: string[];
+  selectedBrand: string;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -913,6 +917,39 @@ export function Editor({
         ← Back
       </Link>
       <h1 className="mt-2 text-2xl font-bold">Design tokens</h1>
+      <nav aria-label="Brands" className="mt-4 flex flex-wrap items-center gap-3">
+        {brands.map((slug) => {
+          if (slug === selectedBrand) {
+            return (
+              <span key={slug} aria-current="page" className="text-sm font-semibold">
+                {humanize(slug)}
+              </span>
+            );
+          }
+          const blockedReason =
+            pendingEdits.size > 0
+              ? "Save or discard your pending changes before switching brands"
+              : inFlight.size > 0
+                ? "Wait for the current change to finish saving"
+                : null;
+          if (blockedReason) {
+            return (
+              <span
+                key={slug}
+                title={blockedReason}
+                className={cn(MUTED_ACTION, "text-sm cursor-not-allowed opacity-[var(--state-disabled-opacity)]")}
+              >
+                {humanize(slug)}
+              </span>
+            );
+          }
+          return (
+            <Link key={slug} href={`/design-system?brand=${slug}`} className={cn(MUTED_ACTION, "text-sm")}>
+              {humanize(slug)}
+            </Link>
+          );
+        })}
+      </nav>
       <div className="mt-6 flex gap-8">
         <nav aria-label="Design system sections" className="w-44 shrink-0">
           <ul className="flex flex-col gap-1">
@@ -942,7 +979,7 @@ export function Editor({
           {selectedView === "all" ? (
             <>
               <p className="mt-1 text-sm text-surface-text/70">
-                Live brand values for the default brand. Edits write to <code>tokens.json</code> and
+                Live brand values for {humanize(selectedBrand)}. Edits write to <code>tokens.json</code> and
                 rebuild the stylesheet immediately.
               </p>
               <p className="mt-1 text-sm text-surface-text/70">

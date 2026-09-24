@@ -7,10 +7,10 @@ const PLAN_META = {
 };
 
 const PLAN_TASKS = [
-  { id: "1", name: "Brand switcher (list + select)", status: "todo", detail: "Not yet handed off" },
-  { id: "2", name: "Create brand: New", status: "todo", detail: "Blocked on: 1" },
-  { id: "3", name: "Create brand: Duplicate", status: "todo", detail: "Blocked on: 1" },
-  { id: "4", name: "Delete brand", status: "todo", detail: "Blocked on: 1" },
+  { id: "1", name: "Brand switcher (list + select)", status: "done", detail: "<code>95caf0b</code> · 3 new unit tests, 6 new e2e, human visual checkbox passed via screenshot" },
+  { id: "2", name: "Create brand: New", status: "todo", detail: "Batched with 3, 4 into one spec (low seam-risk, see plan's Sequencing note)" },
+  { id: "3", name: "Create brand: Duplicate", status: "todo", detail: "Batched with 2, 4 into one spec" },
+  { id: "4", name: "Delete brand", status: "todo", detail: "Batched with 2, 3 into one spec" },
   { id: "5", name: "Editor UI: generalize beyond \"the default brand\"", status: "todo", detail: "Blocked on: 1, 2, 3, 4" },
   { id: "6", name: "Deferred: simultaneous multi-brand CSS for live apps", status: "todo", detail: "Deliberately deferred until a real second consumer (e.g. the control panel) exists -- not scheduled" },
 ];

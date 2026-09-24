@@ -1,17 +1,37 @@
 import { notFound } from "next/navigation";
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { resolveBrandDir, resolveBrandTree } from "../../packages/design-system/src/build-tokens.mjs";
+import {
+  resolveBrandDir,
+  resolveBrandDirForSlug,
+  resolveBrandTree,
+  listBrands,
+} from "../../packages/design-system/src/build-tokens.mjs";
 import { buildFieldDescriptors } from "../../packages/design-system/src/field-descriptors.mjs";
 import { Editor } from "./editor";
 
 export const dynamic = "force-dynamic";
 
-export default function DesignSystemPage() {
+export default async function DesignSystemPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   if (process.env.NODE_ENV === "production") {
     notFound();
   }
-  const brandDir = resolveBrandDir();
+  const { brand: rawBrand } = await searchParams;
+  const brands = listBrands();
+  let brandDir: string;
+  let selectedBrand: string;
+  if (typeof rawBrand === "string") {
+    if (!brands.includes(rawBrand)) notFound();
+    brandDir = resolveBrandDirForSlug(rawBrand);
+    selectedBrand = rawBrand;
+  } else {
+    brandDir = resolveBrandDir();
+    selectedBrand = basename(brandDir);
+  }
   const { tree, parentBrandDir } = resolveBrandTree(brandDir);
   // tokens.default.json exists only for root brands — reading it for a child
   // brand would crash with ENOENT (and the concept doesn't apply there: no
@@ -28,9 +48,12 @@ export default function DesignSystemPage() {
       );
   return (
     <Editor
+      key={selectedBrand}
       descriptors={descriptors}
       isChildBrand={parentBrandDir !== null}
       parentName={parentBrandDir ? basename(parentBrandDir) : null}
+      brands={brands}
+      selectedBrand={selectedBrand}
     />
   );
 }

@@ -4,7 +4,7 @@
 // by node --test without a running Next server.
 import { generateNeutralRamp, generateAccentPair } from "./generate-ramp.mjs";
 
-export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description"];
+export const VALID_ACTIONS = ["write", "reset", "reset-all", "set-as-default", "reset-to-parent", "generate-from-seed", "batch-write", "set-description", "list-brands"];
 
 /**
  * @typedef {object} TokenLeaf
