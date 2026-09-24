@@ -60,6 +60,11 @@ async function postTokensRequest(page: Page) {
 }
 
 test.beforeAll(() => {
+  // Self-heal, don't assume (Task 4.7): demo-child is a checked-in fixture
+  // this whole file depends on, but a real user can delete it through the
+  // app at any time. Restore it from git before taking ownership below,
+  // regardless of its current on-disk state.
+  sh("git checkout HEAD -- packages/design-system/brands/demo-child/");
   // Fail fast on leftover dirt — then take ownership of the fixture.
   try {
     assertCleanTrees();

@@ -51,6 +51,11 @@ const sidebar = (page: Page) =>
 const colorSection = (page: Page) => page.getByRole("region", { name: "Color", exact: true });
 
 test.beforeAll(() => {
+  // Self-heal, don't assume (Task 4.7): demo-child is a checked-in fixture
+  // several tests below depend on, but a real user can delete it through the
+  // app at any time. Restore it from git before the dirty-check below,
+  // regardless of its current on-disk state.
+  execSync("git checkout HEAD -- packages/design-system/brands/demo-child/", { cwd: process.cwd() });
   for (const path of REAL_WRITE_PATHS) {
     try {
       execSync(`git diff --quiet -- ${path}`, { cwd: process.cwd() });

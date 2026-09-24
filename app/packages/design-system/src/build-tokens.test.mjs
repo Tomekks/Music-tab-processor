@@ -17,7 +17,20 @@ import {
 } from "./build-tokens.mjs";
 import { join, dirname } from "node:path";
 import { readFileSync, writeFileSync, rmSync, existsSync, readdirSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { collectLeafPaths } from "./token-writes.mjs";
+
+// Self-heal, don't assume: demo-child is a checked-in fixture several tests
+// below depend on, but it lives in the same real, user-deletable brands/
+// directory as actual data (Task 4.7) -- a real user deleting it through the
+// app must not permanently break this suite. Restore it from git before
+// anything else runs, regardless of its current on-disk state (missing,
+// soft-deleted to .trash-*, or modified). Uses an absolute path (via
+// resolveBrandDir(), not process.cwd()) since this file's cwd depends on how
+// it was invoked (npm workspace vs. plain `node --test`).
+execSync(`git checkout HEAD -- ${join(dirname(resolveBrandDir()), "demo-child")}`, {
+  cwd: dirname(resolveBrandDir()),
+});
 
 // Expected output: captured from the real generateCSS(resolveBrandDir())
 // after the Task 4 token additions (§3.1) and the §0(a) alias fix — not

@@ -22,6 +22,11 @@ function extraBrandEntries(): string[] {
 }
 
 test.beforeAll(() => {
+  // Self-heal, don't assume (Task 4.7): demo-child is a checked-in fixture
+  // test 2 depends on, but a real user can delete it through the app at any
+  // time. Restore it from git before the dirty-check below, regardless of
+  // its current on-disk state.
+  execSync("git checkout HEAD -- packages/design-system/brands/demo-child/", { cwd: process.cwd() });
   for (const path of [ACTIVE_BRAND_PATH, TOKENS_PATH]) {
     try {
       execSync(`git diff --quiet -- ${path}`, { cwd: process.cwd() });

@@ -25,6 +25,12 @@ function extraBrandEntries(): string[] {
 }
 
 test.beforeAll(() => {
+  // Self-heal, don't assume (Task 4.7): test 4 asserts demo-child (a checked-in
+  // fixture) is still visible after deleting a different brand, but a real
+  // user can delete demo-child itself through the app at any time. Restore
+  // it from git before the dirty-check below, regardless of its current
+  // on-disk state.
+  execSync("git checkout HEAD -- packages/design-system/brands/demo-child/", { cwd: process.cwd() });
   try {
     execSync(`git diff --quiet -- ${ACTIVE_BRAND_PATH}`, { cwd: process.cwd() });
   } catch {
