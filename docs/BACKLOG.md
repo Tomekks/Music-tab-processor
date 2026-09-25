@@ -248,7 +248,7 @@ Shipped: `scripts/sync-secrets-to-github.sh` exists — the user runs it themsel
 
 Not a backlog item — a snapshot. Authoritative sources: `app/package.json` (Node/JS) and the `.venv` (Python).
 
-- **App:** Next.js 16.3.4, React 19.2.8, TypeScript ^5, Tailwind CSS ^4, Drizzle ORM ^0.45.2, `@libsql/client` ^0.18.0, PostHog JS ^1.428.7
+- **App:** Next.js 16.3.4, React 19.2.8, TypeScript ^5, Tailwind CSS ^4, Drizzle ORM ^0.45.2, `@libsql/client` ^0.18.0
 - **Pipeline (Python 3.11.16):** `basic-pitch` 0.4.0, `demucs` 4.1.0, `librosa` 0.11.0, `tuttut` 0.0.6, `torch` 2.14.0, `torchaudio` 2.11.0
 - **Database:** Turso (hosted libSQL/SQLite-compatible)
 - **Hosting:** Vercel
