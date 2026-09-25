@@ -15,7 +15,6 @@ No single mandated next step — pick from the backlog (`docs/BACKLOG.md`): loca
 ## Environment notes
 
 - Two `.env.local` files hold the *same* Turso credentials — repo root (read by `pipeline/s05_publish/publish.py`'s hand-rolled parser) and `app/` (read by Next.js). Both gitignored. Rotate both together.
-- PostHog records page views on the deployed app (key in `app/.env.local` + Vercel prod); autocapture, session replay, identity profiles, and persistent storage are all deliberately disabled. See `app/STATUS.md`.
 - **Rebuilding `.venv` from scratch:** use `pip install --no-deps -r requirements.freeze.txt`, not a plain `pip install -r`. A plain install re-triggers a real `tuttut`/`matplotlib` version conflict (`docs/audio-tools/tab-generation.md`), and a plain `pip freeze` silently drops `pip`/`setuptools`/`wheel`, which `basic-pitch` needs transitively. `requirements.freeze.txt` is a fully-resolved snapshot, so `--no-deps` is correct, not a workaround.
 
 ## Manual verification walkthrough

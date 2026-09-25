@@ -20,7 +20,7 @@
 
 **Deployment** — Vercel setup, how to actually deploy, the Root Directory incident and how to spot it again, a known flaky (but harmless) build error. *Open if your task touches: deploying, Vercel settings, or a deploy that's failing.* → `app/status/deployment.md`
 
-**Database and analytics** — Turso/Drizzle access and schema changes, the accepted `npm audit` issue, PostHog configuration. *Open if your task touches: the database schema, or analytics.* → `app/status/database-and-analytics.md`
+**Database** — Turso/Drizzle access and schema changes, the accepted `npm audit` issue. *Open if your task touches: the database schema.* → `app/status/database-and-analytics.md`
 
 **Song views and the metronome** — the Sheet/Fretboard/Ascii tab components and the metronome hook themselves (still used directly by the home page): what's built, where the code is, what's not built yet. Predates the home-page rebuild, so its page-layout/composition sections describe the retired v0.1 UI (`archive/v0.1-web-ui/`) — the component-level detail (SheetDiagram, FretboardDiagram, useMetronome) is still accurate. *Open if your task touches: any of the three tab views' own rendering, or the metronome hook.* → `app/status/song-views.md`
 
