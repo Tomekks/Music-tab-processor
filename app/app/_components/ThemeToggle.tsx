@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "./ThemeProvider";
+import { trackEvent } from "@/lib/analytics";
 
 export function ThemeToggle() {
   const { mode, toggle } = useTheme();
@@ -13,7 +14,11 @@ export function ThemeToggle() {
     <div className="flex items-center gap-1.5 text-sm">
       <button
         type="button"
-        onClick={() => mode !== "light" && toggle()}
+        onClick={() => {
+          if (mode === "light") return;
+          toggle();
+          trackEvent("theme-light");
+        }}
         aria-current={mode === "light" ? "true" : undefined}
         className={`${TARGET} ${mode === "light" ? ACTIVE : INACTIVE}`}
       >
@@ -24,7 +29,11 @@ export function ThemeToggle() {
       </span>
       <button
         type="button"
-        onClick={() => mode !== "dark" && toggle()}
+        onClick={() => {
+          if (mode === "dark") return;
+          toggle();
+          trackEvent("theme-dark");
+        }}
         aria-current={mode === "dark" ? "true" : undefined}
         className={`${TARGET} ${mode === "dark" ? ACTIVE : INACTIVE}`}
       >

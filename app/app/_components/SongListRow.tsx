@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { TrackedLink } from "./TrackedLink";
 import type { songs } from "@/db/schema";
 
 export type SongListItem = Pick<typeof songs.$inferSelect, "id" | "title" | "artist" | "tempoBpm"> & {
@@ -16,7 +16,7 @@ export type SongListItem = Pick<typeof songs.$inferSelect, "id" | "title" | "art
 export function SongListRow({ song, isSelected }: { song: SongListItem; isSelected: boolean }) {
   return (
     <li>
-      <Link
+      <TrackedLink
         // Direct to "/" with the song as a query param -- not "/studio" (that's
         // now just a redirect stub for old links, see app/studio/page.tsx). Two
         // real bugs this fixes at once: (1) the extra client-side hop through
@@ -26,6 +26,8 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
         // reflects the selected song instead of round-tripping through /studio.
         href={{ pathname: "/", query: { song: song.id } }}
         aria-current={isSelected ? "true" : undefined}
+        event="select-song"
+        eventData={{ song: song.title, songId: song.id }}
         className={cn(
           "flex items-center gap-3 px-4 py-4 transition-colors",
           isSelected ? "bg-accent/10" : "hover:bg-foreground/[0.04]"
@@ -44,7 +46,7 @@ export function SongListRow({ song, isSelected }: { song: SongListItem; isSelect
           <span className="text-xs text-foreground/60 truncate">{song.artist || song.spotifyArtist || " "}</span>
           <span className="text-sm font-semibold truncate">{song.title}</span>
         </div>
-      </Link>
+      </TrackedLink>
     </li>
   );
 }
