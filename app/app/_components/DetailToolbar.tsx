@@ -121,6 +121,7 @@ function TransportLayout({
         {loopRange ? (
           <button
             onClick={onClearLoop}
+            data-umami-event="clear-loop"
             className="text-xs font-mono px-2 py-1 rounded-full shrink-0"
             style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
             title="Clear loop"

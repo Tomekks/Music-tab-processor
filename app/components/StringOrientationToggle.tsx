@@ -12,6 +12,7 @@ export function StringOrientationToggle({ highOnTop, onToggle }: { highOnTop: bo
   return (
     <button
       onClick={onToggle}
+      data-umami-event="flip-strings"
       aria-pressed={highOnTop}
       title={`Flip strings (currently ${stateWords} on top)`}
       aria-label={`Flip strings (currently ${stateWords} on top)`}

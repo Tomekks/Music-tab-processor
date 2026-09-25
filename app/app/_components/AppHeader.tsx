@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { HeaderSongsButton } from "./DrawerContext";
+import { TrackedLink } from "./TrackedLink";
 import { ThemeToggle } from "./ThemeToggle";
 import { Kbd } from "@/components/Kbd";
 import { TRANSPORT_SHORTCUTS, type ShortcutAction, type ShortcutDef } from "@/lib/keyboardShortcuts";
@@ -28,9 +28,13 @@ export function AppHeader() {
     <header className="shrink-0 border-b border-border px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <HeaderSongsButton />
-        <Link href="/" className="text-xl font-semibold tracking-tight hover:opacity-70">
+        <TrackedLink
+          href="/"
+          event="nav-home"
+          className="text-xl font-semibold tracking-tight hover:opacity-70"
+        >
           TabbyTab
-        </Link>
+        </TrackedLink>
       </div>
       <div className="flex items-center gap-3">
         <p className="hidden md:block text-xs text-foreground/60">

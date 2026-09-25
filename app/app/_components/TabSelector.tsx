@@ -20,6 +20,8 @@ export function TabSelector<T extends string>({
           role="tab"
           aria-selected={active === tab}
           onClick={() => onSelect(tab)}
+          data-umami-event="switch-view"
+          data-umami-event-view={tab}
           className={cn(
             "px-3 py-2 text-base font-semibold -mb-px border-b-2 transition-colors",
             active === tab ? "border-accent text-accent" : "border-transparent text-foreground/40 hover:text-foreground/70"

@@ -11,6 +11,7 @@ import { useMetronome } from "@/hooks/useMetronome";
 import { useNoteSound } from "@/hooks/useNoteSound";
 import { fretToMidi, groupNotesByStep, getStepOnsetTimes, type TimedNote } from "@/lib/tabNotation";
 import { matchTransportShortcut, shouldHandleKey } from "@/lib/keyboardShortcuts";
+import { trackEvent } from "@/lib/analytics";
 
 export const TABS = ["Sheet", "Fretboard", "Ascii"] as const;
 export type Tab = (typeof TABS)[number];
@@ -89,6 +90,14 @@ export function StudioTabs({
   // TRANSPORT_SHORTCUTS -- no keys re-listed here.
   const { stepBy, toggle } = metronome; // stable (useCallback) refs, so the effect below only re-subscribes when they actually change
   const rootRef = useRef<HTMLDivElement>(null);
+  // Read fresh each keydown without adding metronome.isPlaying to the effect's
+  // deps (which would resubscribe the listener every tick while playing).
+  // Written from its own effect, never during render (React forbids mutating
+  // a ref's .current while rendering -- eslint's react-hooks/refs catches it).
+  const isPlayingRef = useRef(metronome.isPlaying);
+  useEffect(() => {
+    isPlayingRef.current = metronome.isPlaying;
+  }, [metronome.isPlaying]);
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const inScope = rootRef.current?.contains(e.target as Node) ?? false;
@@ -96,9 +105,14 @@ export function StudioTabs({
       const match = matchTransportShortcut(e);
       if (!match) return;
       e.preventDefault();
+      // "-shortcut" suffix (2026-09-25): distinct event names from the
+      // toolbar buttons' plain "play"/"pause"/etc, so Umami can tell keyboard
+      // usage apart from clicks rather than conflating the two.
       if (match.action === "toggle-play") {
+        trackEvent(isPlayingRef.current ? "pause-shortcut" : "play-shortcut");
         toggle();
       } else {
+        trackEvent(match.action === "step-forward" ? "step-forward-shortcut" : "step-back-shortcut");
         stepBy(match.action === "step-forward" ? 1 : -1);
       }
     }

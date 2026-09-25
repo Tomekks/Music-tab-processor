@@ -27,6 +27,7 @@ export function ResetButton({ onReset }: { onReset: () => void }) {
   return (
     <button
       onClick={onReset}
+      data-umami-event="reset"
       aria-label="Reset to start"
       title="Reset to start"
       className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold hover:brightness-110 shrink-0"
@@ -45,6 +46,7 @@ export function PlayButton({ isPlaying, onToggle }: { isPlaying: boolean; onTogg
   return (
     <button
       onClick={onToggle}
+      data-umami-event={isPlaying ? "pause" : "play"}
       aria-label={isPlaying ? "Pause" : "Play"}
       aria-keyshortcuts={playShortcut?.kbd.join(" ")}
       className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0"
@@ -136,6 +138,8 @@ export function MidiButton({
   return (
     <button
       onClick={onToggleSound}
+      data-umami-event="toggle-midi-sound"
+      data-umami-event-enabled={String(!soundEnabled)}
       aria-pressed={soundEnabled}
       title="Play the real pitch of each note while the metronome runs (beta)"
       className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0 ${
