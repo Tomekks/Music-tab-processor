@@ -1107,28 +1107,32 @@ test.describe("spec 8b empty states", () => {
 // order dependence, no spec-8b selectors or fixtures.
 
 test.describe("spec 8c control polish", () => {
-  test("theme toggles meet the 44px target, state semantics unchanged", async ({ page }) => {
+  test("theme toggle meets the 44px target, single icon reflects the target mode", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    // Normalize via the UI regardless of prior state.
-    const light = page.getByRole("button", { name: "Light mode" });
-    const dark = page.getByRole("button", { name: "Dark mode" });
-    await light.click();
-    await expect(light).toHaveAttribute("aria-current", "true");
-
-    for (const [label, target] of [["Light mode", light], ["Dark mode", dark]] as const) {
-      const box = await target.boundingBox();
-      expect(box, `${label} box exists`).not.toBeNull();
-      expect(box!.width, `${label} width`).toBeGreaterThanOrEqual(44);
-      expect(box!.height, `${label} height`).toBeGreaterThanOrEqual(44);
+    // Single IconButton now (2026-09-25 redesign, was two "Light mode"/"Dark
+    // mode" text buttons): its aria-label always names the mode a click would
+    // switch TO, so the same locator resolves across clicks -- normalize to
+    // a known state first.
+    const toggle = page.getByRole("button", { name: /^Switch to (light|dark) mode$/ });
+    if ((await toggle.getAttribute("aria-label")) !== "Switch to light mode") {
+      await toggle.click();
     }
-
-    // Behavior unchanged: clicking Dark still flips the theme + aria-current.
-    await dark.click();
-    await expect(dark).toHaveAttribute("aria-current", "true");
+    await expect(toggle).toHaveAttribute("aria-label", "Switch to light mode");
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+    const box = await toggle.boundingBox();
+    expect(box, "theme toggle box exists").not.toBeNull();
+    expect(box!.width, "theme toggle width").toBeGreaterThanOrEqual(44);
+    expect(box!.height, "theme toggle height").toBeGreaterThanOrEqual(44);
+
+    // Behavior unchanged: clicking still flips the theme, and the label now
+    // names the (new) opposite mode.
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-label", "Switch to dark mode");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -1246,21 +1250,25 @@ test.describe("spec 8d consolidation", () => {
     const header = page.locator("header").first();
     const songsBtn = header.getByRole("button", { name: "Songs", exact: true });
 
-    // Desktop: Songs island hidden, hint visible with the exact static copy.
+    // Desktop: Songs island hidden, hint icon visible with the exact static
+    // copy in its tooltip (2026-09-25: the hint is now a Keyboard IconButton
+    // + hover/focus tooltip, not an always-visible <p> -- see
+    // KeyboardShortcutsHint.tsx).
     await expect(songsBtn).toBeHidden();
-    const hint = header.locator("p");
-    await expect(hint).toBeVisible();
-    await expect(hint).toHaveText("Space play/pause · ←/→ step");
+    const hintButton = header.getByRole("button", { name: "Keyboard shortcuts" });
+    await expect(hintButton).toBeVisible();
+    const tooltip = header.locator('[role="tooltip"]');
+    await expect(tooltip).toHaveText("Space play/pause · ←/→ step");
 
     // DOM order Songs -> title -> hint -> toggle holds at every width
     // (asserted once here; order is viewport-independent).
     const ordered = await header.evaluate((h) => {
       const songs = h.querySelector('button[aria-controls="songs-drawer"]');
       const title = h.querySelector('a[href="/"]');
-      const hintP = h.querySelector("p");
-      const toggle = h.querySelector('button:not([aria-controls="songs-drawer"])');
-      if (!songs || !title || !hintP || !toggle) return null;
-      const seq = [songs, title, hintP, toggle];
+      const hintBtn = h.querySelector('button[aria-label="Keyboard shortcuts"]');
+      const toggle = h.querySelector('button[aria-label^="Switch to"]');
+      if (!songs || !title || !hintBtn || !toggle) return null;
+      const seq = [songs, title, hintBtn, toggle];
       return seq.every(
         (el, i) => i === 0 || seq[i - 1].compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
       );
@@ -1272,7 +1280,7 @@ test.describe("spec 8d consolidation", () => {
     // both are drawer widths; 767 guards the boundary).
     for (const width of [767, 390]) {
       await page.setViewportSize({ width, height: 700 });
-      await expect(hint).toBeHidden();
+      await expect(hintButton).toBeHidden();
       await expect(songsBtn).toBeVisible();
       // Icon-only (2026-09-25: IconButton/PanelLeft, was a "☰" text glyph):
       // no visible text at all; the accessible name still resolves to Songs

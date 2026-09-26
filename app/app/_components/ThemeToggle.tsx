@@ -1,44 +1,29 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
+import { IconButton } from "@guitar-tabs/design-system";
 import { useTheme } from "./ThemeProvider";
 import { trackEvent } from "@/lib/analytics";
 
+// Single icon button (2026-09-25 IconButton redesign, replacing the old
+// two-button "Light mode / Dark mode" text toggle): shows only the mode
+// you'd switch TO -- Sun while dark is active (click to go light), Moon
+// while light is active (click to go dark) -- same "one control, icon
+// reflects the action" principle as Play/Pause and Volume. Umami event
+// names (theme-light/theme-dark) are unchanged from the old two-button
+// version, still fired by the resulting mode.
 export function ThemeToggle() {
   const { mode, toggle } = useTheme();
-  const ACTIVE = "font-semibold text-foreground";
-  const INACTIVE = "text-foreground/50 hover:text-foreground";
-  // 44px touch targets (spec 8c): size utilities only -- text, aria-current,
-  // separator and row arrangement unchanged.
-  const TARGET = "inline-flex items-center justify-center min-h-[44px] min-w-[44px]";
+  const goingTo = mode === "dark" ? "light" : "dark";
   return (
-    <div className="flex items-center gap-1.5 text-sm">
-      <button
-        type="button"
-        onClick={() => {
-          if (mode === "light") return;
-          toggle();
-          trackEvent("theme-light");
-        }}
-        aria-current={mode === "light" ? "true" : undefined}
-        className={`${TARGET} ${mode === "light" ? ACTIVE : INACTIVE}`}
-      >
-        Light mode
-      </button>
-      <span className="text-foreground/30" aria-hidden>
-        /
-      </span>
-      <button
-        type="button"
-        onClick={() => {
-          if (mode === "dark") return;
-          toggle();
-          trackEvent("theme-dark");
-        }}
-        aria-current={mode === "dark" ? "true" : undefined}
-        className={`${TARGET} ${mode === "dark" ? ACTIVE : INACTIVE}`}
-      >
-        Dark mode
-      </button>
-    </div>
+    <IconButton
+      icon={mode === "dark" ? Sun : Moon}
+      variant="ghost"
+      onClick={() => {
+        toggle();
+        trackEvent(goingTo === "light" ? "theme-light" : "theme-dark");
+      }}
+      aria-label={`Switch to ${goingTo} mode`}
+    />
   );
 }

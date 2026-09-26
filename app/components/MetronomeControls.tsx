@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Minus, Pause, Play as PlayIcon, Plus, SkipBack, Volume2, VolumeX } from "lucide-react";
+import { Metronome, Minus, Pause, Play as PlayIcon, Plus, SkipBack, Volume2, VolumeX } from "lucide-react";
 import { IconButton } from "@guitar-tabs/design-system";
 import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
@@ -99,25 +99,30 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
     if (source === "enter") enterCommittedRef.current = String(clamped);
   };
   return (
-    // No visible "Tempo"/"bpm" text (2026-09-25 IconButton redesign -- the
-    // reference layout is bare number field, flanked by the -/+ IconButtons,
-    // no label chrome) -- aria-label carries the accessible name instead.
-    <input
-      type="number"
-      min={MIN_BPM}
-      max={MAX_BPM}
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={() => commit("blur")}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          commit("enter");
-        }
-      }}
-      aria-label="Tempo in beats per minute"
-      className="w-16 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 text-sm text-surface-text shrink-0"
-    />
+    // No visible "Tempo"/"BPM" text at all (2026-09-25 IconButton redesign):
+    // one bordered/rounded 44px-tall pill, a decorative leading Metronome
+    // icon standing in for the label, and the bare number field -- aria-label
+    // carries the accessible name since there's no text anywhere to derive
+    // it from.
+    <div className="flex items-center gap-1.5 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 shrink-0">
+      <Metronome aria-hidden="true" size={16} className="text-surface-text/60 shrink-0" />
+      <input
+        type="number"
+        min={MIN_BPM}
+        max={MAX_BPM}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => commit("blur")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit("enter");
+          }
+        }}
+        aria-label="Tempo in beats per minute"
+        className="w-10 bg-transparent text-sm text-surface-text outline-none"
+      />
+    </div>
   );
 }
 
