@@ -2,7 +2,7 @@
 
 **This file is an index, not the full status** — read this to get oriented and to know which topic file to open; the details live in `app/status/`. **This file must stay an index.** New status updates go into the matching file in `app/status/` (or a new one, following `docs/DOCUMENTATION_PRINCIPLES.md`) — not appended here.
 
-**Status:** the site is a single page at `/` — a song-list sidebar plus a detail pane (Sheet/Fretboard/Ascii tabs, a metronome that stays mounted across all three, a Spotify-backed cover art/artist lookup that degrades gracefully with no credentials configured), styled with the "Claude theme" (see Design system below). Reads live from the Turso database (`s05_publish` writes to it). This replaced an earlier two-page UI (song list at `/`, a separate `/songs/[id]` detail page) on 2026-09-10 — that version is archived at `archive/v0.1-web-ui/` (git tag `v0.1` has its exact final state), and both its old address and a `/songs/[id]` link now redirect to `/` rather than 404ing. Full build history: `app/status/home-page.md`. See `docs/ARCHITECTURE.md` for how this fits the whole system, `docs/decisions/hosting-and-deployment.md` for why Turso/Drizzle specifically.
+**Status:** the site is a single page at `/` — a song-list sidebar plus a detail pane (Sheet/Fretboard/Ascii tabs, a metronome that stays mounted across all three, a Spotify-backed cover art/artist lookup that degrades gracefully with no credentials configured), styled with the "Claude theme" (see Design system below). Reads live from the Turso database (`s05_publish` writes to it). This replaced an earlier two-page UI (song list at `/`, a separate `/songs/[id]` detail page) on 2026-09-10 — that version is archived at `archive/v0.1-web-ui/` (git tag `v0.1` has its exact final state), and both its old address and a `/songs/[id]` link now redirect to `/` rather than 404ing. Current architecture and locked decisions: `app/status/home-page.md`. See `docs/ARCHITECTURE.md` for how this fits the whole system, `docs/decisions/0002-hosting-and-deployment.md` for why Turso/Drizzle specifically.
 
 **Deployed.** `https://app-six-psi-70.vercel.app` serves the current single-page UI including the PR #23 home-critique fixes (deployed 2026-09-22 from merged `master`; verified live via new-tree-only markers). Production deploys remain a separate, deliberate step (`npx vercel deploy --prod --yes` from a clean tree at the merged commit — CLI uploads working-dir files, not the branch — per the Deployment section below).
 
@@ -16,7 +16,7 @@
 
 ## Topic index
 
-**Home page (`/`)** — the current single-page UI's full build history (component boundaries, layout mechanism, decisions, verification) across every round, including the promotion from `/studio` to `/`. *Open if your task touches: the home page's layout, the sidebar, the song header, or how the tab/metronome components are composed.* → `app/status/home-page.md`
+**Home page (`/`)** — the current single-page UI's architecture and locked decisions (layout mechanism, component boundaries, sidebar/song-selection behavior); full build history is in git, not here. *Open if your task touches: the home page's layout, the sidebar, the song header, or how the tab/metronome components are composed.* → `app/status/home-page.md`
 
 **Deployment** — Vercel setup, how to actually deploy, the Root Directory incident and how to spot it again, a known flaky (but harmless) build error. *Open if your task touches: deploying, Vercel settings, or a deploy that's failing.* → `app/status/deployment.md`
 

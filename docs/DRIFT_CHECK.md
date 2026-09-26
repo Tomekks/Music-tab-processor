@@ -45,4 +45,4 @@ Preferably not the same session that did the work being checked — a fresh read
 
 ## Recording the result
 
-Append a short entry to `docs/DRIFT_LOG.md` — date, what was checked, what (if anything) was found. A few lines, not a report. The value is noticing a pattern over time, not any single entry.
+Append a short entry to `docs/DRIFT_LOG.md` — date, what was checked, what (if anything) was found. **2-3 lines, not a report** — recent entries have drifted into full paragraphs with commit hashes and itemized find-lists; the value is noticing a pattern over time, not any single entry's completeness.

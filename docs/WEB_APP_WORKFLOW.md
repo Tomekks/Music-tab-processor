@@ -25,7 +25,7 @@ needs.* → `docs/web-app-workflow/tiering.md`
 through stop-conditions), the S/Full tiering rule specific to this project (Full is for real user
 data or a deploy — everything else defaults to S regardless of file count), what's safe to trim
 vs. never cut, and the "no empirical claim without evidence" rule. *Open if your task touches:
-writing a spec file in `docs/specs/`.* → `docs/web-app-workflow/spec-template.md`
+writing a spec file in `docs/plans/`.* → `docs/web-app-workflow/spec-template.md`
 
 **Checkpoint commits and the execution loop (§4–6)** — checkpoint-commit timing (commit-and-report,
 not ask-first), the full spec-relay loop (write → relay → clarify → implement → self-check →

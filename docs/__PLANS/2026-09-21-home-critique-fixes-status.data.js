@@ -3,7 +3,7 @@
 // -status.html to see it.
 const PLAN_META = {
   title: "Home Critique Fixes (/)",
-  planFile: "docs/superpowers/plans/2026-09-21-home-critique-fixes.md",
+  planFile: "docs/plans/2026-09-21-home-critique-fixes/2026-09-21-home-critique-fixes.md",
 };
 
 const PLAN_TASKS = [

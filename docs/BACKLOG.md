@@ -17,9 +17,9 @@ Status values: `Idea` → `Considered` → `Selected` → `In progress` → `Don
 
 No requirements.txt or pyproject.toml is committed to git for the pipeline side — checked directly, there isn't one. Versions only exist in the live .venv on this Mac (confirmed via pip freeze).
 
-- **Pros:** Reproducible setup on a fresh machine or session; catches silent version drift; matches the reliability philosophy already applied on the app side (TypeScript, tests, CI) — docs/decisions/stack-and-tooling.md.
+- **Pros:** Reproducible setup on a fresh machine or session; catches silent version drift; matches the reliability philosophy already applied on the app side (TypeScript, tests, CI) — docs/decisions/0006-stack-and-tooling.md.
 - **Cons:** tuttut's own pinned dependencies are already known to fail to build as-is (docs/audio-tools/tab-generation.md — installed with --no-deps against modern versions instead). A naive pip freeze wouldn't reproduce cleanly elsewhere without documenting that workaround too.
-- **Related:** `docs/decisions/stack-and-tooling.md`, `docs/audio-tools/tab-generation.md`
+- **Related:** `docs/decisions/0006-stack-and-tooling.md`, `docs/audio-tools/tab-generation.md`
 
 ### 2. Audit the existing test suite
 **Status:** Considered · **Priority:** Unranked · **Effort:** S–M
@@ -33,7 +33,7 @@ Review what the 12 pipeline tests and the app's node --test suite actually catch
 ### 3. Living tech-spec-per-feature convention
 **Status:** Considered · **Priority:** Unranked · **Effort:** M (ongoing)
 
-docs/specs/ (and docs/specs/_done/ for landed ones) currently holds one-off mechanical specs written before pipeline-stage work, not maintained after. This proposes the same for app features, kept updated as behavior changes.
+docs/plans/specs/ currently holds one-off mechanical specs written before pipeline-stage work, not maintained after. This proposes the same for app features, kept updated as behavior changes.
 
 - **Pros:** A precise "how this is supposed to behave" reference a memoryless agent could read instead of reverse-engineering it from source.
 - **Cons:** Real overlap risk — component RULES.md already covers "how it renders", STATUS.md already covers "what's true now". A third parallel living doc per feature is close to what the "three homes" rule exists to prevent.
@@ -42,12 +42,12 @@ docs/specs/ (and docs/specs/_done/ for landed ones) currently holds one-off mech
 ### 4. "Strategist + cheap executor" AI workflow, as a reusable tool
 **Status:** Idea · **Priority:** Unranked · **Effort:** L
 
-Package the pattern — a strong model plans/specs, a free/cheap model executes, checked against the existing reliability toolkit (types, tests, contracts) — as something invokable on demand. Already roughly how the project gets built in practice (docs/decisions/stack-and-tooling.md).
+Package the pattern — a strong model plans/specs, a free/cheap model executes, checked against the existing reliability toolkit (types, tests, contracts) — as something invokable on demand. Already roughly how the project gets built in practice (docs/decisions/0006-stack-and-tooling.md).
 
 - **Pros:** Could meaningfully cut cost on future execution-heavy tasks; reuses infrastructure already justified and in place; an interesting second angle for the project's "demonstrating AI-direction ability" purpose.
 - **Cons:** Meta-work — building a tool to build the project, not the project itself; real yak-shaving risk; "100% accuracy" from a free model isn't a promise any tooling can make.
 - **Dependencies:** Backup current project structure first (safety step, not a tracked item)
-- **Related:** `docs/decisions/stack-and-tooling.md`
+- **Related:** `docs/decisions/0006-stack-and-tooling.md`
 
 ### 5. Low-token layout/wireframe exploration method
 **Status:** Idea · **Priority:** Unranked · **Effort:** S–M
@@ -57,16 +57,7 @@ A fast, cheap way to iterate on layout ideas before real implementation — ASCI
 - **Pros:** Cheaper, faster iteration before spending real tokens on full component code; plugs into things already planned rather than being standalone.
 - **Cons:** Another process to maintain instead of just building the UI; ASCII wireframes lose real layout fidelity a low-token HTML render wouldn't; only pays off if a real UI push happens soon.
 - **Dependencies:** "Local web UI for triggering pipeline runs" (for payoff, not strictly blocking)
-- **Related:** `docs/decisions/backlog-and-scope.md`, `app/status/design-system.md`
-
-### 6. Integrate CodeScene MCP server
-**Status:** Idea · **Priority:** High · **Effort:** S–M
-
-Add codescene-oss/codescene-mcp-server so Claude (and other agents) can query CodeScene's Code Health analysis directly — hotspot identification, complexity/maintainability scoring, code ownership tracking, delta reviews for refactoring validation, and technical-debt business-case calculations. Runs locally; no source code leaves the machine. Free standalone tier available; a CodeScene subscription/CS_ACCESS_TOKEN unlocks more.
-
-- **Pros:** Directly extends the project's existing reliability toolkit (types, tests, contracts, CI) with an automated code-health signal instead of relying on manual review alone; delta reviews specifically catch newly-introduced technical debt before it's merged — relevant given how much of this codebase is AI-executed; local-only execution matches the project's own "never internet-reachable, careful about outbound requests" safety stance.
-- **Cons:** Another tool to install and keep current; value is unproven until actually run against this specific codebase — a project this size may not yet have enough history/hotspots for the analysis to be very informative; some features are gated behind a CodeScene subscription, not fully free.
-- **Related:** `https://github.com/codescene-oss/codescene-mcp-server`
+- **Related:** `docs/decisions/0004-backlog-and-scope.md`, `app/status/design-system.md`
 
 ### 7. Set up CI (GitHub Actions) — Done 2026-09-10
 Moved to `## Archive` 2026-09-20: `.github/workflows/ci.yml` live, "Protect master" ruleset active (verified via API). Pipeline tests remain app-only, not in CI.
@@ -89,23 +80,14 @@ Review the doc's own rules for gaps, inconsistencies, or things that no longer h
 - **Cons:** Purely meta; no user-facing payoff.
 - **Related:** `docs/DOCUMENTATION_PRINCIPLES.md`
 
-### 10. CodeScene: reduce complexity in 4 pipeline/app functions
+### 10. Reduce complexity in 4 pipeline/app functions
 **Status:** Idea · **Priority:** Low · **Effort:** S
 
-Four functions flagged by CodeScene's standalone Code Health analysis (2026-09-09 audit, docs/codescene/STATUS.md), all still "Green" (8.95-9.84) but sharing the same pattern — one function doing too many branchy things: tab_generate.py's _render_ascii (Bumpy Road + nesting at threshold + cc=9, the ASCII tab formatting logic), ingest.py's _probe_audio (cc=10), transcribe.py's transcribe (cc=10), and app/lib/renderTab.ts's renderAsciiTab (Bumpy Road, 2 bumps). Deliberately left unfixed and backlogged rather than touched immediately, since the processing pipeline itself is due its own later audit/rework.
+Four functions flagged by a 2026-09-09 CodeScene Code Health audit (now removed, see Archive #11), all still "Green" (8.95-9.84) but sharing the same pattern — one function doing too many branchy things: tab_generate.py's _render_ascii (Bumpy Road + nesting at threshold + cc=9, the ASCII tab formatting logic), ingest.py's _probe_audio (cc=10), transcribe.py's transcribe (cc=10), and app/lib/renderTab.ts's renderAsciiTab (Bumpy Road, 2 bumps). Deliberately left unfixed and backlogged rather than touched immediately, since the processing pipeline itself is due its own later audit/rework.
 
-- **Pros:** Cheap, isolated, no behavior change needed — pure readability/maintainability; fixing all four the same way (extract the nested branches into named helper functions) doubles as validating the new complexity-ceiling principle in docs/decisions/stack-and-tooling.md.
+- **Pros:** Cheap, isolated, no behavior change needed — pure readability/maintainability; fixing all four the same way (extract the nested branches into named helper functions) doubles as validating the complexity-ceiling principle in docs/decisions/0006-stack-and-tooling.md.
 - **Cons:** Not urgent, nothing is broken; real risk of touching working pipeline code for a cosmetic score; better done together with the pipeline's own later audit than piecemeal now.
-- **Related:** `docs/codescene/STATUS.md`, `docs/codescene/PROCEDURE.md`
-
-### 11. Clean up CodeScene MCP integration once the paid service is no longer used
-**Status:** Idea · **Priority:** Low · **Effort:** S
-
-When the CodeScene trial/subscription ends or is otherwise dropped, remove or neutralize the dependency: .mcp.json's codescene server registration, and revisit references in docs/codescene/STATUS.md, docs/codescene/PROCEDURE.md, and docs/decisions/stack-and-tooling.md's code-health-discipline section. Decide whether to replace it with the free/open alternatives that section already names (radon for Python, ESLint complexity/max-depth rules for TypeScript) per the tool-independence principle adopted alongside it.
-
-- **Pros:** Keeps the repo accurate instead of referencing a service no longer in use; honors the "discipline should outlive the tool" principle already written down rather than leaving it as an aspiration.
-- **Cons:** Not urgent until the service actually lapses; low priority, contingent on a future event rather than something to schedule now.
-- **Related:** `docs/codescene/STATUS.md`, `docs/codescene/PROCEDURE.md`, `docs/decisions/stack-and-tooling.md`, `.mcp.json`
+- **Related:** `docs/decisions/0006-stack-and-tooling.md`
 
 ## Audio pipeline
 
@@ -117,7 +99,7 @@ Basic Pitch has only ever been "env-sanity" tested — real accuracy on polyphon
 - **Pros:** Targets the project's own stated weak point directly; concrete alternatives already identified (MT3, MR-MT3).
 - **Cons:** MT3/MR-MT3 are research-grade (TF/JAX), real setup effort for a possibly marginal gain; risks pulling against the project's own "recognizable, not accurate" reframe; needs a real benchmark methodology.
 - **Dependencies:** "Phase 0 Checkpoints 4/5" (recommended first — cheaper signal on whether this is even needed)
-- **Related:** `docs/audio-tools/transcription.md`, `docs/decisions/pipeline-tool-choices.md`, `research/00_spike/RESULTS.md`
+- **Related:** `docs/audio-tools/transcription.md`, `docs/decisions/0003-pipeline-tool-choices.md`, `research/00_spike/RESULTS.md`
 
 ### 13. Phase 0 Checkpoints 4/5 — run a harder, full-band song end-to-end
 **Status:** Idea · **Priority:** Unranked · **Effort:** M
@@ -133,7 +115,7 @@ The real s01–s05 pipeline has only ever been run on Mister Sandman and a synth
 ### 14. Design system: one main source + resettable per-surface child overrides
 **Status:** Idea · **Priority:** High · **Effort:** L
 
-**Update 2026-09-23:** the core mechanism is now fully done (Tasks 5a/5b/5c: parent-resolution/merge, reset-to-parent, and inherited/overridden editor UI, all shipped and proven via a synthetic `brands/demo-child/` brand) — the "Cons" mechanism question is resolved as build-time, structural (absent leaf = inherited). What's left is user-facing brand management (create/switch/delete a brand through the UI, instead of hand-editing files) — scoped and sized in `docs/superpowers/plans/2026-09-23-design-system-brand-management.md`, decisions locked in `docs/adr/0001-brand-management-architecture.md`. The backlog-board's own migration is deliberately excluded from that plan (backlog-board is being deprecated) and from this item going forward.
+**Update 2026-09-23:** the core mechanism is now fully done (Tasks 5a/5b/5c: parent-resolution/merge, reset-to-parent, and inherited/overridden editor UI, all shipped and proven via a synthetic `brands/demo-child/` brand) — the "Cons" mechanism question is resolved as build-time, structural (absent leaf = inherited). What's left is user-facing brand management (create/switch/delete a brand through the UI, instead of hand-editing files) — scoped and sized in `docs/plans/2026-09-23-design-system-brand-management/2026-09-23-design-system-brand-management.md`, decisions locked in `docs/decisions/0010-brand-management-architecture.md`. The backlog-board's own migration is deliberately excluded from that plan (backlog-board is being deprecated) and from this item going forward.
 
 One main design system holds the source-of-truth token values. Any surface that needs a different look — the backlog board, the eventual local processing UI, or anything else deemed to need a different look and feel — gets its own child design system that can override individual token values on top of the main one. Any overridden value must be resettable back to the main system's value per-token, not an all-or-nothing fork. Today there's no such relationship at all: app/'s tokens live in its own proof-of-concept playground (app/design_system/), and the backlog board's palette (docs/backlog-board/DESIGN.md, via getdesign) is a completely disconnected, hand-pulled system with nothing to inherit from or reset to.
 
@@ -149,7 +131,7 @@ A plainer version is already backlogged (a visual cue highlighting which note/ch
 
 - **Pros:** Builds on infrastructure deliberately built generic for this; genuinely fun and portfolio-worthy; low architectural risk.
 - **Cons:** Purely decorative; needs restraint to not fight the "recognizable, not accurate" / tight-fit display lessons already learned; Fretboard animation performance untested.
-- **Related:** `app/hooks/useMetronome.ts`, `docs/decisions/display-modes.md`, `app/status/song-views.md`
+- **Related:** `app/hooks/useMetronome.ts`, `docs/decisions/0005-display-modes.md`, `app/status/song-views.md`
 
 ### 16. Local web UI for triggering pipeline runs
 **Status:** Considered · **Priority:** Unranked · **Effort:** L
@@ -158,7 +140,7 @@ A simple local-only web UI — pick an audio file, click a button, kick off proc
 
 - **Pros:** Removes the terminal from day-to-day use; doubles as the natural entry point for yt-dlp ingestion later; resources already gathered, not a cold start.
 - **Cons:** Real design/build effort; a write-capable local UI is new attack surface if ever exposed beyond localhost.
-- **Related:** `docs/decisions/backlog-and-scope.md`
+- **Related:** `docs/decisions/0004-backlog-and-scope.md`
 
 ### 17. Apply design-system tokens to Fretboard and Ascii — Done
 Moved to `## Archive` 2026-09-23: verified both `FretboardDiagram.tsx` and `AsciiView.tsx` already use real tokens throughout (`var(--foreground)`, `var(--background)`, `border-border`, etc.) — zero hardcoded hex/rgb colors found in either file, or in `SheetDiagram.tsx`. This entry was stale; likely resolved as a side effect of the home-critique-fixes plan's Spec 3 (Fretboard playback-state color).
@@ -168,9 +150,9 @@ Moved to `## Archive` 2026-09-23: verified both `FretboardDiagram.tsx` and `Asci
 
 The stated need: a way to actually hear the transcribed notes/melody ring, to judge by ear whether the tab sounds like the song intends — as much a pipeline-QA tool as a practice feature. Distinct from the existing metronome, which is a silent step sequencer with no note/pitch knowledge — no actual note audio plays today.
 
-- **Pros:** Real, immediate value as a verification tool during pipeline work; matches intent already on record (docs/decisions/display-modes.md), not a new direction.
+- **Pros:** Real, immediate value as a verification tool during pipeline work; matches intent already on record (docs/decisions/0005-display-modes.md), not a new direction.
 - **Cons:** Genuinely open scope — in-browser synthesis (Web Audio API + soundfont) vs. rendering an audio file during the pipeline are very different builds; chords vs. monophonic playback and the approximated durationSec both need real decisions first.
-- **Related:** `docs/decisions/display-modes.md`, `app/hooks/useMetronome.ts`, `docs/DECISIONS.md`
+- **Related:** `docs/decisions/0005-display-modes.md`, `app/hooks/useMetronome.ts`, `docs/DECISIONS.md`
 - **Note:** Scope, approach, and priority are explicitly not known yet — kept as Idea on purpose.
 
 ## Content / portfolio
@@ -185,26 +167,23 @@ A public write-up of the project, serving its explicit second purpose (a public 
 - **Related:** `docs/DECISIONS.md`, `docs/PENDING_ACTIONS.md`
 - **Note:** "3 day case study, 6 month" — framing unclear, needs your input before this moves past Idea.
 
-## Already-decided backlog (pointers only — full reasoning lives in `docs/decisions/backlog-and-scope.md`)
+## Already-decided backlog (pointers only — full reasoning lives in `docs/decisions/0004-backlog-and-scope.md`)
 
 ### 20. Manual riff identification → possible later automation
-Marking which part of a song is "the riff" is done by hand on purpose (auto-detection is a hard, partly-unsolved segmentation problem). Automating it is a possible later upgrade, not blocked. → `docs/decisions/backlog-and-scope.md`
+Marking which part of a song is "the riff" is done by hand on purpose (auto-detection is a hard, partly-unsolved segmentation problem). Automating it is a possible later upgrade, not blocked. → `docs/decisions/0004-backlog-and-scope.md`
 
 ### 21. Difficulty grading (Original/Medium/Easy/Baby)
-Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand. → `docs/decisions/backlog-and-scope.md`
+Needs real design work first (what actually makes a tab objectively easier) that hasn't been done, and doing it before the pipeline's shape is settled risks building on sand. → `docs/decisions/0004-backlog-and-scope.md`
 
 ### 22. Spotify metadata lookup + "check if tabs exist online"
-Partially shipped (2026-09-18): Spotify *metadata* (cover art/artist/URL) is now fetched at publish time and stored in the DB (commits `d742a78`/`83a93ab`/`7e16acd`) — the old "not worth the complexity" framing no longer holds for that half. Still open: "check if tabs exist online." → `docs/decisions/backlog-and-scope.md`
+Partially shipped (2026-09-18): Spotify *metadata* (cover art/artist/URL) is now fetched at publish time and stored in the DB (commits `d742a78`/`83a93ab`/`7e16acd`) — the old "not worth the complexity" framing no longer holds for that half. Still open: "check if tabs exist online." → `docs/decisions/0004-backlog-and-scope.md`
 
 ### 23. yt-dlp (YouTube-link) ingestion
-Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio. → `docs/decisions/backlog-and-scope.md`
+Backlogged because file upload alone already validates the core pipeline; sequenced explicitly after Phase 0 succeeds. Real licensing constraint: for anything public, royalty-free/CC-licensed audio only, never stream-ripped copyrighted audio. → `docs/decisions/0004-backlog-and-scope.md`
 
 ---
 
 ## Tech debt (added 2026-09-10 — see `app/status/engineering-practices.md` for the fuller record; items resolved 2026-09-20 now live under `## Archive` below)
-
-### 28. Split SESSION_HANDOFF.md / DRIFT_CHECK.md by domain
-Both currently mix app and pipeline concerns in one checklist, and `SESSION_HANDOFF`'s "Full handoff" re-reads the whole conversation instead of trusting already-current STATUS files — expensive by design flaw, not necessity.
 
 ### 30. `@types/node` pinned to `^20` while running Node 26
 Type-definitions/runtime version mismatch in `app/package.json`, not currently causing a visible problem. Dependabot may resolve this on its own (a PR bumping it is already open as of 2026-09-10).
@@ -221,8 +200,17 @@ Type-definitions/runtime version mismatch in `app/package.json`, not currently c
 
 Done/rejected items move here, never deleted. Statuses verified 2026-09-20 unless noted.
 
+### 6. Integrate CodeScene MCP server — Done, then removed
+Installed 2026-09-09 (standalone-tier audit run against the whole repo). Removed 2026-09-26 (see #11) — a fresh install is planned for whenever it's next actually needed.
+
 ### 7. Set up CI (GitHub Actions) — Done
 Shipped 2026-09-10: `.github/workflows/ci.yml` live, "Protect master" branch-protection ruleset active (verified via API 2026-09-20). Pipeline tests remain app-only, not in CI.
+
+### 11. Clean up CodeScene MCP integration once the paid service is no longer used — Done
+Removed 2026-09-26: `.mcp.json`, `tools/codescene/`, and the Claude Code settings entries all deleted; `docs/decisions/0006-stack-and-tooling.md`'s code-health discipline section confirmed already tool-independent, no changes needed there.
+
+### 28. Split SESSION_HANDOFF.md / DRIFT_CHECK.md by domain — Done, then superseded
+The specific expensive flaw named here (`SESSION_HANDOFF`'s "Full handoff" re-reading the whole conversation) was removed entirely 2026-09-26, not split — `SESSION_HANDOFF.md` is now just the 5-bullet quick checkpoint; the deeper check already lives in `DRIFT_CHECK.md` on its own. Domain-splitting `DRIFT_CHECK.md` itself wasn't done (it already tiers by domain internally) and wasn't judged worth a further split.
 
 ### 24. Refactor HomePage (complexity 11, ceiling 9) — Done
 Resolved by refactor: `npx eslint app/page.tsx` is clean (exit 0, no warnings) as of 2026-09-20. The complexity gate it tripped in 2026-09-10 no longer fires.

@@ -21,7 +21,7 @@ export const songs = sqliteTable("songs", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   // Spotify metadata (2026-09-18), fetched once at publish time
   // (pipeline/s05_publish/publish.py) instead of live on every page request --
-  // see docs/superpowers/plans/2026-09-18-spotify-lookup-at-publish-time.md
+  // see docs/plans/2026-09-18-spotify-lookup-at-publish-time/2026-09-18-spotify-lookup-at-publish-time.md
   // for why. All nullable: absent with no Spotify credentials configured, or
   // if Spotify had no match for this song, same degrade-gracefully rule as
   // the old live-lookup had.

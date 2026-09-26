@@ -5,7 +5,7 @@
 // the note's real pitch with a short pluck envelope, no attempt at actual
 // guitar timbre/string modeling. Matches this project's own "recognizable,
 // not accurate" stance (docs/DECISIONS.md) and the metronome's own approach
-// (docs/decisions/display-modes.md's "Playback and the metronome" section):
+// (docs/decisions/0005-display-modes.md's "Playback and the metronome" section):
 // this answers "is this the right note," not "does this sound like a real
 // guitar." The metronome (2026-09-18) now paces WHEN each step triggers by
 // real recorded timing, but this still plays a fixed short envelope per

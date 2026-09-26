@@ -19,7 +19,8 @@ project with no other stakeholders.
 
 ## 5. Execution loop (Bounded and Architectural tasks)
 
-1. Claude writes one spec file to `docs/specs/`. **If the execution model drafts the spec itself
+1. Claude writes one spec file (into the plan's own folder for an Architectural task, or
+   `docs/plans/specs/` for a standalone Bounded task). **If the execution model drafts the spec itself
    instead** (e.g. turning a loose diagnosis into a spec directly, to save a round trip) — that
    draft is a proposal, not a final spec: relay it back to Claude for review before any
    implementation starts. Claude checks specifically for judgment calls or assumptions the model
@@ -119,10 +120,10 @@ target that: what actually travels each turn, and what accumulates in the repo o
   plan so far (a stale order list, a stale test count, a stale component reference) was plan-text
   paraphrasing spec-text going stale. Plan holds intent + track order + links to specs; specs hold
   the detail. A live plan document that only grows eventually goes unread — see [[keep-plan-docs-light]].
-- **Archive a landed spec.** Once its checkpoint commit lands, stamp one line on it (commit hash,
-  test delta) and move it to `docs/specs/_done/`. The next session then loads however many specs
-  are actually active, not the full accumulated history — `docs/specs/` grows over a long plan if
-  this isn't kept up.
+- **Stamp a landed spec.** Once its checkpoint commit lands, stamp one line on it (commit hash,
+  test delta) in place — specs already live inside their plan's own folder
+  (`docs/plans/<plan-slug>/`), so there's no separate archive move anymore. The stamp is what tells
+  the next session a spec is done without re-reading it in full.
 - **Collapse a landed plan task to one line** once its spec is archived — `Task N: done (<commit>,
   +X tests)` — since the real detail already lives in the archived spec, not in the plan. Don't
   let the plan re-grow the detail it just shed.

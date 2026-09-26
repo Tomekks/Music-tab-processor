@@ -2,11 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "guitar-app-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "app", "run", "dev"],
-      "port": 3000,
-      "autoPort": true
+      "name": "app-dev",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd app && npm run dev"],
+      "port": 3000
     }
   ]
 }

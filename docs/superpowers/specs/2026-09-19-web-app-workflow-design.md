@@ -140,5 +140,5 @@ document).
 - HARDENING_PLAN Phase 3 (Playwright visual regression) is deferred — to be specced later,
   executed by the cheap model, folded into the Definition-of-done section once it exists.
 - The Spotify "Shame" metadata-correctness fix (separate from the slow-switching fix already
-  planned in `docs/superpowers/plans/2026-09-18-spotify-lookup-at-publish-time.md`) is a
+  planned in `docs/plans/2026-09-18-spotify-lookup-at-publish-time/2026-09-18-spotify-lookup-at-publish-time.md`) is a
   candidate first Bounded task once this workflow is written up.

@@ -4,7 +4,7 @@ A lightweight health check for this specific system — single-maintainer, ~40 l
 components, one consumer app. Enterprise design-system maturity models (NN/g's 6-dimension
 framework, Atomize's 6-axis scorecard) assume multiple consuming teams and executive sponsorship
 that don't apply here; this is a trimmed adaptation, keeping only the axes that mean something at
-this scale. Re-score whenever a task from `docs/superpowers/plans/2026-09-20-design-system-iteration-2.md`
+this scale. Re-score whenever a task from `docs/plans/2026-09-20-design-system-iteration-2/2026-09-20-design-system-iteration-2.md`
 lands, or at any natural pause point — not on a fixed schedule.
 
 ## Scorecard (0/1/2 per axis)

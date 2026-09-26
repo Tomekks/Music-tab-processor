@@ -8,7 +8,7 @@
  * Every segment shows this many cells for the common case -- a deliberate,
  * uniform window (2026-09-10), not the tight-fit/no-padding window this used
  * to be. See FretboardDiagram.RULES.md, rule 1, for the full reasoning: a
- * reopened decision (docs/decisions/display-modes.md previously argued width
+ * reopened decision (docs/decisions/0005-display-modes.md previously argued width
  * itself should be a signal), on a fresh reason -- visual regularity across
  * Sheet/Fretboard/Ascii reads better for a beginner-facing product than a
  * jagged row of differently-sized cards did in practice.

@@ -30,8 +30,8 @@ flowchart TD
 
 ## Target design (what's still planned)
 
-- **A local web UI for triggering pipeline runs** (pick a file, click a button) instead of the current 5 manual CLI commands — backlogged, resources gathered (see `docs/decisions/backlog-and-scope.md`).
+- **A local web UI for triggering pipeline runs** (pick a file, click a button) instead of the current 5 manual CLI commands — backlogged, resources gathered (see `docs/decisions/0004-backlog-and-scope.md`).
 - **The metronome's playhead extended to Fretboard/Ascii** (built for Sheet only so far) and **real rhythm notation** — both logged in `app/components/SheetDiagram.RULES.md`, not built yet.
-- **Difficulty grading, `yt-dlp` ingestion, Spotify metadata lookup** — all explicitly backlogged, see `docs/decisions/backlog-and-scope.md` for why each one specifically.
+- **Difficulty grading, `yt-dlp` ingestion, Spotify metadata lookup** — all explicitly backlogged, see `docs/decisions/0004-backlog-and-scope.md` for why each one specifically.
 
 **Why two contracts, not one:** audio processing produces plain musical notes (`contracts/notes.schema.json`) — no guitar concept at all, just pitch/time/duration. Guitar logic turns that into string/fret choices (`contracts/tab.schema.json`). Splitting it this way is what makes "audio processing / guitar logic / UI stay separate" actually true instead of just stated: the audio module never needs to know a guitar exists. Both contracts are real, committed schemas and are read/written by the implemented stages.

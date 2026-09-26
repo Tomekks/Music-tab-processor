@@ -1,6 +1,6 @@
 # Database
 
-Part of `app/status/` — see `app/STATUS.md` for the index. The *why* behind Turso/Drizzle lives in `docs/decisions/hosting-and-deployment.md`, not here.
+Part of `app/status/` — see `app/STATUS.md` for the index. The *why* behind Turso/Drizzle lives in `docs/decisions/0002-hosting-and-deployment.md`, not here.
 
 **Database access:** `db/schema.ts` (the one table: `songs`) and `db/client.ts` (the Drizzle+libSQL client). Schema changes: edit `db/schema.ts`, then `node --env-file=.env.local node_modules/.bin/drizzle-kit push` (plain `npx drizzle-kit push` won't see the env vars — `drizzle-kit` doesn't auto-load `.env.local` the way Next.js itself does).
 

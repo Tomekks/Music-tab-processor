@@ -15,7 +15,7 @@ When adding a new piece of information, ask which of the three it is before deci
 ## Naming conventions
 
 - Top-level `docs/` files stay uppercase-snake-case (e.g. `DRIFT_CHECK.md`, `SESSION_HANDOFF.md`) — this applies whether the file is a rules/procedure doc meant to be read in full, or an index (e.g. `DECISIONS.md`, `AUDIOPROCESSINGTOOLS.md`).
-- Files inside a topic folder (`docs/decisions/`, `docs/audio-tools/`, `app/status/`) use lowercase kebab-case (e.g. `hosting-and-deployment.md`), matching this repo's existing precedent for "a folder of small topic files," `docs/specs/`.
+- Files inside a topic folder (`docs/decisions/`, `docs/audio-tools/`, `app/status/`) use lowercase kebab-case (e.g. `hosting-and-deployment.md`), matching this repo's existing precedent for "a folder of small topic files," `docs/plans/specs/`.
 - **A filename must be understandable standing alone.** Someone looking at a folder listing, with no index open, should be able to tell what's in a file from its name. Prefer a specific, self-contained name (`pipeline-tool-choices.md`) over a vague or generic one (`components.md`, which would also collide in meaning with the actual `app/components/` folder elsewhere in this repo). Before adding a new file, check its name against existing ones in the repo for exactly this kind of collision — not after.
 
 ## The index format
@@ -33,7 +33,7 @@ Every file exists to be read by an AI (or human) trying to reach one specific fa
 - **Concise, but complete for what the file claims to cover.** Say everything the file's own scope promises. If something is deliberately out of scope, say so explicitly and point to where it lives (`"X isn't covered here — see Y"`) — a silent gap costs more tokens than a stated pointer, because the reader has to discover it's missing before they can go looking elsewhere.
 - **No padding** — a sentence that adds no fact, reason, or pointer is a sentence every future reader pays to skip. Applies to code comments and docstrings too, not just docs.
 
-**Index entries stay to roughly one or two sentences** (already the rule above) — as a concrete check: if an index's entries average past ~100 words, that entry needs trimming even if the whole file is nowhere near the split threshold below. `docs/DECISIONS.md` hit this in practice (2026-09-09) not because its entries were individually too long, but because ~600 words of actual reasoning (the project's core reframe, local-only scope rules) sat directly in the index instead of being split out like everything else — fixed 2026-09-10 by moving that content to `docs/decisions/project-purpose-and-scope.md`.
+**Index entries stay to roughly one or two sentences** (already the rule above) — as a concrete check: if an index's entries average past ~100 words, that entry needs trimming even if the whole file is nowhere near the split threshold below. `docs/DECISIONS.md` hit this in practice (2026-09-09) not because its entries were individually too long, but because ~600 words of actual reasoning (the project's core reframe, local-only scope rules) sat directly in the index instead of being split out like everything else — fixed 2026-09-10 by moving that content to `docs/decisions/0001-project-purpose-and-scope.md`.
 
 ## When a file should become an index + folder
 

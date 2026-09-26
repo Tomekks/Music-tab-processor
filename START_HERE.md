@@ -27,4 +27,4 @@ Whatever tool or model is being used, now or years from now, the one instruction
 
 > Read START_HERE.md in this repo and follow it.
 
-That's the entire bootstrap. It doesn't depend on a tool recognizing `AGENTS.md` or `CLAUDE.md` by convention — it only depends on the tool being able to read a file it's pointed at. This is this project's deliberate use of one idea from `icm-architect` (github.com/RinDig/icm-architect): plain, committed files carry enough state for a memoryless agent to orient correctly, independent of any model's built-in configuration. See `docs/decisions/structure-and-methodology.md` for the fuller reasoning.
+That's the entire bootstrap. It doesn't depend on a tool recognizing `AGENTS.md` or `CLAUDE.md` by convention — it only depends on the tool being able to read a file it's pointed at. This is this project's deliberate use of one idea from `icm-architect` (github.com/RinDig/icm-architect): plain, committed files carry enough state for a memoryless agent to orient correctly, independent of any model's built-in configuration. See `docs/decisions/0007-structure-and-methodology.md` for the fuller reasoning.

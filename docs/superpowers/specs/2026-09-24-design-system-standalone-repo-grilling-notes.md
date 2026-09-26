@@ -4,7 +4,7 @@ Parked mid-interview (`/grill-with-docs`) on 2026-09-24 to go work on Control Ce
 
 ## Premise
 
-The design system should not be visible on GitHub as its own machinery. Each consuming app (web app, design system's own future control center, a show app, etc.) should see only its own brand's resolved values — not other brands, not the design-system tooling itself. Distribution stays CSS-only, always-latest (already settled — `docs/adr/0001-brand-management-architecture.md`).
+The design system should not be visible on GitHub as its own machinery. Each consuming app (web app, design system's own future control center, a show app, etc.) should see only its own brand's resolved values — not other brands, not the design-system tooling itself. Distribution stays CSS-only, always-latest (already settled — `docs/decisions/0010-brand-management-architecture.md`).
 
 ## Settled in this session
 
@@ -26,11 +26,11 @@ Just the data (`brands/`, `active-brand.json`), with build tooling (`build-token
 - `design-tokens.generated.css` is already gitignored (rebuilt every build); `brands/` itself is currently **tracked** in git for `default` and `demo-child` (contradicts the "local-only" goal — this is the thing to fix).
 - `.needs-deploy` per-brand flag files (Task 4.6) are already gitignored and orthogonal to whether `brands/` itself is tracked — no changes needed there.
 - Vercel builds from a git checkout only — it has no access to files that exist solely on the local Mac. Whatever Vercel needs at build time must be committed.
-- `docs/adr/0001-brand-management-architecture.md` already anticipates the design system becoming a standalone repo eventually, with this app becoming "one more consumer" — this task is about turning that expectation into a real mechanism, not a new idea.
+- `docs/decisions/0010-brand-management-architecture.md` already anticipates the design system becoming a standalone repo eventually, with this app becoming "one more consumer" — this task is about turning that expectation into a real mechanism, not a new idea.
 
 ## Related
 
-- `docs/adr/0001-brand-management-architecture.md` (distribution model, already settled)
+- `docs/decisions/0010-brand-management-architecture.md` (distribution model, already settled)
 - `CONTEXT.md` (Brand / Main brand / Child brand vocabulary — no new terms crystallized yet from this session)
 - `app/status/design-system.md`
 - BACKLOG.md item 14 (design-system, in-progress parent item)
