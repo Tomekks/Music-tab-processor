@@ -99,25 +99,25 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
     if (source === "enter") enterCommittedRef.current = String(clamped);
   };
   return (
-    <label className="flex items-center gap-2 text-sm text-surface-text shrink-0">
-      Tempo
-      <input
-        type="number"
-        min={MIN_BPM}
-        max={MAX_BPM}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => commit("blur")}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            commit("enter");
-          }
-        }}
-        className="w-16 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 text-sm text-surface-text"
-      />
-      bpm
-    </label>
+    // No visible "Tempo"/"bpm" text (2026-09-25 IconButton redesign -- the
+    // reference layout is bare number field, flanked by the -/+ IconButtons,
+    // no label chrome) -- aria-label carries the accessible name instead.
+    <input
+      type="number"
+      min={MIN_BPM}
+      max={MAX_BPM}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => commit("blur")}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit("enter");
+        }
+      }}
+      aria-label="Tempo in beats per minute"
+      className="w-16 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 text-sm text-surface-text shrink-0"
+    />
   );
 }
 

@@ -57,7 +57,7 @@ test.describe("spec 1+4 toolbar layout", () => {
       pill: await page.getByText("Loop: none", { exact: true }).boundingBox(),
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
-      tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+      tempo: await page.getByRole("spinbutton", { name: "Tempo in beats per minute" }).boundingBox(),
       midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
       flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
     };
@@ -219,7 +219,7 @@ test.describe("spec 1+4 shortcut scoping", () => {
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    const tempo = page.locator("label", { hasText: "Tempo" }).locator("input");
+    const tempo = page.getByRole("spinbutton", { name: "Tempo in beats per minute" });
     await tempo.focus();
     const before = Number(await tempo.inputValue());
     await page.keyboard.press("ArrowUp");
@@ -338,7 +338,7 @@ test.describe("spec 2 loop pill", () => {
         pill: await page.getByText(pillName, { exact: true }).boundingBox(),
         reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
         play: await page.getByRole("button", { name: "Play" }).boundingBox(),
-        tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+        tempo: await page.getByRole("spinbutton", { name: "Tempo in beats per minute" }).boundingBox(),
         midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
         flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
       };
@@ -830,7 +830,7 @@ test.describe("spec 7 orientation", () => {
 
 /** The tempo input -- same locator spec 1+4's native-arrows block uses. */
 function tempoInput(page: Page) {
-  return page.locator("label", { hasText: "Tempo" }).locator("input");
+  return page.getByRole("spinbutton", { name: "Tempo in beats per minute" });
 }
 
 test.describe("spec 8a tempo honesty", () => {
@@ -1228,7 +1228,7 @@ test.describe("spec 8d consolidation", () => {
 
     // (4) Tempo keeps native arrows (editable-target rule survives the
     // predicate change): Up bumps the value and never engages transport.
-    const tempo = page.locator("label", { hasText: "Tempo" }).locator("input");
+    const tempo = page.getByRole("spinbutton", { name: "Tempo in beats per minute" });
     await tempo.focus();
     const before = Number(await tempo.inputValue());
     await page.keyboard.press("ArrowUp");
@@ -1385,7 +1385,7 @@ test.describe("spec 8d consolidation", () => {
       pill: await page.getByText("Loop: none", { exact: true }).boundingBox(),
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
-      tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
+      tempo: await page.getByRole("spinbutton", { name: "Tempo in beats per minute" }).boundingBox(),
       midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
       flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
     };
@@ -1401,7 +1401,7 @@ test.describe("spec 8d consolidation", () => {
       page.getByRole("tablist", { name: "Tab display mode" }),
       page.getByRole("button", { name: "Reset to start" }),
       page.getByRole("button", { name: "Play" }),
-      page.locator("label", { hasText: "Tempo" }),
+      page.getByRole("spinbutton", { name: "Tempo in beats per minute" }),
       page.getByRole("button", { name: "Unmute volume" }),
       page.getByRole("button", { name: /Flip strings/ }),
     ];
@@ -1459,25 +1459,22 @@ test.describe("spec 8d consolidation", () => {
   test("wrap rows: 1024 tabs own row, flow rows below", async ({ page }) => {
     await expectFlowRows(page, 1024, 800, [
       ["tabs"],
-      ["flip", "midi", "play", "reset", "tempo"],
-      ["pill"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
     ]);
   });
 
   // 2026-09-25 IconButton migration: every control narrowed from a
-  // text-labelled button to a fixed 44x44 icon square, so both widths below
-  // fit one more control per row than before the migration. The loop pill
-  // was then given a fixed min-w-[22ch] (see DetailToolbar.tsx) so selecting
-  // a range never shoves the other controls left -- that reserved width
-  // makes even the empty-state "Loop: none" box wide enough to push itself
-  // onto its own row at these widths. Expected arrays here are the real
-  // measured groupings post-fix, not hand-derived -- re-verify by running
-  // this test before changing these again.
+  // text-labelled button to a fixed 44x44 icon square. The Tempo field's
+  // visible "Tempo"/"bpm" text was then dropped too (bare number field only,
+  // per the reference layout), narrowing it further and putting the pill
+  // (given a fixed min-w-[22ch], see DetailToolbar.tsx) back into the same
+  // row as everything else at both widths below. Expected arrays here are
+  // the real measured groupings post-fix, not hand-derived -- re-verify by
+  // running this test before changing these again.
   test("wrap rows: 767 flow rows", async ({ page }) => {
     await expectFlowRows(page, 767, 700, [
       ["tabs"],
-      ["flip", "midi", "play", "reset", "tempo"],
-      ["pill"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
     ]);
   });
 
