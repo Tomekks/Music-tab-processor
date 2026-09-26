@@ -105,7 +105,7 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
     // carries the accessible name since there's no text anywhere to derive
     // it from.
     <div className="flex items-center gap-2.5 h-[var(--component-icon-button-size)] rounded-[var(--component-icon-button-radius)] border border-border bg-surface px-2.5 shrink-0">
-      <Metronome aria-hidden="true" size={20} className="text-surface-text/60 shrink-0" />
+      <Metronome aria-hidden="true" size={20} className="text-[var(--component-icon-button-secondary-icon)] shrink-0" />
       <input
         type="number"
         min={MIN_BPM}
@@ -120,7 +120,13 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
           }
         }}
         aria-label="Tempo in beats per minute"
-        className="w-16 bg-transparent text-sm text-surface-text outline-none"
+        // Native spinner UI hidden (dedicated -/+ IconButtons cover stepping
+        // already) -- both engines need their own rule: [appearance:textfield]
+        // for Firefox, the two ::-webkit-*-spin-button selectors for
+        // Chrome/Safari/Edge. Keyboard ArrowUp/ArrowDown stepping (ArrowUp
+        // spinner test) is a separate native behavior, unaffected by hiding
+        // these rendered buttons.
+        className="w-16 bg-transparent text-xl text-surface-text outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
     </div>
   );

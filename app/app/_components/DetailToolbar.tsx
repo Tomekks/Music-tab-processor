@@ -135,14 +135,13 @@ function TransportLayout({
           longest realistic "Loop: steps 999-999 x" content up front, so
           switching between the short unset text and the longer set-range +
           close-button text never changes this box's width and never shoves
-          every other control left when a loop gets selected. xl:ml-3: same
-          grouped-spacing gap as the BPM cluster above. */}
+          every other control left when a loop gets selected. */}
       <div className="order-5 xl:contents shrink-0 min-w-[22ch]">
         {loopRange ? (
           <button
             onClick={onClearLoop}
             data-umami-event="clear-loop"
-            className="text-xs font-mono px-2 py-1 rounded-full shrink-0 min-w-[22ch] xl:ml-3"
+            className="text-xs font-mono px-2 py-1 rounded-full shrink-0 min-w-[22ch]"
             style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
             title="Clear loop"
           >
@@ -151,7 +150,7 @@ function TransportLayout({
         ) : (
           <span
             aria-hidden={false}
-            className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0 min-w-[22ch] xl:ml-3 inline-block"
+            className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0 min-w-[22ch] inline-block"
           >
             Loop: none
           </span>
