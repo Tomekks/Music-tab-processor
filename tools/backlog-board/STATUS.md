@@ -1,8 +1,14 @@
 # Backlog board
 
-Part of `docs/backlog-board/` — see `docs/GUIDE.md`'s map for how this fits into the rest of the docs.
+Part of `tools/backlog-board/` — see `docs/GUIDE.md`'s map for how this fits into the rest of the docs.
 
-**Status:** done, working, verified in-browser (drag/reorder, add/edit, import/export, seed-merge, filter-safe reordering). Local-only tool — a single self-contained `index.html`, no build step, no server, no dependencies beyond a Google Fonts stylesheet link (degrades gracefully offline — see "Known trade-offs" below). Generates `docs/BACKLOG.md`.
+**Status (2026-09-26): deprecated, pending redesign.** No longer serves its purpose — the
+project owner flagged it for a proper brainstorm before any further investment, likely folded
+into or replaced by the Control Center's planned "Oversight" section
+(`docs/plans/2026-09-24-control-center/`). Left tracked and public as-is until that redesign
+happens; nothing below should be read as a live recommendation in the meantime.
+
+**Previous status (accurate as of 2026-09-09, superseded above):** done, working, verified in-browser (drag/reorder, add/edit, import/export, seed-merge, filter-safe reordering). Local-only tool — a single self-contained `index.html`, no build step, no server, no dependencies beyond a Google Fonts stylesheet link (degrades gracefully offline — see "Known trade-offs" below). Generates `docs/BACKLOG.md`.
 
 **Reads:** its own embedded `SEED` array (the backlog items as of 2026-09-09) merged, on load, with whatever's already saved in the opening browser's `localStorage` (key `guitarAppBacklog.v1`) — any `SEED` item not already present gets appended without touching existing saved items or their order. This merge is what makes editing `SEED` in a future session actually show up for a browser that's already used the tool.
 
