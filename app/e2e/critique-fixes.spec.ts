@@ -42,10 +42,12 @@ function rowsOf(boxes: Record<string, RowBox>): string[][] {
 }
 
 test.describe("spec 1+4 toolbar layout", () => {
-  // Amended by the 8d-wrap fix-spec (third amendment exception, granted):
-  // the shared-row contract is retired. Fallback contract: tabs own row 1,
-  // the complete transport occupies row 2, no horizontal overflow.
-  test("1280px: tabs own row 1, complete transport row 2, no overflow", async ({ page }) => {
+  // Re-amended (2026-09-25 IconButton migration): the shared-row layout the
+  // 8d-wrap fix-spec previously retired as ~38px short now fits -- every
+  // control narrowed to a fixed 44x44 icon square, re-measured with real
+  // slack (~880px needed vs ~1040px available at exactly 1280px). Tabs and
+  // the full transport now share one row at xl, not two.
+  test("1280px: tabs and the complete transport share one row, no overflow", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
@@ -62,9 +64,8 @@ test.describe("spec 1+4 toolbar layout", () => {
     for (const [name, box] of Object.entries(raw)) {
       expect(box, `${name} laid out`).not.toBeNull();
     }
-    expect(rowsOf(raw as Record<string, RowBox>), "1280: tabs row + complete transport row").toEqual([
-      ["tabs"],
-      ["flip", "midi", "pill", "play", "reset", "tempo"],
+    expect(rowsOf(raw as Record<string, RowBox>), "1280: tabs and transport share one row").toEqual([
+      ["flip", "midi", "pill", "play", "reset", "tabs", "tempo"],
     ]);
 
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -327,11 +328,11 @@ test.describe("spec 2 loop pill", () => {
     await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
     const setPillText = await dragLoopOnFirstStaff(page);
 
-    // Amended by the 8d-wrap fix-spec (third amendment exception, granted):
-    // desktop follows the fallback contract in both loop states -- tabs row,
-    // then the complete transport row (loop set: pill button; loop unset:
-    // status span -- both must hold the same structure).
-    const assertTwoRows = async (pillName: string) => {
+    // Re-amended (2026-09-25 IconButton migration): desktop now shares one
+    // row between tabs and the full transport (see spec 1+4 toolbar layout's
+    // "1280px" test for the measurement) in both loop states (loop set: pill
+    // button; loop unset: status span -- both must hold the same structure).
+    const assertOneRow = async (pillName: string) => {
       const raw: Record<string, RowBox | null> = {
         tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
         pill: await page.getByText(pillName, { exact: true }).boundingBox(),
@@ -344,9 +345,8 @@ test.describe("spec 2 loop pill", () => {
       for (const [name, box] of Object.entries(raw)) {
         expect(box, `${name} laid out`).not.toBeNull();
       }
-      expect(rowsOf(raw as Record<string, RowBox>), `desktop two rows (pill: ${pillName})`).toEqual([
-        ["tabs"],
-        ["flip", "midi", "pill", "play", "reset", "tempo"],
+      expect(rowsOf(raw as Record<string, RowBox>), `desktop one row (pill: ${pillName})`).toEqual([
+        ["flip", "midi", "pill", "play", "reset", "tabs", "tempo"],
       ]);
     };
     const assertStackedNoOverflow = async (width: number) => {
@@ -362,7 +362,7 @@ test.describe("spec 2 loop pill", () => {
     };
 
     // Loop set: desktop two rows, narrow stacked.
-    await assertTwoRows(setPillText);
+    await assertOneRow(setPillText);
     await page.setViewportSize(NARROW_VIEWPORT);
     await assertStackedNoOverflow(NARROW_VIEWPORT.width);
 
@@ -371,7 +371,7 @@ test.describe("spec 2 loop pill", () => {
     await expectEmptyPill(page);
     await assertStackedNoOverflow(NARROW_VIEWPORT.width);
     await page.setViewportSize(DESKTOP_VIEWPORT);
-    await assertTwoRows("Loop: none");
+    await assertOneRow("Loop: none");
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -1426,19 +1426,18 @@ test.describe("spec 8d consolidation", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   }
 
-  test("wrap rows: xl tabs row plus complete transport row", async ({ page }) => {
-    // 8d-wrap fix-spec fallback (measured: shared-row slack 0.0px even after
-    // the final permitted xl spacing adjustment): at xl the tabs own the
-    // first row and the collapsed wrappers form one complete transport row
-    // below them. The compact spacing was reverted with the fallback -- this
-    // asserts the relaxed contract, with slack reported, never bar-gated.
+  test("wrap rows: xl tabs and complete transport share one row", async ({ page }) => {
+    // Re-amended (2026-09-25 IconButton migration): the shared row the 8d-wrap
+    // fix-spec previously measured at 0.0px slack (and abandoned) now has
+    // real slack with every control narrowed to a fixed 44x44 icon square --
+    // asserts the shared-row contract, with slack still reported for
+    // visibility, never bar-gated.
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
     const b = await transportHandles(page);
-    expect(rowsOf(b), "1280: tabs row + complete transport row").toEqual([
-      ["tabs"],
-      ["flip", "midi", "pill", "play", "reset", "tempo"],
+    expect(rowsOf(b), "1280: tabs and transport share one row").toEqual([
+      ["flip", "midi", "pill", "play", "reset", "tabs", "tempo"],
     ]);
     const detailBox = await page.getByTestId("detail-column").boundingBox();
     expect(detailBox, "detail laid out").not.toBeNull();
@@ -1460,20 +1459,25 @@ test.describe("spec 8d consolidation", () => {
   test("wrap rows: 1024 tabs own row, flow rows below", async ({ page }) => {
     await expectFlowRows(page, 1024, 800, [
       ["tabs"],
-      ["flip", "midi", "pill", "play", "reset", "tempo"],
+      ["flip", "midi", "play", "reset", "tempo"],
+      ["pill"],
     ]);
   });
 
   // 2026-09-25 IconButton migration: every control narrowed from a
   // text-labelled button to a fixed 44x44 icon square, so both widths below
-  // now fit one more control per row than before the migration. Expected
-  // arrays here are the real measured groupings post-migration, not the
-  // pre-migration ones -- re-verify by running this test before changing
-  // these again, don't hand-derive.
+  // fit one more control per row than before the migration. The loop pill
+  // was then given a fixed min-w-[22ch] (see DetailToolbar.tsx) so selecting
+  // a range never shoves the other controls left -- that reserved width
+  // makes even the empty-state "Loop: none" box wide enough to push itself
+  // onto its own row at these widths. Expected arrays here are the real
+  // measured groupings post-fix, not hand-derived -- re-verify by running
+  // this test before changing these again.
   test("wrap rows: 767 flow rows", async ({ page }) => {
     await expectFlowRows(page, 767, 700, [
       ["tabs"],
-      ["flip", "midi", "pill", "play", "reset", "tempo"],
+      ["flip", "midi", "play", "reset", "tempo"],
+      ["pill"],
     ]);
   });
 
