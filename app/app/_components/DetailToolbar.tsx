@@ -124,12 +124,8 @@ function TransportLayout({
         <VolumeButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
         <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
       </div>
-      {/* xl:ml-3 (on top of the row's own gap-3): a wider visual gap between
-          the transport cluster and the BPM cluster, matching the reference
-          layout's grouped spacing -- xl-only so the below-xl wrap/flow rows
-          (already measured/tested) keep their existing tighter spacing. */}
       <div className="order-4 xl:contents shrink-0">
-        <div className="flex items-center gap-1.5 xl:ml-3">
+        <div className="flex items-center gap-1.5">
           <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
           <BpmDecrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
           <BpmIncrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />

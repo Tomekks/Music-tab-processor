@@ -104,8 +104,8 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
     // icon standing in for the label, and the bare number field -- aria-label
     // carries the accessible name since there's no text anywhere to derive
     // it from.
-    <div className="flex items-center gap-1.5 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 shrink-0">
-      <Metronome aria-hidden="true" size={16} className="text-surface-text/60 shrink-0" />
+    <div className="flex items-center gap-2.5 h-[var(--component-icon-button-size)] rounded-[var(--component-icon-button-radius)] border border-border bg-surface px-2.5 shrink-0">
+      <Metronome aria-hidden="true" size={20} className="text-surface-text/60 shrink-0" />
       <input
         type="number"
         min={MIN_BPM}
@@ -120,7 +120,7 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
           }
         }}
         aria-label="Tempo in beats per minute"
-        className="w-10 bg-transparent text-sm text-surface-text outline-none"
+        className="w-16 bg-transparent text-sm text-surface-text outline-none"
       />
     </div>
   );
