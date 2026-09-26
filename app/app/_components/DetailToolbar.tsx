@@ -1,5 +1,5 @@
 import { TabSelector } from "./TabSelector";
-import { ResetButton, PlayButton, TempoField, MidiButton } from "@/components/MetronomeControls";
+import { ResetButton, PlayButton, TempoField, VolumeButton } from "@/components/MetronomeControls";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import type { LoopRange } from "@/hooks/useMetronome";
 import type { Tab } from "./StudioTabs";
@@ -32,7 +32,8 @@ import { TABS } from "./StudioTabs";
 // share one flex container). The loop pill sits in its own wrapper last per
 // the bug report. All controls keep shrink-0 content widths; Flip (whose
 // own file is out of the allowlist) is protected by its wrapper box. Reset,
-// Play, MIDI, and Flip share min-h-[44px] so no button renders larger.
+// Play, Volume, and Flip are all IconButton (2026-09-25 migration) and share
+// its fixed --component-icon-button-size (44px) so no button renders larger.
 //
 // Pill (spec 2): always mounted in exactly one of two states -- set-range
 // clear-button or empty-state status text -- so the toolbar never reflows
@@ -112,7 +113,7 @@ function TransportLayout({
         <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
       </div>
       <div className="order-3 xl:contents shrink-0">
-        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
+        <VolumeButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
       </div>
       <div className="order-4 xl:contents shrink-0">
         <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />

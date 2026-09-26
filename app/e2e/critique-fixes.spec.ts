@@ -56,7 +56,7 @@ test.describe("spec 1+4 toolbar layout", () => {
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
       tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
-      midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+      midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
       flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
     };
     for (const [name, box] of Object.entries(raw)) {
@@ -102,7 +102,7 @@ test.describe("spec 1+4 toolbar layout", () => {
     // Resolution, not a hex: the expected value is read from the token
     // variable itself at runtime.
     const token = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue("--component-button-primary-background"),
+      getComputedStyle(document.documentElement).getPropertyValue("--component-icon-button-primary-background"),
     );
     const background = await play.evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(background).toBe(hexToRgb(token));
@@ -338,7 +338,7 @@ test.describe("spec 2 loop pill", () => {
         reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
         play: await page.getByRole("button", { name: "Play" }).boundingBox(),
         tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
-        midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+        midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
         flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
       };
       for (const [name, box] of Object.entries(raw)) {
@@ -728,11 +728,14 @@ async function gotoWithDefaultOrientation(page: Page): Promise<void> {
 
 /** Top string of the first diagram svg, via string-label DOM order (both
  *  diagrams position monospace pitch-name labels with getDisplayRow):
- *  "e" = thin e on top, "E" = thick E on top. */
+ *  "e" = thin e on top, "E" = thick E on top. Scoped to
+ *  svg[data-testid="tab-diagram"] (not a bare "svg" selector) since the
+ *  2026-09-25 IconButton migration put the first SVGs in the document inside
+ *  the transport bar's icons (Play/Pause etc.), ahead of the diagram itself. */
 async function expectTopString(page: Page, expected: string): Promise<void> {
   await expect(async () => {
     const top = await page.evaluate(() => {
-      const svg = document.querySelector("svg");
+      const svg = document.querySelector('svg[data-testid="tab-diagram"]');
       if (!svg) return null;
       const rows = Array.from(svg.querySelectorAll("text"))
         .filter((el) => /^[A-Ga-g]$/.test((el.textContent ?? "").trim()))
@@ -1102,15 +1105,17 @@ test.describe("spec 8c control polish", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
-  test("Reset shows its label, meets the target, and still rewinds to the start", async ({ page }) => {
+  test("Reset is icon-only, meets the target, and still rewinds to the start", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    // Accessible name stays "Reset to start" (aria-label overrides content):
-    // locate by that name, assert the new visible content.
+    // Accessible name stays "Reset to start" (IconButton is icon-only --
+    // 2026-09-25 migration -- so the name comes only from aria-label, never
+    // visible text; assert an icon is present instead of a text label).
     const reset = page.getByRole("button", { name: "Reset to start" });
-    await expect(reset).toHaveText("⏮ Reset");
+    await expect(reset.locator("svg")).toBeVisible();
+    await expect(reset).not.toHaveText(/\w/);
     const box = await reset.boundingBox();
     expect(box, "Reset box exists").not.toBeNull();
     expect(box!.width, "Reset width").toBeGreaterThanOrEqual(44);
@@ -1277,38 +1282,40 @@ test.describe("spec 8d consolidation", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
-  test("hover: Play/Reset/MIDI filter responds, Flip background responds", async ({ page }) => {
+  test("hover: Play/Reset/Volume/Flip background-color responds and returns", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
 
-    // Play/Reset/MIDI: idle filter none -> hovered non-none -> unhovered none
-    // (computed styles only, never class names).
-    const filterButtons = [
+    // All four are IconButton now (2026-09-25 migration): hover is a
+    // background-color change (token-driven color-mix for primary, a plain
+    // surface-hover swap for secondary), never a filter -- computed styles
+    // only, never class names.
+    const hoverButtons = [
       page.getByRole("button", { name: "Play" }),
       page.getByRole("button", { name: "Reset to start" }),
-      page.getByRole("button", { name: "MIDI sound" }),
+      page.getByRole("button", { name: "Unmute volume" }),
+      page.getByRole("button", { name: /Flip strings/ }),
     ];
-    for (const btn of filterButtons) {
-      const idle = await btn.evaluate((el) => getComputedStyle(el).filter);
-      expect(idle, "idle filter is none").toBe("none");
+    for (const btn of hoverButtons) {
+      const bgIdle = await btn.evaluate((el) => getComputedStyle(el).backgroundColor);
       await btn.hover();
-      const hovered = await btn.evaluate((el) => getComputedStyle(el).filter);
-      expect(hovered, "hovered filter is non-none").not.toBe("none");
+      // Poll both the hover and the revert: `transition-colors` animates
+      // each, so a single immediate read can land mid-transition (browsers
+      // serialize an in-flight color interpolation as oklab(...), or an
+      // early rgb() a few units off the settled value, not the final one).
+      await expect
+        .poll(async () => await btn.evaluate((el) => getComputedStyle(el).backgroundColor), {
+          timeout: 2000,
+        })
+        .not.toBe(bgIdle);
       await page.mouse.move(4, 4);
-      const back = await btn.evaluate((el) => getComputedStyle(el).filter);
-      expect(back, "unhovered filter returns to none").toBe("none");
+      await expect
+        .poll(async () => await btn.evaluate((el) => getComputedStyle(el).backgroundColor), {
+          timeout: 2000,
+        })
+        .toBe(bgIdle);
     }
-
-    // Flip strings keeps its own mechanism: background-color change + return.
-    const flip = page.getByRole("button", { name: /Flip strings/ });
-    const bgIdle = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
-    await flip.hover();
-    const bgHovered = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(bgHovered, "hovered background differs").not.toBe(bgIdle);
-    await page.mouse.move(4, 4);
-    const bgBack = await flip.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(bgBack, "unhovered background returns").toBe(bgIdle);
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -1320,7 +1327,7 @@ test.describe("spec 8d consolidation", () => {
 
     // Live bug report: Reset/Play rendered larger than MIDI/Flip. All four
     // share min-h-[44px]; measured equality proves no button stands out.
-    const names = ["Reset to start", "Play", "MIDI sound", /Flip strings/] as const;
+    const names = ["Reset to start", "Play", "Unmute volume", /Flip strings/] as const;
     const heights: number[] = [];
     for (const name of names) {
       const box = await page.getByRole("button", { name }).boundingBox();
@@ -1349,7 +1356,7 @@ test.describe("spec 8d consolidation", () => {
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
       tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
-      midi: await page.getByRole("button", { name: "MIDI sound" }).boundingBox(),
+      midi: await page.getByRole("button", { name: "Unmute volume" }).boundingBox(),
       flip: await page.getByRole("button", { name: /Flip strings/ }).boundingBox(),
     };
     for (const [name, box] of Object.entries(raw)) {
@@ -1365,7 +1372,7 @@ test.describe("spec 8d consolidation", () => {
       page.getByRole("button", { name: "Reset to start" }),
       page.getByRole("button", { name: "Play" }),
       page.locator("label", { hasText: "Tempo" }),
-      page.getByRole("button", { name: "MIDI sound" }),
+      page.getByRole("button", { name: "Unmute volume" }),
       page.getByRole("button", { name: /Flip strings/ }),
     ];
     for (const loc of locs) {

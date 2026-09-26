@@ -6,3 +6,5 @@ export { SegmentedControl } from "./components/SegmentedControl";
 export type { SegmentedControlProps } from "./components/SegmentedControl";
 export { Button } from "./components/Button";
 export type { ButtonProps } from "./components/Button";
+export { IconButton } from "./components/IconButton";
+export type { IconButtonProps } from "./components/IconButton";

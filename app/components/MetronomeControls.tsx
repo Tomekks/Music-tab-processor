@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Pause, Play as PlayIcon, SkipBack, Volume2, VolumeX } from "lucide-react";
+import { IconButton } from "@guitar-tabs/design-system";
 import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
 // Transport pieces, composed by DetailToolbar's TransportLayout (spec 8d) --
@@ -12,52 +14,39 @@ import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 // principle as the rest of this app). Bpm defaults to the song's own tempo
 // (set by the caller), editable in TempoField.
 //
-// Tiers (spec 1+4): Play is the primary action (component.button primary
-// tokens); Reset + sound rest on the secondary (ghost) tier via the
-// component.button secondary tokens -- token vars only, no color literals.
-// The sound button's pressed state keeps its surface-active treatment: that
-// is on/off feedback, not tier chrome. Reset and Play share min-h-[44px] so
-// their measured heights match; Play/Reset/MIDI gain a visible brightness
-// hover like Flip strings' background hover (measured, never class names).
+// IconButton migration (2026-09-25): every button here is now an icon-only
+// IconButton (component.iconButton tokens). Play is the only permanently
+// "primary" (accent-filled) control -- its fill never changes with state,
+// only its icon (Play/Pause) does. Everything else (Reset, Volume) is
+// "secondary" (gray-filled), with only the icon swapping for Volume's
+// on/off state -- no more surface-active color inversion for "pressed".
 
 // aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
 const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
 
 export function ResetButton({ onReset }: { onReset: () => void }) {
   return (
-    <button
+    <IconButton
+      icon={SkipBack}
+      variant="secondary"
       onClick={onReset}
       data-umami-event="reset"
       aria-label="Reset to start"
       title="Reset to start"
-      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold hover:brightness-110 shrink-0"
-      style={{
-        background: "var(--component-button-secondary-background)",
-        color: "var(--component-button-secondary-text)",
-        borderColor: "var(--component-button-secondary-border)",
-      }}
-    >
-      ⏮ Reset
-    </button>
+    />
   );
 }
 
 export function PlayButton({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => void }) {
   return (
-    <button
+    <IconButton
+      icon={isPlaying ? Pause : PlayIcon}
+      variant="primary"
       onClick={onToggle}
       data-umami-event={isPlaying ? "pause" : "play"}
       aria-label={isPlaying ? "Pause" : "Play"}
       aria-keyshortcuts={playShortcut?.kbd.join(" ")}
-      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0"
-      style={{
-        background: "var(--component-button-primary-background)",
-        color: "var(--component-button-primary-text)",
-        borderColor: "transparent",
-      }}
-    >
-      {isPlaying ? "⏸ Pause" : "▶ Play"}
-    </button>
+    />
   );
 }
 
@@ -126,36 +115,27 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
   );
 }
 
-export function MidiButton({
+export function VolumeButton({
   soundEnabled,
   onToggleSound,
 }: {
   // Note-accurate playback sound (2026-09-10, beta) -- off by default since
-  // it's new; see hooks/useNoteSound.ts for what it actually plays.
+  // it's new; see hooks/useNoteSound.ts for what it actually plays. Renamed
+  // from "MIDI sound" to "Volume" (2026-09-25, label/icon only -- still the
+  // same binary mute toggle, nothing new added).
   soundEnabled: boolean;
   onToggleSound: () => void;
 }) {
   return (
-    <button
+    <IconButton
+      icon={soundEnabled ? Volume2 : VolumeX}
+      variant="secondary"
       onClick={onToggleSound}
-      data-umami-event="toggle-midi-sound"
+      data-umami-event="toggle-volume"
       data-umami-event-enabled={String(!soundEnabled)}
       aria-pressed={soundEnabled}
+      aria-label={soundEnabled ? "Mute volume" : "Unmute volume"}
       title="Play the real pitch of each note while the metronome runs (beta)"
-      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0 ${
-        soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
-      }`}
-      style={
-        soundEnabled
-          ? undefined
-          : {
-              background: "var(--component-button-secondary-background)",
-              color: "var(--component-button-secondary-text)",
-              borderColor: "var(--component-button-secondary-border)",
-            }
-      }
-    >
-      MIDI sound
-    </button>
+    />
   );
 }

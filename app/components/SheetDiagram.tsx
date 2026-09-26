@@ -130,6 +130,7 @@ function System({
     <svg
       width={width}
       height={height}
+      data-testid="tab-diagram"
       className="block cursor-crosshair"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

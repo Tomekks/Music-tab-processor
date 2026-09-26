@@ -17,6 +17,11 @@ near-black surfaces with a soft lavender accent — utilitarian first, considere
 - `onAccent` — paired with `accent` for any future filled-background use (a primary button, a
   badge). Not yet used by anything in Phase 0; exists so Phase 1 has a contrast-safe answer
   already computed instead of guessing later.
+- **Exception (2026-09-25):** `IconButton`'s `primary` variant (`component.iconButton.primaryBackground`/
+  `primaryIcon`) uses `accent` as a full filled background — first real use of the `onAccent`
+  pairing described above. Currently single-purpose (the metronome's Play/Pause control only).
+  This is a deliberate, noted exception to "not for large filled areas" above, not an oversight —
+  revisit and generalize (or formally restrict) once component states are defined system-wide.
 - `surface`/`surfaceText` and `surfaceActive`/`surfaceActiveText` — one step off the page
   background, for a control or row that needs to read as a distinct element (a song row, a
   button). `surfaceActive` is a hard inversion (dark theme: white fill, near-black text), used
