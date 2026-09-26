@@ -1274,10 +1274,12 @@ test.describe("spec 8d consolidation", () => {
       await page.setViewportSize({ width, height: 700 });
       await expect(hint).toBeHidden();
       await expect(songsBtn).toBeVisible();
-      // Icon-only: the button's whole text is the (aria-hidden) glyph; the
-      // accessible name still resolves to Songs (that's how this handle found
-      // it). It sits before the title in reading order.
-      expect((await songsBtn.textContent())?.trim()).toBe("☰");
+      // Icon-only (2026-09-25: IconButton/PanelLeft, was a "☰" text glyph):
+      // no visible text at all; the accessible name still resolves to Songs
+      // (that's how this handle found it). It sits before the title in
+      // reading order.
+      await expect(songsBtn).not.toHaveText(/\w/);
+      await expect(songsBtn.locator("svg")).toBeVisible();
       const songsBox = await songsBtn.boundingBox();
       const titleBox = await header.locator('a[href="/"]').boundingBox();
       expect(songsBox, "songs button laid out").not.toBeNull();
