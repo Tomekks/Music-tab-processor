@@ -75,8 +75,8 @@ test("humanize converts a kebab-case brand slug to a spaced label", () => {
   assert.equal(humanize("default"), "Default");
 });
 
-test("SECTIONS lists 11 keys with the Components umbrella last", () => {
-  assert.equal(SECTIONS.length, 11);
+test("SECTIONS lists 12 keys with the Components umbrella last", () => {
+  assert.equal(SECTIONS.length, 12);
   assert.deepEqual(
     SECTIONS.map((s) => s.key),
     [
@@ -91,11 +91,12 @@ test("SECTIONS lists 11 keys with the Components umbrella last", () => {
       "component.slider",
       "component.segmentedControl",
       "component.button",
+      "component.iconButton",
     ],
   );
   assert.deepEqual(
     SECTIONS.filter((s) => s.group).map((s) => s.key),
-    ["component.colorField", "component.slider", "component.segmentedControl", "component.button"],
+    ["component.colorField", "component.slider", "component.segmentedControl", "component.button", "component.iconButton"],
   );
 });
 

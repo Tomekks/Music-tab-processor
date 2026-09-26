@@ -36,7 +36,7 @@ const sidebar = (page: Page) =>
   page.getByRole("navigation", { name: "Design system sections" });
 
 const section = (page: Page, heading: string) =>
-  page.getByRole("region", { name: heading });
+  page.getByRole("region", { name: heading, exact: true });
 
 // The Slider component renders a native range input inside its <label>.
 // Playwright cannot `fill()` a range input, and React 19 ignores manually
@@ -156,7 +156,7 @@ test("3. brand-wide Save cascades to the sharing component", async ({
   await page.getByRole("button", { name: "Save changes (1)" }).click();
   await (await saveResponse).ok();
   expect(leaf(readTokens(), "semantic.radius.base").$value).toBe("30px");
-  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await sidebar(page).getByRole("button", { name: "Button", exact: true }).click();
   const readout = section(page, "Button")
     .locator("label", { hasText: "Radius" })
     .locator("span");
@@ -191,7 +191,7 @@ test("5. colliding brand-wide edits are refused and write nothing", async ({
     .getByRole("tablist", { name: "Scope for Radius" })
     .getByRole("tab", { name: "Brand-wide" })
     .click();
-  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await sidebar(page).getByRole("button", { name: "Button", exact: true }).click();
   await setSlider(page, "Button", "Radius", 40);
   await section(page, "Button")
     .getByRole("tablist", { name: "Scope for Radius" })
@@ -256,7 +256,7 @@ test("8. a non-alias field can only stage as exception, even under bulk Brand-wi
   page,
 }) => {
   // First make Button Radius a literal via an exception save.
-  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await sidebar(page).getByRole("button", { name: "Button", exact: true }).click();
   await setSlider(page, "Button", "Radius", 13);
   const firstSave = postTokensRequest(page);
   await page.getByRole("button", { name: "Save changes (1)" }).click();

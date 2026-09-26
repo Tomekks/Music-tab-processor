@@ -74,7 +74,15 @@ for (const { leaf } of collectLeafPaths(tree)) {
 // comparing, mirroring the stripped-path usage detection in isOrphan above.
 // A dark override is therefore covered by -- or flagged together with -- its
 // base path's entry (Spec 0 amendment 2026-09-21).
+//
+// surfaceActiveText (2026-09-25): a NEW orphan, not old debt -- its sole
+// consumer (MidiButton's `text-surface-active-text` pressed-state class) was
+// removed when that control (now VolumeButton) migrated to IconButton and
+// dropped the surface-active color-inversion pattern in favor of a plain
+// icon swap for on/off state. surfaceActive itself (no Text suffix) still
+// has other consumers, so it isn't listed here.
 const KNOWN_ORPHANS = new Set([
+  "semantic.color.surfaceActiveText",
   "semantic.state.focusOpacity",
   "component.slider.trackColor",
   "semantic.space.1",
