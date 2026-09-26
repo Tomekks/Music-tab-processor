@@ -48,10 +48,12 @@ const PAD_LEFT = 26;
 const PAD_RIGHT = 16;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 16;
-const NOTE_RADIUS = 12;
+const NOTE_RADIUS = 14;
 // Derived from NOTE_RADIUS so the digit always fits and stays centered
-// when NOTE_RADIUS is tuned -- don't hardcode these separately.
-const NOTE_FONT_SIZE = NOTE_RADIUS * 1.40;
+// when NOTE_RADIUS is tuned -- don't hardcode these separately. Ratio
+// changed 1.40 -> 9/7 (2026-09-25) to land on exactly 18 at the new
+// NOTE_RADIUS=14 (was 16.8, measured too small on screen).
+const NOTE_FONT_SIZE = NOTE_RADIUS * (9 / 7);
 const NOTE_TEXT_Y_OFFSET = NOTE_FONT_SIZE * 0.35;
 
 function System({
@@ -130,6 +132,7 @@ function System({
     <svg
       width={width}
       height={height}
+      data-testid="tab-diagram"
       className="block cursor-crosshair"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -194,7 +197,7 @@ function System({
               r={NOTE_RADIUS}
               fill={active ? "var(--foreground)" : "var(--background)"}
               stroke="var(--foreground)"
-              strokeWidth={active ? 0 : 2}
+              strokeWidth={active ? 0 : 1.2}
             />
             <text x={x} y={yFor(note.string) + NOTE_TEXT_Y_OFFSET} textAnchor="middle" fontSize={NOTE_FONT_SIZE} fontFamily="monospace" fill={active ? "var(--background)" : "var(--foreground)"}>
               {note.fret}

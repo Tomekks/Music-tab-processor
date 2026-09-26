@@ -1,15 +1,21 @@
 import { HeaderSongsButton } from "./DrawerContext";
 import { TrackedLink } from "./TrackedLink";
 import { ThemeToggle } from "./ThemeToggle";
-import { Kbd } from "@/components/Kbd";
+import { KeyboardShortcutsHint } from "./KeyboardShortcutsHint";
 import { TRANSPORT_SHORTCUTS, type ShortcutAction, type ShortcutDef } from "@/lib/keyboardShortcuts";
 
 // Persistent top bar, above the sidebar/detail row -- the one fixed landmark
 // regardless of which song is selected or what the URL happens to be. Stays a
-// server component: the drawer toggle and theme switch render as client
-// islands inside it (spec 8d). Left group is the Songs island + title; right
-// group is the static shortcut hint (hidden below md) + theme toggle. DOM
-// order: Songs -> title -> hint -> toggle.
+// server component: the drawer toggle, keyboard-shortcuts hint, and theme
+// switch render as client islands inside it (spec 8d). Left group is the
+// Songs island + title; right group is the shortcuts hint (hidden below md)
+// + theme toggle. DOM order: Songs -> title -> hint -> toggle.
+//
+// Shortcuts hint (2026-09-25 IconButton redesign): moved to its own client
+// component, KeyboardShortcutsHint.tsx -- this file (a server component)
+// can't pass the Keyboard icon itself as a prop across the server/client
+// boundary (lucide-react icons aren't plain serializable objects), only the
+// plain shortcut data below.
 
 // Fail-fast lookup: TRANSPORT_SHORTCUTS pins these actions, so a missing entry
 // is a code bug, not a render-time option.
@@ -36,14 +42,12 @@ export function AppHeader() {
           TabbyTab
         </TrackedLink>
       </div>
-      <div className="flex items-center gap-3">
-        <p className="hidden md:block text-xs text-foreground/60">
-          <Kbd>{togglePlayHint.kbd[0]}</Kbd> {togglePlayHint.label} <span aria-hidden="true">·</span>{" "}
-          <Kbd>
-            {stepBackHint.kbd[0]}/{stepForwardHint.kbd[0]}
-          </Kbd>{" "}
-          {stepBackHint.label}
-        </p>
+      <div className="flex items-center gap-2">
+        <KeyboardShortcutsHint
+          togglePlayHint={togglePlayHint}
+          stepBackHint={stepBackHint}
+          stepForwardHint={stepForwardHint}
+        />
         <ThemeToggle />
       </div>
     </header>

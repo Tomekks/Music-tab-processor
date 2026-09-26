@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Metronome, Minus, Pause, Play as PlayIcon, Plus, SkipBack, Volume2, VolumeX } from "lucide-react";
+import { IconButton } from "@guitar-tabs/design-system";
 import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
 // Transport pieces, composed by DetailToolbar's TransportLayout (spec 8d) --
@@ -12,52 +14,45 @@ import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 // principle as the rest of this app). Bpm defaults to the song's own tempo
 // (set by the caller), editable in TempoField.
 //
-// Tiers (spec 1+4): Play is the primary action (component.button primary
-// tokens); Reset + sound rest on the secondary (ghost) tier via the
-// component.button secondary tokens -- token vars only, no color literals.
-// The sound button's pressed state keeps its surface-active treatment: that
-// is on/off feedback, not tier chrome. Reset and Play share min-h-[44px] so
-// their measured heights match; Play/Reset/MIDI gain a visible brightness
-// hover like Flip strings' background hover (measured, never class names).
+// IconButton migration (2026-09-25): every button here is now an icon-only
+// IconButton (component.iconButton tokens). Play is the only permanently
+// "primary" (accent-filled) control -- its fill never changes with state,
+// only its icon (Play/Pause) does. Everything else (Reset, Volume) is
+// "secondary" (gray-filled), with only the icon swapping for Volume's
+// on/off state -- no more surface-active color inversion for "pressed".
 
 // aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
 const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
 
+// Shared by TempoField's commit() clamp and the +/- step buttons below --
+// one source of truth for the range so they can never drift apart.
+export const MIN_BPM = 20;
+export const MAX_BPM = 500;
+export const BPM_STEP = 5;
+
 export function ResetButton({ onReset }: { onReset: () => void }) {
   return (
-    <button
+    <IconButton
+      icon={SkipBack}
+      variant="secondary"
       onClick={onReset}
       data-umami-event="reset"
       aria-label="Reset to start"
       title="Reset to start"
-      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] min-w-[44px] justify-center text-sm font-semibold hover:brightness-110 shrink-0"
-      style={{
-        background: "var(--component-button-secondary-background)",
-        color: "var(--component-button-secondary-text)",
-        borderColor: "var(--component-button-secondary-border)",
-      }}
-    >
-      ⏮ Reset
-    </button>
+    />
   );
 }
 
 export function PlayButton({ isPlaying, onToggle }: { isPlaying: boolean; onToggle: () => void }) {
   return (
-    <button
+    <IconButton
+      icon={isPlaying ? Pause : PlayIcon}
+      variant="primary"
       onClick={onToggle}
       data-umami-event={isPlaying ? "pause" : "play"}
       aria-label={isPlaying ? "Pause" : "Play"}
       aria-keyshortcuts={playShortcut?.kbd.join(" ")}
-      className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0"
-      style={{
-        background: "var(--component-button-primary-background)",
-        color: "var(--component-button-primary-text)",
-        borderColor: "transparent",
-      }}
-    >
-      {isPlaying ? "⏸ Pause" : "▶ Play"}
-    </button>
+    />
   );
 }
 
@@ -66,7 +61,7 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
   // onChange -- typing/clearing/spinning edit local draft text only. Commits
   // happen on blur/Enter through commit(): empty/non-finite/<=0 reverts to the
   // last committed bpm without calling onBpmChange; positive values round, then
-  // clamp to 20..300. Enter keeps focus and arms a one-shot blur guard so
+  // clamp to MIN_BPM..MAX_BPM (20..500). Enter keeps focus and arms a one-shot blur guard so
   // Enter-then-focus-loss commits exactly once -- load-bearing on the invalid
   // path, where the guard is what keeps the following blur from committing the
   // reverted value. Input-level guarantee only: useMetronome's setBpm still has
@@ -97,19 +92,24 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
       if (source === "enter") enterCommittedRef.current = String(bpm);
       return;
     }
-    // COMMIT: round, then clamp -- 5..19 -> 20; 999 -> 300; 90.5 -> 91.
-    const clamped = Math.min(300, Math.max(20, Math.round(next)));
+    // COMMIT: round, then clamp -- 5..19 -> 20; 999 -> 500; 90.5 -> 91.
+    const clamped = Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(next)));
     onBpmChange(clamped);
     setDraft(String(clamped));
     if (source === "enter") enterCommittedRef.current = String(clamped);
   };
   return (
-    <label className="flex items-center gap-2 text-sm text-surface-text shrink-0">
-      Tempo
+    // No visible "Tempo"/"BPM" text at all (2026-09-25 IconButton redesign):
+    // one bordered/rounded 44px-tall pill, a decorative leading Metronome
+    // icon standing in for the label, and the bare number field -- aria-label
+    // carries the accessible name since there's no text anywhere to derive
+    // it from.
+    <div className="flex items-center gap-2.5 h-[var(--component-icon-button-size)] rounded-[var(--component-icon-button-radius)] border border-border bg-surface px-[var(--component-button-padding-x)] shrink-0">
+      <Metronome aria-hidden="true" size={20} className="text-[var(--component-icon-button-secondary-icon)] shrink-0" />
       <input
         type="number"
-        min={20}
-        max={300}
+        min={MIN_BPM}
+        max={MAX_BPM}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={() => commit("blur")}
@@ -119,43 +119,72 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
             commit("enter");
           }
         }}
-        className="w-16 rounded border border-border bg-surface px-2 py-1 text-sm text-surface-text"
+        aria-label="Tempo in beats per minute"
+        // Native spinner UI hidden (dedicated -/+ IconButtons cover stepping
+        // already) -- both engines need their own rule: [appearance:textfield]
+        // for Firefox, the two ::-webkit-*-spin-button selectors for
+        // Chrome/Safari/Edge. Keyboard ArrowUp/ArrowDown stepping (ArrowUp
+        // spinner test) is a separate native behavior, unaffected by hiding
+        // these rendered buttons.
+        className="w-11 bg-transparent text-xl text-surface-text outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
-      bpm
-    </label>
+    </div>
   );
 }
 
-export function MidiButton({
+function clampBpm(value: number): number {
+  return Math.min(MAX_BPM, Math.max(MIN_BPM, value));
+}
+
+export function BpmDecrementButton({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bpm: number) => void }) {
+  const next = clampBpm(bpm - BPM_STEP);
+  return (
+    <IconButton
+      icon={Minus}
+      variant="secondary"
+      onClick={() => onBpmChange(next)}
+      data-umami-event="bpm-decrement"
+      data-umami-event-bpm={String(next)}
+      aria-label="Decrease tempo"
+    />
+  );
+}
+
+export function BpmIncrementButton({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bpm: number) => void }) {
+  const next = clampBpm(bpm + BPM_STEP);
+  return (
+    <IconButton
+      icon={Plus}
+      variant="secondary"
+      onClick={() => onBpmChange(next)}
+      data-umami-event="bpm-increment"
+      data-umami-event-bpm={String(next)}
+      aria-label="Increase tempo"
+    />
+  );
+}
+
+export function VolumeButton({
   soundEnabled,
   onToggleSound,
 }: {
   // Note-accurate playback sound (2026-09-10, beta) -- off by default since
-  // it's new; see hooks/useNoteSound.ts for what it actually plays.
+  // it's new; see hooks/useNoteSound.ts for what it actually plays. Renamed
+  // from "MIDI sound" to "Volume" (2026-09-25, label/icon only -- still the
+  // same binary mute toggle, nothing new added).
   soundEnabled: boolean;
   onToggleSound: () => void;
 }) {
   return (
-    <button
+    <IconButton
+      icon={soundEnabled ? Volume2 : VolumeX}
+      variant="secondary"
       onClick={onToggleSound}
-      data-umami-event="toggle-midi-sound"
+      data-umami-event="toggle-volume"
       data-umami-event-enabled={String(!soundEnabled)}
       aria-pressed={soundEnabled}
+      aria-label={soundEnabled ? "Mute volume" : "Unmute volume"}
       title="Play the real pitch of each note while the metronome runs (beta)"
-      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 min-h-[44px] text-sm font-semibold hover:brightness-110 shrink-0 ${
-        soundEnabled ? "border-surface-active bg-surface-active text-surface-active-text" : ""
-      }`}
-      style={
-        soundEnabled
-          ? undefined
-          : {
-              background: "var(--component-button-secondary-background)",
-              color: "var(--component-button-secondary-text)",
-              borderColor: "var(--component-button-secondary-border)",
-            }
-      }
-    >
-      MIDI sound
-    </button>
+    />
   );
 }

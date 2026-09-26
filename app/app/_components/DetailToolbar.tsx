@@ -1,5 +1,12 @@
 import { TabSelector } from "./TabSelector";
-import { ResetButton, PlayButton, TempoField, MidiButton } from "@/components/MetronomeControls";
+import {
+  ResetButton,
+  PlayButton,
+  TempoField,
+  VolumeButton,
+  BpmDecrementButton,
+  BpmIncrementButton,
+} from "@/components/MetronomeControls";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import type { LoopRange } from "@/hooks/useMetronome";
 import type { Tab } from "./StudioTabs";
@@ -16,23 +23,30 @@ import { TABS } from "./StudioTabs";
 // Shortcut state is gone (spec 8d removed the opt-out -- always on, hint
 // lives in the header now); this file only renders controls.
 //
+// Shared row at xl (2026-09-25 re-measure): the outer wrapper switches to
+// xl:flex-row/justify-between, putting TabSelector and TransportLayout side
+// by side on one row -- the "shared-row-with-tabs" layout the 8d-wrap
+// fix-spec previously abandoned as ~38px short at this same 1280 breakpoint.
+// Re-measured after the IconButton migration narrowed every control from a
+// text-labelled button to a fixed 44x44 icon square: natural combined width
+// (tabs ~278px + transport ~575px + gap) is ~880px against a ~1040px
+// available container at exactly 1280px viewport width -- real slack, not a
+// guess -- so the shared row now fits. Below xl, TabSelector and
+// TransportLayout stack (flex-col) same as before.
+//
 // TransportLayout (spec 8d, option A; responsive contract amended by the
 // 8d-wrap fix-spec and live bug reports): explicit row wrappers composing
-// the MetronomeControls pieces. Tabs always own the first row; at xl and
-// above the wrappers collapse via xl:contents into one complete transport
-// row below the tabs (Reset, Play, Flip, MIDI, Tempo, Loop -- the
-// shared-row-with-tabs plan proved ~38px short even after the final
-// permitted xl spacing adjustment, measured slack 0.0px, so the fix-spec
-// relaxed 1280 to this two-row layout rather than shaving further). Below
-// xl the wrappers are content-width flow items (never basis-full: forcing
-// each box full-width stacked Flip/MIDI/Tempo into a solo column instead of
-// letting them fill the second row one by one, reported as a live bug with
-// screenshot) with explicit order: primary -> flip -> midi -> tempo -> pill
-// (parent-level order is what lets Flip lead below xl while all controls
-// share one flex container). The loop pill sits in its own wrapper last per
-// the bug report. All controls keep shrink-0 content widths; Flip (whose
-// own file is out of the allowlist) is protected by its wrapper box. Reset,
-// Play, MIDI, and Flip share min-h-[44px] so no button renders larger.
+// the MetronomeControls pieces. At xl and above the wrappers collapse via
+// xl:contents into TransportLayout's own single row (Reset, Play, Volume,
+// Flip, Tempo/-/+, Loop). Below xl the wrappers are content-width flow items
+// (never basis-full: forcing each box full-width stacked controls into a
+// solo column instead of letting them fill a row one by one, reported as a
+// live bug with screenshot) with explicit order: primary group (Reset,
+// Play, Volume, Flip -- one wrapper, order-1) -> bpm group (order-4) -> pill
+// (order-5). The loop pill sits in its own wrapper last per the bug report.
+// All controls keep shrink-0 content widths. Reset, Play, Volume, and Flip
+// are all IconButton (2026-09-25 migration) and share its fixed
+// --component-icon-button-size (44px) so no button renders larger.
 //
 // Pill (spec 2): always mounted in exactly one of two states -- set-range
 // clear-button or empty-state status text -- so the toolbar never reflows
@@ -69,7 +83,7 @@ export function DetailToolbar({
 }) {
   return (
     <div className="border-t border-border px-8 py-4 flex flex-col gap-3">
-      <div className="flex flex-col gap-3 md:gap-6">
+      <div className="flex flex-col gap-3 md:gap-6 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
         <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
         <TransportLayout
           loopRange={loopRange}
@@ -107,30 +121,38 @@ function TransportLayout({
       <div className="flex items-center gap-3 order-1 xl:contents shrink-0">
         <ResetButton onReset={metronome.reset} />
         <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
-      </div>
-      <div className="order-2 xl:contents shrink-0">
+        <VolumeButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
         <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
       </div>
-      <div className="order-3 xl:contents shrink-0">
-        <MidiButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
-      </div>
       <div className="order-4 xl:contents shrink-0">
-        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+        <div className="flex items-center gap-1.5">
+          <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+          <BpmDecrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+          <BpmIncrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+        </div>
       </div>
-      <div className="order-5 xl:contents shrink-0">
+      {/* min-w-[22ch] (font-mono, so 1ch is exact): reserves space for the
+          longest realistic "Loop: steps 999-999 x" content up front, so
+          switching between the short unset text and the longer set-range +
+          close-button text never changes this box's width and never shoves
+          every other control left when a loop gets selected. */}
+      <div className="order-5 xl:contents shrink-0 min-w-[22ch]">
         {loopRange ? (
           <button
             onClick={onClearLoop}
             data-umami-event="clear-loop"
-            className="text-xs font-mono px-2 py-1 rounded-full shrink-0"
+            className="text-xs font-mono px-2 py-1 rounded-full shrink-0 min-w-[22ch]"
             style={{ background: "color-mix(in srgb, var(--color-accent) 18%, transparent)" }}
             title="Clear loop"
           >
             Loop: steps {loopRange.start + 1}–{loopRange.end + 1} ✕
           </button>
         ) : (
-          <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0">
-            Loop: not selected
+          <span
+            aria-hidden={false}
+            className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0 min-w-[22ch] inline-block"
+          >
+            Loop: none
           </span>
         )}
       </div>

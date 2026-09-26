@@ -78,7 +78,7 @@ function Segment({
         boxShadow: active ? "inset 0 0 0 2px var(--color-playback-active)" : undefined,
       }}
     >
-      <svg width={width} height={height}>
+      <svg width={width} height={height} data-testid="tab-diagram">
         {/* nut, only when this window actually touches the top of the neck */}
         {start === 1 && (
           <line

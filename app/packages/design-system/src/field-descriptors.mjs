@@ -51,6 +51,7 @@ export const SECTIONS = [
   { key: "component.slider", heading: "Slider", group: "Components" },
   { key: "component.segmentedControl", heading: "Segmented Control", group: "Components" },
   { key: "component.button", heading: "Button", group: "Components" },
+  { key: "component.iconButton", heading: "Icon Button", group: "Components" },
 ];
 
 /**

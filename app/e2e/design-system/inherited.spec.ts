@@ -49,7 +49,7 @@ const sidebar = (page: Page) =>
   page.getByRole("navigation", { name: "Design system sections" });
 
 const section = (page: Page, heading: string) =>
-  page.getByRole("region", { name: heading });
+  page.getByRole("region", { name: heading, exact: true });
 
 async function postTokensRequest(page: Page) {
   return page.waitForResponse(
@@ -164,7 +164,7 @@ test("2. editing an inherited field stages it, Save creates a real override", as
 test("3. the seeded component override shows Revert to parent", async ({
   page,
 }) => {
-  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await sidebar(page).getByRole("button", { name: "Button", exact: true }).click();
   await expect(
     section(page, "Button").getByRole("button", { name: "Revert Radius to parent" }),
   ).toBeVisible();
@@ -196,7 +196,7 @@ test("4. a pending edit shows Discard wording, not Revert to parent", async ({
 test("5. Revert to parent deletes the override and flips the caption back", async ({
   page,
 }) => {
-  await sidebar(page).getByRole("button", { name: "Button" }).click();
+  await sidebar(page).getByRole("button", { name: "Button", exact: true }).click();
   const revertResponse = postTokensRequest(page);
   await section(page, "Button")
     .getByRole("button", { name: "Revert Radius to parent" })

@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode, type RefObject } from "react";
+import { PanelLeft } from "lucide-react";
+import { IconButton } from "@guitar-tabs/design-system";
 
 // Drawer state, lifted to the shell (spec 8d) so the mobile open control can
 // live in the header while the dialog itself stays in the sidebar. One
@@ -39,23 +41,29 @@ export function useDrawer(): DrawerContextValue {
 }
 
 // The only mobile drawer-open control (spec 8d): icon-only, hidden at md and
-// up where the desktop nav takes over. Named "Songs" via aria-label (icon is
-// aria-hidden); aria-expanded/aria-controls mirror the dialog state. Rendered
-// in AppHeader; every drawer close path restores focus to this button via the
-// shared toggleRef (see SongListSidebar.tsx's sync effect).
+// up where the desktop nav takes over. Named "Songs" via aria-label; the
+// PanelLeft icon is aria-hidden inside IconButton. aria-expanded/aria-controls
+// mirror the dialog state. Rendered in AppHeader; every drawer close path
+// restores focus to this button via the shared toggleRef (see
+// SongListSidebar.tsx's sync effect) -- IconButton forwards its ref for
+// exactly this reason.
+//
+// ghost variant (2026-09-25 IconButton migration): no fill, icon only --
+// distinct from the transport bar's secondary (gray-filled) tier, since this
+// sits in the header rather than a toolbar row.
 export function HeaderSongsButton() {
   const { open, openDrawer, toggleRef } = useDrawer();
   return (
-    <button
+    <IconButton
       ref={toggleRef}
-      type="button"
+      icon={PanelLeft}
+      variant="ghost"
       onClick={openDrawer}
       aria-expanded={open}
       aria-controls={DRAWER_ID}
       aria-label="Songs"
-      className="md:hidden inline-flex h-11 min-w-11 items-center justify-center rounded-full border border-border bg-surface px-3 text-sm font-semibold text-surface-text"
-    >
-      <span aria-hidden="true">☰</span>
-    </button>
+      data-umami-event="open-songs-drawer"
+      className="md:hidden"
+    />
   );
 }
