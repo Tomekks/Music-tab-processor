@@ -42,7 +42,7 @@ export function AppHeader() {
           TabbyTab
         </TrackedLink>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <KeyboardShortcutsHint
           togglePlayHint={togglePlayHint}
           stepBackHint={stepBackHint}
