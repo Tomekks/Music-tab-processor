@@ -52,7 +52,7 @@ test.describe("spec 1+4 toolbar layout", () => {
 
     const raw: Record<string, RowBox | null> = {
       tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
-      pill: await page.getByText("Loop: not selected", { exact: true }).boundingBox(),
+      pill: await page.getByText("Loop: none", { exact: true }).boundingBox(),
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
       tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
@@ -270,7 +270,7 @@ async function dragLoopOnFirstStaff(page: Page): Promise<string> {
 }
 
 async function expectEmptyPill(page: Page): Promise<void> {
-  await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+  await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /Loop/ })).toHaveCount(0);
 }
 
@@ -296,7 +296,7 @@ test.describe("spec 2 loop pill", () => {
 
     // Longest song per quoted DB evidence (Friction, 1343 notes) -- room to drag.
     await page.getByRole("navigation", { name: "Songs" }).getByRole("link", { name: /Friction/ }).click();
-    await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+    await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
 
     const pillText = await dragLoopOnFirstStaff(page);
 
@@ -324,7 +324,7 @@ test.describe("spec 2 loop pill", () => {
     await gotoReady(page, "/");
 
     await page.getByRole("navigation", { name: "Songs" }).getByRole("link", { name: /Friction/ }).click();
-    await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+    await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
     const setPillText = await dragLoopOnFirstStaff(page);
 
     // Amended by the 8d-wrap fix-spec (third amendment exception, granted):
@@ -371,7 +371,7 @@ test.describe("spec 2 loop pill", () => {
     await expectEmptyPill(page);
     await assertStackedNoOverflow(NARROW_VIEWPORT.width);
     await page.setViewportSize(DESKTOP_VIEWPORT);
-    await assertTwoRows("Loop: not selected");
+    await assertTwoRows("Loop: none");
 
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
@@ -918,8 +918,36 @@ test.describe("spec 8a tempo honesty", () => {
     await expect(tempo).toHaveValue(defaultBpm);
     await tempo.fill("999");
     await tempo.press("Enter");
-    await expect(tempo).toHaveValue("300");
+    await expect(tempo).toHaveValue("500");
 
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
+  test("bpm range is 20-500, +/- buttons step by 5 and clamp silently at the boundary", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    const tempo = tempoInput(page);
+    const decrement = page.getByRole("button", { name: "Decrease tempo" });
+    const increment = page.getByRole("button", { name: "Increase tempo" });
+
+    await tempo.fill("500");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("500");
+    await increment.click();
+    await expect(tempo).toHaveValue("500"); // clamped, no error, still clickable
+    await decrement.click();
+    await expect(tempo).toHaveValue("495"); // steps by 5
+
+    await tempo.fill("20");
+    await tempo.press("Enter");
+    await expect(tempo).toHaveValue("20");
+    await decrement.click();
+    await expect(tempo).toHaveValue("20"); // clamped at the floor
+
+    await expect(decrement).toBeEnabled();
+    await expect(increment).toBeEnabled();
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
@@ -1352,7 +1380,7 @@ test.describe("spec 8d consolidation", () => {
   async function transportHandles(page: Page): Promise<Record<string, RowBox>> {
     const raw: Record<string, RowBox | null> = {
       tabs: await page.getByRole("tablist", { name: "Tab display mode" }).boundingBox(),
-      pill: await page.getByText("Loop: not selected", { exact: true }).boundingBox(),
+      pill: await page.getByText("Loop: none", { exact: true }).boundingBox(),
       reset: await page.getByRole("button", { name: "Reset to start" }).boundingBox(),
       play: await page.getByRole("button", { name: "Play" }).boundingBox(),
       tempo: await page.locator("label", { hasText: "Tempo" }).boundingBox(),
@@ -1434,16 +1462,21 @@ test.describe("spec 8d consolidation", () => {
     ]);
   });
 
+  // 2026-09-25 IconButton migration: every control narrowed from a
+  // text-labelled button to a fixed 44x44 icon square, so both widths below
+  // now fit one more control per row than before the migration. Expected
+  // arrays here are the real measured groupings post-migration, not the
+  // pre-migration ones -- re-verify by running this test before changing
+  // these again, don't hand-derive.
   test("wrap rows: 767 flow rows", async ({ page }) => {
     await expectFlowRows(page, 767, 700, [
       ["tabs"],
-      ["flip", "midi", "play", "reset", "tempo"],
-      ["pill"],
+      ["flip", "midi", "pill", "play", "reset", "tempo"],
     ]);
   });
 
   test("wrap rows: 390 flow rows", async ({ page }) => {
-    await expectFlowRows(page, 390, 700, [["tabs"], ["flip", "play", "reset"], ["midi", "tempo"], ["pill"]]);
+    await expectFlowRows(page, 390, 700, [["tabs"], ["flip", "midi", "play", "reset"], ["tempo"], ["pill"]]);
   });
 
   test("wrap rows: tabs hold their row across transport-state changes", async ({ page }) => {
@@ -1476,7 +1509,7 @@ test.describe("spec 8d consolidation", () => {
         await expect(page.getByRole("dialog", { name: "Songs" })).toBeHidden();
       }
       await expect(page.getByRole("button", { name: "Play" })).toBeVisible();
-      await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+      await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
       await expect(page.getByRole("tablist", { name: "Tab display mode" })).toBeVisible();
 
       const tabsY = async () =>
@@ -1487,7 +1520,7 @@ test.describe("spec 8d consolidation", () => {
       await dragLoopOnFirstStaff(page);
       const y1 = await tabsY();
       await page.getByRole("button", { name: /Loop: steps/ }).click();
-      await expect(page.getByText("Loop: not selected", { exact: true })).toBeVisible();
+      await expect(page.getByText("Loop: none", { exact: true })).toBeVisible();
       const y2 = await tabsY();
 
       // Play/Pause label swap + a control hover.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play as PlayIcon, SkipBack, Volume2, VolumeX } from "lucide-react";
+import { Minus, Pause, Play as PlayIcon, Plus, SkipBack, Volume2, VolumeX } from "lucide-react";
 import { IconButton } from "@guitar-tabs/design-system";
 import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
@@ -23,6 +23,12 @@ import { TRANSPORT_SHORTCUTS } from "@/lib/keyboardShortcuts";
 
 // aria-keyshortcuts derives from the map (spec 1+4) -- no re-listed keys.
 const playShortcut = TRANSPORT_SHORTCUTS.find((s) => s.action === "toggle-play");
+
+// Shared by TempoField's commit() clamp and the +/- step buttons below --
+// one source of truth for the range so they can never drift apart.
+export const MIN_BPM = 20;
+export const MAX_BPM = 500;
+export const BPM_STEP = 5;
 
 export function ResetButton({ onReset }: { onReset: () => void }) {
   return (
@@ -55,7 +61,7 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
   // onChange -- typing/clearing/spinning edit local draft text only. Commits
   // happen on blur/Enter through commit(): empty/non-finite/<=0 reverts to the
   // last committed bpm without calling onBpmChange; positive values round, then
-  // clamp to 20..300. Enter keeps focus and arms a one-shot blur guard so
+  // clamp to MIN_BPM..MAX_BPM (20..500). Enter keeps focus and arms a one-shot blur guard so
   // Enter-then-focus-loss commits exactly once -- load-bearing on the invalid
   // path, where the guard is what keeps the following blur from committing the
   // reverted value. Input-level guarantee only: useMetronome's setBpm still has
@@ -86,8 +92,8 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
       if (source === "enter") enterCommittedRef.current = String(bpm);
       return;
     }
-    // COMMIT: round, then clamp -- 5..19 -> 20; 999 -> 300; 90.5 -> 91.
-    const clamped = Math.min(300, Math.max(20, Math.round(next)));
+    // COMMIT: round, then clamp -- 5..19 -> 20; 999 -> 500; 90.5 -> 91.
+    const clamped = Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(next)));
     onBpmChange(clamped);
     setDraft(String(clamped));
     if (source === "enter") enterCommittedRef.current = String(clamped);
@@ -97,8 +103,8 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
       Tempo
       <input
         type="number"
-        min={20}
-        max={300}
+        min={MIN_BPM}
+        max={MAX_BPM}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onBlur={() => commit("blur")}
@@ -108,10 +114,42 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
             commit("enter");
           }
         }}
-        className="w-16 rounded border border-border bg-surface px-2 py-1 text-sm text-surface-text"
+        className="w-16 h-[var(--component-icon-button-size)] rounded border border-border bg-surface px-2 text-sm text-surface-text"
       />
       bpm
     </label>
+  );
+}
+
+function clampBpm(value: number): number {
+  return Math.min(MAX_BPM, Math.max(MIN_BPM, value));
+}
+
+export function BpmDecrementButton({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bpm: number) => void }) {
+  const next = clampBpm(bpm - BPM_STEP);
+  return (
+    <IconButton
+      icon={Minus}
+      variant="secondary"
+      onClick={() => onBpmChange(next)}
+      data-umami-event="bpm-decrement"
+      data-umami-event-bpm={String(next)}
+      aria-label="Decrease tempo"
+    />
+  );
+}
+
+export function BpmIncrementButton({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bpm: number) => void }) {
+  const next = clampBpm(bpm + BPM_STEP);
+  return (
+    <IconButton
+      icon={Plus}
+      variant="secondary"
+      onClick={() => onBpmChange(next)}
+      data-umami-event="bpm-increment"
+      data-umami-event-bpm={String(next)}
+      aria-label="Increase tempo"
+    />
   );
 }
 

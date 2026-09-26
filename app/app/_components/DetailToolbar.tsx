@@ -1,5 +1,12 @@
 import { TabSelector } from "./TabSelector";
-import { ResetButton, PlayButton, TempoField, VolumeButton } from "@/components/MetronomeControls";
+import {
+  ResetButton,
+  PlayButton,
+  TempoField,
+  VolumeButton,
+  BpmDecrementButton,
+  BpmIncrementButton,
+} from "@/components/MetronomeControls";
 import { StringOrientationToggle } from "@/components/StringOrientationToggle";
 import type { LoopRange } from "@/hooks/useMetronome";
 import type { Tab } from "./StudioTabs";
@@ -20,10 +27,13 @@ import { TABS } from "./StudioTabs";
 // 8d-wrap fix-spec and live bug reports): explicit row wrappers composing
 // the MetronomeControls pieces. Tabs always own the first row; at xl and
 // above the wrappers collapse via xl:contents into one complete transport
-// row below the tabs (Reset, Play, Flip, MIDI, Tempo, Loop -- the
+// row below the tabs (Reset, Play, Flip, Volume, BPM -/Tempo/+, Loop -- the
 // shared-row-with-tabs plan proved ~38px short even after the final
 // permitted xl spacing adjustment, measured slack 0.0px, so the fix-spec
-// relaxed 1280 to this two-row layout rather than shaving further). Below
+// relaxed 1280 to this two-row layout rather than shaving further; the
+// 2026-09-25 IconButton migration narrowed every control, which may or may
+// not close that 38px gap -- unverified, left as this same two-row layout
+// until it's actually re-measured). Below
 // xl the wrappers are content-width flow items (never basis-full: forcing
 // each box full-width stacked Flip/MIDI/Tempo into a solo column instead of
 // letting them fill the second row one by one, reported as a live bug with
@@ -116,7 +126,11 @@ function TransportLayout({
         <VolumeButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
       </div>
       <div className="order-4 xl:contents shrink-0">
-        <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+        <div className="flex items-center gap-1.5">
+          <BpmDecrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+          <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+          <BpmIncrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
+        </div>
       </div>
       <div className="order-5 xl:contents shrink-0">
         {loopRange ? (
@@ -131,7 +145,7 @@ function TransportLayout({
           </button>
         ) : (
           <span aria-hidden={false} className="text-xs font-mono px-2 py-1 rounded-full text-foreground/60 shrink-0">
-            Loop: not selected
+            Loop: none
           </span>
         )}
       </div>
