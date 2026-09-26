@@ -4,7 +4,7 @@ import { db } from "@/db/client";
 import { songs } from "@/db/schema";
 
 // Sidebar list shape: the same column-projected select page.tsx used inline
-// before Spec A (docs/specs/song-list-cache.md) -- sidebar rows never need
+// before Spec A (docs/plans/specs/song-list-cache.md) -- sidebar rows never need
 // the full notes/tuning JSON blobs.
 export type SongListEntry = {
   id: string;
@@ -38,7 +38,7 @@ export const getSongList = unstable_cache(
 );
 
 // Full song row for the detail pane (2026-09-19,
-// docs/specs/song-detail-streaming.md). Same 60s time-based revalidation
+// docs/plans/specs/song-detail-streaming.md). Same 60s time-based revalidation
 // reasoning as getSongList above. Returns undefined for unknown ids --
 // callers fall back exactly as the old inline query did.
 export type FullSong = typeof songs.$inferSelect;

@@ -3,7 +3,7 @@
 // -status.html to see it.
 const PLAN_META = {
   title: "Design System Iteration 2",
-  planFile: "docs/superpowers/plans/2026-09-20-design-system-iteration-2.md",
+  planFile: "docs/plans/2026-09-20-design-system-iteration-2/2026-09-20-design-system-iteration-2.md",
 };
 
 // Test counts are new-tests-added-by-this-task: the cumulative suite total

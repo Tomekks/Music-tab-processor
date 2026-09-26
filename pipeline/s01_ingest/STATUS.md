@@ -1,6 +1,6 @@
 # s01_ingest
 
-**Status:** done. Validates a local audio file and sets up its per-run working directory. See `docs/specs/pipeline-01-ingest.md` for the full task spec.
+**Status:** done. Validates a local audio file and sets up its per-run working directory. See `docs/plans/specs/pipeline-01-ingest.md` for the full task spec.
 
 **Reads:** a local audio file path (any format `ffmpeg`/`ffprobe` can read). No `contracts/` schema applies — this stage is internal to the "audio processing" module (see `AGENTS.md`); only s03_transcribe's output has to match a contract.
 

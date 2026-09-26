@@ -1,6 +1,6 @@
 # Deployment
 
-Part of `app/status/` — see `app/STATUS.md` for the index. This is current state and how-to; the *why* behind these choices lives in `docs/decisions/hosting-and-deployment.md`, and full incident histories live in `docs/DRIFT_LOG.md` — not retold here.
+Part of `app/status/` — see `app/STATUS.md` for the index. This is current state and how-to; the *why* behind these choices lives in `docs/decisions/0002-hosting-and-deployment.md`, and full incident histories live in `docs/DRIFT_LOG.md` — not retold here.
 
 **Setup:** Vercel CLI (`npx vercel`), no plugin/dashboard-only setup. `vercel link` auto-connected the GitHub repo. `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` added via `vercel env add <name> production` (production scope only, server-side — never `NEXT_PUBLIC_`), verified with `vercel env ls production` before deploying.
 

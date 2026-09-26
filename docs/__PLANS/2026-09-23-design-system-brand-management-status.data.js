@@ -3,7 +3,7 @@
 // -status.html to see it.
 const PLAN_META = {
   title: "Design System: Brand Management",
-  planFile: "docs/superpowers/plans/2026-09-23-design-system-brand-management.md",
+  planFile: "docs/plans/2026-09-23-design-system-brand-management/2026-09-23-design-system-brand-management.md",
 };
 
 const PLAN_TASKS = [

@@ -9,7 +9,7 @@
 // slow parts alike) scales together, drag it back up to speed. Previously
 // this hook ignored real timing entirely and advanced one step per beat
 // flat, which made dense/fast passages play far slower than they actually
-// sound at the song's real tempo -- see docs/decisions/display-modes.md's
+// sound at the song's real tempo -- see docs/decisions/0005-display-modes.md's
 // Metronome note (updated alongside this change) for the full history.
 //
 // Still knows nothing about notes, strings, or frets -- stepTimes is just

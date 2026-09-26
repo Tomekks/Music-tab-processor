@@ -5,7 +5,7 @@ import { getStepWindow, FIXED_CELLS } from "./fretboard.ts";
 // Uniform-width window (2026-09-10): every segment shows the same FIXED_CELLS
 // cells for the common case, so segments read as a tidy grid instead of a
 // jagged one -- a deliberate reopening of the earlier "tight-fit, no padding"
-// decision (docs/decisions/display-modes.md), on a fresh, real reason (visual
+// decision (docs/decisions/0005-display-modes.md), on a fresh, real reason (visual
 // consistency across the three tab views for a beginner-facing product), not
 // a silent reversal. A step wider than FIXED_CELLS still shows its full span
 // -- real fret data is never truncated -- so "uniform" holds for the vast

@@ -4,7 +4,7 @@ What actually happens, in order, from "I want a UI/functionality change" to it b
 
 **Note (2026-09-20):** for `app/` work, `docs/WEB_APP_WORKFLOW.md` is the governing doc — this file's app/ rows are background. Pipeline process is Superpowers-driven per `AGENTS.md`.
 
-**Status key:** 🟢 LIVE (true right now) · 🟡 PLANNED (in `docs/superpowers/plans/2026-09-10-app-quality-gates.md`, not built yet) · 🔵 CONDITIONAL (only fires in specific situations, not every change) · ⏱️ BACKGROUND (runs on its own schedule, not part of the per-change sequence)
+**Status key:** 🟢 LIVE (true right now) · 🟡 PLANNED (in `docs/plans/2026-09-10-app-quality-gates/2026-09-10-app-quality-gates.md`, not built yet) · 🔵 CONDITIONAL (only fires in specific situations, not every change) · ⏱️ BACKGROUND (runs on its own schedule, not part of the per-change sequence)
 
 ---
 
@@ -69,14 +69,14 @@ What actually happens, in order, from "I want a UI/functionality change" to it b
 |---|---|---|
 | **Dependabot** | 🟢 LIVE | Weekly, automatic PRs for vulnerable `app/` npm dependencies (`.github/dependabot.yml`). |
 | **Playwright smoke test** | 🟢 LIVE, but manual | `app/e2e/home.spec.ts` (home page loads, no console error); run via `npm run test:e2e`, not yet folded into `verify.sh`/CI. |
-| **CodeScene audit** | 🟢 LIVE, but manual/periodic | Last run 2026-09-09, whole repo. No fixed cadence — re-run when `app/` has grown enough to be worth it. |
+| **CodeScene audit** | 🔴 REMOVED (2026-09-26) | Last run 2026-09-09, whole repo. A fresh install is planned for whenever it's next actually needed. |
 | **`docs/DRIFT_CHECK.md`** | 🟢 LIVE, but manual/periodic | Run at natural pause points (end of a phase, before a public push, after a long gap) — not per-change. |
 
 ---
 
 ## What this diagram deliberately leaves out
 
-`pipeline/` (the Python audio pipeline) has no equivalent gates yet — scheduled for a rewrite, so building process around code that's about to be replaced would be wasted effort (see `docs/decisions/agent-workflow-tooling.md`).
+`pipeline/` (the Python audio pipeline) has no equivalent gates yet — scheduled for a rewrite, so building process around code that's about to be replaced would be wasted effort (see `docs/decisions/0009-agent-workflow-tooling.md`).
 
 ## Mermaid preview (already a real diagram — GitHub renders this block natively; ask for a polished version once you've checked the facts above)
 

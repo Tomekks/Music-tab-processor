@@ -1,6 +1,6 @@
 # s04_tab
 
-**Status:** done, with one decision flagged for review (not a silent choice — see `docs/specs/pipeline-04-tab.md`). Wraps `tuttut` to turn a run's `notes.json` into tab data conforming to `contracts/tab.schema.json`. This is the final stage of the audio-processing → guitar-logic pipeline; nothing downstream exists yet (database, app).
+**Status:** done, with one decision flagged for review (not a silent choice — see `docs/plans/specs/pipeline-04-tab.md`). Wraps `tuttut` to turn a run's `notes.json` into tab data conforming to `contracts/tab.schema.json`. This is the final stage of the audio-processing → guitar-logic pipeline; nothing downstream exists yet (database, app).
 
 **Reads:** `pipeline_runs/<run-id>/notes.json` (Contract A), written by `s03_transcribe`.
 

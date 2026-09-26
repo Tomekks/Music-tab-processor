@@ -65,7 +65,7 @@ sides (writing it, reading it, calibrating trust to it) and is worse than silenc
 out false — it was seen in this project's own history: a spec claimed "fully verified
 end-to-end," and the file it described crashed with `ENOENT` on first real run.
 
-One markdown file per task in `docs/specs/`:
+One markdown file per task, in the plan's own folder (or `docs/plans/specs/` if standalone):
 
 0. **User story** — one short paragraph, plain language, from the person actually using the
    result: what they do, what they see, what changes. Required on every spec (and on every task

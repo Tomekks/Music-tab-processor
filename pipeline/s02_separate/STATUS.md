@@ -1,6 +1,6 @@
 # s02_separate
 
-**Status:** done. Wraps `htdemucs` to separate a run's source audio into stems. See `docs/specs/pipeline-02-separate.md` for the full task spec.
+**Status:** done. Wraps `htdemucs` to separate a run's source audio into stems. See `docs/plans/specs/pipeline-02-separate.md` for the full task spec.
 
 **Reads:** `pipeline_runs/<run-id>/source.<ext>`, written by `s01_ingest`. No `contracts/` schema applies — internal to "audio processing".
 

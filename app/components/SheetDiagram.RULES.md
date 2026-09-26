@@ -93,7 +93,7 @@ reopening that decision, not just adding a display mode.
   run still look the same width apart visually. This is now a purely visual
   gap, though: the metronome's *playback* (2026-09-18) is paced by each
   step's real recorded timing (see `app/hooks/useMetronome.ts` and
-  `docs/decisions/display-modes.md`'s Metronome note) — what's missing here
+  `docs/decisions/0005-display-modes.md`'s Metronome note) — what's missing here
   is only proportional spacing in the rendered Sheet/Fretboard diagrams
   themselves, not in how playback sounds.
 - **Technique markers** (hammer-on, pull-off, slide, bend, palm-mute) —

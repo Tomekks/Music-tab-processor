@@ -13,6 +13,8 @@ Part of the `app/` workflow — see `docs/WEB_APP_WORKFLOW.md` for the index.
 
 When in doubt, pick the heavier tier.
 
+**Claude states the tier out loud, unprompted, before starting any task** — "this looks Trivial, skipping spec/brainstorm" or "this is Bounded, writing a spec first" — so classifying the task is never something you have to do cold. **Any proposal to skip ceremony a tier would normally call for requires your explicit yes first**, not a default Claude makes unilaterally. You're only ever confirming or overriding a stated call, never starting from zero.
+
 ## 2. What each tier does
 
 **Trivial:**
@@ -22,12 +24,13 @@ When in doubt, pick the heavier tier.
 - Done when: `npm run verify` passes, then make a checkpoint commit (§4, `docs/web-app-workflow/execution-loop.md`).
 
 **Bounded:**
-- Write one spec file to `docs/specs/` using the template in §3 (`docs/web-app-workflow/spec-template.md`).
+- Write one spec file to `docs/plans/specs/` (no parent plan) using the template in §3 (`docs/web-app-workflow/spec-template.md`).
 - Run the execution loop in §5 (`docs/web-app-workflow/execution-loop.md`).
 
 **Architectural:**
 - `superpowers:brainstorming` → `superpowers:writing-plans` first.
-- Each task in the resulting plan becomes its own spec file, then runs the execution loop in §5
+- Each task in the resulting plan becomes its own spec file inside that plan's own folder
+  (`docs/plans/<plan-slug>/`), then runs the execution loop in §5
   exactly like a Bounded task. **Split a large task at a genuine seam** (e.g. testable logic vs.
   untestable UI, or a hard ordering dependency) — not by size alone. Splitting has real value
   (parallelizable, independently revertible, serializable across shared files) but each split
@@ -39,9 +42,9 @@ When in doubt, pick the heavier tier.
   where "does this still make sense from the user's side" needs to be checkable, before a task's
   spec exists yet.
 - **Every plan gets a companion status page**, created alongside the plan, not after the fact,
-  living in `docs/__PLANS/` — separate from the plan doc itself (which stays in
-  `docs/superpowers/plans/`) so status pages have one common home regardless of which directory a
-  given plan's own `.md` lives in: `docs/__PLANS/<plan-slug>-status.html` (a ~15-line shell loading
+  living in `docs/__PLANS/` — separate from the plan doc itself (which lives in
+  `docs/plans/<plan-slug>/<plan-slug>.md`) so status pages have one common home regardless of which
+  directory a given plan's own `.md` lives in: `docs/__PLANS/<plan-slug>-status.html` (a ~15-line shell loading
   `_shared/plan-status.css`/`.js` — copy an existing one as the starting point, it never changes
   again once created) plus `<plan-slug>-status.data.js` (a plain `PLAN_META`/`PLAN_TASKS` array —
   the only file that changes). Update the data file as part of each task's checkpoint commit, same

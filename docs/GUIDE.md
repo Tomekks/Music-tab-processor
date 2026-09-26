@@ -17,22 +17,11 @@ CLAUDE.md                  — points Claude Code specifically at the above
 
 docs/
   GUIDE.md                 — this file: how the docs are organized
+  GOVERNING_DOCS_CHECKLIST.md — a tiered snapshot of every governing doc, for a manual audit; not maintained, may drift
   ARCHITECTURE.md          — what's actually built, how data flows (a diagram)
   BACKLOG.md               — ideas under consideration: dump, triage, prioritize
-  backlog-board/            — local drag-and-drop board that generates BACKLOG.md; open index.html directly
-  patch-bay/                — interactive workflow + architecture diagrams; open index.html directly
-  codescene/                — CodeScene MCP audit: STATUS.md (findings/decisions), PROCEDURE.md (how to re-run it)
   DECISIONS.md             — index → docs/decisions/
-  decisions/
-    project-purpose-and-scope.md
-    hosting-and-deployment.md
-    pipeline-tool-choices.md
-    backlog-and-scope.md
-    display-modes.md
-    stack-and-tooling.md
-    structure-and-methodology.md
-    safety-principles.md
-    agent-workflow-tooling.md
+  decisions/                — numbered, e.g. 0001-project-purpose-and-scope.md; see DECISIONS.md for the full list
   AUDIOPROCESSINGTOOLS.md  — index → docs/audio-tools/
   audio-tools/
     separation.md
@@ -44,11 +33,11 @@ docs/
   DRIFT_LOG.md               — history of every audit run (skim the tail)
   AGENT_TOOLING_LOG.md      — plugins/skills installed into the coding agent (skim the tail)
   SESSION_HANDOFF.md         — how to pause/switch AI sessions cleanly
-  DEV_WORKFLOW_GUIDE.md      — plain-language how-to for verify.sh + the pre-commit hook
   DEVELOPMENT_PROCESS.md     — the full change process end to end, LIVE vs PLANNED
-  superpowers/plans/         — implementation plans written via superpowers:writing-plans
+  plans/                     — one folder per plan (docs/plans/<slug>/), plan doc + its own
+                               task specs together; superpowers:writing-plans still writes them
+  plans/specs/                — one-off specs with no parent plan
   PENDING_ACTIONS.md         — what only a human can actually go do
-  specs/                     — precise, mechanical task specs for AI agents
 
 app/
   STATUS.md                 — index → app/status/
@@ -75,7 +64,7 @@ contracts/
 
 - **`docs/` root files** — plain language, for a human keeping track of their own project, and for an AI orienting cold. What things do, why they exist, what's been decided and why.
 - **`docs/decisions/`, `docs/audio-tools/`, `app/status/`** — the depth behind their index files. Open one only when your task actually touches that topic, per the reading policy above.
-- **`docs/specs/`** — precise, mechanical task specifications for AI coding agents: exact inputs/outputs, file locations, and a concrete "done when" checklist. No room to improvise structure.
+- **`docs/plans/`** — precise, mechanical task specifications for AI coding agents live alongside each plan (`docs/plans/<slug>/`); one-off specs with no parent plan live flat in `docs/plans/specs/`. Exact inputs/outputs, file locations, and a concrete "done when" checklist. No room to improvise structure.
 - **Component `RULES.md` files** — living, added-to-over-time rendering rules for one specific component, kept next to its code rather than in a central doc.
 
 `docs/DECISIONS.md` (the index) plus this file plus `docs/ARCHITECTURE.md` should be enough for a coding agent starting cold to understand *why* things are the way they are; open the relevant `docs/decisions/*.md` file for the actual depth on any one topic. There is no separate "planning notes" document that this repo depends on being able to read — everything that matters was brought into the repo itself for exactly that reason.

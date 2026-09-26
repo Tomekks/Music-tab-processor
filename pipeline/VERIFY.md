@@ -2,11 +2,11 @@
 
 Read `START_HERE.md` at the repo root first — this file assumes that's done.
 
-## Current state (2026-09-09)
+## Current state (2026-09-26)
 
-Verified live, end-to-end: `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → the Next.js app (`app/`), **deployed and live at https://app-six-psi-70.vercel.app**, confirmed rendering real data on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Architecture: `docs/ARCHITECTURE.md`.
+Verified live, end-to-end: `s01_ingest` → `s02_separate` → `s03_transcribe` → `s04_tab` → `s05_publish` → a real Turso database → the Next.js app (`app/`), **deployed and live at https://tabbytab.mrbenchman.com**, confirmed rendering real data on the actual public URL. Full reasoning: `docs/DECISIONS.md`. Architecture: `docs/ARCHITECTURE.md`.
 
-`.venv/bin/pytest pipeline/ -v` passes **12/12**. No known blocker.
+`.venv/bin/pytest pipeline/ -v` passes **13/13**. No known blocker.
 
 A security review is done (2026-09-08, no findings) — re-review if the app's shape changes (auth, forms, write paths, uploads); see `docs/PENDING_ACTIONS.md`.
 
@@ -64,9 +64,10 @@ Visit `http://localhost:3000` — the new song should appear in the list.
 ## Still open — decisions worth making explicitly
 
 1. **One-command orchestration** — 5 manual commands per song is still the reality; a `run_pipeline.py` wrapping all 5 would help, hasn't been asked for yet.
-2. **Local web UI for triggering runs** (pick a file, click a button) instead of CLI commands — backlogged, resources already gathered in `docs/decisions/backlog-and-scope.md`, not built.
-3. **CI (GitHub Actions)** — still not set up; genuinely worthwhile now that real code+tests exist.
-4. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — both local processing and the hosted UI now exist, so these are in scope.
-5. **The pipeline has only been run end-to-end on Mister Sandman and a synthetic tone** through the real code — a harder song hasn't gone through `s01`-`s05` yet, only through the old Phase 0 spike scripts.
+2. **Local web UI for triggering runs** (pick a file, click a button) instead of CLI commands — backlogged, resources already gathered in `docs/decisions/0004-backlog-and-scope.md`, not built.
+3. **Phase 0 Checkpoints 4/5** (the harder, full-band songs) — both local processing and the hosted UI now exist, so these are in scope.
+4. **The pipeline has only been run end-to-end on Mister Sandman and a synthetic tone** through the real code — a harder song hasn't gone through `s01`-`s05` yet, only through the old Phase 0 spike scripts.
+
+(CI — `.github/workflows/ci.yml` — is live, not open anymore; removed from this list.)
 
 For the history behind any of this (relocation, doc restructuring, past incidents), see `docs/DRIFT_LOG.md` — this file only tracks what's true now.

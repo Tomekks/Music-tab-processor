@@ -1,7 +1,7 @@
 import { SongDetailPane } from "./SongDetailPane";
 import { getSongById } from "@/lib/songs";
 
-// Async server component (2026-09-19, docs/specs/song-detail-streaming.md):
+// Async server component (2026-09-19, docs/plans/specs/song-detail-streaming.md):
 // page.tsx renders the sidebar immediately and streams this inside Suspense,
 // so song-switching updates the selection instantly while the detail fills in.
 // Not an error boundary addition -- a detail-query failure behaves exactly as

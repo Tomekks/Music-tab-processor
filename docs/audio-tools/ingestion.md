@@ -4,4 +4,4 @@ Part of `docs/audio-tools/` — see `docs/AUDIOPROCESSINGTOOLS.md` for the index
 
 | Tool | Status | Notes |
 |---|---|---|
-| `yt-dlp` | backlog (explicitly not in scope yet, see `docs/decisions/backlog-and-scope.md`) | Mature, actively maintained, low research need whenever this is picked up. |
+| `yt-dlp` | backlog (explicitly not in scope yet, see `docs/decisions/0004-backlog-and-scope.md`) | Mature, actively maintained, low research need whenever this is picked up. |
