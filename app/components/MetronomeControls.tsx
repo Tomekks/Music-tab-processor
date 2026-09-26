@@ -126,7 +126,7 @@ export function TempoField({ bpm, onBpmChange }: { bpm: number; onBpmChange: (bp
         // Chrome/Safari/Edge. Keyboard ArrowUp/ArrowDown stepping (ArrowUp
         // spinner test) is a separate native behavior, unaffected by hiding
         // these rendered buttons.
-        className="w-16 bg-transparent text-xl text-surface-text outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="w-11 bg-transparent text-xl text-surface-text outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
     </div>
   );
