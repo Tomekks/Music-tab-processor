@@ -90,6 +90,18 @@ export function StudioTabs({
   // TRANSPORT_SHORTCUTS -- no keys re-listed here.
   const { stepBy, toggle } = metronome; // stable (useCallback) refs, so the effect below only re-subscribes when they actually change
   const rootRef = useRef<HTMLDivElement>(null);
+  // Root cause of "Space/arrows do nothing on a fresh page load" (2026-09-25):
+  // the scope gate below requires focus to already be inside this container,
+  // but nothing has focus at all on load (it sits on <body>, outside any
+  // scope). Rather than widen the scope gate itself -- which would also have
+  // to stop hijacking Space on the header/sidebar's own interactive controls,
+  // a much bigger change -- just give the container itself real, focusable
+  // initial focus on mount, so it's already "inside scope" before the user
+  // does anything. tabIndex=-1: focusable via .focus() only, never a tab
+  // stop, so it doesn't add a phantom step to normal Tab navigation.
+  useEffect(() => {
+    rootRef.current?.focus();
+  }, []);
   // Read fresh each keydown without adding metronome.isPlaying to the effect's
   // deps (which would resubscribe the listener every tick while playing).
   // Written from its own effect, never during render (React forbids mutating
@@ -132,7 +144,7 @@ export function StudioTabs({
   }, [metronome.currentStep, metronome.isPlaying, soundEnabled, steps, tuning, playMidiNotes]);
 
   return (
-    <div ref={rootRef} className="flex flex-col h-full min-h-0">
+    <div ref={rootRef} tabIndex={-1} className="flex flex-col h-full min-h-0 outline-none">
       <DetailToolbar
         active={active}
         onSelect={setActive}

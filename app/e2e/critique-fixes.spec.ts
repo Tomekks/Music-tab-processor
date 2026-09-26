@@ -199,6 +199,25 @@ test.describe("spec 1+4 shortcut scoping", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
+  test("shortcuts work immediately on page load, before any click", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_VIEWPORT);
+    const { errors } = collectConsoleErrors(page);
+    await gotoReady(page, "/");
+
+    // No click/focus anywhere yet -- focus starts on <body>. The practice
+    // area now claims initial focus on mount so Space/arrows work without
+    // requiring the user to click something first.
+    const line = page.locator('svg[data-testid="tab-diagram"] line[stroke-dasharray="3 2"]');
+    const x1Before = await line.getAttribute("x1");
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(async () => await line.getAttribute("x1")).not.toBe(x1Before);
+
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
+
+    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
+  });
+
   test("Play-focused Space toggles via the shortcut (no double-toggle)", async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
