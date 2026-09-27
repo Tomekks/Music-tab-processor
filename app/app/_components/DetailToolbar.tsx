@@ -84,7 +84,7 @@ export function DetailToolbar({
 }) {
   return (
     <div className="border-t border-border px-8 py-4 flex flex-col gap-3">
-      <div className="flex flex-col gap-3 md:gap-6 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
+      <div className="flex flex-col gap-3 md:gap-6 min-[1200px]:flex-row min-[1200px]:items-center min-[1200px]:justify-between min-[1200px]:gap-6">
         <MetronomeControls
           loopRange={loopRange}
           onClearLoop={onClearLoop}
@@ -119,13 +119,13 @@ function MetronomeControls({
 }) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
-      <div className="flex items-center gap-3 order-1 xl:contents shrink-0">
+      <div className="flex items-center gap-3 order-1 min-[1200px]:contents shrink-0">
         <ResetButton onReset={metronome.reset} />
         <PlayButton isPlaying={metronome.isPlaying} onToggle={metronome.toggle} />
         <VolumeButton soundEnabled={soundEnabled} onToggleSound={onToggleSound} />
         <StringOrientationToggle highOnTop={highOnTop} onToggle={onToggleHighOnTop} />
       </div>
-      <div className="order-4 xl:contents shrink-0">
+      <div className="order-4 min-[1200px]:contents shrink-0">
         <div className="flex items-center gap-1.5">
           <TempoField bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
           <BpmDecrementButton bpm={metronome.bpm} onBpmChange={metronome.setBpm} />
@@ -137,7 +137,7 @@ function MetronomeControls({
           switching between the short unset text and the longer set-range +
           close-button text never changes this box's width and never shoves
           every other control left when a loop gets selected. */}
-      <div className="order-5 xl:contents shrink-0 min-w-[22ch]">
+      <div className="order-5 min-[1200px]:contents shrink-0 min-w-[22ch]">
         {loopRange ? (
           <button
             onClick={onClearLoop}
