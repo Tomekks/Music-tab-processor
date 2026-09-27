@@ -18,35 +18,36 @@ import { TABS } from "./StudioTabs";
 // tab's branch. Neither component knows the other exists; this file is the
 // only place that puts them next to each other.
 //
-// Row 1 (spec 1+4): under md, TabSelector owns row 1 and the transport group
-// wraps below it (flex-wrap -- the loop pill never overlaps the diagrams).
-// Shortcut state is gone (spec 8d removed the opt-out -- always on, hint
-// lives in the header now); this file only renders controls.
+// Layout order (2026-09-27 swap): MetronomeControls renders first, TabSelector
+// second -- transport controls sit left/top, tabs sit right/bottom, in both
+// the stacked (below xl) and shared-row (xl) layouts. DOM order changed along
+// with visual order, so keyboard tab order now reaches the transport controls
+// before the Sheet/Fretboard/Ascii tabs.
 //
 // Shared row at xl (2026-09-25 re-measure): the outer wrapper switches to
-// xl:flex-row/justify-between, putting TabSelector and TransportLayout side
+// xl:flex-row/justify-between, putting MetronomeControls and TabSelector side
 // by side on one row -- the "shared-row-with-tabs" layout the 8d-wrap
 // fix-spec previously abandoned as ~38px short at this same 1280 breakpoint.
 // Re-measured after the IconButton migration narrowed every control from a
 // text-labelled button to a fixed 44x44 icon square: natural combined width
 // (tabs ~278px + transport ~575px + gap) is ~880px against a ~1040px
 // available container at exactly 1280px viewport width -- real slack, not a
-// guess -- so the shared row now fits. Below xl, TabSelector and
-// TransportLayout stack (flex-col) same as before.
+// guess -- so the shared row now fits. Below xl, MetronomeControls and
+// TabSelector stack (flex-col) same as before, just in the new order.
 //
-// TransportLayout (spec 8d, option A; responsive contract amended by the
+// MetronomeControls (spec 8d, option A; responsive contract amended by the
 // 8d-wrap fix-spec and live bug reports): explicit row wrappers composing
-// the MetronomeControls pieces. At xl and above the wrappers collapse via
-// xl:contents into TransportLayout's own single row (Reset, Play, Volume,
-// Flip, Tempo/-/+, Loop). Below xl the wrappers are content-width flow items
-// (never basis-full: forcing each box full-width stacked controls into a
-// solo column instead of letting them fill a row one by one, reported as a
-// live bug with screenshot) with explicit order: primary group (Reset,
-// Play, Volume, Flip -- one wrapper, order-1) -> bpm group (order-4) -> pill
-// (order-5). The loop pill sits in its own wrapper last per the bug report.
-// All controls keep shrink-0 content widths. Reset, Play, Volume, and Flip
-// are all IconButton (2026-09-25 migration) and share its fixed
-// --component-icon-button-size (44px) so no button renders larger.
+// the components/MetronomeControls.tsx pieces. At xl and above the wrappers
+// collapse via xl:contents into MetronomeControls's own single row (Reset,
+// Play, Volume, Flip, Tempo/-/+, Loop). Below xl the wrappers are
+// content-width flow items (never basis-full: forcing each box full-width
+// stacked controls into a solo column instead of letting them fill a row one
+// by one, reported as a live bug with screenshot) with explicit order:
+// primary group (Reset, Play, Volume, Flip -- one wrapper, order-1) -> bpm
+// group (order-4) -> pill (order-5). The loop pill sits in its own wrapper
+// last per the bug report. All controls keep shrink-0 content widths. Reset,
+// Play, Volume, and Flip are all IconButton (2026-09-25 migration) and share
+// its fixed --component-icon-button-size (44px) so no button renders larger.
 //
 // Pill (spec 2): always mounted in exactly one of two states -- set-range
 // clear-button or empty-state status text -- so the toolbar never reflows
@@ -84,8 +85,7 @@ export function DetailToolbar({
   return (
     <div className="border-t border-border px-8 py-4 flex flex-col gap-3">
       <div className="flex flex-col gap-3 md:gap-6 xl:flex-row xl:items-center xl:justify-between xl:gap-6">
-        <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
-        <TransportLayout
+        <MetronomeControls
           loopRange={loopRange}
           onClearLoop={onClearLoop}
           metronome={metronome}
@@ -94,12 +94,13 @@ export function DetailToolbar({
           highOnTop={highOnTop}
           onToggleHighOnTop={onToggleHighOnTop}
         />
+        <TabSelector tabs={TABS} active={active} onSelect={onSelect} />
       </div>
     </div>
   );
 }
 
-function TransportLayout({
+function MetronomeControls({
   loopRange,
   onClearLoop,
   metronome,

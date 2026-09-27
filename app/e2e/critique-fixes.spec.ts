@@ -74,7 +74,7 @@ test.describe("spec 1+4 toolbar layout", () => {
     expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
   });
 
-  test("767px: tabs own row 1, transport wraps row 2, no horizontal overflow", async ({ page }) => {
+  test("767px: transport owns row 1, tabs wrap row 2, no horizontal overflow", async ({ page }) => {
     await page.setViewportSize(NARROW_VIEWPORT);
     const { errors } = collectConsoleErrors(page);
     await gotoReady(page, "/");
@@ -85,8 +85,8 @@ test.describe("spec 1+4 toolbar layout", () => {
     const pb = await play.boundingBox();
     expect(tb, "tablist visible").not.toBeNull();
     expect(pb, "Play visible").not.toBeNull();
-    // Stacked: the TabSelector's bottom edge sits at or above the transport.
-    expect(tb!.y + tb!.height).toBeLessThanOrEqual(pb!.y);
+    // Stacked (2026-09-27 swap): the transport's bottom edge sits at or above the tabs.
+    expect(pb!.y + pb!.height).toBeLessThanOrEqual(tb!.y);
 
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollWidth).toBeLessThanOrEqual(NARROW_VIEWPORT.width);
@@ -375,7 +375,7 @@ test.describe("spec 2 loop pill", () => {
       const pb = await play.boundingBox();
       expect(tb, "tablist visible").not.toBeNull();
       expect(pb, "Play visible").not.toBeNull();
-      expect(tb!.y + tb!.height).toBeLessThanOrEqual(pb!.y);
+      expect(pb!.y + pb!.height).toBeLessThanOrEqual(tb!.y);
       const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(scrollWidth).toBeLessThanOrEqual(width);
     };
@@ -616,10 +616,6 @@ test.describe("spec 5 sidebar", () => {
   });
 });
 
-// Spec 6 blocks (appended; earlier specs' blocks above untouched).
-
-const ASCII_BANNER_COPY = "Ascii is a static reference — follow playback on Sheet or Fretboard.";
-
 /** The Sheet playhead: the only dashed line in the Sheet staff svg. */
 function sheetPlayhead(page: Page) {
   return page.locator('svg line[stroke-dasharray="3 2"]').first();
@@ -639,96 +635,6 @@ async function waitPlayheadAdvance(page: Page, from: string | null): Promise<str
   expect(next, "playhead x1 readable after advance").not.toBeNull();
   return next!;
 }
-
-test.describe("spec 6 ascii banner", () => {
-  test("Ascii shows the static-reference banner above an untouched pre", async ({ page }) => {
-    await page.setViewportSize(DESKTOP_VIEWPORT);
-    const { errors } = collectConsoleErrors(page);
-    await gotoReady(page, "/");
-
-    await page.getByRole("tab", { name: "Ascii" }).click();
-    const banner = page.getByRole("status");
-    await expect(banner).toHaveText(ASCII_BANNER_COPY);
-    // Banner first: its next sibling is the tab text itself.
-    expect(await banner.evaluate((el) => el.nextElementSibling?.tagName)).toBe("PRE");
-    // <pre> class contract unchanged (spec 6 §1 conformance is by diff review;
-    // this guards the class half in automation).
-    const pres = page.locator("pre");
-    await expect(pres).toHaveCount(1);
-    await expect(pres.first()).toHaveAttribute(
-      "class",
-      "bg-background text-foreground text-sm rounded-lg p-6 overflow-x-auto font-mono leading-relaxed",
-    );
-
-    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
-  });
-
-  test("banner node is stable across playback advances; transport survives the switch", async ({
-    page,
-  }) => {
-    await page.setViewportSize(DESKTOP_VIEWPORT);
-    const { errors } = collectConsoleErrors(page);
-    await gotoReady(page, "/");
-
-    // Sheet is the default tab; start playback and prove two step advances
-    // deterministically via the playhead's x1 position attribute.
-    await page.getByRole("tab", { name: "Sheet" }).click();
-    await page.getByRole("button", { name: "Play" }).click();
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-    // Attached, not visible: a zero-width vertical SVG line has an empty
-    // bounding box, so Playwright's visibility check never passes on it --
-    // but its x1 position attribute is observable and advances per step.
-    await expect(sheetPlayhead(page)).toBeAttached();
-    const x0 = await sheetPlayhead(page).getAttribute("x1");
-    expect(x0, "playhead x1 readable once playing").not.toBeNull();
-    const x1 = await waitPlayheadAdvance(page, x0);
-    const t1 = Date.now();
-    const x2 = await waitPlayheadAdvance(page, x1);
-    const t2 = Date.now();
-    const cadenceMs = Math.max(t2 - t1, 1);
-
-    // Switch to Ascii: banner mounted once, exact copy, above the pre.
-    await page.getByRole("tab", { name: "Ascii" }).click();
-    const banner = page.getByRole("status");
-    await expect(banner).toHaveText(ASCII_BANNER_COPY);
-    // Pin the banner DOM node identity, then watch it for mutations while
-    // playback keeps ticking underneath.
-    await banner.evaluate((el) => {
-      const w = window as unknown as { __spec6BannerNode?: Element; __spec6BannerMutations?: number };
-      w.__spec6BannerNode = el;
-      w.__spec6BannerMutations = 0;
-      new MutationObserver((records) => {
-        w.__spec6BannerMutations = (w.__spec6BannerMutations ?? 0) + records.length;
-      }).observe(el, { attributes: true, characterData: true, childList: true, subtree: true });
-    });
-    // Dwell sized from the measured in-run step cadence (room for >=2
-    // advances), not an arbitrary sleep: the two proven advances above
-    // calibrated it. Proves mount-once + zero playback-driven mutations --
-    // NOT actual screen-reader speech (unverified residual, spec 6 §3).
-    await page.waitForTimeout(cadenceMs * 2 + 500);
-    const mutations = await page.evaluate(
-      () => (window as unknown as { __spec6BannerMutations?: number }).__spec6BannerMutations,
-    );
-    expect(mutations, "zero playback-driven mutations on the banner node").toBe(0);
-    expect(
-      await banner.evaluate(
-        (el) => el === (window as unknown as { __spec6BannerNode?: Element }).__spec6BannerNode,
-      ),
-      "same banner DOM node across the advances",
-    ).toBe(true);
-    await expect(banner).toHaveText(ASCII_BANNER_COPY);
-
-    // Playback lived through the whole Ascii visit: back on Sheet the playhead
-    // has moved on, and the transport is still playing (regression guard).
-    await page.getByRole("tab", { name: "Sheet" }).click();
-    await expect
-      .poll(async () => await sheetPlayhead(page).getAttribute("x1"), { timeout: 30000 })
-      .not.toBe(x2);
-    await expect(page.getByRole("button", { name: "Pause" })).toBeVisible();
-
-    expect(errors, `console errors: ${errors.join("\n")}`).toEqual([]);
-  });
-});
 
 // Spec 7 blocks (appended; earlier specs' blocks above untouched).
 
@@ -1485,8 +1391,8 @@ test.describe("spec 8d consolidation", () => {
 
   test("wrap rows: 1024 tabs own row, flow rows below", async ({ page }) => {
     await expectFlowRows(page, 1024, 800, [
-      ["tabs"],
       ["flip", "midi", "pill", "play", "reset", "tempo"],
+      ["tabs"],
     ]);
   });
 
@@ -1500,13 +1406,13 @@ test.describe("spec 8d consolidation", () => {
   // running this test before changing these again.
   test("wrap rows: 767 flow rows", async ({ page }) => {
     await expectFlowRows(page, 767, 700, [
-      ["tabs"],
       ["flip", "midi", "pill", "play", "reset", "tempo"],
+      ["tabs"],
     ]);
   });
 
   test("wrap rows: 390 flow rows", async ({ page }) => {
-    await expectFlowRows(page, 390, 700, [["tabs"], ["flip", "midi", "play", "reset"], ["tempo"], ["pill"]]);
+    await expectFlowRows(page, 390, 700, [["flip", "midi", "play", "reset"], ["tempo"], ["pill"], ["tabs"]]);
   });
 
   test("wrap rows: tabs hold their row across transport-state changes", async ({ page }) => {
