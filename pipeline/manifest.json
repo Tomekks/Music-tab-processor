@@ -8,6 +8,7 @@
       "argsFrom": "audioPath",
       "requires": [],
       "produces": ["metadata.json"],
+      "temp": [],
       "reveal": "."
     },
     {
@@ -17,6 +18,7 @@
       "argsFrom": "runDir",
       "requires": ["metadata.json"],
       "produces": ["stems/drums.wav", "stems/bass.wav", "stems/other.wav", "stems/vocals.wav", "separation.json"],
+      "temp": ["_demucs_raw"],
       "reveal": "stems"
     },
     {
@@ -26,6 +28,7 @@
       "argsFrom": "runDir",
       "requires": ["stems/other.wav", "stems/bass.wav"],
       "produces": ["notes.json", "transcription.mid"],
+      "temp": ["_basic_pitch_raw", "_transcribe_input.wav"],
       "reveal": "."
     },
     {
@@ -35,6 +38,7 @@
       "argsFrom": "runDir",
       "requires": ["notes.json"],
       "produces": ["tab.json", "tab.txt"],
+      "temp": [],
       "reveal": "."
     }
   ]

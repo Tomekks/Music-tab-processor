@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { Manifest } from "./manifest.ts";
 import { appendRecord, nowIso, readRecords } from "./records.ts";
-import { canStart, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage } from "./runner.ts";
+import { canStart, groupAlive, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage, stopStage } from "./runner.ts";
 
 function makeScript(dir: string, name: string, body: string): string {
   const path = join(dir, name);
@@ -18,7 +18,7 @@ function makeScript(dir: string, name: string, body: string): string {
 function makeManifest(script: string): Manifest {
   return {
     version: 1,
-    stages: [{ id: "s01_ingest", label: "Ingestion", command: [script], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], reveal: "." }]
+    stages: [{ id: "s01_ingest", label: "Ingestion", command: [script], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], temp: [], reveal: "." }]
   };
 }
 
@@ -195,9 +195,9 @@ function makeRunManifest(s02Script: string): Manifest {
   return {
     version: 1,
     stages: [
-      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], reveal: "." },
-      { id: "s02_separate", label: "Separation", command: [s02Script], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav", "stems/bass.wav"], reveal: "stems" },
-      { id: "s03_transcribe", label: "Transcription", command: ["/bin/true"], argsFrom: "runDir", requires: ["stems/other.wav", "stems/bass.wav"], produces: ["notes.json"], reveal: "." }
+      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], temp: [], reveal: "." },
+      { id: "s02_separate", label: "Separation", command: [s02Script], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav", "stems/bass.wav"], temp: [], reveal: "stems" },
+      { id: "s03_transcribe", label: "Transcription", command: ["/bin/true"], argsFrom: "runDir", requires: ["stems/other.wav", "stems/bass.wav"], produces: ["notes.json"], temp: [], reveal: "." }
     ]
   };
 }
@@ -218,7 +218,7 @@ function appendStarted(dataDir: string, execId: string, stage: string, startedAt
 
 function appendFinished(
   dataDir: string, execId: string, stage: string, startedAt: string, runId: string | null,
-  outcome: "done" | "failed" | "interrupted"
+  outcome: "done" | "failed" | "interrupted" | "stopped"
 ): void {
   appendRecord(dataDir, {
     schemaVersion: 1, type: "finished", execId, stage, startedAt, finishedAt: startedAt,
@@ -245,6 +245,26 @@ function killGroupFor(dataDir: string, stageId: string): void {
       // Already gone; temp dir is discarded anyway.
     }
   }
+}
+
+function readPid(path: string): number {
+  return Number(readFileSync(path, "utf8").trim());
+}
+
+// Bounded retry: a just-killed child may briefly linger (or be a zombie), so
+// poll for ESRCH rather than assuming it is gone after a fixed sleep.
+async function waitForDead(pid: number, timeoutMs = 6000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      process.kill(pid, 0);
+    } catch (err) {
+      if ((err as { code?: string }).code === "ESRCH") return;
+      throw err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error(`process ${pid} still alive after ${timeoutMs}ms`);
 }
 
 test("runStepStatus: done record + files → done", () => {
@@ -412,4 +432,157 @@ test("regression: a failed ingest with runId null still shows Failed step 1", ()
   const status = stageStatus(manifest, "s01_ingest", dirs);
   assert.equal(status.status, "failed");
   assert.equal(status.outcome, "failed");
+});
+
+test("stopStage force-kills a child that ignores SIGTERM, leaving no survivor", async () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const scriptDir = mkdtempSync(join(tmpdir(), "stop-stage-"));
+  const script = join(scriptDir, "ignore_stage.sh");
+  const scriptPidFile = join(scriptDir, "script.pid");
+  const childPidFile = join(scriptDir, "child.pid");
+  writeFileSync(
+    script,
+    [
+      "#!/bin/sh",
+      `echo $$ > ${scriptPidFile}`,
+      `sh -c 'trap "" TERM; echo $$ > ${childPidFile}; sleep 30' &`,
+      "sleep 30"
+    ].join("\n") + "\n"
+  );
+  chmodSync(script, 0o755);
+  const manifest = makeRunManifest(script);
+  makeRunWithFiles(runsDir, "run1", nowIso().slice(0, 19), []);
+  const started = startRunStage(manifest, "s02_separate", "run1", dirs);
+  assert.equal(started.busy, false);
+  try {
+    waitFor(scriptPidFile);
+    waitFor(childPidFile);
+    const pid = statePidFor(dataDir, "s02_separate");
+    assert.ok(pid !== null);
+    mkdirSync(join(runsDir, "run1", "stems"), { recursive: true });
+    writeFileSync(join(runsDir, "run1", "stems", "other.wav"), "x");
+
+    const result = await stopStage(manifest, "s02_separate", "run1", dirs, { termWaitMs: 500, killWaitMs: 2000 });
+
+    assert.deepEqual(result, { ok: true, deleted: ["stems/other.wav"] });
+    assert.equal(groupAlive(pid), false);
+    assert.equal(existsSync(join(runsDir, "run1", "stems", "other.wav")), false);
+    await waitForDead(readPid(scriptPidFile));
+    await waitForDead(readPid(childPidFile));
+  } finally {
+    killGroupFor(dataDir, "s02_separate");
+  }
+});
+
+test("stopStage writes one stopped record so the status reads Stopped", async () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "sleep_s02b.sh", "sleep 30"));
+  makeRunWithFiles(runsDir, "run1", nowIso().slice(0, 19), []);
+  const started = startRunStage(manifest, "s02_separate", "run1", dirs);
+  if (started.busy) throw new Error("expected the stage to start");
+  try {
+    mkdirSync(join(runsDir, "run1", "stems"), { recursive: true });
+    writeFileSync(join(runsDir, "run1", "stems", "other.wav"), "x");
+
+    const result = await stopStage(manifest, "s02_separate", "run1", dirs, { termWaitMs: 2000, killWaitMs: 2000 });
+
+    assert.equal(result.ok, true);
+    if (!result.ok) throw new Error("expected ok");
+    assert.deepEqual(result.deleted, ["stems/other.wav"]);
+    const finished = readRecords(dataDir).filter((r) => r.type === "finished" && r.execId === started.execId);
+    assert.equal(finished.length, 1);
+    assert.equal(finished[0].outcome, "stopped");
+    assert.equal(finished[0].exitCode, null);
+    assert.equal(finished[0].runId, "run1");
+    assert.deepEqual(finished[0].deleted, ["stems/other.wav"]);
+    assert.equal(runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir)).status, "stopped");
+  } finally {
+    killGroupFor(dataDir, "s02_separate");
+  }
+});
+
+test("stopStage returns nothingToStop when not live, on the wrong run, or with a recycled pid", async () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "sleep_s02c.sh", "sleep 30"));
+  makeRunWithFiles(runsDir, "runA", "2026-01-01T00:00:00", []);
+  makeRunWithFiles(runsDir, "runB", "2026-01-01T00:00:00", []);
+
+  assert.deepEqual(await stopStage(manifest, "s02_separate", "runA", dirs), { ok: false, reason: "nothingToStop" });
+
+  const started = startRunStage(manifest, "s02_separate", "runA", dirs);
+  assert.equal(started.busy, false);
+  try {
+    assert.deepEqual(await stopStage(manifest, "s02_separate", "runB", dirs), { ok: false, reason: "nothingToStop" });
+    const pid = statePidFor(dataDir, "s02_separate");
+    assert.ok(pid !== null);
+    assert.equal(groupAlive(pid), true, "the wrong-run call must not have signalled");
+  } finally {
+    killGroupFor(dataDir, "s02_separate");
+  }
+
+  const holder = spawn("sleep", ["20"], { stdio: "ignore" });
+  try {
+    const holderPid = holder.pid as number;
+    writeFileSync(
+      join(dataDir, "s02_separate.json"),
+      JSON.stringify({ execId: "exec-recycled", startedAt: nowIso(), pid: holderPid })
+    );
+    appendStarted(dataDir, "exec-recycled", "s02_separate", nowIso(), "runA");
+    assert.deepEqual(await stopStage(manifest, "s02_separate", "runA", dirs), { ok: false, reason: "nothingToStop" });
+    assert.doesNotThrow(() => process.kill(holderPid, 0), "the recycled pid must not have been signalled");
+  } finally {
+    try {
+      holder.kill("SIGKILL");
+    } catch {
+      // Already gone; temp dir is discarded anyway.
+    }
+  }
+});
+
+test("after a Stopped step 3, step 4 is blocked but step 3 can start again", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest: Manifest = {
+    version: 1,
+    stages: [
+      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], temp: [], reveal: "." },
+      { id: "s02_separate", label: "Separation", command: ["/bin/true"], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav"], temp: [], reveal: "stems" },
+      { id: "s03_transcribe", label: "Transcription", command: ["/bin/true"], argsFrom: "runDir", requires: ["stems/other.wav"], produces: ["notes.json"], temp: [], reveal: "." },
+      { id: "s04_tab", label: "Tab", command: ["/bin/true"], argsFrom: "runDir", requires: ["notes.json"], produces: ["tab.json"], temp: [], reveal: "." }
+    ]
+  };
+  const startedAt = nowIso();
+  makeRunWithFiles(runsDir, "run1", startedAt.slice(0, 19), ["stems/other.wav"]);
+  appendFinished(dataDir, "exec-2", "s02_separate", startedAt, "run1", "done");
+  appendFinished(dataDir, "exec-3", "s03_transcribe", startedAt, "run1", "stopped");
+
+  assert.equal(runStepStatus(manifest, "s03_transcribe", "run1", dirs, readRecords(dataDir)).status, "stopped");
+  assert.deepEqual(canStart(manifest, "s04_tab", "run1", dirs, readRecords(dataDir)), {
+    ok: false, reason: "Run Transcription first"
+  });
+  assert.deepEqual(canStart(manifest, "s03_transcribe", "run1", dirs, readRecords(dataDir)), { ok: true });
+});
+
+test("reconcile-race: Stop's stopped record wins over an earlier interrupted one", async () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "sleep_s02e.sh", "sleep 30"));
+  makeRunWithFiles(runsDir, "run1", nowIso().slice(0, 19), []);
+  const started = startRunStage(manifest, "s02_separate", "run1", dirs);
+  if (started.busy) throw new Error("expected the stage to start");
+  try {
+    appendFinished(dataDir, started.execId, "s02_separate", nowIso(), "run1", "interrupted");
+
+    const result = await stopStage(manifest, "s02_separate", "run1", dirs, { termWaitMs: 2000, killWaitMs: 2000 });
+
+    assert.equal(result.ok, true);
+    const status = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+    assert.equal(status.status, "stopped");
+    assert.equal(status.outcome, "stopped");
+  } finally {
+    killGroupFor(dataDir, "s02_separate");
+  }
 });

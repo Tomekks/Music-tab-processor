@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { Manifest, StageDef } from "./manifest.ts";
+import { deleteStageOutputs } from "./stop.ts";
 import { appendRecord, hasFinishedRecord, nowIso, readRecords, type RunRecord } from "./records.ts";
 import { findRunDir, listRuns } from "./runs.ts";
 
@@ -13,13 +14,13 @@ export interface Dirs {
   pipelineRoot: string;
 }
 
-export type StepState = "notStarted" | "running" | "done" | "failed";
+export type StepState = "notStarted" | "running" | "done" | "failed" | "stopped";
 
 export interface StepStatus {
   status: StepState;
   execId: string | null;
   startedAt: string | null;
-  outcome: "done" | "failed" | "interrupted" | null;
+  outcome: "done" | "failed" | "interrupted" | "stopped" | null;
 }
 
 export function statePath(dataDir: string, stageId: string): string {
@@ -225,7 +226,7 @@ export function slotRunId(dirs: Dirs, stageId: string, records: RunRecord[]): st
 
 export interface RunStepStatus {
   status: StepState;
-  outcome: "done" | "failed" | "interrupted" | null;
+  outcome: "done" | "failed" | "interrupted" | "stopped" | null;
   startedAt: string | null;
 }
 
@@ -249,6 +250,10 @@ export function runStepStatus(
   }
   const finished = records.filter((r) => r.type === "finished" && r.stage === stageId && r.runId === runId);
   const last = finished[finished.length - 1];
+  // A stopped execution is its own state, ahead of the crash rule below.
+  if (last !== undefined && last.outcome === "stopped") {
+    return { status: "stopped", outcome: "stopped", startedAt: last.startedAt };
+  }
   // A crash leaves partial or stale files behind, so a failed or
   // interrupted record always wins over whatever is on disk.
   if (last !== undefined && (last.outcome === "failed" || last.outcome === "interrupted")) {
@@ -354,4 +359,102 @@ function reconcileRunDirStage(stage: StageDef, dirs: Dirs): void {
     logFile: `${stage.id}.log`,
     command: stage.command
   });
+}
+
+// Is any member of the process group led by `pid` still alive? The group is
+// what kill(-pid) targets, so this — not the wrapper's pid — is what decides
+// whether a stage has really exited.
+export function groupAlive(pid: number): boolean {
+  try {
+    process.kill(-pid, 0);
+    return true;
+  } catch (err) {
+    return (err as { code?: string }).code === "EPERM";
+  }
+}
+
+function waitForGroupDead(pid: number, timeoutMs: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const deadline = Date.now() + timeoutMs;
+    const check = (): void => {
+      if (!groupAlive(pid)) {
+        resolve(true);
+        return;
+      }
+      if (Date.now() >= deadline) {
+        resolve(false);
+        return;
+      }
+      setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+export type StopResult =
+  | { ok: true; deleted: string[] }
+  | { ok: false; reason: "nothingToStop" | "stillRunning" };
+
+// Stops a run-dir stage: SIGTERM the whole process group, SIGKILL if it
+// survives, and delete the stage's own files only once the group is empty.
+// Never signals or deletes unless the slot is live and belongs to this run.
+export async function stopStage(
+  manifest: Manifest,
+  stageId: string,
+  runId: string,
+  dirs: Dirs,
+  opts: { termWaitMs?: number; killWaitMs?: number } = {}
+): Promise<StopResult> {
+  const termWaitMs = opts.termWaitMs ?? 2000;
+  const killWaitMs = opts.killWaitMs ?? 2000;
+  const stage = manifest.stages.find((s) => s.id === stageId);
+  if (!stage) throw new Error(`unknown stage: ${stageId}`);
+  if (stage.argsFrom !== "runDir") throw new Error(`stage ${stageId} is not a run-dir stage`);
+
+  const state = readState(dirs.dataDir, stageId);
+  if (!state || state.pid === null || !Number.isInteger(state.pid)) {
+    return { ok: false, reason: "nothingToStop" };
+  }
+  const pid = state.pid;
+  if (!isPidAlive(pid, scriptBaseOf(stage))) return { ok: false, reason: "nothingToStop" };
+  const started = readRecords(dirs.dataDir).find(
+    (r) => r.type === "started" && r.stage === stageId && r.execId === state.execId
+  );
+  if (started === undefined || started.runId !== runId) return { ok: false, reason: "nothingToStop" };
+
+  if (groupAlive(pid)) {
+    try {
+      process.kill(-pid, "SIGTERM");
+    } catch (err) {
+      if ((err as { code?: string }).code !== "ESRCH") throw err;
+    }
+  }
+  if (!(await waitForGroupDead(pid, termWaitMs))) {
+    try {
+      process.kill(-pid, "SIGKILL");
+    } catch (err) {
+      if ((err as { code?: string }).code !== "ESRCH") throw err;
+    }
+    if (!(await waitForGroupDead(pid, killWaitMs))) {
+      return { ok: false, reason: "stillRunning" };
+    }
+  }
+
+  const { deleted } = deleteStageOutputs(stage, join(dirs.runsDir, runId), Date.parse(state.startedAt));
+  appendRecord(dirs.dataDir, {
+    schemaVersion: 1,
+    type: "finished",
+    execId: state.execId,
+    stage: stageId,
+    startedAt: state.startedAt,
+    finishedAt: nowIso(),
+    runId,
+    exitCode: null,
+    outcome: "stopped",
+    durationSec: Math.max(0, (Date.now() - Date.parse(state.startedAt)) / 1000),
+    logFile: `${stageId}.log`,
+    command: stage.command,
+    deleted
+  });
+  return { ok: true, deleted };
 }

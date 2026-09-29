@@ -6,6 +6,8 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
+	let stopping = $state(false);
+
 	const step1 = $derived(data.steps.find((s) => s.id === 's01_ingest'));
 	const later = $derived(data.steps.filter((s) => s.id !== 's01_ingest'));
 	const anyRunning = $derived(data.steps.some((s) => s.status === 'running'));
@@ -24,10 +26,20 @@
 		if (f.error === 'badStage') return 'Unknown stage.';
 		if (f.error === 'badRun') return 'Unknown run.';
 		if (f.error === 'nothingToShow') return 'Nothing to show for that step yet.';
+		if (f.error === 'nothingToStop') return 'Nothing is running to stop.';
+		if (f.error === 'stopFailed') return f.reason ?? 'Could not stop the step.';
 		if (f.error === 'revealFailed') {
 			return f.reason ? `Could not open Finder: ${f.reason}` : 'Could not open Finder.';
 		}
 		return f.reason ?? 'Not allowed right now.';
+	}
+
+	function stopConfirmText(step: { label: string; stopPreview: string[] }): string {
+		const files =
+			step.stopPreview.length > 0
+				? `Files to delete:\n  ${step.stopPreview.join('\n  ')}`
+				: 'No files written yet; only the process will be stopped.';
+		return `Stop ${step.label}?\n\n${files}\n\nEarlier outputs from before this run are not touched.`;
 	}
 
 	const formError = $derived(
@@ -112,6 +124,27 @@
 			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
 			<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
 		</form>
+		{#if step.canStop}
+			<form
+				method="POST"
+				action="?/stopStage"
+				use:enhance={({ cancel }) => {
+					if (!confirm(stopConfirmText(step))) {
+						cancel();
+						return;
+					}
+					stopping = true;
+					return async ({ update }) => {
+						await update();
+						stopping = false;
+					};
+				}}
+			>
+				<input type="hidden" name="stage" value={step.id} />
+				<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+				<button class="btn secondary" type="submit" disabled={stopping}>Stop</button>
+			</form>
+		{/if}
 		<form method="POST" action="?/reveal" use:enhance>
 			<input type="hidden" name="stage" value={step.id} />
 			<input type="hidden" name="runId" value={data.run?.id ?? ''} />

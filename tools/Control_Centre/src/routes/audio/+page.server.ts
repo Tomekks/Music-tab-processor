@@ -15,8 +15,10 @@ import {
 	slotRunId,
 	stageStatus,
 	startAudioStage,
-	startRunStage
+	startRunStage,
+	stopStage as stopStageRun
 } from '$lib/server/runner';
+import { deleteStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, resolveRunDir } from '$lib/server/runs';
 
@@ -86,6 +88,8 @@ export const load: PageServerLoad = async ({ depends }) => {
 				startedAt: null as string | null,
 				canStart: false,
 				reason: 'No runs yet',
+				canStop: false,
+				stopPreview: [] as string[],
 				canReveal: false,
 				log: ''
 			};
@@ -100,12 +104,19 @@ export const load: PageServerLoad = async ({ depends }) => {
 				startedAt: step1.startedAt,
 				canStart: step1.status !== 'running',
 				reason: '',
+				canStop: false,
+				stopPreview: [] as string[],
 				canReveal,
 				log: readLogTail(DATA_DIR, stage.id)
 			};
 		}
 		const perRun = runStepStatus(manifest, stage.id, run.id, dirs, records);
 		const gate = canStart(manifest, stage.id, run.id, dirs, records);
+		const canStop = perRun.status === 'running';
+		const stopPreview =
+			canStop && perRun.startedAt !== null
+				? deleteStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
+				: [];
 		return {
 			id: stage.id,
 			label: stage.label,
@@ -114,6 +125,8 @@ export const load: PageServerLoad = async ({ depends }) => {
 			startedAt: perRun.startedAt,
 			canStart: gate.ok,
 			reason: gate.ok || live ? '' : gate.reason,
+			canStop,
+			stopPreview,
 			canReveal,
 			log: slotRunId(dirs, stage.id, records) === run.id ? readLogTail(DATA_DIR, stage.id) : ''
 		};
@@ -167,6 +180,27 @@ export const actions: Actions = {
 		const started = startRunStage(manifest, stage.id, runId, dirs);
 		if (started.busy) return fail(409, { error: 'notAllowed', reason: 'Another stage is running' });
 		return { started: true, execId: started.execId };
+	},
+	stopStage: async ({ request }) => {
+		// The client sends stage + run IDs only; the server builds every path.
+		const form = await request.formData();
+		const stageId = form.get('stage');
+		const runId = form.get('runId');
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		const stage = manifest.stages.find((s) => s.id === stageId);
+		if (typeof stageId !== 'string' || !stage || stage.argsFrom !== 'runDir') {
+			return fail(400, { error: 'badStage' });
+		}
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		const result = await stopStageRun(manifest, stage.id, runId, dirs);
+		if (!result.ok) {
+			if (result.reason === 'nothingToStop') return fail(409, { error: 'nothingToStop' });
+			return fail(500, { error: 'stopFailed', reason: 'process did not exit' });
+		}
+		return { stopped: true, deleted: result.deleted };
 	},
 	reveal: async ({ request }) => {
 		// The client sends stage + run IDs only; the server builds the path.
