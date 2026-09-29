@@ -7,7 +7,8 @@
       "command": ["{python}", "pipeline/s01_ingest/ingest.py"],
       "argsFrom": "audioPath",
       "requires": [],
-      "produces": ["metadata.json"]
+      "produces": ["metadata.json"],
+      "reveal": "."
     },
     {
       "id": "s02_separate",
@@ -15,7 +16,8 @@
       "command": ["{python}", "pipeline/s02_separate/separate.py"],
       "argsFrom": "runDir",
       "requires": ["metadata.json"],
-      "produces": ["stems/drums.wav", "stems/bass.wav", "stems/other.wav", "stems/vocals.wav", "separation.json"]
+      "produces": ["stems/drums.wav", "stems/bass.wav", "stems/other.wav", "stems/vocals.wav", "separation.json"],
+      "reveal": "stems"
     },
     {
       "id": "s03_transcribe",
@@ -23,7 +25,8 @@
       "command": ["{python}", "pipeline/s03_transcribe/transcribe.py"],
       "argsFrom": "runDir",
       "requires": ["stems/other.wav", "stems/bass.wav"],
-      "produces": ["notes.json", "transcription.mid"]
+      "produces": ["notes.json", "transcription.mid"],
+      "reveal": "."
     },
     {
       "id": "s04_tab",
@@ -31,7 +34,8 @@
       "command": ["{python}", "pipeline/s04_tab/tab_generate.py"],
       "argsFrom": "runDir",
       "requires": ["notes.json"],
-      "produces": ["tab.json", "tab.txt"]
+      "produces": ["tab.json", "tab.txt"],
+      "reveal": "."
     }
   ]
 }

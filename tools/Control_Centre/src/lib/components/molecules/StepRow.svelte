@@ -27,6 +27,18 @@
 				: labels[status]
 	);
 
+	const dotClass = $derived(
+		status === 'failed' && outcome === 'interrupted'
+			? 'error'
+			: status === 'failed'
+				? 'failed'
+				: status === 'done'
+					? 'done'
+					: status === 'running'
+						? 'running'
+						: ''
+	);
+
 	let open = $state(false);
 	$effect(() => {
 		if (status === 'failed') open = true;
@@ -36,7 +48,10 @@
 <section class="step">
 	<div class="row">
 		<h2 class="title">{title}</h2>
-		<span class="status {status}">{label.glyph} {label.text}</span>
+		{#if status === 'running'}
+			<span class="spinner" aria-hidden="true"></span>
+		{/if}
+		<span class="status"><span class="dot {dotClass}">{label.glyph}</span> {label.text}</span>
 		<div class="controls">
 			{@render children?.()}
 		</div>
@@ -72,8 +87,43 @@
 		color: var(--foreground);
 	}
 
-	.status.running {
+	.dot.done {
+		color: var(--status-done);
+	}
+
+	.dot.failed {
+		color: var(--status-failed);
+	}
+
+	.dot.error {
+		color: var(--status-error);
+	}
+
+	.dot.running {
 		color: var(--color-accent);
+	}
+
+	.spinner {
+		flex: 0 0 auto;
+		width: 0.9em;
+		height: 0.9em;
+		border: 2px solid var(--color-accent);
+		border-top-color: transparent;
+		border-radius: 50%;
+		animation: spin 0.8s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.spinner {
+			animation: none;
+			border-top-color: var(--color-accent);
+		}
 	}
 
 	.controls {

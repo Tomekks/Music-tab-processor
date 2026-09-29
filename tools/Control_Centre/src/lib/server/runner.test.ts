@@ -18,7 +18,7 @@ function makeScript(dir: string, name: string, body: string): string {
 function makeManifest(script: string): Manifest {
   return {
     version: 1,
-    stages: [{ id: "s01_ingest", label: "Ingestion", command: [script], argsFrom: "audioPath", requires: [], produces: ["metadata.json"] }]
+    stages: [{ id: "s01_ingest", label: "Ingestion", command: [script], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], reveal: "." }]
   };
 }
 
@@ -195,9 +195,9 @@ function makeRunManifest(s02Script: string): Manifest {
   return {
     version: 1,
     stages: [
-      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"] },
-      { id: "s02_separate", label: "Separation", command: [s02Script], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav", "stems/bass.wav"] },
-      { id: "s03_transcribe", label: "Transcription", command: ["/bin/true"], argsFrom: "runDir", requires: ["stems/other.wav", "stems/bass.wav"], produces: ["notes.json"] }
+      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], reveal: "." },
+      { id: "s02_separate", label: "Separation", command: [s02Script], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav", "stems/bass.wav"], reveal: "stems" },
+      { id: "s03_transcribe", label: "Transcription", command: ["/bin/true"], argsFrom: "runDir", requires: ["stems/other.wav", "stems/bass.wav"], produces: ["notes.json"], reveal: "." }
     ]
   };
 }

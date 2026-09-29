@@ -17,6 +17,7 @@ import {
 	startAudioStage,
 	startRunStage
 } from '$lib/server/runner';
+import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, resolveRunDir } from '$lib/server/runs';
 
 const STAGE_ID = 's01_ingest';
@@ -72,6 +73,9 @@ export const load: PageServerLoad = async ({ depends }) => {
 	const records = readRecords(DATA_DIR);
 	const run = readNewestRun(RUNS_DIR);
 	const step1 = stageStatus(manifest, STAGE_ID, dirs);
+	// While any stage is live the "waiting" reason is suppressed: the
+	// disabled Start button already says why.
+	const live = anyStageLive(manifest, dirs);
 	const steps = manifest.stages.map((stage) => {
 		if (!run) {
 			return {
@@ -82,9 +86,11 @@ export const load: PageServerLoad = async ({ depends }) => {
 				startedAt: null as string | null,
 				canStart: false,
 				reason: 'No runs yet',
+				canReveal: false,
 				log: ''
 			};
 		}
+		const canReveal = resolveRevealDir(manifest, stage.id, run.id, RUNS_DIR) !== null;
 		if (stage.id === STAGE_ID) {
 			return {
 				id: stage.id,
@@ -93,7 +99,8 @@ export const load: PageServerLoad = async ({ depends }) => {
 				outcome: step1.outcome,
 				startedAt: step1.startedAt,
 				canStart: step1.status !== 'running',
-				reason: step1.status === 'running' ? 'Ingestion is running' : '',
+				reason: '',
+				canReveal,
 				log: readLogTail(DATA_DIR, stage.id)
 			};
 		}
@@ -106,7 +113,8 @@ export const load: PageServerLoad = async ({ depends }) => {
 			outcome: perRun.outcome,
 			startedAt: perRun.startedAt,
 			canStart: gate.ok,
-			reason: gate.ok ? '' : gate.reason,
+			reason: gate.ok || live ? '' : gate.reason,
+			canReveal,
 			log: slotRunId(dirs, stage.id, records) === run.id ? readLogTail(DATA_DIR, stage.id) : ''
 		};
 	});
@@ -159,5 +167,25 @@ export const actions: Actions = {
 		const started = startRunStage(manifest, stage.id, runId, dirs);
 		if (started.busy) return fail(409, { error: 'notAllowed', reason: 'Another stage is running' });
 		return { started: true, execId: started.execId };
+	},
+	reveal: async ({ request }) => {
+		// The client sends stage + run IDs only; the server builds the path.
+		const form = await request.formData();
+		const stageId = form.get('stage');
+		const runId = form.get('runId');
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const stage = manifest.stages.find((s) => s.id === stageId);
+		if (typeof stageId !== 'string' || !stage) return fail(400, { error: 'badStage' });
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		const dir = resolveRevealDir(manifest, stage.id, runId, RUNS_DIR);
+		if (dir === null) return fail(400, { error: 'nothingToShow' });
+		try {
+			await openInFinder(dir);
+			return { revealed: true };
+		} catch (err) {
+			return fail(500, { error: 'revealFailed', reason: (err as Error).message });
+		}
 	}
 };

@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { isAbsolute } from "node:path";
 
 export interface StageDef {
   id: string;
@@ -7,6 +8,8 @@ export interface StageDef {
   argsFrom: "audioPath" | "runDir";
   requires: string[];
   produces: string[];
+  // Relative folder inside the run folder to reveal in Finder.
+  reveal: string;
 }
 
 export interface Manifest {
@@ -42,13 +45,17 @@ export function loadManifest(path: string, opts: { python: string }): Manifest {
       for (const key of ["requires", "produces"] as const) {
         if (!Array.isArray(stage[key])) throw new Error(`manifest: ${key} must be an array (${stage.id})`);
       }
+      if (typeof stage.reveal !== "string") throw new Error(`manifest: reveal must be a string (${stage.id})`);
+      if (isAbsolute(stage.reveal)) throw new Error(`manifest: reveal must be relative (${stage.id})`);
+      if (stage.reveal.split("/").includes("..")) throw new Error(`manifest: reveal must not contain .. (${stage.id})`);
       return {
         id: stage.id,
         label: stage.label as string,
         command: (stage.command as string[]).map((t) => (t === "{python}" ? opts.python : t)),
         argsFrom: stage.argsFrom,
         requires: stage.requires as string[],
-        produces: stage.produces as string[]
+        produces: stage.produces as string[],
+        reveal: stage.reveal
       };
     })
   };

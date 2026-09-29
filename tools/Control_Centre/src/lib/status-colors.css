@@ -1,0 +1,5 @@
+:root {
+  --status-done: #2e7d32;
+  --status-failed: #c62828;
+  --status-error: #e67e00;
+}

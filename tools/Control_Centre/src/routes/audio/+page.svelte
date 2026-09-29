@@ -16,9 +16,17 @@
 		return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 	}
 
+	const heading = $derived(
+		data.run ? `${data.run.title}${data.run.artist ? ` — ${data.run.artist}` : ''}` : null
+	);
+
 	function actionErrorText(f: { error: string; reason?: string }): string {
 		if (f.error === 'badStage') return 'Unknown stage.';
 		if (f.error === 'badRun') return 'Unknown run.';
+		if (f.error === 'nothingToShow') return 'Nothing to show for that step yet.';
+		if (f.error === 'revealFailed') {
+			return f.reason ? `Could not open Finder: ${f.reason}` : 'Could not open Finder.';
+		}
 		return f.reason ?? 'Not allowed right now.';
 	}
 
@@ -44,10 +52,7 @@
 <h1 class="page-title">Audio processing</h1>
 
 {#if data.run}
-	<p class="subtitle">
-		{data.run.title}{#if data.run.artist} — {data.run.artist}{/if}
-		· {data.run.id}
-	</p>
+	<p class="subtitle">{heading} · {data.run.id}</p>
 {:else}
 	<p class="subtitle">No runs yet</p>
 {/if}
@@ -86,6 +91,11 @@
 				Start
 			</button>
 		</form>
+		<form method="POST" action="?/reveal" use:enhance>
+			<input type="hidden" name="stage" value={step1.id} />
+			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+			<button class="btn secondary" type="submit" disabled={!step1.canReveal}>Show in Finder</button>
+		</form>
 	</StepRow>
 {/if}
 
@@ -97,13 +107,15 @@
 		elapsed={step.status === 'running' ? elapsed(step.startedAt) : null}
 		log={step.log}
 	>
-		{#if step.status === 'running'}
-			<span class="hint">The log appears when this step ends.</span>
-		{/if}
 		<form method="POST" action="?/startStage" use:enhance>
 			<input type="hidden" name="stage" value={step.id} />
 			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
 			<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
+		</form>
+		<form method="POST" action="?/reveal" use:enhance>
+			<input type="hidden" name="stage" value={step.id} />
+			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+			<button class="btn secondary" type="submit" disabled={!step.canReveal}>Show in Finder</button>
 		</form>
 		{#if !step.canStart && step.reason}
 			<span class="reason">{step.reason}</span>
@@ -113,8 +125,7 @@
 
 {#if data.run}
 	<p class="run">
-		{data.run.title}{#if data.run.artist} — {data.run.artist}{/if}
-		· {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch
+		{heading} · {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch
 	</p>
 {/if}
 
@@ -137,10 +148,6 @@
 	}
 
 	.reason {
-		color: var(--foreground);
-	}
-
-	.hint {
 		color: var(--foreground);
 	}
 
