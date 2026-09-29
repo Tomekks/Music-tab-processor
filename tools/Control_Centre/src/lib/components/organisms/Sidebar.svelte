@@ -29,6 +29,7 @@
 <style>
 	.sidebar {
 		width: var(--sidebar-width);
+		flex-shrink: 0;
 		background: color-mix(in srgb, var(--foreground) 6%, var(--background));
 		padding: var(--space-6) var(--space-4);
 		display: flex;

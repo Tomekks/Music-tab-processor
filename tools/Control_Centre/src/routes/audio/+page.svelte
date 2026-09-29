@@ -73,23 +73,24 @@
 <h1 class="page-title">Audio processing</h1>
 
 {#if data.run}
-	<p class="subtitle">{heading} · {data.run.id}</p>
+	<div class="subtitle-row">
+		<p class="subtitle">{heading} · {data.run.id}</p>
+		{#if data.runs.length > 0}
+			<form method="GET" action="/audio">
+				<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+					{#each data.runs as run}
+						<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
+					{/each}
+				</select>
+			</form>
+		{/if}
+	</div>
 {:else}
 	<p class="subtitle">No runs yet</p>
 {/if}
 
 {#if formError}
 	<p class="error">{actionErrorText(formError)}</p>
-{/if}
-
-{#if data.runs.length > 0}
-	<form method="GET" action="/audio">
-		<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-			{#each data.runs as run}
-				<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
-			{/each}
-		</select>
-	</form>
 {/if}
 
 {#if data.runNotFound}
@@ -218,6 +219,13 @@
 
 	.subtitle {
 		color: var(--foreground);
+	}
+
+	.subtitle-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
 	}
 
 	.picked {

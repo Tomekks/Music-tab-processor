@@ -100,7 +100,9 @@
 	}
 
 	.status {
-		flex: 0 0 10rem;
+		flex: 0 0 auto;
+		min-width: 10rem;
+		white-space: nowrap;
 		color: var(--foreground);
 	}
 
