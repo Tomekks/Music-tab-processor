@@ -10,8 +10,8 @@ function makeManifest(): Manifest {
   return {
     version: 1,
     stages: [
-      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], reveal: "." },
-      { id: "s02_separate", label: "Separation", command: ["/bin/true"], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav"], reveal: "stems" }
+      { id: "s01_ingest", label: "Ingestion", command: ["/bin/true"], argsFrom: "audioPath", requires: [], produces: ["metadata.json"], temp: [], reveal: "." },
+      { id: "s02_separate", label: "Separation", command: ["/bin/true"], argsFrom: "runDir", requires: ["metadata.json"], produces: ["stems/other.wav"], temp: [], reveal: "stems" }
     ]
   };
 }

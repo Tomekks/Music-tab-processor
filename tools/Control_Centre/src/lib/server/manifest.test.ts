@@ -22,6 +22,7 @@ const base = {
       argsFrom: "audioPath",
       requires: [],
       produces: ["metadata.json"],
+      temp: [],
       reveal: "."
     }
   ]
@@ -105,5 +106,59 @@ test("real pipeline/manifest.json has a valid reveal for all four stages", () =>
     assert.equal(typeof stage.reveal, "string");
     assert.ok(!stage.reveal.startsWith("/"));
     assert.ok(!stage.reveal.split("/").includes(".."));
+  }
+});
+
+test("temp is accepted when empty and non-empty", () => {
+  const dir = mkdtempSync(join(tmpdir(), "manifest-"));
+  const ok = {
+    ...base,
+    stages: [
+      { ...base.stages[0], temp: [] },
+      { ...base.stages[0], id: "s02_separate", produces: ["stems/other.wav"], temp: ["_demucs_raw"] }
+    ]
+  };
+  const manifest = loadManifest(writeManifest(dir, ok), { python: "python" });
+  assert.deepEqual(manifest.stages[0].temp, []);
+  assert.deepEqual(manifest.stages[1].temp, ["_demucs_raw"]);
+});
+
+test("unsafe temp or produces entries are rejected", () => {
+  const dir = mkdtempSync(join(tmpdir(), "manifest-"));
+  const structural = ["/abs", "//x", ".", "./x", "stems/.", "a//b", "x/../y", ".."];
+  const protectedNames = ["metadata.json", "Metadata.JSON", "source.wav", "SOURCE.M4A"];
+
+  for (const bad of [...structural, ...protectedNames]) {
+    const asTemp = { ...base, stages: [{ ...base.stages[0], temp: [bad] }] };
+    assert.throws(() => loadManifest(writeManifest(dir, asTemp), { python: "python" }), /unsafe temp entry/);
+  }
+  for (const bad of structural) {
+    const asProduces = { ...base, stages: [{ ...base.stages[0], produces: [bad] }] };
+    assert.throws(() => loadManifest(writeManifest(dir, asProduces), { python: "python" }), /unsafe produces entry/);
+  }
+  for (const ok of protectedNames) {
+    const asProduces = { ...base, stages: [{ ...base.stages[0], produces: [ok] }] };
+    const manifest = loadManifest(writeManifest(dir, asProduces), { python: "python" });
+    assert.deepEqual(manifest.stages[0].produces, [ok]);
+  }
+
+  const nonArray = { ...base, stages: [{ ...base.stages[0], temp: "x" }] };
+  assert.throws(() => loadManifest(writeManifest(dir, nonArray), { python: "python" }), /temp must be an array/);
+  const nonString = { ...base, stages: [{ ...base.stages[0], temp: [42] }] };
+  assert.throws(() => loadManifest(writeManifest(dir, nonString), { python: "python" }), /temp entries must be strings/);
+});
+
+test("real pipeline/manifest.json has a valid temp for all four stages", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const path = join(here, "..", "..", "..", "..", "..", "pipeline", "manifest.json");
+  const manifest = loadManifest(path, { python: "/tmp/fake/python" });
+  const expected: Record<string, string[]> = {
+    s01_ingest: [],
+    s02_separate: ["_demucs_raw"],
+    s03_transcribe: ["_basic_pitch_raw", "_transcribe_input.wav"],
+    s04_tab: []
+  };
+  for (const stage of manifest.stages) {
+    assert.deepEqual(stage.temp, expected[stage.id]);
   }
 });

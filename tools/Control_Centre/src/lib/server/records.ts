@@ -2,7 +2,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export type RecordType = "started" | "finished";
-export type Outcome = "done" | "failed" | "interrupted";
+export type Outcome = "done" | "failed" | "interrupted" | "stopped";
 
 export interface RunRecord {
   schemaVersion: 1;
@@ -18,6 +18,7 @@ export interface RunRecord {
   logFile?: string;
   command?: string[];
   reason?: string;
+  deleted?: string[];
 }
 
 // Local ISO timestamp with a numeric timezone offset (e.g. +02:00), never bare UTC.

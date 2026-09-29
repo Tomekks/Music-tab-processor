@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute } from "node:path";
+import { isInsideRun, isSafeEntry } from "./stop.ts";
 
 export interface StageDef {
   id: string;
@@ -8,6 +9,8 @@ export interface StageDef {
   argsFrom: "audioPath" | "runDir";
   requires: string[];
   produces: string[];
+  // Run-folder-relative temp entries this stage may leave behind; deleted by Stop.
+  temp: string[];
   // Relative folder inside the run folder to reveal in Finder.
   reveal: string;
 }
@@ -42,8 +45,18 @@ export function loadManifest(path: string, opts: { python: string }): Manifest {
       if (stage.argsFrom !== "audioPath" && stage.argsFrom !== "runDir") {
         throw new Error(`manifest: unknown argsFrom (${stage.id})`);
       }
-      for (const key of ["requires", "produces"] as const) {
-        if (!Array.isArray(stage[key])) throw new Error(`manifest: ${key} must be an array (${stage.id})`);
+      for (const key of ["requires", "produces", "temp"]) {
+        const value = stage[key];
+        if (!Array.isArray(value)) throw new Error(`manifest: ${key} must be an array (${stage.id})`);
+        for (const entry of value) {
+          if (typeof entry !== "string") throw new Error(`manifest: ${key} entries must be strings (${stage.id})`);
+        }
+      }
+      for (const entry of stage.produces as string[]) {
+        if (!isInsideRun(entry)) throw new Error(`manifest: unsafe produces entry (${stage.id}): ${entry}`);
+      }
+      for (const entry of stage.temp as string[]) {
+        if (!isSafeEntry(entry)) throw new Error(`manifest: unsafe temp entry (${stage.id}): ${entry}`);
       }
       if (typeof stage.reveal !== "string") throw new Error(`manifest: reveal must be a string (${stage.id})`);
       if (isAbsolute(stage.reveal)) throw new Error(`manifest: reveal must be relative (${stage.id})`);
@@ -55,6 +68,7 @@ export function loadManifest(path: string, opts: { python: string }): Manifest {
         argsFrom: stage.argsFrom,
         requires: stage.requires as string[],
         produces: stage.produces as string[],
+        temp: stage.temp as string[],
         reveal: stage.reveal
       };
     })

@@ -3,8 +3,8 @@
 
 	interface Props {
 		title: string;
-		status: 'notStarted' | 'running' | 'done' | 'failed';
-		outcome?: 'done' | 'failed' | 'interrupted' | null;
+		status: 'notStarted' | 'running' | 'done' | 'failed' | 'stopped';
+		outcome?: 'done' | 'failed' | 'interrupted' | 'stopped' | null;
 		elapsed?: string | null;
 		log: string;
 		children?: Snippet;
@@ -16,7 +16,8 @@
 		notStarted: { glyph: '○', text: 'Not started' },
 		running: { glyph: '●', text: 'Running' },
 		done: { glyph: '●', text: 'Done' },
-		failed: { glyph: '●', text: 'Failed' }
+		failed: { glyph: '●', text: 'Failed' },
+		stopped: { glyph: '○', text: 'Stopped' }
 	};
 
 	const label = $derived(
