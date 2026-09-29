@@ -10,7 +10,7 @@ construction: dev/preview bind `127.0.0.1:5173`, production starts with
 **Status:** slice 1 done — shell + scaffold. Header, grey sidebar ("Audio processing",
 "Design System ↗" linking out to the `app/` dev server), empty `/audio` page, all in the
 design system's live tokens (synced at build/dev time, never hand-copied). Pipeline
-controls, logs and records arrive in slices 2+.
+controls, logs and records arrive in slices 2+. Layout verified by eye on localhost (2026-09-29).
 
 **Run it:** `npm run dev` → `http://localhost:5173` (runs `tokens` first via `predev`).
 **Production:** `npm run build && npm run start` (binds `127.0.0.1:5173` only —
