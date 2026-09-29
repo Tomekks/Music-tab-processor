@@ -73,3 +73,5 @@ Run from `tools/Control_Centre/` unless noted.
 ## Execution outcome (2026-09-29)
 
 First execution: verify 75 tests, 0 fail; build OK; the invalid-input reveal probes returned HTTP 200 with the `badStage`/`badRun` bodies and evil origin 403. The executor stopped on two Done/Scope mismatches, both spec faults: the hex grep matched Svelte `{#each` blocks (fixed above), and `runner.test.ts` needed a mechanical edit to two `Manifest` literals because `reveal` is now required (added to the Modify-only list). Human check: pending.
+
+**Human check (2026-09-29): passed.** Subtitle spacing, spinner (moved next to the title in `cb454ed`, max 16px gap), status dot colours and the Show in Finder button all confirmed by the user. One open observation: the user reported every Show in Finder button opening the run folder; the code resolves step 2 to `stems/` (verified read-only), so this may have been a stale view or misreading, not confirmed either way.
