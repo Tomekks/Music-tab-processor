@@ -17,8 +17,10 @@ controls, logs and records arrive in slices 2+. Layout verified by eye on localh
 never a bare `node build`).
 **Verify:** `npm run verify` (`svelte-check` + `node --test`).
 
-**Reads:** `pipeline/` (later slices, via `PIPELINE_ROOT` in `src/lib/server/config.ts`).
-**Writes:** nothing outside its own gitignored `data/` (later slices).
+**Reads:** `pipeline/` (via `PIPELINE_ROOT` in `src/lib/server/config.ts`): `pipeline/manifest.json` (the command whitelist) and `pipeline_runs/*/metadata.json` (read only, plus folder listing).
+**Writes:** its own gitignored `data/` (one execution slot per stage: state, log, exit code, `records.jsonl`, `picked.json`); new run folders under `pipeline_runs/` via the single whitelisted `s01_ingest` command. Known limit: `s01_ingest` hard-codes its output to `<repo>/pipeline_runs/`, so `CC_PIPELINE_ROOT` cannot redirect where runs are written until the pipeline changes.
+
+**Status:** slice 2 done — ingest through the UI. `/audio` step 1 runs the manifest's `s01_ingest` as a detached process (log + pid + exit files in `data/`), with server-side Browse (`osascript`), append-only `records.jsonl` ("started"/"finished"), file-derived status, and 1 s polling. Spec: `docs/plans/2026-09-24-control-center/control-center-slice-2-ingest.md`.
 
 Verified on Node v26.3.1 only. Plan: `docs/plans/2026-09-24-control-center/`.
 Spec: `docs/plans/2026-09-24-control-center/control-center-slice-1-shell.md`.
