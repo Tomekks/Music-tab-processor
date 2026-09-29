@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { invalidate } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -42,6 +42,14 @@
 		return `Stop ${step.label}?\n\n${files}\n\nEarlier outputs from before this run are not touched.`;
 	}
 
+	function overwriteConfirmText(step: { label: string; overwritePreview: string[] }): string {
+		const files =
+			step.overwritePreview.length > 0
+				? `Files to overwrite:\n  ${step.overwritePreview.join('\n  ')}`
+				: 'No files to overwrite.';
+		return `Re-run ${step.label}? These results were made outside Control Center and will be replaced.\n\n${files}`;
+	}
+
 	const formError = $derived(
 		form && typeof form.error === 'string'
 			? {
@@ -73,6 +81,20 @@
 	<p class="error">{actionErrorText(formError)}</p>
 {/if}
 
+{#if data.runs.length > 0}
+	<form method="GET" action="/audio">
+		<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+			{#each data.runs as run}
+				<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
+			{/each}
+		</select>
+	</form>
+{/if}
+
+{#if data.runNotFound}
+	<p>Run not found; showing the newest run.</p>
+{/if}
+
 {#if step1}
 	<StepRow
 		title="1. {step1.label}"
@@ -94,7 +116,14 @@
 		{:else if form?.browseFailed}
 			<span class="error">Browse failed: {form.browseFailed}</span>
 		{/if}
-		<form method="POST" action="?/start" use:enhance>
+		<form
+			method="POST"
+			action="?/start"
+			use:enhance={() => async ({ result, update }) => {
+				await update();
+				if (result.type === 'success') await goto('/audio', { invalidateAll: true });
+			}}
+		>
 			<button
 				class="btn primary"
 				type="submit"
@@ -116,10 +145,24 @@
 		title="{i + 2}. {step.label}"
 		status={step.status}
 		outcome={step.outcome}
+		noRecord={step.noRecord}
+		outOfDate={step.outOfDate}
 		elapsed={step.status === 'running' ? elapsed(step.startedAt) : null}
 		log={step.log}
 	>
-		<form method="POST" action="?/startStage" use:enhance>
+		<form
+			method="POST"
+			action="?/startStage"
+			use:enhance={({ cancel, formData }) => {
+				if (step.noRecord) {
+					if (!confirm(overwriteConfirmText(step))) {
+						cancel();
+						return;
+					}
+					formData.set('confirmed', '1');
+				}
+			}}
+		>
 			<input type="hidden" name="stage" value={step.id} />
 			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
 			<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>

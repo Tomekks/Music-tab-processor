@@ -228,6 +228,29 @@ export interface RunStepStatus {
   status: StepState;
   outcome: "done" | "failed" | "interrupted" | "stopped" | null;
   startedAt: string | null;
+  noRecord: boolean;
+  outOfDate: boolean;
+}
+
+// Out of date = a requires file is newer than the OLDEST produces file.
+// Only asked for a Done step (all produces exist). A requires file that
+// does not exist is ignored; any other stat error throws.
+export function isOutOfDate(stage: StageDef, runDir: string): boolean {
+  const mtime = (name: string): number | null => {
+    try {
+      return statSync(join(runDir, name)).mtimeMs;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw err;
+    }
+  };
+  const produced = stage.produces.map(mtime);
+  if (produced.length === 0 || produced.some((t) => t === null)) return false;
+  const oldestProduced = Math.min(...(produced as number[]));
+  return stage.requires.some((name) => {
+    const t = mtime(name);
+    return t !== null && t > oldestProduced;
+  });
 }
 
 // Per-run status for runDir stages (steps 2-4). `records` is the whole
@@ -245,33 +268,57 @@ export function runStepStatus(
   if (state !== null && state.pid !== null && isPidAlive(state.pid, scriptBaseOf(stage))) {
     const started = records.find((r) => r.type === "started" && r.stage === stageId && r.execId === state.execId);
     if (started !== undefined && started.runId === runId) {
-      return { status: "running", outcome: null, startedAt: state.startedAt };
+      return { status: "running", outcome: null, startedAt: state.startedAt, noRecord: false, outOfDate: false };
     }
   }
   const finished = records.filter((r) => r.type === "finished" && r.stage === stageId && r.runId === runId);
   const last = finished[finished.length - 1];
   // A stopped execution is its own state, ahead of the crash rule below.
   if (last !== undefined && last.outcome === "stopped") {
-    return { status: "stopped", outcome: "stopped", startedAt: last.startedAt };
+    return { status: "stopped", outcome: "stopped", startedAt: last.startedAt, noRecord: false, outOfDate: false };
   }
   // A crash leaves partial or stale files behind, so a failed or
   // interrupted record always wins over whatever is on disk.
   if (last !== undefined && (last.outcome === "failed" || last.outcome === "interrupted")) {
-    return { status: "failed", outcome: last.outcome, startedAt: last.startedAt };
+    return { status: "failed", outcome: last.outcome, startedAt: last.startedAt, noRecord: false, outOfDate: false };
   }
-  const complete = stage.produces.every((f) => existsSync(join(dirs.runsDir, runId, f)));
+  const runDir = join(dirs.runsDir, runId);
+  const complete = stage.produces.every((f) => existsSync(join(runDir, f)));
   if (last !== undefined && last.outcome === "done" && complete) {
-    return { status: "done", outcome: "done", startedAt: last.startedAt };
+    return {
+      status: "done",
+      outcome: "done",
+      startedAt: last.startedAt,
+      noRecord: false,
+      outOfDate: isOutOfDate(stage, runDir)
+    };
   }
   // No record at all with all files present: a run made from the command
-  // line before Control Center. (The "(no record)" label is 3c's.)
+  // line before Control Center; the page labels it "Done (no record)".
   if (last === undefined && complete) {
-    return { status: "done", outcome: "done", startedAt: null };
+    return { status: "done", outcome: "done", startedAt: null, noRecord: true, outOfDate: isOutOfDate(stage, runDir) };
   }
-  return { status: "notStarted", outcome: null, startedAt: null };
+  return { status: "notStarted", outcome: null, startedAt: null, noRecord: false, outOfDate: false };
 }
 
 export type CanStart = { ok: true } | { ok: false; reason: string };
+
+// The re-run guard. A Done step with no record (a hand-made result) may
+// be started only with confirmed.
+export function overwriteGate(
+  manifest: Manifest,
+  stageId: string,
+  runId: string,
+  dirs: Dirs,
+  records: RunRecord[],
+  confirmed: boolean
+): CanStart {
+  const s = runStepStatus(manifest, stageId, runId, dirs, records);
+  if (s.status === "done" && s.noRecord && !confirmed) {
+    return { ok: false, reason: "Confirm overwriting the existing results first" };
+  }
+  return { ok: true };
+}
 
 // A stage may start only while nothing is live and the previous stage is
 // done for this run. `requires` needs no separate check: every requires

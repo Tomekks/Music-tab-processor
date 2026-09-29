@@ -5,12 +5,14 @@
 		title: string;
 		status: 'notStarted' | 'running' | 'done' | 'failed' | 'stopped';
 		outcome?: 'done' | 'failed' | 'interrupted' | 'stopped' | null;
+		noRecord?: boolean;
+		outOfDate?: boolean;
 		elapsed?: string | null;
 		log: string;
 		children?: Snippet;
 	}
 
-	let { title, status, outcome = null, elapsed = null, log, children }: Props = $props();
+	let { title, status, outcome = null, noRecord = false, outOfDate = false, elapsed = null, log, children }: Props = $props();
 
 	const labels: Record<Props['status'], { glyph: string; text: string }> = {
 		notStarted: { glyph: '○', text: 'Not started' },
@@ -20,12 +22,18 @@
 		stopped: { glyph: '○', text: 'Stopped' }
 	};
 
+	const doneText = $derived(
+		'Done' + (noRecord ? ' (no record)' : '') + (outOfDate ? ' · Out of date' : '')
+	);
+
 	const label = $derived(
 		status === 'failed' && outcome === 'interrupted'
 			? { glyph: '●', text: 'Interrupted' }
 			: status === 'running' && elapsed
 				? { glyph: '●', text: `Running · ${elapsed}` }
-				: labels[status]
+				: status === 'done'
+					? { glyph: labels.done.glyph, text: doneText }
+					: labels[status]
 	);
 
 	const dotClass = $derived(

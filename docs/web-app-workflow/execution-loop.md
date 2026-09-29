@@ -47,38 +47,26 @@ project with no other stakeholders.
    does the file list, the test count, and every concrete claim actually match what's on disk.
    Reports pass/fail, the diff, and that self-check.
 
-   **Report format — every claim paired with its own evidence, so Claude's check in step 6 stays
-   a read, not a re-run.** This is the spec template's "no empirical claim without evidence" rule
-   applied specifically to this report:
-   - The full, unedited `git diff --stat` output — not a paraphrase.
-   - The tail of `npm run verify`'s actual output (the pass/fail lines), not just "it passed."
-   - Exact `file:line` for each change claimed, so it can be checked without re-reading the whole
-     file.
-   - Any test-count claim (e.g. "85/85 passing") quoted from the runner's own output line, not
-     restated from memory.
-   - An explicit "did not touch" list matching the file allowlist, not just what changed.
-   - Confirmation the checkpoint is clean: no files changed on disk after the checks above ran —
-     the exact failure mode behind a real, repeated incident in this project (things built and
-     tested locally, never actually committed, "same root cause, four separate times" —
+   **Report format — short.** Claude re-runs the checks itself, so evidence in the report only
+   points at where to look; it is not a substitute for Claude's check in step 6:
+   - Checkpoint hash, and `git status --short` after the commit (no allowlisted file modified —
+     the failure mode behind the repeated "built and tested locally, never committed" incident,
      `docs/DRIFT_LOG_archive.md`'s 2026-09-11 entry).
-   - **Every claim tagged with how it was established** — `Observed` (directly inspected in the
-     running app, browser, file, or command output), `Automated` (a passing test or probe), or
-     `Inferred` (concluded from code structure, not directly exercised). Flattening these into one
-     confident tone is itself a way to overclaim — a belief and a checked fact read identically
-     unless the report says which one it is.
-   - Any judgment call made instead of asking a clarifying question (step 3), named explicitly —
-     not left implicit in the diff for Claude to notice on its own.
-   - **A deviation from an explicit spec requirement, classified `BLOCKING` / `NON-BLOCKING` /
-     `NONE`** — not folded into prose. `BLOCKING` means the loop stops (step 7) unless the spec is
-     amended or Claude explicitly accepts it first.
-   - **If any of the spec's own stated facts (a line number, a file's current shape, a count)
-     turned out wrong once checked against the live codebase, say so as its own line** — distinct
-     from a deviation. A wrong instruction and a wrong *fact the spec asserted* need different
-     followup: a deviation needs a decision about the code; a stale spec fact needs the spec file
-     itself corrected for the next reader, or it silently misleads again.
-   - Confirmation the spec's stated file state was actually re-checked against the live codebase
-     before implementing, not trusted from the spec's own description — required whenever a spec
-     carries a stop-condition to that effect (per the spec template), and good practice otherwise.
+   - The full, unedited `git diff --stat`.
+   - verify/build: exit codes and the runner's own `tests N, pass N, fail N` line.
+   - One line per Done probe: what was run, what was observed, ✓/✗.
+   - `file:line` only for safety-critical changes (deletes, overwrites, guards, anything the spec
+     marks risky); Claude reads the diff for the rest.
+   - Judgment calls made instead of asking a clarifying question (step 3), and any unplanned edit
+     that was reverted or restored, named explicitly — neither is visible in the final diff.
+   - A deviation from an explicit spec requirement, classified `BLOCKING` / `NON-BLOCKING` /
+     `NONE`. `BLOCKING` stops the loop (step 7) unless the spec is amended or Claude accepts it.
+   - If a spec-stated fact (a line number, a file's shape, a count) was wrong against the live
+     code, say so on its own line, so the spec file itself gets corrected.
+   - Claims that are `Inferred` (concluded from code structure, not run or observed), tagged as
+     such; everything untagged is asserted as checked.
+   - Out-of-scope observations.
+
 5. You relay the result back to Claude.
 6. **Claude's check is narrow, not a re-run.** Confirm the claimed file list against
    `git diff --stat`, spot-check one or two of the report's specific claims, confirm the verify

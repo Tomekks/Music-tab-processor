@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { Manifest } from "./manifest.ts";
 import { appendRecord, nowIso, readRecords } from "./records.ts";
-import { canStart, groupAlive, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage, stopStage } from "./runner.ts";
+import { canStart, groupAlive, isOutOfDate, overwriteGate, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage, stopStage } from "./runner.ts";
 
 function makeScript(dir: string, name: string, body: string): string {
   const path = join(dir, name);
@@ -585,4 +585,89 @@ test("reconcile-race: Stop's stopped record wins over an earlier interrupted one
   } finally {
     killGroupFor(dataDir, "s02_separate");
   }
+});
+
+const OLD_MTIME = new Date("2026-01-01T00:00:00Z");
+const NEW_MTIME = new Date("2026-06-01T00:00:00Z");
+
+function touch(path: string, at: Date): void {
+  utimesSync(path, at, at);
+}
+
+test("runStepStatus: noRecord is true for files-without-record, false for a done record", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "s02.sh", "exit 0"));
+  const startedAt = nowIso();
+  makeRunWithFiles(runsDir, "run1", startedAt.slice(0, 19), ["stems/other.wav", "stems/bass.wav"]);
+  const handMade = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+  assert.equal(handMade.status, "done");
+  assert.equal(handMade.noRecord, true);
+  appendFinished(dataDir, "exec-1", "s02_separate", startedAt, "run1", "done");
+  const recorded = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+  assert.equal(recorded.status, "done");
+  assert.equal(recorded.noRecord, false);
+});
+
+test("runStepStatus: outOfDate compares requires against the oldest produces", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "s02.sh", "exit 0"));
+  const startedAt = nowIso();
+  makeRunWithFiles(runsDir, "run1", startedAt.slice(0, 19), ["stems/other.wav", "stems/bass.wav"]);
+  const runDir = join(runsDir, "run1");
+  touch(join(runDir, "stems/other.wav"), OLD_MTIME);
+  touch(join(runDir, "stems/bass.wav"), NEW_MTIME);
+  touch(join(runDir, "metadata.json"), NEW_MTIME);
+  const stale = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+  assert.equal(stale.status, "done");
+  assert.equal(stale.outOfDate, true);
+  assert.equal(stale.noRecord, true);
+
+  touch(join(runDir, "stems/other.wav"), NEW_MTIME);
+  touch(join(runDir, "metadata.json"), NEW_MTIME);
+  const even = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+  assert.equal(even.outOfDate, false);
+
+  rmSync(join(runDir, "metadata.json"));
+  const missingRequires = runStepStatus(manifest, "s02_separate", "run1", dirs, readRecords(dataDir));
+  assert.equal(missingRequires.outOfDate, false);
+
+  makeRunWithFiles(runsDir, "run2", startedAt.slice(0, 19), ["stems/other.wav", "stems/bass.wav"]);
+  const runDir2 = join(runsDir, "run2");
+  touch(join(runDir2, "stems/other.wav"), OLD_MTIME);
+  touch(join(runDir2, "stems/bass.wav"), OLD_MTIME);
+  touch(join(runDir2, "metadata.json"), NEW_MTIME);
+  appendFinished(dataDir, "exec-2", "s02_separate", startedAt, "run2", "failed");
+  const failed = runStepStatus(manifest, "s02_separate", "run2", dirs, readRecords(dataDir));
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.outOfDate, false);
+});
+
+test("overwriteGate blocks an unconfirmed re-run of a no-record Done step", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeRunManifest(makeScript(dataDir, "s02.sh", "exit 0"));
+  const startedAt = nowIso();
+  makeRunWithFiles(runsDir, "run1", startedAt.slice(0, 19), ["stems/other.wav", "stems/bass.wav"]);
+  assert.deepEqual(overwriteGate(manifest, "s02_separate", "run1", dirs, readRecords(dataDir), false), {
+    ok: false,
+    reason: "Confirm overwriting the existing results first"
+  });
+  assert.deepEqual(overwriteGate(manifest, "s02_separate", "run1", dirs, readRecords(dataDir), true), { ok: true });
+  appendFinished(dataDir, "exec-1", "s02_separate", startedAt, "run1", "done");
+  assert.deepEqual(overwriteGate(manifest, "s02_separate", "run1", dirs, readRecords(dataDir), false), { ok: true });
+  makeRunWithFiles(runsDir, "run2", startedAt.slice(0, 19), []);
+  assert.deepEqual(overwriteGate(manifest, "s02_separate", "run2", dirs, readRecords(dataDir), false), { ok: true });
+});
+
+test("isOutOfDate rethrows a non-ENOENT stat error", () => {
+  const { dataDir } = makeDirs();
+  const manifest = makeRunManifest(makeScript(dataDir, "s02.sh", "exit 0"));
+  const stage = manifest.stages[1];
+  const fileAsDir = join(dataDir, "not-a-dir");
+  writeFileSync(fileAsDir, "x");
+  assert.throws(() => isOutOfDate(stage, fileAsDir), (err: unknown) => {
+    return (err as NodeJS.ErrnoException).code === "ENOTDIR";
+  });
 });

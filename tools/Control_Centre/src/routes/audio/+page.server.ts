@@ -10,6 +10,7 @@ import {
 	anyStageLive,
 	canStart,
 	logPath,
+	overwriteGate,
 	reconcile,
 	runStepStatus,
 	slotRunId,
@@ -20,7 +21,7 @@ import {
 } from '$lib/server/runner';
 import { deleteStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
-import { listRuns, resolveRunDir } from '$lib/server/runs';
+import { listRuns, pickRun, readRunSummary, resolveRunDir, type RunSummary } from '$lib/server/runs';
 
 const STAGE_ID = 's01_ingest';
 
@@ -30,50 +31,25 @@ function readLogTail(dataDir: string, stageId: string, lines = 200): string {
 	return readFileSync(path, 'utf8').split('\n').slice(-lines).join('\n');
 }
 
-interface RunSummary {
-	id: string;
-	title: string;
-	artist: string | null;
-	durationSec: number;
-	sampleRate: number;
-	channels: number;
-}
-
-function readNewestRun(runsDir: string): RunSummary | null {
-	const newest = listRuns(runsDir)[0];
-	if (!newest) return null;
-	let metadata: Record<string, unknown>;
-	try {
-		metadata = JSON.parse(readFileSync(join(runsDir, newest.id, 'metadata.json'), 'utf8'));
-	} catch {
-		return null;
-	}
-	if (
-		typeof metadata.title !== 'string' ||
-		typeof metadata.durationSec !== 'number' ||
-		typeof metadata.sampleRate !== 'number' ||
-		typeof metadata.channels !== 'number' ||
-		(metadata.artist !== null && typeof metadata.artist !== 'string')
-	) {
-		return null;
-	}
-	return {
-		id: newest.id,
-		title: metadata.title,
-		artist: metadata.artist,
-		durationSec: metadata.durationSec,
-		sampleRate: metadata.sampleRate,
-		channels: metadata.channels
-	};
-}
-
-export const load: PageServerLoad = async ({ depends }) => {
+export const load: PageServerLoad = async ({ depends, url }) => {
 	depends('app:run');
 	const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
 	const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 	reconcile(manifest, dirs);
 	const records = readRecords(DATA_DIR);
-	const run = readNewestRun(RUNS_DIR);
+	const picked = pickRun(RUNS_DIR, url.searchParams.get('run'));
+	const run: RunSummary | null = picked.id === null ? null : readRunSummary(RUNS_DIR, picked.id);
+	const runNotFound = picked.notFound;
+	const runs = listRuns(RUNS_DIR).map((entry) => {
+		const summary = readRunSummary(RUNS_DIR, entry.id);
+		return {
+			id: entry.id,
+			label:
+				summary === null
+					? entry.id
+					: `${summary.title}${summary.artist ? ` — ${summary.artist}` : ''} · ${entry.ingestedAt.slice(0, 16).replace('T', ' ')}`
+		};
+	});
 	const step1 = stageStatus(manifest, STAGE_ID, dirs);
 	// While any stage is live the "waiting" reason is suppressed: the
 	// disabled Start button already says why.
@@ -86,6 +62,9 @@ export const load: PageServerLoad = async ({ depends }) => {
 				status: 'notStarted' as const,
 				outcome: null,
 				startedAt: null as string | null,
+				noRecord: false,
+				outOfDate: false,
+				overwritePreview: [] as string[],
 				canStart: false,
 				reason: 'No runs yet',
 				canStop: false,
@@ -102,6 +81,9 @@ export const load: PageServerLoad = async ({ depends }) => {
 				status: step1.status,
 				outcome: step1.outcome,
 				startedAt: step1.startedAt,
+				noRecord: false,
+				outOfDate: false,
+				overwritePreview: [] as string[],
 				canStart: step1.status !== 'running',
 				reason: '',
 				canStop: false,
@@ -117,12 +99,19 @@ export const load: PageServerLoad = async ({ depends }) => {
 			canStop && perRun.startedAt !== null
 				? deleteStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
 				: [];
+		const runDir = join(RUNS_DIR, run.id);
+		const overwritePreview = perRun.noRecord
+			? stage.produces.filter((f) => existsSync(join(runDir, f)))
+			: [];
 		return {
 			id: stage.id,
 			label: stage.label,
 			status: perRun.status,
 			outcome: perRun.outcome,
 			startedAt: perRun.startedAt,
+			noRecord: perRun.noRecord,
+			outOfDate: perRun.outOfDate,
+			overwritePreview,
 			canStart: gate.ok,
 			reason: gate.ok || live ? '' : gate.reason,
 			canStop,
@@ -134,6 +123,8 @@ export const load: PageServerLoad = async ({ depends }) => {
 	return {
 		picked: readPickedForClient(DATA_DIR),
 		run,
+		runNotFound,
+		runs,
 		steps
 	};
 };
@@ -177,6 +168,9 @@ export const actions: Actions = {
 		}
 		const gate = canStart(manifest, stage.id, runId, dirs, readRecords(DATA_DIR));
 		if (!gate.ok) return fail(409, { error: 'notAllowed', reason: gate.reason });
+		const confirmed = form.get('confirmed') === '1';
+		const overwrite = overwriteGate(manifest, stage.id, runId, dirs, readRecords(DATA_DIR), confirmed);
+		if (!overwrite.ok) return fail(409, { error: 'needsConfirmation', reason: overwrite.reason });
 		const started = startRunStage(manifest, stage.id, runId, dirs);
 		if (started.busy) return fail(409, { error: 'notAllowed', reason: 'Another stage is running' });
 		return { started: true, execId: started.execId };
