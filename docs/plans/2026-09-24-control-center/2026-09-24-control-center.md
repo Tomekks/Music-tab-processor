@@ -7,10 +7,11 @@ they conflict; the sections before it are the longer-term shape, kept for histor
 comes after the MVP.
 
 **Where it stands / next:** MVP slices are outlined (1 shell + scaffold, 2 ingest through the UI,
-3a/3b/3c steps 2–4 with Start, Stop and status) but not yet specced. In order: (1) wireframe the
-Audio processing page, (2) write slice 1's spec with `docs/web-app-workflow/spec-template.md`
-(this includes defining Control Center's own verify command and deciding Playwright vs. `node:test`
-plus a human checkbox), (3) a `superpowers:writing-plans` pass for the remaining slices, each spec
+3a/3b/3c steps 2–4 with Start, Stop and status, then a last slice for the tab preview) but not yet
+specced. The Audio processing wireframe is done (2026-09-28, `wireframes/`; "Session 6" below
+supersedes Session 5 where they conflict). In order: (1) ~~wireframe~~ done, (2) ~~write slice 1's spec~~ done:
+`control-center-slice-1-shell.md` (Tier S, not yet executed; it defines the verify command as
+`svelte-check` + `node --test`, human checkbox for layout, no Playwright yet), (3) a `superpowers:writing-plans` pass for the remaining slices, each spec
 in this folder per the Architectural tier in `docs/web-app-workflow/tiering.md`, with a companion
 status page in `docs/__PLANS/`. Still open, decided at spec time: where the widened ingest
 metadata (BPM, key, loudness) is computed (s01 vs. a new stage). Deferred to after the MVP: quality
@@ -296,6 +297,44 @@ checkbox for UI in the MVP, add Playwright when click-through behavior justifies
 **Superseded from the v1 scope above:** slices 2a/2b/2c (replaced by MVP slices 2–3), the Reset
 button and in-memory run guard, `statusFile` in the manifest, the module registry, the Unit tests
 module for the MVP, and the "full pipeline" button.
+
+## Session 6 (2026-09-28): Audio processing page wireframe — layout decisions
+
+Wireframe: `wireframes/audio-processing.wireframe.html` (+ `.json`; `-v1` is the discarded card
+layout). Every node carries a `_component` tag (proposed Svelte name) and buttons a `_variant`.
+Supersedes Session 5 where they conflict.
+
+- **Layout:** header; grey-filled sidebar (Audio processing = primary button, Design System ↗ =
+  secondary button); page title + subtitle naming the current run + "Previous runs ⌄" picker (newest
+  run by default; chosen run lives in the URL, `?run=<id>`); tab preview; four plain step rows
+  (no cards) separated by rules. Steps are 1–4; s05 excluded.
+- **Step row:** title, status (glyph + text, body size), `Log ▸/▾`, **Show in Finder** (all four
+  steps), Start/Stop in the same slot. Controls sit in fixed-width slots so columns align. One
+  `StepRow` component serves all steps; step-specific extras (Browse, log panel) are slots.
+- **Status states:** Done, Running, Out of date, Not started, Failed (red light; log auto-opens),
+  Stopped, and Waiting (another stage is running — shown in the status text, Start disabled).
+- **Machine-wide one stage at a time**, derived from live pids across all runs.
+- **Browse only selects; Start runs.** The server remembers the pick (the client sends no path).
+  Browse validates the file is audio and shows name, size and an artist/title guess from the
+  filename; full metadata (length, BPM, key) appears after Start. Start on step 1 always creates a
+  new run.
+- **Tab preview** (built last in the MVP): rebuilt fresh in Svelte with the web app's `SheetDiagram`
+  / `tabNotation.ts` as reference, not imported (keeps Control Center extractable). Reads the run's
+  `tab.json`, first 30 s only, one horizontal scroll row of small chunked SVGs. Shows notes only when
+  step 4 is Done and not out of date; otherwise empty string lines. Read-only, thin-e on top.
+- **Show in Finder:** manifest gains a `reveal` target per stage; the client sends run ID + stage,
+  never a path; POST + Origin check; `execFile('open', …)`, no shell.
+- **Logs:** latest execution per step only, ~200 lines: exact command, tool versions/settings,
+  warnings, errors; progress-bar noise filtered. The "last run" header is built from the JSONL
+  record, not written into the log. Status and log update by ~1 s polling, paused when the tab is
+  hidden.
+- **Stop safety:** no folder split and **no changes to s01–s04 or their tests.** Safety comes from
+  the manifest deletion whitelist plus a test that Stop never removes `source.*` or `metadata.json`.
+  The original audio file is only ever copied, never touched.
+- **Components:** atoms/molecules/organisms under `src/lib/components/`, data down via props, no
+  fetching in components, all look-and-feel from design-system CSS variables (so a redesign edits
+  tokens and a few atoms).
+- **Slice order:** shell → ingest → steps 2–4 → tab preview (last).
 
 ## Deliberately shelved (not forgotten, just not v1)
 

@@ -1,0 +1,183 @@
+{
+  "name": "Audio processing",
+  "viewport": { "width": 1280, "height": 1100 },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Header",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [0, 24],
+        "justify": "space-between",
+        "align": "center",
+        "children": [
+          { "name": "Control Center", "type": "text", "variant": "heading", "height": 32 },
+          { "name": "localhost:5173 · local only", "type": "text", "variant": "caption", "height": 16 }
+        ]
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Sidebar",
+            "width": 240,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 8,
+            "children": [
+              { "name": "Audio processing (active)", "type": "button", "height": 40 },
+              { "name": "Design System ↗", "type": "link", "height": 40 },
+              { "name": "opens in a new tab — needs app/ dev server running", "type": "text", "variant": "caption", "height": 32 }
+            ]
+          },
+          {
+            "name": "Main",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Page title row",
+                "direction": "horizontal",
+                "justify": "space-between",
+                "align": "center",
+                "children": [
+                  { "name": "Audio processing", "type": "text", "variant": "display", "height": 48 },
+                  {
+                    "name": "Run picker",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      { "name": "Run:", "type": "text", "variant": "caption", "height": 16 },
+                      { "name": "Mister Sandman · 28 Sep 14:02 (newest) ▾", "type": "input", "height": 40, "maxWidth": 360 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Steps",
+                "direction": "vertical",
+                "gap": 16,
+                "children": [
+                  {
+                    "name": "1 Ingestion — done",
+                    "type": "card",
+                    "direction": "vertical",
+                    "padding": 16,
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Step 1 head",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          { "name": "1 · Ingestion", "type": "text", "variant": "heading", "height": 32, "grow": true },
+                          { "name": "● Done", "type": "text", "variant": "caption", "height": 16 },
+                          { "name": "Start", "type": "button", "height": 40 }
+                        ]
+                      },
+                      {
+                        "name": "Browse row",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "children": [
+                          { "name": "Browse…", "type": "button", "height": 40 },
+                          { "name": "/Users/…/Mister Sandman - Chet Atkins.wav", "type": "input", "height": 40, "grow": true }
+                        ]
+                      },
+                      {
+                        "name": "Song info",
+                        "direction": "horizontal",
+                        "gap": 24,
+                        "children": [
+                          { "name": "Artist: Chet Atkins", "type": "text", "height": 24, "grow": true },
+                          { "name": "Title: Mister Sandman", "type": "text", "height": 24, "grow": true },
+                          { "name": "Length: 2:31", "type": "text", "height": 24, "grow": true },
+                          { "name": "BPM ≈ 112 (?)", "type": "text", "height": 24, "grow": true },
+                          { "name": "Key: —", "type": "text", "height": 24, "grow": true }
+                        ]
+                      },
+                      { "name": "Last run: 28 Sep 14:02 · 4s · exit 0 · Log ▸", "type": "text", "variant": "caption", "height": 16 }
+                    ]
+                  },
+                  {
+                    "name": "2 Separation — running",
+                    "type": "card",
+                    "direction": "vertical",
+                    "padding": 16,
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Step 2 head",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          { "name": "2 · Separation", "type": "text", "variant": "heading", "height": 32, "grow": true },
+                          { "name": "◐ Running since 14:05", "type": "text", "variant": "caption", "height": 16 },
+                          { "name": "Stop", "type": "button", "height": 40 }
+                        ]
+                      },
+                      { "name": "Live log (tail of this step's log file)", "type": "card", "height": 120 },
+                      { "name": "Last run: none yet", "type": "text", "variant": "caption", "height": 16 }
+                    ]
+                  },
+                  {
+                    "name": "3 Transcription — out of date",
+                    "type": "card",
+                    "direction": "vertical",
+                    "padding": 16,
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Step 3 head",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          { "name": "3 · Transcription", "type": "text", "variant": "heading", "height": 32, "grow": true },
+                          { "name": "▲ Out of date (step 2 re-ran)", "type": "text", "variant": "caption", "height": 16 },
+                          { "name": "Start", "type": "button", "height": 40 }
+                        ]
+                      },
+                      { "name": "Last run: 27 Sep 09:40 · 41s · exit 0 · 1018 notes · Log ▸", "type": "text", "variant": "caption", "height": 16 }
+                    ]
+                  },
+                  {
+                    "name": "4 Tab generation — not started",
+                    "type": "card",
+                    "direction": "vertical",
+                    "padding": 16,
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Step 4 head",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          { "name": "4 · Tab generation", "type": "text", "variant": "heading", "height": 32, "grow": true },
+                          { "name": "○ Not started — needs step 3 output", "type": "text", "variant": "caption", "height": 16 },
+                          { "name": "Start (disabled)", "type": "button", "height": 40 }
+                        ]
+                      },
+                      { "name": "Last run: none yet", "type": "text", "variant": "caption", "height": 16 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
