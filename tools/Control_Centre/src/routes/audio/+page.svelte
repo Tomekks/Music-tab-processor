@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
+	import TabPreview from '$lib/components/molecules/TabPreview.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -72,7 +73,18 @@
 <h1 class="page-title">Audio processing</h1>
 
 {#if data.run}
-	<p class="subtitle">{heading} · {data.run.id}</p>
+	<div class="subtitle-row">
+		<p class="subtitle">{heading} · {data.run.id}</p>
+		{#if data.runs.length > 0}
+			<form method="GET" action="/audio">
+				<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+					{#each data.runs as run}
+						<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
+					{/each}
+				</select>
+			</form>
+		{/if}
+	</div>
 {:else}
 	<p class="subtitle">No runs yet</p>
 {/if}
@@ -81,18 +93,12 @@
 	<p class="error">{actionErrorText(formError)}</p>
 {/if}
 
-{#if data.runs.length > 0}
-	<form method="GET" action="/audio">
-		<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-			{#each data.runs as run}
-				<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
-			{/each}
-		</select>
-	</form>
-{/if}
-
 {#if data.runNotFound}
 	<p>Run not found; showing the newest run.</p>
+{/if}
+
+{#if data.run}
+	<TabPreview preview={data.tabPreview} />
 {/if}
 
 {#if step1}
@@ -213,6 +219,13 @@
 
 	.subtitle {
 		color: var(--foreground);
+	}
+
+	.subtitle-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
 	}
 
 	.picked {

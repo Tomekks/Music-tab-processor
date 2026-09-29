@@ -41,6 +41,7 @@
 
 	.content {
 		flex: 1;
+		min-width: 0;
 		padding: 40px 64px;
 	}
 </style>
