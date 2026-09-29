@@ -22,5 +22,5 @@ never a bare `node build`).
 
 **Status:** slice 2 done — ingest through the UI. `/audio` step 1 runs the manifest's `s01_ingest` as a detached process (log + pid + exit files in `data/`), with server-side Browse (`osascript`), append-only `records.jsonl` ("started"/"finished"), file-derived status, and 1 s polling. Fix (2026-09-29): Browse creates `data/` on first use, cancel matches macOS "cancelled" wording, dialog via System Events + hint. Spec: `docs/plans/2026-09-24-control-center/control-center-slice-2-ingest.md`.
 
-Verified on Node v26.3.1 only. Plan: `docs/plans/2026-09-24-control-center/`.
+Verified on Node v26.3.1 only. **Accepted `npm audit` finding (2026-09-29):** 3 low, all one advisory (GHSA-pxg6-pf52-xh8x, `cookie` < 0.7.0, pulled in by `@sveltejs/kit`). Control Center sets and reads no cookies and binds to 127.0.0.1, so it is unreachable; never run `npm audit fix --force` (it proposes downgrading Kit to 0.0.30). Resolves with a Kit release that bumps `cookie`. Plan: `docs/plans/2026-09-24-control-center/`.
 Spec: `docs/plans/2026-09-24-control-center/control-center-slice-1-shell.md`.
