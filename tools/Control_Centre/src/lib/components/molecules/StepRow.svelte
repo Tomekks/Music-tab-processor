@@ -47,10 +47,12 @@
 
 <section class="step">
 	<div class="row">
-		<h2 class="title">{title}</h2>
-		{#if status === 'running'}
-			<span class="spinner" aria-hidden="true"></span>
-		{/if}
+		<div class="title-area">
+			<h2 class="title">{title}</h2>
+			{#if status === 'running'}
+				<span class="spinner" aria-hidden="true"></span>
+			{/if}
+		</div>
 		<span class="status"><span class="dot {dotClass}">{label.glyph}</span> {label.text}</span>
 		<div class="controls">
 			{@render children?.()}
@@ -76,10 +78,16 @@
 		gap: var(--space-4);
 	}
 
+	.title-area {
+		flex: 0 0 15rem;
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
 	.title {
 		margin: 0;
 		color: var(--foreground);
-		flex: 0 0 12rem;
 	}
 
 	.status {
