@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export type RecordType = "started" | "finished";
@@ -35,6 +35,7 @@ export function recordsPath(dataDir: string): string {
 
 // Append-only; the server is the only writer.
 export function appendRecord(dataDir: string, record: RunRecord): void {
+  mkdirSync(dataDir, { recursive: true });
   appendFileSync(recordsPath(dataDir), JSON.stringify(record) + "\n", "utf8");
 }
 

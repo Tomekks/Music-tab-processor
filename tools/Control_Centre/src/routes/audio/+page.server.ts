@@ -70,6 +70,7 @@ export const actions: Actions = {
 	browse: async () => {
 		const result = await browseForAudio();
 		if (result.cancelled) return { cancelled: true };
+		if (result.failed) return fail(500, { browseFailed: result.message });
 		try {
 			const picked = savePicked(DATA_DIR, result.path);
 			return { picked };

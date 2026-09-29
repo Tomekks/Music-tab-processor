@@ -2,8 +2,9 @@
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
+	import type { ActionData, PageData } from './$types';
 
-	let { data } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	$effect(() => {
 		if (data.step.status === 'running') {
@@ -25,7 +26,13 @@
 		<button class="btn secondary" type="submit" disabled={data.step.status === 'running'}>
 			Browse
 		</button>
+		<div class="hint">The file dialog may open behind the browser.</div>
 	</form>
+	{#if form?.invalid}
+		<span class="error">{form.invalid}</span>
+	{:else if form?.browseFailed}
+		<span class="error">Browse failed: {form.browseFailed}</span>
+	{/if}
 	<form method="POST" action="?/start" use:enhance>
 		<button
 			class="btn primary"
@@ -52,6 +59,15 @@
 
 	.picked {
 		color: var(--foreground);
+	}
+
+	.error {
+		color: var(--foreground);
+	}
+
+	.hint {
+		color: var(--foreground);
+		opacity: 0.7;
 	}
 
 	.run {
