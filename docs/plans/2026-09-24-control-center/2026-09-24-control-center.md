@@ -1,21 +1,12 @@
 # Control Center
 
-**Status (2026-09-28):** Planning, five sessions in. No code exists yet. **Start with "Session 5"
+**Status (2026-09-29):** Slices 1 (shell) and 2 (ingest through the UI) are built, human-tested and in PR #47 (`tools/Control_Centre/`). Slice 3a is specced (`control-center-slice-3a-steps.md`); 3b and 3c are outlined in "Session 7" below. **Start with "Session 5"
 below** — it defines the MVP (base goal: "I ran a real song through the pipeline from buttons,
 without touching the terminal") and supersedes the v1 scope and Locked decisions above it wherever
 they conflict; the sections before it are the longer-term shape, kept for history and for what
 comes after the MVP.
 
-**Where it stands / next:** MVP slices are outlined (1 shell + scaffold, 2 ingest through the UI,
-3a/3b/3c steps 2–4 with Start, Stop and status, then a last slice for the tab preview) but not yet
-specced. The Audio processing wireframe is done (2026-09-28, `wireframes/`; "Session 6" below
-supersedes Session 5 where they conflict). In order: (1) ~~wireframe~~ done, (2) ~~write slice 1's spec~~ done:
-`control-center-slice-1-shell.md` (Tier S, not yet executed; it defines the verify command as
-`svelte-check` + `node --test`, human checkbox for layout, no Playwright yet), (3) a `superpowers:writing-plans` pass for the remaining slices, each spec
-in this folder per the Architectural tier in `docs/web-app-workflow/tiering.md`, with a companion
-status page in `docs/__PLANS/`. Still open, decided at spec time: where the widened ingest
-metadata (BPM, key, loudness) is computed (s01 vs. a new stage). Deferred to after the MVP: quality
-measures and analytics, publish controls, attempts/branches per step, Monitoring, Oversight.
+**Where it stands / next:** slice 1 (`control-center-slice-1-shell.md`) and slice 2 (`control-center-slice-2-ingest.md`, Tier Full, with an execution-outcome section listing what execution and the human check found) are done. Next: execute slice 3a, then write the 3b spec from what 3a teaches, then 3c, then the tab preview slice. Each spec follows the Architectural tier in `docs/web-app-workflow/tiering.md`. Still open: the companion status page in `docs/__PLANS/` (never created), widened ingest metadata (BPM, key, loudness), decided as **deferred** (2026-09-29: test the new system against the process that works, improve the process later), and tool/model versions in records (deferred, see Session 5's saved-records line). Deferred to after the MVP: quality measures and analytics, publish controls, attempts/branches per step, Monitoring, Oversight.
 
 **Context:** Domain vocabulary lives in `CONTEXT-MAP.md` (root) → `tools/Control_Centre/CONTEXT.md`
 (Native module / Integrated tool / Module registry / Manifest) and `docs/CONTEXT.md` (Backlog /
@@ -335,6 +326,17 @@ Supersedes Session 5 where they conflict.
   fetching in components, all look-and-feel from design-system CSS variables (so a redesign edits
   tokens and a few atoms).
 - **Slice order:** shell → ingest → steps 2–4 → tab preview (last).
+
+## Session 7 (2026-09-29): slice 3 shared decisions (steps 2–4)
+
+Decided together so 3a, 3b and 3c share one model; only 3a is specced now (later specs benefit from what 3a's real code teaches, as slice 2's spec-before-code defects showed).
+
+- **Split:** 3a Start + status for steps 2–4, on the newest run, no picker (**Tier Full**: overwrites files in existing run folders, refactors the runner). 3b Stop: kills the process group and deletes only that stage's own `produces` files, guarded by a test that `source.*` and `metadata.json` are never removed (**Full**). 3c previous-runs picker (`?run=<id>`), Out of date marking (a step is out of date when a `requires` file is newer than its oldest `produces` file), reload/restart persistence across runs (S).
+- **Per-run status (rule A):** a step is Done when all its `produces` files exist **and** the last "finished" record for that run and stage is `done`. A failed or interrupted record beats present files. No record at all with all files present = **Done (no record)** (runs made from the command line before Control Center). The slot files (`<stage>.json/.log/.exit`) stay one per stage and describe the latest execution; records carry the run ID.
+- **Run IDs:** the client sends a run ID; the server validates it (pattern, no `..`, an existing directory directly under `pipeline_runs/`) and builds the path. Never a client path.
+- **Gating:** a step starts only if no stage is live, its `requires` files exist, and the previous step is Done or Done (no record).
+- **Log:** no progress-bar filtering (the stage scripts capture tool output; it only appears on failure); Running rows show elapsed time instead.
+- **Carry-forward risks:** 3b must handle `_demucs_raw/` left by a failed or killed separation. 3c must ask for confirmation before re-running a step on a "Done (no record)" run (those are hand-verified references).
 
 ## Deliberately shelved (not forgotten, just not v1)
 
