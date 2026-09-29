@@ -1,10 +1,10 @@
 # Control Center slice 2: ingest through the UI (tracer bullet)
 
-**Tier: S, because** it adds new files only, deletes nothing, runs exactly one whitelisted command (the existing `s01_ingest`, unchanged), and `git clean` of the new files undoes it. The risky pieces (spawning without a shell, stale-pid liveness, Browse dialog, Origin guard on form actions) are embedded in full below.
+**Tier: Full, because** the spec-template lists `pipeline_runs/` as real user data and this slice starts a detached process that writes new run folders there (gitignored, so `git clean` does **not** undo them). Escalated from the plan's proposed S as a named decision (2026-09-29). It deletes nothing and runs exactly one whitelisted command (the existing `s01_ingest`, unchanged). Risky logic is embedded in full below, with the required bad-case table.
 
 **User story:** As the person running this project, I open `/audio`, click **Browse** on step 1, pick an audio file in Finder, click **Start**, and watch Ingestion go Running → Done, then see the new run's title, artist, length, sample rate and channels. Reloading the page or restarting Control Center loses nothing, and every execution leaves a "started" and a "finished" record I can read later.
 
-Written against: `c551e5b`  ·  Blocked by: PR #47 (slice 1) merged to `master`; branch from `master` after the merge  ·  Blocks: slice 3 (steps 2–4)
+Written against: `f7a69cf`  ·  Blocked by: PR #47 (slice 1) merged to `master`; branch from `master` after the merge  ·  Blocks: slice 3 (steps 2–4)
 Plan: `2026-09-24-control-center.md` ("Session 5" MVP, "Session 6" layout). Wireframe: `wireframes/audio-processing.wireframe.html` (step 1 row only). Slice 1: `control-center-slice-1-shell.md`.
 
 ## Scope
@@ -14,8 +14,8 @@ Plan: `2026-09-24-control-center.md` ("Session 5" MVP, "Session 6" layout). Wire
 - Inside `tools/Control_Centre/` (new unless marked *edit*): `src/lib/server/manifest.ts`, `runner.ts`, `runs.ts`, `pick.ts`, `records.ts` (each with a `.test.ts` beside it), `src/lib/server/config.ts` (*edit*: add exports), `src/hooks.server.ts` (*edit*: add `init`), `vite.config.ts` (*edit*: watch-ignore `data/`), `src/lib/components/molecules/StepRow.svelte`, `src/routes/audio/+page.server.ts`, `src/routes/audio/+page.svelte` (*edit*: replaces the empty page), `STATUS.md` (*edit*).
 
 **Do NOT touch:** `pipeline/s01_ingest/**` and every other `pipeline/sNN_*` file including tests (the manifest describes them; it does not change them), `contracts/`, `app/`, `AGENTS.md`, `CONTEXT.md`, `build-tokens.mjs`, and any design-system file.
-**Not in this spec:** steps 2–4, Stop and cleanup, the previous-runs picker, Show in Finder, the tab preview, widened metadata (BPM, key, loudness; a later slice, its own spec), tool/model versions in records, out-of-date marking, s05 (never in the manifest).
-**Task-specific prohibitions:** no shell string built from user data (arguments go positionally, see Runner); no client-supplied path anywhere; no module-level mutable server state (see Facts); no `csrf.trustedOrigins`; no `0.0.0.0` bind; no hard-coded colours in components.
+**Explicit deferrals (decided 2026-09-29, the plan's wording to be updated after this slice):** widened metadata (BPM, key, loudness, silence, tags) is **not** added to ingest or a new stage (option A: test the new system against the process that already works, improve the process later); records carry **no tool/model versions** yet (the plan's locked list asks for them; deferred until stages 2–4 use models). **Not in this spec:** steps 2–4, Stop and cleanup, the previous-runs picker, Show in Finder, the tab preview, widened metadata (BPM, key, loudness; a later slice, its own spec), tool/model versions in records, out-of-date marking, s05 (never in the manifest).
+**Task-specific prohibitions:** no bare `except`/empty `catch`, no silently swallowed errors, no fixture-specific hard-coded values, no reading or writing `.env`/credentials (template always-forbidden list); no shell string built from user data (arguments go positionally, see Runner); no client-supplied path anywhere; no module-level mutable server state (see Facts); no `csrf.trustedOrigins`; no `0.0.0.0` bind; no hard-coded colours in components.
 
 ## Facts used (SvelteKit docs, fetched 2026-09-29 as raw `llms.txt` pages, not summaries; re-check if the resolved Kit version differs)
 
@@ -25,6 +25,7 @@ Plan: `2026-09-24-control-center.md` ("Session 5" MVP, "Session 6" layout). Wire
 - `load` should be pure; the server "must not share state between users". We use files in `data/` instead of module variables. **One deliberate deviation:** `reconcile()` (appends a missing "finished" record) runs from `load`. It is idempotent by execution ID and derived only from files, so it leaks nothing between requests. It also runs once from the `init` hook at startup, so a run that ended while the server was down is recorded immediately.
 - `depends('app:run')` in `load` plus `invalidate('app:run')` reruns only this page's `load`. Use it for polling instead of `invalidateAll()` (which also reruns the layout's load).
 - `adapter-node`: with `ORIGIN` unset, the URL is built from the `Host` header. **Leave `ORIGIN` unset** (setting it would break the `127.0.0.1` host that slice 1 allows). If form posts ever fail with "Cross-site POST form submissions are forbidden", the origin could not be determined: STOP and report. `.env` files are not read in production. `SHUTDOWN_TIMEOUT` (30 s) bounds how long an open Browse request can delay a shutdown.
+- **Inference, not documented:** `use:enhance` submissions are ordinary `fetch` POSTs that carry an `Origin` header, so our guard applies to them; the human check (Done) confirms it.
 - Remote functions are experimental: not used. Form actions are documented as feature-complete.
 
 ## Interface and risks
@@ -45,8 +46,9 @@ Plan: `2026-09-24-control-center.md` ("Session 5" MVP, "Session 6" layout). Wire
 **Files in `data/`** (gitignored, one execution slot per stage): `<stage>.json` = `{execId, startedAt, pid}`, `<stage>.log` (overwritten each execution), `<stage>.exit` (exit code, written by the wrapper line below), `records.jsonl`, `picked.json`.
 
 **Runner** (`runner.ts`). `startStage(manifest, stageId, audioPath, dirs)`:
+0. **`startStage` and `reconcile` use only synchronous `fs`/`child_process` calls between the liveness check and writing the state file (no `await`).** In one Node process nothing can interleave there, so two Start clicks cannot both pass the check and `load`/`init` cannot double-append. No file lock is needed.
 1. Refuse (`{busy:true}`) if **any** stage is live (machine-wide one at a time).
-2. `execId = crypto.randomUUID()`, `startedAt` = ISO with timezone. Delete the old `.exit`, truncate the log, write the state file (`pid: null`), append the **"started"** record. Only then spawn.
+2. `execId = crypto.randomUUID()`, `startedAt` = ISO with timezone. Delete the old `.exit` **first**, then write the state file (`pid: null`), then append the **"started"** record. Only then spawn. Open the log with `fs.openSync(logPath, 'w')` (truncate) and close the fd in the parent after the spawn.
 3. Spawn, no shell interpolation, arguments positional:
 
 ```ts
@@ -56,15 +58,15 @@ spawn('/bin/sh', ['-c', '"$@"; echo $? > "$EXIT_FILE"', 'sh', ...command, '--', 
 child.unref();
 ```
 
-   Store `child.pid` in the state file. If `spawn` throws or emits `error`, append a "finished" record with `outcome: "failed"`, `reason: "spawn_failed"`. The `--` means a file named `-foo.wav` is never read as an option; a path with spaces stays one argument.
+   Write `child.pid` into the state file immediately after `spawn` returns (before anything else). If `spawn` throws or emits `error`, append a "finished" record with `outcome: "failed"`, `reason: "spawn_failed"`. The `--` means a file named `-foo.wav` is never read as an option; a path with spaces stays one argument.
 4. `stageStatus(...)` derives state from files, never from memory:
    - `.exit` exists: code `0` **and** the run folder has every `produces` file → `done`; otherwise `failed`.
-   - No `.exit`, pid alive → `running`. **Alive** = `process.kill(pid, 0)` succeeds **and** `ps -p <pid> -o command=` contains the stage script's file name (`ingest.py`). A recycled pid runs some other command and does not match, so it can never lock the machine.
+   - No `.exit`, pid alive → `running`. **Alive** = `process.kill(pid, 0)` succeeds (an `EPERM` error also means alive; `ESRCH` means dead) **and** `ps -p <pid> -o command=` matches `(^|[\s/])ingest\.py(\s|$)` (the script's basename, anchored). A recycled pid runs some other command and does not match, so it can never lock the machine.
    - No `.exit`, pid not alive → `failed` with `outcome: "interrupted"`.
    - No state file → `notStarted`.
-5. `reconcile(...)`: for each stage whose status is `done`/`failed` and whose `execId` has no "finished" record, append one (below). Safe to call any number of times.
+5. `reconcile(...)` (synchronous, see 0): for each stage whose status is `done`/`failed` and whose `execId` has no "finished" record, append one (below). Safe to call any number of times.
 
-**Run folder** (`runs.ts`): `findRunDir(runsDir, startedAt)` scans `runsDir/*/metadata.json` and returns the newest whose `ingestedAt` (local time, second precision, no tz) is ≥ `startedAt` truncated to the second; `null` if none. No before/after snapshot is kept, so it survives a server restart. Returns the run **ID** (folder name); the client never sees or sends a path.
+**Run folder** (`runs.ts`): `findRunDir(runsDir, startedAt)` scans `runsDir/*/metadata.json` and returns the newest whose `ingestedAt` (local time, second precision, no tz) is ≥ `startedAt` truncated to the second; `null` if none. No before/after snapshot is kept, so it survives a server restart. Returns the run **ID** (folder name); the client never sees or sends a path. **Known limit:** running `ingest.py` by hand during a Control Center run could be mis-attributed; the one-stage lock rules out two Control Center ingests in the same window.
 
 **Records** (`records.ts`): append-only `data/records.jsonl`, server is the only writer. Every line: `schemaVersion: 1`, `type: "started" | "finished"`, `execId`, `stage`, ISO timestamps with timezone. "finished" adds `runId` (or `null`), `startedAt`, `finishedAt` (the `.exit` file's mtime; `now` for interrupted), `durationSec`, `exitCode` (or `null`), `outcome` (`done|failed|interrupted`), `logFile` (relative), `command` (the expanded token array with the audio path **omitted**). No absolute paths, no versions yet.
 
@@ -76,6 +78,21 @@ child.unref();
 
 **`vite.config.ts`:** add `server.watch.ignored: ['**/data/**']` so 1 Hz log and state writes never trigger dev reloads. (Unverified assumption; the human check watches for it.)
 
+## Bad cases
+
+| Case | Expected behaviour | Covered by |
+|---|---|---|
+| Start clicked twice quickly | Second is refused (`busy`); one process, one "started" record | `runner.test.ts` busy test; sync `startStage` |
+| Server restarts or hot-reloads mid-run | Process keeps running; state comes from files; "finished" appended on next `init`/`load` | reconcile tests; human check step 2 |
+| Process dies without writing `.exit` | Status `interrupted` (Failed), one "finished" record, `exitCode: null` | `runner.test.ts` interrupted test |
+| Pid recycled by an unrelated process | Not treated as running; machine is never locked | `runner.test.ts` recycled-pid test |
+| Stale `.exit` from the previous run | Deleted before the new state is written; never read as the new result | `runner.test.ts` ordering test |
+| Bad or non-audio file, or `ffprobe` missing | Ingest exits non-zero; status Failed; log opens; "finished" `outcome: failed` | human check step 6 |
+| Same-second duplicate run folder | Ingest's `mkdir` fails cleanly; visible in the log as Failed | human check (not forced) |
+| Browse cancelled | `{cancelled:true}`, nothing stored, no error | `pick.test.ts` (cancel path) |
+| File name starts with `-` or has spaces | Passed as one argument after `--` | `runner.test.ts` argument test |
+| Request from another origin/host | 403 before any action runs | Done curl matrix |
+
 ## Steps
 
 1. Write `pipeline/manifest.json`, then `manifest.ts` + `manifest.test.ts`.
@@ -86,31 +103,31 @@ child.unref();
 ## Tests
 
 `node:test` + `node:assert/strict`, no framework, temp dirs, a fixture manifest pointing at a tiny fake script (`printf` then `exit N`). Never real audio.
-- `manifest.test.ts` (5): valid manifest expands `{python}` · non-array command · non-string token · unknown `argsFrom` · duplicate id / missing file.
-- `runner.test.ts` (7): start writes "started" before the process exists · exit 0 + `produces` present → `done`, exactly one "finished" after two `reconcile()` calls · exit 3 → `failed`, `exitCode: 3` · pid gone with no `.exit` → `interrupted` · live pid whose command does not match the script → **not** running (recycled-pid guard) · second `startStage` while live → `{busy:true}` · audio path with spaces and a name starting with `-` arrives as one argument after `--`.
+- `manifest.test.ts` (6): valid manifest expands `{python}` · non-array command · non-string token · unknown `argsFrom` · duplicate id · missing file.
+- `runner.test.ts` (8): start writes "started" before the process exists · exit 0 + `produces` present → `done`, exactly one "finished" after two `reconcile()` calls · exit 3 → `failed`, `exitCode: 3` · pid gone with no `.exit` → `interrupted` · live pid whose command does not match the script → **not** running (recycled-pid guard) · second `startStage` while live → `{busy:true}` · audio path with spaces and a name starting with `-` arrives as one argument after `--` · a stale `.exit` from an earlier execution is not read as the new result.
 - `runs.test.ts` (3): newest run at/after `startedAt` wins · older runs ignored · none → `null`.
-- `pick.test.ts` (3): bad extension rejected · missing file rejected · `picked.json` round-trips name and size (not the path in the UI shape).
+- `pick.test.ts` (3): bad extension rejected · missing file rejected · `picked.json` round-trips name and size (not the path in the UI shape). The Browse cancel path is a pure function of the `osascript` error (`stderr` contains `User canceled`) and is covered by testing that parser with a fake error, not by opening a dialog.
 - `records.test.ts` (2): append + read back with `schemaVersion` · timestamps carry a timezone offset.
-- `browseForAudio`, `hooks.server.ts`, the page and `StepRow` are not unit-tested: Browse needs a human, the rest is covered by the curl matrix and the human check in Done. Total new tests: 20.
+- `browseForAudio`, `hooks.server.ts`, the page and `StepRow` are not unit-tested: Browse needs a human, the rest is covered by the curl matrix and the human check in Done. Total new tests: 22 (6 + 8 + 3 + 3 + 2).
 
 ## Done
 
 Run from `tools/Control_Centre/` unless noted.
-- `npm run verify` → exit 0, `svelte-check` `0 ERRORS 0 WARNINGS`, `node --test` `fail 0`, `tests ≥ 39` (19 from slice 1 + 20 new).
+- `npm run verify` → exit 0, `svelte-check` `0 ERRORS 0 WARNINGS`, `node --test` `fail 0`, `tests ≥ 41` (19 from slice 1 + 22 new).
 - `npm run build` → exit 0.
-- `(npm run start &); sleep 2; lsof -nP -iTCP:5173 -sTCP:LISTEN` → `127.0.0.1:5173` only (never `*:5173`). Then, all against `http://127.0.0.1:5173/audio`: `GET` → `200` · `GET` with `-H "Host: evil.test"` → `403` · `POST ?/start` with `-H "Origin: http://evil.test"` → `403` · `POST ?/start` with `-H "Origin: http://127.0.0.1:5173" -H "Content-Type: application/x-www-form-urlencoded"` → **not** `403` (expected `400`, no file picked) · `git status --short` afterwards shows nothing under `pipeline/s0*`. Stop the server by its own pid only.
+- Start the server and capture its pid: `npm run start & sleep 2; START_PID=$(lsof -nP -iTCP:5173 -sTCP:LISTEN -t); lsof -nP -iTCP:5173 -sTCP:LISTEN` → the LISTEN line shows `127.0.0.1:5173` only (never `*:5173`). Then, with `U=http://127.0.0.1:5173/audio` and `H='Content-Type: application/x-www-form-urlencoded'`: `curl -s -o /dev/null -w "%{http_code}" $U` → `200` · same with `-H "Host: evil.test"` → `403` · `curl -s -o /dev/null -w "%{http_code}" -X POST -H "$H" -H "Origin: http://evil.test" "$U?/start"` → `403` · same with `-H "Origin: http://127.0.0.1:5173"` → **not** `403` (expected `400`, nothing picked) · `git status --short` shows nothing under `pipeline/s0*`. Stop the server with `kill $START_PID` only, then confirm `lsof -nP -iTCP:5173 -sTCP:LISTEN` prints nothing.
 - `git status --short` shows only the allowlisted paths (new `pipeline/manifest.json` plus `tools/Control_Centre/`); `git diff --stat` empty for tracked files outside them.
-- **Human check** (Browse and layout cannot be commanded). Make a fixture: `mkdir -p data && ffmpeg -f lavfi -i "sine=frequency=440:duration=5" data/fixture-sine.wav` (synthetic, never a real song). `npm run dev`, open `http://localhost:5173/audio`:
+- **Human check** (Browse and layout cannot be commanded). First record the starting state: `wc -l data/records.jsonl 2>/dev/null; ls pipeline_runs | wc -l`. Make a fixture: `mkdir -p data && ffmpeg -f lavfi -i "sine=frequency=440:duration=5" data/fixture-sine.wav` (synthetic, never a real song). `npm run dev`, open `http://localhost:5173/audio`:
   1. **Browse** opens a Finder dialog **in front** of the browser; picking `data/fixture-sine.wav` shows its name and size (no path). Cancelling shows nothing wrong.
   2. **Start** → status Running → Done; title `fixture-sine`, length ≈ 5 s, 44100 Hz, plus channels shown. Reload the page: same state.
-  3. `wc -l data/records.jsonl` → 2 and `grep -c '"type":"finished"' data/records.jsonl` → 1; `ls pipeline_runs` shows one new `fixture-sine-<timestamp>` folder (gitignored; leave it, delete only with the user's OK).
+  3. Compared with the starting state: `data/records.jsonl` has **+2 lines** (one `"started"`, one `"finished"` for this execution, checked with `grep` on its `execId`), and `ls pipeline_runs | wc -l` is **+1** (a new `fixture-sine-<timestamp>` folder; gitignored, leave it, delete only with the user's OK).
   4. The page does not hard-reload during the run (the watch-ignore works).
-  5. Open `http://127.0.0.1:5173/audio` and Start again: no "Cross-site POST form submissions are forbidden" error.
-  6. Start with a non-audio file renamed `x.wav`: status Failed, log auto-opens with ingest's error, a "finished" record with `outcome: "failed"`.
+  5. Open `http://127.0.0.1:5173/audio`, Browse and Start again (this adds a second execution and run folder): no "Cross-site POST form submissions are forbidden" error.
+  6. (Steps 5 and 6 each add their own execution; check only the newest `execId`'s records.) Start with a non-audio file renamed `x.wav`: status Failed, log auto-opens with ingest's error, a "finished" record with `outcome: "failed"`.
 
 ## Stop conditions
 
-- Drift check first: `git status --porcelain -- tools/Control_Centre pipeline/manifest.json` prints anything unexpected → STOP. `git diff --stat c551e5b..HEAD -- tools/Control_Centre` prints anything **other than** PR #47's merge → compare the files this spec quotes with the live ones; mismatch → STOP.
+- Drift check first: `git status --porcelain -- tools/Control_Centre pipeline/manifest.json` prints anything unexpected → STOP. `git diff --stat f7a69cf..HEAD -- tools/Control_Centre` prints anything → the only expected difference is slice 1's code arriving via PR #47's merge (if you branched from `master` after it, this prints nothing); anything else → compare the files this spec quotes with the live ones; mismatch → STOP.
 - A step's verification fails twice after a reasonable fix attempt.
 - Any change to `pipeline/s0*` (code or tests) looks necessary, including making ingest accept `--json` or a run-dir flag → STOP and report.
 - Real `ingest.py` does not accept `-- <path>` (argparse) → STOP.
