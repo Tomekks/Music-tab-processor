@@ -1,0 +1,589 @@
+{
+  "name": "Audio processing v6",
+  "_note": "_component = proposed Svelte component (atoms: Text, StatusLabel, Button, Link, NavItem, Divider, Slot; molecules: StepHeader, RevealButton, FileBrowse, SongInfoLine, LogPanel, RunPicker, TabStrip; organisms: TabPreview, StepRow, StepList, Sidebar, AppHeader, PageTitleRow; template: AppShell). _variant = primary|secondary button style. Slot = fixed-width column so controls align across rows. Both ignored by stock renderers.",
+  "viewport": {
+    "width": 1280,
+    "height": 1000
+  },
+  "root": {
+    "name": "AppShell",
+    "_component": "AppShell",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "AppHeader",
+        "_component": "AppHeader",
+        "direction": "horizontal",
+        "height": 72,
+        "padding": [
+          0,
+          32
+        ],
+        "align": "center",
+        "children": [
+          {
+            "name": "Control Center",
+            "type": "text",
+            "height": 24,
+            "_component": "Text"
+          }
+        ]
+      },
+      {
+        "name": "Header rule",
+        "type": "divider",
+        "_component": "Divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Sidebar",
+            "_component": "Sidebar",
+            "width": 220,
+            "direction": "vertical",
+            "padding": [
+              24,
+              16
+            ],
+            "gap": 8,
+            "fill": "#EDEDED",
+            "children": [
+              {
+                "name": "Audio processing",
+                "type": "button",
+                "height": 40,
+                "_component": "NavItem",
+                "_variant": "primary"
+              },
+              {
+                "name": "Design System ↗",
+                "type": "button",
+                "height": 40,
+                "_component": "NavItem",
+                "_variant": "secondary"
+              }
+            ]
+          },
+          {
+            "name": "Main",
+            "_component": "PageContent",
+            "grow": true,
+            "direction": "vertical",
+            "padding": [
+              40,
+              64
+            ],
+            "gap": 32,
+            "children": [
+              {
+                "name": "PageTitleRow",
+                "_component": "PageTitleRow",
+                "direction": "horizontal",
+                "justify": "space-between",
+                "align": "center",
+                "children": [
+                  {
+                    "name": "Title",
+                    "direction": "vertical",
+                    "gap": 4,
+                    "children": [
+                      {
+                        "name": "Audio processing",
+                        "type": "text",
+                        "height": 48,
+                        "_component": "Text",
+                        "variant": "display"
+                      },
+                      {
+                        "name": "Mister Sandman — Chet Atkins · 28 Sep 14:02",
+                        "type": "text",
+                        "height": 24,
+                        "_component": "Text"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Previous runs ⌄",
+                    "type": "input",
+                    "height": 40,
+                    "maxWidth": 240,
+                    "_component": "RunPicker"
+                  }
+                ]
+              },
+              {
+                "name": "TabPreview",
+                "_component": "TabPreview",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Tab preview — empty string lines until step 4 is done · first 30 s only · scrolls horizontally →",
+                    "type": "card",
+                    "height": 140,
+                    "_component": "TabStrip"
+                  },
+                  {
+                    "name": "Appears after step 4",
+                    "type": "text",
+                    "height": 16,
+                    "_component": "StatusLabel",
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "StepList",
+                "_component": "StepList",
+                "direction": "vertical",
+                "children": [
+                  {
+                    "name": "Step 1",
+                    "_component": "StepRow",
+                    "direction": "vertical",
+                    "padding": [
+                      24,
+                      0
+                    ],
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "1  Ingestion header",
+                        "_component": "StepHeader",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          {
+                            "name": "1  Ingestion",
+                            "type": "text",
+                            "height": 32,
+                            "_component": "Text",
+                            "variant": "heading",
+                            "grow": true
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 220,
+                            "justify": "flex-start",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "● Done",
+                                "type": "text",
+                                "height": 24,
+                                "_component": "StatusLabel"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 56,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Log ▸",
+                                "type": "link",
+                                "height": 24,
+                                "_component": "Link"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 150,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Show in Finder",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "RevealButton",
+                                "_variant": "secondary"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 96,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Start",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "Button",
+                                "_variant": "primary"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "FileBrowse",
+                        "_component": "FileBrowse",
+                        "direction": "horizontal",
+                        "gap": 16,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Browse…",
+                            "type": "button",
+                            "height": 40,
+                            "_component": "Button",
+                            "_variant": "secondary"
+                          },
+                          {
+                            "name": "Selected file:",
+                            "type": "text",
+                            "height": 16,
+                            "_component": "Text",
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "Mister Sandman - Chet Atkins.wav",
+                            "type": "text",
+                            "height": 24,
+                            "_component": "Text",
+                            "grow": true
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Artist and title guessed from the filename: Chet Atkins — Mister Sandman",
+                        "type": "text",
+                        "height": 16,
+                        "_component": "SongInfoLine",
+                        "variant": "caption"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Rule 1",
+                    "type": "divider",
+                    "_component": "Divider"
+                  },
+                  {
+                    "name": "Step 2",
+                    "_component": "StepRow",
+                    "direction": "vertical",
+                    "padding": [
+                      24,
+                      0
+                    ],
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "2  Separation header",
+                        "_component": "StepHeader",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          {
+                            "name": "2  Separation",
+                            "type": "text",
+                            "height": 32,
+                            "_component": "Text",
+                            "variant": "heading",
+                            "grow": true
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 220,
+                            "justify": "flex-start",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "◐ Running",
+                                "type": "text",
+                                "height": 24,
+                                "_component": "StatusLabel"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 56,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Log ▾",
+                                "type": "link",
+                                "height": 24,
+                                "_component": "Link"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 150,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Show in Finder",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "RevealButton",
+                                "_variant": "secondary"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 96,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Stop",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "Button",
+                                "_variant": "primary"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Log (opens on Log press · latest run only · warnings, errors, command, versions)",
+                        "type": "card",
+                        "height": 120,
+                        "_component": "LogPanel"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Rule 2",
+                    "type": "divider",
+                    "_component": "Divider"
+                  },
+                  {
+                    "name": "Step 3",
+                    "_component": "StepRow",
+                    "direction": "vertical",
+                    "padding": [
+                      24,
+                      0
+                    ],
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "3  Transcription header",
+                        "_component": "StepHeader",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          {
+                            "name": "3  Transcription",
+                            "type": "text",
+                            "height": 32,
+                            "_component": "Text",
+                            "variant": "heading",
+                            "grow": true
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 220,
+                            "justify": "flex-start",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "▲ Out of date",
+                                "type": "text",
+                                "height": 24,
+                                "_component": "StatusLabel"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 56,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Log ▸",
+                                "type": "link",
+                                "height": 24,
+                                "_component": "Link"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 150,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Show in Finder",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "RevealButton",
+                                "_variant": "secondary"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 96,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Start",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "Button",
+                                "_variant": "primary"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Rule 3",
+                    "type": "divider",
+                    "_component": "Divider"
+                  },
+                  {
+                    "name": "Step 4",
+                    "_component": "StepRow",
+                    "direction": "vertical",
+                    "padding": [
+                      24,
+                      0
+                    ],
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "4  Tab generation header",
+                        "_component": "StepHeader",
+                        "direction": "horizontal",
+                        "align": "center",
+                        "gap": 16,
+                        "children": [
+                          {
+                            "name": "4  Tab generation",
+                            "type": "text",
+                            "height": 32,
+                            "_component": "Text",
+                            "variant": "heading",
+                            "grow": true
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 220,
+                            "justify": "flex-start",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "▲ Out of date",
+                                "type": "text",
+                                "height": 24,
+                                "_component": "StatusLabel"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 56,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Log ▸",
+                                "type": "link",
+                                "height": 24,
+                                "_component": "Link"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 150,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Show in Finder",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "RevealButton",
+                                "_variant": "secondary"
+                              }
+                            ]
+                          },
+                          {
+                            "name": "slot",
+                            "direction": "horizontal",
+                            "width": 96,
+                            "justify": "flex-end",
+                            "align": "center",
+                            "_component": "Slot",
+                            "children": [
+                              {
+                                "name": "Start",
+                                "type": "button",
+                                "height": 40,
+                                "_component": "Button",
+                                "_variant": "primary"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

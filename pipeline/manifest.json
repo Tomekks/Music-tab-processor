@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "stages": [
+    {
+      "id": "s01_ingest",
+      "label": "Ingestion",
+      "command": ["{python}", "pipeline/s01_ingest/ingest.py"],
+      "argsFrom": "audioPath",
+      "requires": [],
+      "produces": ["metadata.json"]
+    }
+  ]
+}
