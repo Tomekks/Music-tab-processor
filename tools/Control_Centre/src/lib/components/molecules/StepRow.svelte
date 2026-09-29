@@ -4,11 +4,13 @@
 	interface Props {
 		title: string;
 		status: 'notStarted' | 'running' | 'done' | 'failed';
+		outcome?: 'done' | 'failed' | 'interrupted' | null;
+		elapsed?: string | null;
 		log: string;
 		children?: Snippet;
 	}
 
-	let { title, status, log, children }: Props = $props();
+	let { title, status, outcome = null, elapsed = null, log, children }: Props = $props();
 
 	const labels: Record<Props['status'], { glyph: string; text: string }> = {
 		notStarted: { glyph: '○', text: 'Not started' },
@@ -16,6 +18,14 @@
 		done: { glyph: '●', text: 'Done' },
 		failed: { glyph: '●', text: 'Failed' }
 	};
+
+	const label = $derived(
+		status === 'failed' && outcome === 'interrupted'
+			? { glyph: '●', text: 'Interrupted' }
+			: status === 'running' && elapsed
+				? { glyph: '●', text: `Running · ${elapsed}` }
+				: labels[status]
+	);
 
 	let open = $state(false);
 	$effect(() => {
@@ -26,7 +36,7 @@
 <section class="step">
 	<div class="row">
 		<h2 class="title">{title}</h2>
-		<span class="status {status}">{labels[status].glyph} {labels[status].text}</span>
+		<span class="status {status}">{label.glyph} {label.text}</span>
 		<div class="controls">
 			{@render children?.()}
 		</div>

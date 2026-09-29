@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadManifest } from "./manifest.ts";
 
 function writeManifest(dir: string, value: unknown): string {
@@ -59,4 +60,15 @@ test("duplicate id is rejected", () => {
 test("missing file is rejected", () => {
   const dir = mkdtempSync(join(tmpdir(), "manifest-"));
   assert.throws(() => loadManifest(join(dir, "no-such.json"), { python: "python" }), /not found or invalid JSON/);
+});
+
+test("real pipeline/manifest.json loads with four stages in order", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const path = join(here, "..", "..", "..", "..", "..", "pipeline", "manifest.json");
+  const manifest = loadManifest(path, { python: "/tmp/fake/python" });
+  assert.deepEqual(
+    manifest.stages.map((s) => s.id),
+    ["s01_ingest", "s02_separate", "s03_transcribe", "s04_tab"]
+  );
+  for (const stage of manifest.stages) assert.ok(stage.produces.length > 0);
 });
