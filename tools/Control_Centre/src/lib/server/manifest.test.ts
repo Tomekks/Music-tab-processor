@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadManifest } from "./manifest.ts";
 
 function writeManifest(dir: string, value: unknown): string {
@@ -20,7 +21,8 @@ const base = {
       command: ["{python}", "pipeline/s01_ingest/ingest.py"],
       argsFrom: "audioPath",
       requires: [],
-      produces: ["metadata.json"]
+      produces: ["metadata.json"],
+      reveal: "."
     }
   ]
 };
@@ -59,4 +61,49 @@ test("duplicate id is rejected", () => {
 test("missing file is rejected", () => {
   const dir = mkdtempSync(join(tmpdir(), "manifest-"));
   assert.throws(() => loadManifest(join(dir, "no-such.json"), { python: "python" }), /not found or invalid JSON/);
+});
+
+test("real pipeline/manifest.json loads with four stages in order", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const path = join(here, "..", "..", "..", "..", "..", "pipeline", "manifest.json");
+  const manifest = loadManifest(path, { python: "/tmp/fake/python" });
+  assert.deepEqual(
+    manifest.stages.map((s) => s.id),
+    ["s01_ingest", "s02_separate", "s03_transcribe", "s04_tab"]
+  );
+  for (const stage of manifest.stages) assert.ok(stage.produces.length > 0);
+});
+
+test("reveal '.' and 'stems' are accepted", () => {
+  const dir = mkdtempSync(join(tmpdir(), "manifest-"));
+  const ok = {
+    ...base,
+    stages: [
+      { ...base.stages[0], reveal: "." },
+      { ...base.stages[0], id: "s02_separate", reveal: "stems" }
+    ]
+  };
+  const manifest = loadManifest(writeManifest(dir, ok), { python: "python" });
+  assert.equal(manifest.stages[0].reveal, ".");
+  assert.equal(manifest.stages[1].reveal, "stems");
+});
+
+test("reveal that is absolute or contains .. is rejected", () => {
+  const dir = mkdtempSync(join(tmpdir(), "manifest-"));
+  const absolute = { ...base, stages: [{ ...base.stages[0], reveal: "/tmp/x" }] };
+  assert.throws(() => loadManifest(writeManifest(dir, absolute), { python: "python" }), /reveal must be relative/);
+  const dotdot = { ...base, stages: [{ ...base.stages[0], reveal: "a/../b" }] };
+  assert.throws(() => loadManifest(writeManifest(dir, dotdot), { python: "python" }), /must not contain \.\./);
+});
+
+test("real pipeline/manifest.json has a valid reveal for all four stages", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const path = join(here, "..", "..", "..", "..", "..", "pipeline", "manifest.json");
+  const manifest = loadManifest(path, { python: "/tmp/fake/python" });
+  assert.equal(manifest.stages.length, 4);
+  for (const stage of manifest.stages) {
+    assert.equal(typeof stage.reveal, "string");
+    assert.ok(!stage.reveal.startsWith("/"));
+    assert.ok(!stage.reveal.split("/").includes(".."));
+  }
 });

@@ -5,18 +5,31 @@ import type { Actions, PageServerLoad } from './$types';
 import { DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from '$lib/server/config';
 import { loadManifest } from '$lib/server/manifest';
 import { browseForAudio, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
-import { anyStageLive, logPath, reconcile, stageStatus, startStage } from '$lib/server/runner';
-import { findRunDir } from '$lib/server/runs';
+import { readRecords } from '$lib/server/records';
+import {
+	anyStageLive,
+	canStart,
+	logPath,
+	reconcile,
+	runStepStatus,
+	slotRunId,
+	stageStatus,
+	startAudioStage,
+	startRunStage
+} from '$lib/server/runner';
+import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
+import { listRuns, resolveRunDir } from '$lib/server/runs';
 
 const STAGE_ID = 's01_ingest';
 
-function readLogTail(dataDir: string, lines = 200): string {
-	const path = logPath(dataDir, STAGE_ID);
+function readLogTail(dataDir: string, stageId: string, lines = 200): string {
+	const path = logPath(dataDir, stageId);
 	if (!existsSync(path)) return '';
 	return readFileSync(path, 'utf8').split('\n').slice(-lines).join('\n');
 }
 
 interface RunSummary {
+	id: string;
 	title: string;
 	artist: string | null;
 	durationSec: number;
@@ -24,13 +37,12 @@ interface RunSummary {
 	channels: number;
 }
 
-function readRun(runsDir: string, startedAt: string | null): RunSummary | null {
-	if (!startedAt) return null;
-	const runId = findRunDir(runsDir, startedAt);
-	if (!runId) return null;
+function readNewestRun(runsDir: string): RunSummary | null {
+	const newest = listRuns(runsDir)[0];
+	if (!newest) return null;
 	let metadata: Record<string, unknown>;
 	try {
-		metadata = JSON.parse(readFileSync(join(runsDir, runId, 'metadata.json'), 'utf8'));
+		metadata = JSON.parse(readFileSync(join(runsDir, newest.id, 'metadata.json'), 'utf8'));
 	} catch {
 		return null;
 	}
@@ -44,6 +56,7 @@ function readRun(runsDir: string, startedAt: string | null): RunSummary | null {
 		return null;
 	}
 	return {
+		id: newest.id,
 		title: metadata.title,
 		artist: metadata.artist,
 		durationSec: metadata.durationSec,
@@ -57,12 +70,58 @@ export const load: PageServerLoad = async ({ depends }) => {
 	const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
 	const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 	reconcile(manifest, dirs);
-	const step = stageStatus(manifest, STAGE_ID, dirs);
+	const records = readRecords(DATA_DIR);
+	const run = readNewestRun(RUNS_DIR);
+	const step1 = stageStatus(manifest, STAGE_ID, dirs);
+	// While any stage is live the "waiting" reason is suppressed: the
+	// disabled Start button already says why.
+	const live = anyStageLive(manifest, dirs);
+	const steps = manifest.stages.map((stage) => {
+		if (!run) {
+			return {
+				id: stage.id,
+				label: stage.label,
+				status: 'notStarted' as const,
+				outcome: null,
+				startedAt: null as string | null,
+				canStart: false,
+				reason: 'No runs yet',
+				canReveal: false,
+				log: ''
+			};
+		}
+		const canReveal = resolveRevealDir(manifest, stage.id, run.id, RUNS_DIR) !== null;
+		if (stage.id === STAGE_ID) {
+			return {
+				id: stage.id,
+				label: stage.label,
+				status: step1.status,
+				outcome: step1.outcome,
+				startedAt: step1.startedAt,
+				canStart: step1.status !== 'running',
+				reason: '',
+				canReveal,
+				log: readLogTail(DATA_DIR, stage.id)
+			};
+		}
+		const perRun = runStepStatus(manifest, stage.id, run.id, dirs, records);
+		const gate = canStart(manifest, stage.id, run.id, dirs, records);
+		return {
+			id: stage.id,
+			label: stage.label,
+			status: perRun.status,
+			outcome: perRun.outcome,
+			startedAt: perRun.startedAt,
+			canStart: gate.ok,
+			reason: gate.ok || live ? '' : gate.reason,
+			canReveal,
+			log: slotRunId(dirs, stage.id, records) === run.id ? readLogTail(DATA_DIR, stage.id) : ''
+		};
+	});
 	return {
 		picked: readPickedForClient(DATA_DIR),
-		step,
-		run: readRun(RUNS_DIR, step.startedAt),
-		logTail: readLogTail(DATA_DIR)
+		run,
+		steps
 	};
 };
 
@@ -85,8 +144,48 @@ export const actions: Actions = {
 		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
 		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 		if (anyStageLive(manifest, dirs)) return fail(409, { busy: true });
-		const started = startStage(manifest, STAGE_ID, picked.path, dirs);
+		const started = startAudioStage(manifest, STAGE_ID, picked.path, dirs);
 		if (started.busy) return fail(409, { busy: true });
 		return { started: true, execId: started.execId };
+	},
+	startStage: async ({ request }) => {
+		// The client sends stage + run IDs only; the server builds every path.
+		const form = await request.formData();
+		const stageId = form.get('stage');
+		const runId = form.get('runId');
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		const stage = manifest.stages.find((s) => s.id === stageId);
+		if (typeof stageId !== 'string' || !stage || stage.argsFrom !== 'runDir') {
+			return fail(400, { error: 'badStage' });
+		}
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		const gate = canStart(manifest, stage.id, runId, dirs, readRecords(DATA_DIR));
+		if (!gate.ok) return fail(409, { error: 'notAllowed', reason: gate.reason });
+		const started = startRunStage(manifest, stage.id, runId, dirs);
+		if (started.busy) return fail(409, { error: 'notAllowed', reason: 'Another stage is running' });
+		return { started: true, execId: started.execId };
+	},
+	reveal: async ({ request }) => {
+		// The client sends stage + run IDs only; the server builds the path.
+		const form = await request.formData();
+		const stageId = form.get('stage');
+		const runId = form.get('runId');
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const stage = manifest.stages.find((s) => s.id === stageId);
+		if (typeof stageId !== 'string' || !stage) return fail(400, { error: 'badStage' });
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		const dir = resolveRevealDir(manifest, stage.id, runId, RUNS_DIR);
+		if (dir === null) return fail(400, { error: 'nothingToShow' });
+		try {
+			await openInFinder(dir);
+			return { revealed: true };
+		} catch (err) {
+			return fail(500, { error: 'revealFailed', reason: (err as Error).message });
+		}
 	}
 };
