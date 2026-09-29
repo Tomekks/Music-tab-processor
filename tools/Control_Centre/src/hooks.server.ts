@@ -1,5 +1,5 @@
 import type { Handle } from "@sveltejs/kit";
-import { ALLOWED_HOSTS, DATA_DIR, MANIFEST_PATH, PYTHON, RUNS_DIR } from "./lib/server/config.ts";
+import { ALLOWED_HOSTS, DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from "./lib/server/config.ts";
 import { loadManifest } from "./lib/server/manifest.ts";
 import { isRequestAllowed } from "./lib/server/origin.ts";
 import { reconcile } from "./lib/server/runner.ts";
@@ -19,5 +19,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 // A missing manifest means this slice was never installed; fail loudly, not silently.
 export async function init(): Promise<void> {
   const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
-  reconcile(manifest, { dataDir: DATA_DIR, runsDir: RUNS_DIR });
+  reconcile(manifest, { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT });
 }

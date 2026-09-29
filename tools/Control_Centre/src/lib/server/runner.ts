@@ -9,6 +9,8 @@ import { findRunDir } from "./runs.ts";
 export interface Dirs {
   dataDir: string;
   runsDir: string;
+  // Repo root: the manifest's relative command tokens resolve against this.
+  pipelineRoot: string;
 }
 
 export type StepState = "notStarted" | "running" | "done" | "failed";
@@ -136,6 +138,7 @@ export function startStage(
       {
         detached: true,
         stdio: ["ignore", logFd, logFd],
+        cwd: dirs.pipelineRoot,
         env: {
           ...process.env,
           EXIT_FILE: exitPath(dirs.dataDir, stageId),

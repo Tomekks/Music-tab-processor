@@ -22,13 +22,13 @@ function makeManifest(script: string): Manifest {
   };
 }
 
-function makeDirs(): { dataDir: string; runsDir: string } {
+function makeDirs(): { dataDir: string; runsDir: string; pipelineRoot: string } {
   const root = mkdtempSync(join(tmpdir(), "runner-"));
   const dataDir = join(root, "data");
   const runsDir = join(root, "runs");
   mkdirSync(dataDir, { recursive: true });
   mkdirSync(runsDir, { recursive: true });
-  return { dataDir, runsDir };
+  return { dataDir, runsDir, pipelineRoot: root };
 }
 
 function waitFor(path: string, timeoutMs = 5000): void {
@@ -66,29 +66,29 @@ function craftFinishedState(dataDir: string, runsDir: string, startedAt: string,
 }
 
 test("start writes started before the process finishes", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "sleep_stage.sh", "sleep 30"));
   try {
-    const result = startStage(manifest, "s01_ingest", "/tmp/song.wav", { dataDir, runsDir });
+    const result = startStage(manifest, "s01_ingest", "/tmp/song.wav", { dataDir, runsDir, pipelineRoot });
     assert.equal(result.busy, false);
     const records = readRecords(dataDir);
     assert.equal(records.length, 1);
     assert.equal(records[0].type, "started");
-    assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir }).status, "running");
+    assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot }).status, "running");
   } finally {
     killGroup(dataDir);
   }
 });
 
 test("exit 0 + produces present → done, one finished after two reconciles", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "ok_stage.sh", "exit 0"));
   const startedAt = nowIso();
   craftFinishedState(dataDir, runsDir, startedAt, "exec-done", true);
   writeFileSync(join(dataDir, "s01_ingest.exit"), "0\n");
-  assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir }).status, "done");
-  reconcile(manifest, { dataDir, runsDir });
-  reconcile(manifest, { dataDir, runsDir });
+  assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot }).status, "done");
+  reconcile(manifest, { dataDir, runsDir, pipelineRoot });
+  reconcile(manifest, { dataDir, runsDir, pipelineRoot });
   const finished = readRecords(dataDir).filter((r) => r.type === "finished");
   assert.equal(finished.length, 1);
   assert.equal(finished[0].outcome, "done");
@@ -96,12 +96,12 @@ test("exit 0 + produces present → done, one finished after two reconciles", ()
 });
 
 test("exit 3 → failed with exitCode 3", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "fail_stage.sh", "exit 3"));
   craftFinishedState(dataDir, runsDir, nowIso(), "exec-fail", false);
   writeFileSync(join(dataDir, "s01_ingest.exit"), "3\n");
-  assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir }).status, "failed");
-  reconcile(manifest, { dataDir, runsDir });
+  assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot }).status, "failed");
+  reconcile(manifest, { dataDir, runsDir, pipelineRoot });
   const finished = readRecords(dataDir).filter((r) => r.type === "finished");
   assert.equal(finished.length, 1);
   assert.equal(finished[0].outcome, "failed");
@@ -109,20 +109,20 @@ test("exit 3 → failed with exitCode 3", () => {
 });
 
 test("pid gone with no .exit → interrupted", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "gone_stage.sh", "exit 0"));
   craftFinishedState(dataDir, runsDir, nowIso(), "exec-gone", false);
-  const status = stageStatus(manifest, "s01_ingest", { dataDir, runsDir });
+  const status = stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot });
   assert.equal(status.status, "failed");
   assert.equal(status.outcome, "interrupted");
-  reconcile(manifest, { dataDir, runsDir });
+  reconcile(manifest, { dataDir, runsDir, pipelineRoot });
   const finished = readRecords(dataDir).filter((r) => r.type === "finished");
   assert.equal(finished[0].outcome, "interrupted");
   assert.equal(finished[0].exitCode, null);
 });
 
 test("live pid whose command does not match the script → not running", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "fake_xyz_stage.sh", "exit 0"));
   const holder = spawn("sleep", ["20"], { stdio: "ignore" });
   try {
@@ -130,7 +130,7 @@ test("live pid whose command does not match the script → not running", () => {
       join(dataDir, "s01_ingest.json"),
       JSON.stringify({ execId: "exec-recycled", startedAt: nowIso(), pid: holder.pid })
     );
-    const status = stageStatus(manifest, "s01_ingest", { dataDir, runsDir });
+    const status = stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot });
     assert.notEqual(status.status, "running");
   } finally {
     try {
@@ -142,11 +142,11 @@ test("live pid whose command does not match the script → not running", () => {
 });
 
 test("second startStage while live → busy", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "busy_stage.sh", "sleep 30"));
   try {
-    assert.equal(startStage(manifest, "s01_ingest", "/tmp/a.wav", { dataDir, runsDir }).busy, false);
-    assert.deepEqual(startStage(manifest, "s01_ingest", "/tmp/b.wav", { dataDir, runsDir }), { busy: true });
+    assert.equal(startStage(manifest, "s01_ingest", "/tmp/a.wav", { dataDir, runsDir, pipelineRoot }).busy, false);
+    assert.deepEqual(startStage(manifest, "s01_ingest", "/tmp/b.wav", { dataDir, runsDir, pipelineRoot }), { busy: true });
     assert.equal(readRecords(dataDir).filter((r) => r.type === "started").length, 1);
   } finally {
     killGroup(dataDir);
@@ -154,12 +154,12 @@ test("second startStage while live → busy", () => {
 });
 
 test("audio path with spaces and leading dash arrives as one argument after --", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "echo_stage.sh", "printf '<%s>\\n' \"$@\""));
   const audioPath = join(dataDir, "dir with spaces", "-foo.wav");
   mkdirSync(join(dataDir, "dir with spaces"), { recursive: true });
   writeFileSync(audioPath, "x");
-  startStage(manifest, "s01_ingest", audioPath, { dataDir, runsDir });
+  startStage(manifest, "s01_ingest", audioPath, { dataDir, runsDir, pipelineRoot });
   waitFor(join(dataDir, "s01_ingest.exit"));
   const log = readFileSync(join(dataDir, "s01_ingest.log"), "utf8");
   assert.ok(log.includes("<-->\n"), `log should contain the -- separator, got: ${log}`);
@@ -167,14 +167,26 @@ test("audio path with spaces and leading dash arrives as one argument after --",
 });
 
 test("stale .exit from an earlier execution is not read as the new result", () => {
-  const { dataDir, runsDir } = makeDirs();
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
   const manifest = makeManifest(makeScript(dataDir, "fresh_stage.sh", "sleep 30"));
   writeFileSync(join(dataDir, "s01_ingest.exit"), "0\n");
   try {
-    startStage(manifest, "s01_ingest", "/tmp/song.wav", { dataDir, runsDir });
+    startStage(manifest, "s01_ingest", "/tmp/song.wav", { dataDir, runsDir, pipelineRoot });
     assert.equal(existsSync(join(dataDir, "s01_ingest.exit")), false);
-    assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir }).status, "running");
+    assert.equal(stageStatus(manifest, "s01_ingest", { dataDir, runsDir, pipelineRoot }).status, "running");
   } finally {
     killGroup(dataDir);
   }
+});
+
+test("relative stage command resolves against pipelineRoot, not the server cwd", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  mkdirSync(join(pipelineRoot, "rel"), { recursive: true });
+  makeScript(pipelineRoot, join("rel", "rel_stage.sh"), "printf 'rel-ok\\n'\nexit 0");
+  const manifest = makeManifest(join("rel", "rel_stage.sh"));
+  const result = startStage(manifest, "s01_ingest", "/tmp/song.wav", { dataDir, runsDir, pipelineRoot });
+  assert.equal(result.busy, false);
+  waitFor(join(dataDir, "s01_ingest.exit"));
+  assert.equal(readFileSync(join(dataDir, "s01_ingest.exit"), "utf8").trim(), "0");
+  assert.ok(readFileSync(join(dataDir, "s01_ingest.log"), "utf8").includes("rel-ok"));
 });

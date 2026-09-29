@@ -2,7 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Actions, PageServerLoad } from './$types';
-import { DATA_DIR, MANIFEST_PATH, PYTHON, RUNS_DIR } from '$lib/server/config';
+import { DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from '$lib/server/config';
 import { loadManifest } from '$lib/server/manifest';
 import { browseForAudio, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
 import { anyStageLive, logPath, reconcile, stageStatus, startStage } from '$lib/server/runner';
@@ -55,7 +55,7 @@ function readRun(runsDir: string, startedAt: string | null): RunSummary | null {
 export const load: PageServerLoad = async ({ depends }) => {
 	depends('app:run');
 	const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
-	const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR };
+	const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 	reconcile(manifest, dirs);
 	const step = stageStatus(manifest, STAGE_ID, dirs);
 	return {
@@ -83,7 +83,7 @@ export const actions: Actions = {
 		const picked = readPicked(DATA_DIR);
 		if (!picked) return fail(400, { noPick: true });
 		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
-		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR };
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 		if (anyStageLive(manifest, dirs)) return fail(409, { busy: true });
 		const started = startStage(manifest, STAGE_ID, picked.path, dirs);
 		if (started.busy) return fail(409, { busy: true });

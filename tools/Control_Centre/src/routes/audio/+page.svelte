@@ -26,7 +26,6 @@
 		<button class="btn secondary" type="submit" disabled={data.step.status === 'running'}>
 			Browse
 		</button>
-		<div class="hint">The file dialog may open behind the browser.</div>
 	</form>
 	{#if form?.invalid}
 		<span class="error">{form.invalid}</span>
@@ -63,11 +62,6 @@
 
 	.error {
 		color: var(--foreground);
-	}
-
-	.hint {
-		color: var(--foreground);
-		opacity: 0.7;
 	}
 
 	.run {
