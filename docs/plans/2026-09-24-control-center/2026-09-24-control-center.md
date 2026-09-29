@@ -1,13 +1,20 @@
 # Control Center
 
-**Status:** Grilling sessions 1–3 complete. Decisions and v1 scope below are locked — ready for a
-`superpowers:writing-plans` pass to produce real, sized Tasks with specs (each in this same
-folder, per the Architectural tier in `docs/web-app-workflow/tiering.md`) and a companion status
-page in `docs/__PLANS/`. No code exists yet. Session 3 (2026-09-26) closed out BLOCKING gaps an
-execution-model critique found before spec-writing could start (scaffold ownership, manifest
-schema, run guard, test scope, command whitelist) — see updated sections below. The health-check
-gap was designed but then deliberately deferred (see "Deliberately shelved") rather than resolved
-in v1.
+**Status (2026-09-28):** Planning, five sessions in. No code exists yet. **Start with "Session 5"
+below** — it defines the MVP (base goal: "I ran a real song through the pipeline from buttons,
+without touching the terminal") and supersedes the v1 scope and Locked decisions above it wherever
+they conflict; the sections before it are the longer-term shape, kept for history and for what
+comes after the MVP.
+
+**Where it stands / next:** MVP slices are outlined (1 shell + scaffold, 2 ingest through the UI,
+3a/3b/3c steps 2–4 with Start, Stop and status) but not yet specced. In order: (1) wireframe the
+Audio processing page, (2) write slice 1's spec with `docs/web-app-workflow/spec-template.md`
+(this includes defining Control Center's own verify command and deciding Playwright vs. `node:test`
+plus a human checkbox), (3) a `superpowers:writing-plans` pass for the remaining slices, each spec
+in this folder per the Architectural tier in `docs/web-app-workflow/tiering.md`, with a companion
+status page in `docs/__PLANS/`. Still open, decided at spec time: where the widened ingest
+metadata (BPM, key, loudness) is computed (s01 vs. a new stage). Deferred to after the MVP: quality
+measures and analytics, publish controls, attempts/branches per step, Monitoring, Oversight.
 
 **Context:** Domain vocabulary lives in `CONTEXT-MAP.md` (root) → `tools/Control_Centre/CONTEXT.md`
 (Native module / Integrated tool / Module registry / Manifest) and `docs/CONTEXT.md` (Backlog /
@@ -94,6 +101,8 @@ separately:
 
 ## v1 scope — three modules, five tracer-bullet slices total
 
+> **Superseded in part by "Session 5" below** (MVP scope, execution model, safety). Read Session 5 first; this section is the longer-term shape.
+
 Order matters (easiest/lowest-stakes first, to learn SvelteKit before the real complexity). Item 2
 is itself split into three vertical slices (2a/2b/2c below) with explicit blocking edges, per
 `to-tickets`-style slicing: each slice is a complete, independently demoable path through the
@@ -179,6 +188,115 @@ this render," and avoids a second test-runner dependency). These smoke tests are
 3's own test-listing UI for free, since they use the same runner it already parses. Not full parity
 with `app/`'s test culture — revisit if it grows.
 
+## Session 5 (2026-09-28): base goal + MVP — supersedes the v1 scope above wherever they conflict
+
+**Base goal (the finish line):** *"I ran a real song through the pipeline from buttons, without
+touching the terminal."* The v1 scope above is the longer-term shape; the **MVP** below is the
+narrowest slice that reaches this goal, then we add/iterate. User stories are written spec-by-spec
+(one per slice, when that slice is specced). A wireframe comes before any Svelte code.
+
+**MVP user story:** launch Control Center → open the Audio processing page, where every pipeline
+step is visible → in step 1 "Ingestion", click **Browse**, pick an audio file in Finder →
+artist/song info is shown → each step has its own **Start** button → results are saved so
+per-step and whole-process analytics can be gathered to improve output quality.
+
+### Locked decisions
+
+- **No publish (s05) until the pipeline can report on its own output quality.** s05 is not in the
+  manifest, so it is structurally unreachable from Control Center (the whitelist *is* the manifest).
+- **Independent repo.** Control Center will connect to other systems, so it owns its own data. All
+  external paths (`PIPELINE_ROOT`, venv, `data/`) live in **one config file**, the only place that
+  knows where the pipeline lives. `manifest.json` stays in the pipeline repo, read via
+  `PIPELINE_ROOT`.
+- **Browse** = server-side native picker: the server runs a fixed, whitelisted
+  `osascript -e 'POSIX path of (choose file …)'` and receives the absolute path. Handle: dialog
+  opening behind the browser, and Cancel (= "no file chosen", not an error). File paths are passed
+  after `--` so a name like `-foo.wav` is never read as an option.
+- **Ingest metadata is widened:** file facts (size, codec, bitrate, bit depth), BPM estimate with
+  confidence (librosa is already installed; expect half/double-tempo errors), key, loudness/
+  clipping, leading/trailing silence, embedded tags. Whether it lives in s01 or a new "analyse"
+  stage is decided at spec time. Artist/title are display-only in the MVP.
+- **Manifest** (`pipeline/manifest.json`): per stage — id, label, exact command, `argsFrom`
+  (`audioPath` | `runDir`), `requires` and `produces` file lists. Drops `statusFile`.
+- **Step status comes from files on disk** and is *completeness-based*: done = every `produces`
+  file exists **and** the last recorded exit code was 0 (a crashed stage leaving partial output
+  must not read as done). A step re-run marks downstream steps **out of date** (timestamp compare).
+- **Run execution is detached from the server.** Each stage is started as a detached process that
+  writes its own log file and pid file (under Control Center's `data/`); the server only reads
+  those files. This survives server restarts and dev hot-reload (no orphaned stage the server has
+  forgotten), makes page-reload and server-restart persistence free, and makes live log tailing
+  trivial. The run guard is *derived* ("is that pid alive?"), not an in-memory flag.
+- **Stop button replaces Reset.** With a real pid, Stop kills the actual process; the old Reset
+  ambiguity ("what if it's still alive?") disappears, so the Reset-UX grilling session is retired.
+  **Stop also cleans up** (decided 2026-09-28): it kills the whole process group (stages spawn
+  children such as ffmpeg), then deletes only that stage's own `produces` files inside that run's
+  folder — never the source, `metadata.json`, or other stages' outputs. The manifest is therefore
+  the deletion whitelist too. A confirm dialog lists exactly what will be removed. Caveat shown in
+  that dialog: if the stopped execution was a *re-run*, the earlier good outputs may already be
+  overwritten and cannot be restored (proper fix = per-attempt folders, post-MVP). A stopped
+  ingest removes its run folder only if nothing else has been produced in it. Ends with a
+  "stopped" finished-record.
+- **Data location:** `tools/Control_Centre/data/` (gitignored), path set in the config file — it
+  travels with the app when extracted; history lives on this machine only, so back it up.
+- **Saved records:** one central append-only JSONL file in `data/`, one **"started"** record and one
+  **"finished"** record per stage execution (so a server death mid-run still leaves a trace).
+  Every record carries `schemaVersion`, ISO timestamps **with timezone**, run ID (never a path —
+  see safety), stage, exit code, duration, log location, the stage's own summary (note count, etc.),
+  and tool/model versions plus the interpreter used. Move to SQLite only when cross-run queries
+  hurt. Rows for a run whose folder is gone show "run folder missing", not failure.
+- **Safety:** (1) every mutating route rejects requests whose `Origin`/`Host` isn't the app's own —
+  "localhost only" doesn't stop other browser tabs from POSTing to it; (2) the client sends a
+  **run ID**, the server maps it to a folder inside `pipeline_runs/` — never a client-supplied
+  path; (3) `assertAllowed` whitelist stays; (4) s01's result is read from a small result file
+  (or `--json`), not by parsing the prose line `Ingested: <path>`.
+- **Page reload keeps state.** Current run = newest folder in `pipeline_runs/`, with a dropdown of
+  existing runs. Logs stay simple (plain log file; tail it).
+- **Trimmed scope (was over-engineered for the MVP):** no module registry until a second module
+  exists (SvelteKit folder routing + a plain nav array is enough); port only the design-system
+  components the page actually uses; token sync via symlink/single import path while still in the
+  same repo (a copy step only when the repo is extracted); specs kept to about a page each.
+- **Quality measures are post-MVP.** Collect raw facts now, decide what "good" means from real
+  data; the `/grill-with-docs` session on quality happens after the MVP.
+
+### MVP slices (proposed, each demoable, each gets its own lean spec)
+
+1. **Shell + scaffold + token sync** — SvelteKit/TS, `adapter-node`, port 5173 pinned,
+   localhost bind, config file, header + sidebar with one module (Audio processing) + Design System
+   link, Origin check middleware. Empty Audio processing page.
+2. **Ingest through the UI (the tracer bullet)** — manifest, `assertAllowed`, detached runner
+   (log + pid files), Browse → s01 → widened metadata shown, "started"/"finished" records written.
+   Proves the whole stack on one step.
+3. **Steps 2–4 (Start / Stop / status)** — manifest-driven, completeness-based status, out-of-date
+   marking, run dropdown, reload/restart persistence, minimal per-step last-run info.
+
+### Spec approach
+
+Specs use the one project template, `docs/web-app-workflow/spec-template.md` (tightened
+2026-09-28 with wording adapted from `shadcn/improve`). Proposed tiers: slice 1 = S, slice 2 = S (detached-process and Origin
+logic embedded), 3a = S, **3b (Stop cleanup, deletes real files) = Full**, 3c = S; slice 3 is split
+into 3a/3b/3c so each spec's Done criteria are a short list of commands. Open: Playwright vs.
+`node:test` + human checkbox for UI behavior (recommended: `node:test` for server logic, human
+checkbox for UI in the MVP, add Playwright when click-through behavior justifies it).
+
+### Post-MVP (not forgotten)
+
+- **Re-point a moved pipeline folder** from inside Control Center (config edit UI).
+- **Backup solution for `data/`** (the run-history store lives only on this machine).
+- **Attempts/branches per step:** several outputs per step, each downstream result remembering which
+  upstream attempt it used, so you can compare (e.g. two separation models) or re-run only a tail.
+  Needs the stages to write per-attempt folders — pipeline-side work, tied to the backlogged stage
+  contract. In the MVP, out-of-date marking plus the saved summaries stand in for it.
+- **Quality measures + analytics view**, then the `/grill-with-docs` session on "quality".
+- **Re-evaluate the existing 13 pytest tests** (s01: 4, s02: 2, s03: 4, s04: 3) as a possible
+  source of quality signal; judge fitness for purpose from their bodies (not yet read).
+- Publish controls, full-pipeline chaining, Monitoring, Oversight, Unit tests module, editing
+  artist/title, live cross-run dashboards, data backup/cleanup (run copies + stems exceed 100MB),
+  stage timeouts.
+
+**Superseded from the v1 scope above:** slices 2a/2b/2c (replaced by MVP slices 2–3), the Reset
+button and in-memory run guard, `statusFile` in the manifest, the module registry, the Unit tests
+module for the MVP, and the "full pipeline" button.
+
 ## Deliberately shelved (not forgotten, just not v1)
 
 - **Persisted test-run history** (times-run counter, duration trends, flaky-streak indicators):
@@ -230,4 +348,7 @@ real, sized Tasks with specs — keep each spec lean (these are small, now well-
 Architectural-tier ceremony shouldn't outweigh their actual size). Session 4 (2026-09-26) applied
 `to-tickets`-style vertical slicing to item 2 (three blocked-by slices instead of one lump), added
 an interim Design System link mitigation, flagged the Reset-button UX for its own
-`/grill-with-docs` session, and added a status-light scheme to item 3.
+`/grill-with-docs` session, and added a status-light scheme to item 3. Session 5 (2026-09-28)
+set the base goal and MVP, added the execution model (detached processes, Stop instead of Reset —
+which retires that grilling session), central run records, safety fixes, and slice/tier splits;
+the "Next step" above is superseded by the Status block at the top.
