@@ -21,7 +21,13 @@ Plan: `2026-09-24-control-center.md` ("Session 6" tab preview). Decisions made w
 ```ts
 export const PREVIEW_SECONDS = 30;
 export interface TabStep { index: number; startTimeSec: number; notes: { string: number; fret: number }[] }
-export interface TabPreviewData { tempoBpm: number | null; stringCount: number; steps: TabStep[] }
+export interface TabPreviewData { tempoBpm: number | null; tuning: number[]; steps: TabStep[] }
+
+const PITCH_CLASSES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+// Note name of an open string's MIDI pitch, e.g. 40 -> "E" (same table as app/lib/tabNotation.ts pitchClassName).
+export function pitchClassName(midi: number): string {
+  return PITCH_CLASSES[((midi % 12) + 12) % 12];
+}
 
 // null when the JSON is not a usable tab. Steps = notes with startTimeSec < limitSec, grouped by
 // EXACT equal startTimeSec (same rule as app/lib/tabNotation.ts groupNotesByStep), sorted by time,
@@ -33,30 +39,29 @@ export function buildTabPreview(raw: unknown, limitSec: number = PREVIEW_SECONDS
   const byTime = new Map<number, { string: number; fret: number }[]>();
   for (const n of notes) {
     if (typeof n !== "object" || n === null) return null;
-    const { string, fret, startTimeSec } = n as Record<string, unknown>;
+    const { string, fret, startTimeSec } = n as { string?: unknown; fret?: unknown; startTimeSec?: unknown };
     if (!Number.isInteger(string) || (string as number) < 0 || (string as number) >= tuning.length) return null;
-    if (!Number.isInteger(fret) || (fret as number) < 0) return null;
     if (typeof startTimeSec !== "number" || !Number.isFinite(startTimeSec) || startTimeSec < 0) return null;
     if (startTimeSec >= limitSec) continue;
     const group = byTime.get(startTimeSec) ?? [];
-    group.push({ string: string as number, fret: fret as number });
+    group.push({ string: string as number, fret: Number(fret) });
     byTime.set(startTimeSec, group);
   }
   const steps = [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([startTimeSec, ns], index) => ({ index, startTimeSec, notes: ns }));
-  return { tempoBpm: typeof tempoBpm === "number" && Number.isFinite(tempoBpm) && tempoBpm > 0 ? tempoBpm : null, stringCount: tuning.length, steps };
+  return { tempoBpm: typeof tempoBpm === "number" ? tempoBpm : null, tuning: tuning as number[], steps };
 }
 ```
 
-Any invalid note makes the whole result `null` (a half-drawn tab would mislead). Empty `steps` is valid (a song with no notes in the first 30 s).
+A note with a bad `string` index or `startTimeSec` makes the whole result `null` (a half-drawn tab would mislead); `fret` and `tempoBpm` are trusted, since the pipeline writes `tab.json` to `contracts/tab.schema.json` and the caller wraps the read in a `try/catch`. Empty `steps` is valid (a song with no notes in the first 30 s).
 
 **`+page.server.ts`.** `const TAB_STAGE_ID = 's04_tab'`. In `load`, after `steps` is built: if `run` exists and the `s04_tab` step has `status === 'done' && !outOfDate`, read `join(RUNS_DIR, run.id, 'tab.json')`, `JSON.parse`, `buildTabPreview`; on a read or parse error `console.error` it and use `null`. Otherwise `tabPreview = null`. Return `tabPreview` (`TabPreviewData | null`) beside `run`/`steps`. The read happens in every `load` while the `s04_tab` step is Done and not Out of date, including the 1 s poll ticks while a *different* step runs (`tab.json` is about 150 KB, so this is accepted).
 
-**`TabPreview.svelte`** (props `{ preview: TabPreviewData | null }`; the type comes from `import type { TabPreviewData } from '$lib/server/tab'`, type-only, no value import from `$lib/server`). One `<svg>` inside a container with `overflow-x: auto` and `data-tab-preview`. Constants in the component: `COL_W = 30`, `ROW_H = 16`, `PAD_LEFT = 28`, `PAD_Y = 14`, `MIN_COLS = 24`. Geometry, with `n = stringCount`, `cols = max(steps.length, MIN_COLS)`:
+**`TabPreview.svelte`** (props `{ preview: TabPreviewData | null }`; the type comes from `import type { TabPreviewData } from '$lib/server/tab'`, type-only, no value import from `$lib/server`). One `<svg>` inside a container with `overflow-x: auto` and `data-tab-preview`. Constants in the component: `COL_W = 30`, `ROW_H = 16`, `PAD_LEFT = 28`, `PAD_Y = 14`, `MIN_COLS = 24`. Geometry, with `n = tuning.length`, `cols = max(steps.length, MIN_COLS)`:
 - SVG `width = PAD_LEFT + cols * COL_W`, `height = PAD_Y * 2 + (n - 1) * ROW_H`.
 - A schema string `s` (0 = lowest) is drawn at row `r = n - 1 - s`, so thin e is on top; its line is at `y = PAD_Y + r * ROW_H`, running from `x1 = PAD_LEFT` to the full width, stroke `--color-border`.
-- String names (only when `n === 6`): the name for schema string `s` is `['E','A','D','G','B','e'][s]`, drawn at `x = 8` on that string's row (so the top row shows `e`). No labels when `n !== 6`.
-- For each step a `<g data-step={step.index}>`; per note a small rect (`--color-background`, about 18 × 14, centred on the point) behind the fret number (`--foreground`, `text-anchor="middle"`, `dominant-baseline="central"`) at `x = PAD_LEFT + step.index * COL_W + COL_W / 2`, `y` from the note's row as above.
-- `preview === null` draws the lines only. The SVG has `role="img"` and a `<title>` of `Tab preview` (accessibility, not a visible caption).
+- String names: the name for schema string `s` is `pitchClassName(tuning[s])` (standard tuning gives `E A D G B E`, so the top row shows `E`), drawn at `x = 8` on that string's row. With `preview === null` the six standard names are used (`[40, 45, 50, 55, 59, 64]`).
+- For each step a `<g data-step={step.index}>`; per note one `<text>` (`--foreground`, `text-anchor="middle"`, `dominant-baseline="central"`, `stroke="var(--color-background)" stroke-width="4" paint-order="stroke"` so the number hides the string line behind it, no separate rect) at `x = PAD_LEFT + step.index * COL_W + COL_W / 2`, `y` from the note's row as above.
+- `preview === null` draws the six lines and their names only. The SVG has `role="img"` and a `<title>` of `Tab preview` (accessibility, not a visible caption).
 
 **`+page.svelte`.** Render `<TabPreview preview={data.tabPreview} />` after the picker form and the `data.runNotFound` paragraph and before `{#if step1}`, only when `data.run`.
 
@@ -77,7 +82,7 @@ Any invalid note makes the whole result `null` (a half-drawn tab would mislead).
 
 ## Tests
 
-`tab.test.ts` (+5), `node:test`, inline objects (no files); copy the shape of `src/lib/server/manifest.test.ts` (`import test from "node:test"`, `assert/strict`): valid tab groups equal times into one step and keeps file order · notes at `>= limitSec` are dropped and `limitSec` is a parameter (`buildTabPreview(x, 1)`) · steps are sorted by time and `index` is 0-based and contiguous · `null` for a non-object, a missing `tuning`/`notes`, a string index `>= tuning.length`, a negative or non-integer fret, and a non-finite `startTimeSec` · `tempoBpm` missing, `0`, negative or `NaN` gives `null`, and `stringCount` equals `tuning.length`. Expected suite: 94 + 5 = ≥ 99 (from a branch cut from 3c). Not unit-tested: the component and `load` (probes and the human check).
+`tab.test.ts` (+5), `node:test`, inline objects (no files); copy the shape of `src/lib/server/manifest.test.ts` (`import test from "node:test"`, `assert/strict`): valid tab groups equal times into one step and keeps file order · notes at `>= limitSec` are dropped and `limitSec` is a parameter (`buildTabPreview(x, 1)`) · steps are sorted by time and `index` is 0-based and contiguous · `null` for a non-object, a missing `tuning`/`notes`, a string index `>= tuning.length`, and a non-finite or negative `startTimeSec` · `tempoBpm` missing gives `null`, `tuning` is passed through, and `pitchClassName(40)` is `"E"` and `pitchClassName(59)` is `"B"`. Expected suite: 94 + 5 = ≥ 99 (from a branch cut from 3c). Not unit-tested: the component and `load` (probes and the human check).
 
 ## Done
 
