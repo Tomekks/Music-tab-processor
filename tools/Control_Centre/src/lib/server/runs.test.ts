@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { findRunDir, listRuns, resolveRunDir } from "./runs.ts";
+import { findRunDir, listRuns, pickRun, readRunSummary, resolveRunDir } from "./runs.ts";
 
 function makeRun(runsDir: string, id: string, ingestedAt: string): void {
   mkdirSync(join(runsDir, id), { recursive: true });
@@ -82,4 +82,61 @@ test("resolveRunDir rejects a file, a missing folder and a folder with no metada
   assert.equal(resolveRunDir(dir, "loose-file.txt"), null);
   assert.equal(resolveRunDir(dir, "missing-folder"), null);
   assert.equal(resolveRunDir(dir, "stray-folder"), null);
+});
+
+function makeSummaryRun(
+  runsDir: string,
+  id: string,
+  ingestedAt: string,
+  extra: Record<string, unknown> = {}
+): void {
+  mkdirSync(join(runsDir, id), { recursive: true });
+  writeFileSync(
+    join(runsDir, id, "metadata.json"),
+    JSON.stringify({
+      runId: id,
+      ingestedAt,
+      title: "T",
+      artist: null,
+      durationSec: 1,
+      sampleRate: 44100,
+      channels: 2,
+      ...extra
+    })
+  );
+}
+
+test("pickRun selects the requested run or falls back to newest", () => {
+  const dir = mkdtempSync(join(tmpdir(), "runs-"));
+  makeRun(dir, "old-song-20260101-100000", "2026-01-01T10:00:00");
+  makeRun(dir, "new-song-20260601-120000", "2026-06-01T12:00:00");
+  const newest = "new-song-20260601-120000";
+  assert.deepEqual(pickRun(dir, null), { id: newest, notFound: false });
+  assert.deepEqual(pickRun(dir, ""), { id: newest, notFound: false });
+  assert.deepEqual(pickRun(dir, "old-song-20260101-100000"), {
+    id: "old-song-20260101-100000",
+    notFound: false
+  });
+  assert.deepEqual(pickRun(dir, "../x"), { id: newest, notFound: true });
+  assert.deepEqual(pickRun(dir, "/etc"), { id: newest, notFound: true });
+  assert.deepEqual(pickRun(dir, "nope"), { id: newest, notFound: true });
+  mkdirSync(join(dir, "stray-folder"), { recursive: true });
+  assert.deepEqual(pickRun(dir, "stray-folder"), { id: newest, notFound: true });
+  const empty = mkdtempSync(join(tmpdir(), "runs-"));
+  assert.deepEqual(pickRun(empty, null), { id: null, notFound: false });
+});
+
+test("readRunSummary returns the summary or null for a wrong type", () => {
+  const dir = mkdtempSync(join(tmpdir(), "runs-"));
+  makeSummaryRun(dir, "good-song-20260601-120000", "2026-06-01T12:00:00");
+  assert.deepEqual(readRunSummary(dir, "good-song-20260601-120000"), {
+    id: "good-song-20260601-120000",
+    title: "T",
+    artist: null,
+    durationSec: 1,
+    sampleRate: 44100,
+    channels: 2
+  });
+  makeSummaryRun(dir, "bad-song-20260601-120000", "2026-06-01T12:00:00", { durationSec: "x" });
+  assert.equal(readRunSummary(dir, "bad-song-20260601-120000"), null);
 });
