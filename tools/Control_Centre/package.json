@@ -1,0 +1,30 @@
+{
+	"name": "control-center",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"tokens": "node ../../app/packages/design-system/src/build-tokens.mjs && cp ../../app/app/design-tokens.generated.css src/lib/design-tokens.generated.css",
+		"predev": "npm run tokens",
+		"prebuild": "npm run tokens",
+		"test": "node --test \"src/**/*.test.ts\"",
+		"verify": "npm run check && npm test",
+		"start": "HOST=127.0.0.1 PORT=5173 node build"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-node": "^5.5.4",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@types/node": "^26.6.3",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16"
+	}
+}
