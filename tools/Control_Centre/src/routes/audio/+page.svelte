@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
+	import TabPreview from '$lib/components/molecules/TabPreview.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -93,6 +94,10 @@
 
 {#if data.runNotFound}
 	<p>Run not found; showing the newest run.</p>
+{/if}
+
+{#if data.run}
+	<TabPreview preview={data.tabPreview} />
 {/if}
 
 {#if step1}

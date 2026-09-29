@@ -22,8 +22,10 @@ import {
 import { deleteStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, pickRun, readRunSummary, resolveRunDir, type RunSummary } from '$lib/server/runs';
+import { buildTabPreview, type TabPreviewData } from '$lib/tab';
 
 const STAGE_ID = 's01_ingest';
+const TAB_STAGE_ID = 's04_tab';
 
 function readLogTail(dataDir: string, stageId: string, lines = 200): string {
 	const path = logPath(dataDir, stageId);
@@ -120,12 +122,24 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 			log: slotRunId(dirs, stage.id, records) === run.id ? readLogTail(DATA_DIR, stage.id) : ''
 		};
 	});
+	const tabStep = steps.find((s) => s.id === TAB_STAGE_ID);
+	let tabPreview: TabPreviewData | null = null;
+	if (run && tabStep && tabStep.status === 'done' && !tabStep.outOfDate) {
+		try {
+			const raw = JSON.parse(readFileSync(join(RUNS_DIR, run.id, 'tab.json'), 'utf8'));
+			tabPreview = buildTabPreview(raw);
+		} catch (err) {
+			console.error('tab preview read failed', err);
+			tabPreview = null;
+		}
+	}
 	return {
 		picked: readPickedForClient(DATA_DIR),
 		run,
 		runNotFound,
 		runs,
-		steps
+		steps,
+		tabPreview
 	};
 };
 
