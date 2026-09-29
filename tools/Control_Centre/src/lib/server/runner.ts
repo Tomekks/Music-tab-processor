@@ -294,7 +294,7 @@ export function runStepStatus(
     };
   }
   // No record at all with all files present: a run made from the command
-  // line before Control Center. (The "(no record)" label is 3c's.)
+  // line before Control Center; the page labels it "Done (no record)".
   if (last === undefined && complete) {
     return { status: "done", outcome: "done", startedAt: null, noRecord: true, outOfDate: isOutOfDate(stage, runDir) };
   }
