@@ -3,7 +3,9 @@
 	import { goto, invalidate } from '$app/navigation';
 	import FolderOutput from '@lucide/svelte/icons/folder-output';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import X from '@lucide/svelte/icons/x';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
+	import Toast from '$lib/components/molecules/Toast.svelte';
 	import TabPlayer from '$lib/components/organisms/TabPlayer.svelte';
 	import type { ActionData, PageData } from './$types';
 
@@ -71,6 +73,24 @@
 				}
 			: null
 	);
+
+	const toastText = $derived(
+		form?.invalid
+			? data.picked
+				? `${form.invalid} Keeping ${data.picked.name}.`
+				: form.invalid
+			: form?.browseFailed
+				? `Browse failed: ${form.browseFailed}`
+				: null
+	);
+	let dismissedForm = $state<unknown>(null);
+	$effect(() => {
+		if (toastText !== null && form !== dismissedForm) {
+			const f = form;
+			const id = setTimeout(() => (dismissedForm = f), 8000);
+			return () => clearTimeout(id);
+		}
+	});
 
 	$effect(() => {
 		if (anyRunning || awaitingExec !== undefined) {
@@ -167,19 +187,21 @@
 				<span class="picked" title={data.picked.name}
 					>{data.picked.name} ({formatSize(data.picked.size)})</span
 				>
+				<form method="POST" action="?/clear" use:enhance>
+					<button
+						class="btn secondary icon"
+						type="submit"
+						title="Clear the picked file"
+						aria-label="Clear the picked file"
+						disabled={step1.status === 'running'}><X size={16} aria-hidden="true" /></button
+					>
+				</form>
 			{/if}
 			<form method="POST" action="?/browse" use:enhance>
 				<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
 					Browse
 				</button>
 			</form>
-		{/snippet}
-		{#snippet notice()}
-			{#if form?.invalid}
-				<span class="error">{form.invalid}{#if data.picked} Keeping {data.picked.name}.{/if}</span>
-			{:else if form?.browseFailed}
-				<span class="error">Browse failed: {form.browseFailed}</span>
-			{/if}
 		{/snippet}
 		{#snippet after()}
 			<form method="POST" action="?/reveal" use:enhance>
@@ -289,6 +311,10 @@
 		{/snippet}
 	</StepRow>
 {/each}
+
+{#if toastText && form !== dismissedForm}
+	<Toast message={toastText} onclose={() => (dismissedForm = form)} />
+{/if}
 
 <style>
 	.page-title {

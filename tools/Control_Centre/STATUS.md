@@ -40,5 +40,7 @@ never a bare `node build`).
 
 **Status:** slice 6b fix 2 done — the page follows a new ingest without reload; Browse errors show under the row.
 
+**Status:** slice 6b fix 3 done — Browse errors show as a dismissible toast; the picked file can be cleared.
+
 Verified on Node v26.3.1 only. **Accepted `npm audit` finding (2026-09-29):** 3 low, all one advisory (GHSA-pxg6-pf52-xh8x, `cookie` < 0.7.0, pulled in by `@sveltejs/kit`). Control Center sets and reads no cookies and binds to 127.0.0.1, so it is unreachable; never run `npm audit fix --force` (it proposes downgrading Kit to 0.0.30). Resolves with a Kit release that bumps `cookie`. Plan: `docs/plans/2026-09-24-control-center/`.
 Spec: `docs/plans/2026-09-24-control-center/control-center-slice-1-shell.md`.

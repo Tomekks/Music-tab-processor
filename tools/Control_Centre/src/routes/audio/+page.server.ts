@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { Actions, PageServerLoad } from './$types';
 import { DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from '$lib/server/config';
 import { loadManifest } from '$lib/server/manifest';
-import { browseForAudio, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
+import { browseForAudio, clearPicked, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
 import { readRecords } from '$lib/server/records';
 import {
 	anyStageLive,
@@ -176,6 +176,10 @@ export const actions: Actions = {
 		} catch (err) {
 			return fail(400, { invalid: (err as Error).message });
 		}
+	},
+	clear: async () => {
+		clearPicked(DATA_DIR);
+		return { cleared: true };
 	},
 	start: async () => {
 		// The form sends nothing; the pick lives server-side in data/picked.json.
