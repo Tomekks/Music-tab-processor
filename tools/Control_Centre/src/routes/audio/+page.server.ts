@@ -19,7 +19,7 @@ import {
 	startRunStage,
 	stopStage as stopStageRun
 } from '$lib/server/runner';
-import { deleteStageOutputs } from '$lib/server/stop';
+import { previewStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, pickRun, readRunSummary, resolveRunDir, type RunSummary } from '$lib/server/runs';
 import { trashRun, trashWithFinder } from '$lib/server/trash';
@@ -110,7 +110,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		const canStop = perRun.status === 'running';
 		const stopPreview =
 			canStop && perRun.startedAt !== null
-				? deleteStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
+				? previewStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
 				: [];
 		const runDir = join(RUNS_DIR, run.id);
 		const overwritePreview = perRun.noRecord
