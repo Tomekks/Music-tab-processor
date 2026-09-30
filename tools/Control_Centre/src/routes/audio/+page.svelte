@@ -3,7 +3,7 @@
 	import { goto, invalidate } from '$app/navigation';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import FolderOutput from '@lucide/svelte/icons/folder-output';
-	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+	import Info from '@lucide/svelte/icons/info';
 	import X from '@lucide/svelte/icons/x';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
 	import Toast from '$lib/components/molecules/Toast.svelte';
@@ -17,6 +17,43 @@
 
 	const step1 = $derived(data.steps.find((s) => s.id === 's01_ingest'));
 	const later = $derived(data.steps.filter((s) => s.id !== 's01_ingest'));
+	const continueStep = $derived(later.find((s) => s.status !== 'done' || s.outOfDate));
+	const step1Tip = $derived(
+		!step1
+			? ''
+			: step1.status === 'running'
+				? 'Ingestion is running'
+				: data.chainActive
+					? 'A chain is running'
+					: !data.picked
+						? 'Browse a file first'
+						: ''
+	);
+	const fullStartTip = $derived(
+		data.chainActive
+			? 'A chain is running'
+			: !data.picked
+				? 'Browse a file first'
+				: step1?.status === 'running'
+					? 'Ingestion is running'
+					: ''
+	);
+	const continueTip = $derived(
+		!data.run
+			? 'No runs yet'
+			: data.chainActive
+				? 'A chain is running'
+				: data.busy
+					? 'A step is running'
+					: !continueStep
+						? 'Every step is already Done'
+						: !continueStep.canStart
+							? continueStep.reason || 'Not ready yet'
+							: ''
+	);
+	const infoDetails = $derived(
+		data.run ? `${Math.round(data.run.durationSec)}s · ${data.run.sampleRate} Hz · ${data.run.channels}ch` : ''
+	);
 	const anyRunning = $derived(data.steps.some((s) => s.status === 'running'));
 	const playerKey = $derived(
 		`${data.run?.id ?? ''}|${data.tabPreview?.steps.length ?? 0}|${data.tabPreview?.steps.reduce((n, st) => n + st.notes.length, 0) ?? 0}|${data.tabPreview?.steps.at(-1)?.startTimeSec ?? 0}`
@@ -42,6 +79,7 @@
 		if (f.error === 'badRun') return 'Unknown run.';
 		if (f.error === 'nothingToShow') return 'Nothing to show for that step yet.';
 		if (f.error === 'nothingToStop') return 'Nothing is running to stop.';
+		if (f.error === 'nothingToContinue') return 'Every step is already Done.';
 		if (f.error === 'stopFailed') return f.reason ?? 'Could not stop the step.';
 		if (f.error === 'trashFailed') return `Could not move the run to the Trash: ${f.reason}`;
 		if (f.error === 'revealFailed') {
@@ -126,7 +164,11 @@
 	<div class="subtitle-row">
 		<p class="subtitle">
 			{heading}{#if data.run.sampleRate > 0}
-				· {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch{/if}
+				{' '}
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex: the span needs keyboard focus for its tooltip -->
+				<span class="tip info" tabindex="0" role="img" aria-label={infoDetails} data-tip={infoDetails}
+					><Info size={16} aria-hidden="true" /></span
+				>{/if}
 		</p>
 		<div class="picker-group">
 			<form
@@ -183,6 +225,67 @@
 	{#key playerKey}<TabPlayer preview={data.tabPreview} />{/key}
 {/if}
 
+<div class="control-bar">
+	{#if data.picked}
+		<span class="picked" title={data.picked.name}
+			>{data.picked.name} ({formatSize(data.picked.size)})</span
+		>
+		<form method="POST" action="?/clear" use:enhance>
+			<button
+				class="btn secondary icon"
+				type="submit"
+				title="Clear the picked file"
+				aria-label="Clear the picked file"
+				disabled={step1?.status === 'running'}><X size={16} aria-hidden="true" /></button
+			>
+		</form>
+	{/if}
+	<form method="POST" action="?/browse" use:enhance>
+		<button class="btn secondary" type="submit" disabled={step1?.status === 'running'}>
+			Browse
+		</button>
+	</form>
+	<form method="POST" action="?/fullStart" use:enhance={followIngest}>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex: the wrapper needs keyboard focus for its tooltip while the button is disabled -->
+		<span class="tip" data-tip={fullStartTip} tabindex={fullStartTip ? 0 : undefined}>
+			<button
+				class="btn secondary"
+				type="submit"
+				title={fullStartTip ? undefined : 'Ingest the picked file, then run every step'}
+				disabled={step1?.status === 'running' || !data.picked || data.chainActive}
+			>
+				Full start
+			</button>
+		</span>
+	</form>
+	<form
+		method="POST"
+		action="?/fullContinue"
+		use:enhance={({ cancel, formData }) => {
+			if (continueStep?.noRecord) {
+				if (!confirm(overwriteConfirmText(continueStep))) {
+					cancel();
+					return;
+				}
+				formData.set('confirmed', '1');
+			}
+		}}
+	>
+		<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex: the wrapper needs keyboard focus for its tooltip while the button is disabled -->
+		<span class="tip" data-tip={continueTip} tabindex={continueTip ? 0 : undefined}>
+			<button
+				class="btn secondary"
+				type="submit"
+				title={continueTip ? undefined : `Continue from ${continueStep?.label ?? ''}`}
+				disabled={!data.run || !continueStep || !continueStep.canStart || data.busy || data.chainActive}
+			>
+				Full continue
+			</button>
+		</span>
+	</form>
+</div>
+
 {#if step1}
 	<StepRow
 		title="1. {step1.label}"
@@ -191,27 +294,6 @@
 		elapsed={step1.status === 'running' ? elapsed(step1.startedAt) : null}
 		log={step1.log}
 	>
-		{#snippet before()}
-			{#if data.picked}
-				<span class="picked" title={data.picked.name}
-					>{data.picked.name} ({formatSize(data.picked.size)})</span
-				>
-				<form method="POST" action="?/clear" use:enhance>
-					<button
-						class="btn secondary icon"
-						type="submit"
-						title="Clear the picked file"
-						aria-label="Clear the picked file"
-						disabled={step1.status === 'running'}><X size={16} aria-hidden="true" /></button
-					>
-				</form>
-			{/if}
-			<form method="POST" action="?/browse" use:enhance>
-				<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
-					Browse
-				</button>
-			</form>
-		{/snippet}
 		{#snippet after()}
 			<form method="POST" action="?/reveal" use:enhance>
 				<input type="hidden" name="stage" value={step1.id} />
@@ -224,35 +306,30 @@
 					aria-label="Show in Finder"><FolderOutput size={16} aria-hidden="true" /></button
 				>
 			</form>
-			<form method="POST" action="?/fullStart" use:enhance={followIngest}>
-				<button
-					class="btn secondary"
-					type="submit"
-					title={data.chainActive ? 'A Full start is running' : 'Ingest the picked file, then run every step'}
-					disabled={step1.status === 'running' || !data.picked || data.chainActive}
-				>
-					Full start
-				</button>
-			</form>
 			<form
 				method="POST"
 				action="?/start"
 				use:enhance={followIngest}
 			>
-				<button
-					class="btn primary"
-					type="submit"
-					disabled={step1.status === 'running' || !data.picked || data.chainActive}
-					title="Ingest the picked file as a new run"
-				>
-					Start
-				</button>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex: the wrapper needs keyboard focus for its tooltip while the button is disabled -->
+				<span class="tip" data-tip={step1Tip} tabindex={step1Tip ? 0 : undefined}>
+					<button
+						class="btn primary"
+						type="submit"
+						disabled={step1.status === 'running' || !data.picked || data.chainActive}
+						title={step1Tip ? undefined : 'Ingest the picked file as a new run'}
+					>
+						Start
+					</button>
+				</span>
 			</form>
 		{/snippet}
 	</StepRow>
 {/if}
 
 {#each later as step, i}
+	{@const stepTip =
+		!step.canStart && step.status !== 'running' ? step.reason || 'Waiting: a step is running' : ''}
 	<StepRow
 		title="{i + 2}. {step.label}"
 		status={step.status}
@@ -262,14 +339,6 @@
 		elapsed={step.status === 'running' ? elapsed(step.startedAt) : null}
 		log={step.log}
 	>
-		{#snippet before()}
-			{#if !step.canStart && step.reason && step.status !== 'running'}
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex: the span needs keyboard focus for its tooltip -->
-				<span class="warn" tabindex="0" role="img" aria-label={step.reason} data-tip={step.reason}
-					><TriangleAlert size={16} aria-hidden="true" /></span
-				>
-			{/if}
-		{/snippet}
 		{#snippet after()}
 			<form method="POST" action="?/reveal" use:enhance>
 				<input type="hidden" name="stage" value={step.id} />
@@ -318,7 +387,10 @@
 				>
 					<input type="hidden" name="stage" value={step.id} />
 					<input type="hidden" name="runId" value={data.run?.id ?? ''} />
-					<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex: the wrapper needs keyboard focus for its tooltip while the button is disabled -->
+					<span class="tip" data-tip={stepTip} tabindex={stepTip ? 0 : undefined}>
+						<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
+					</span>
 				</form>
 			{/if}
 		{/snippet}
@@ -352,15 +424,21 @@
 		gap: var(--space-2);
 	}
 
-	.warn {
-		position: relative;
-		display: inline-flex;
-		color: var(--foreground);
-		cursor: help;
+	.control-bar {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-4) 0 0;
 	}
 
-	.warn:hover::after,
-	.warn:focus-visible::after {
+	.tip {
+		position: relative;
+		display: inline-flex;
+	}
+
+	.tip[data-tip]:not([data-tip='']):hover::after,
+	.tip[data-tip]:not([data-tip='']):focus::after {
 		content: attr(data-tip);
 		position: absolute;
 		bottom: calc(100% + 6px);
@@ -372,6 +450,18 @@
 		color: var(--color-surface-text);
 		font-size: 0.85em;
 		z-index: 10;
+	}
+
+	.tip button:disabled {
+		pointer-events: none;
+	}
+
+	.tip.info[data-tip]:not([data-tip='']):hover::after,
+	.tip.info[data-tip]:not([data-tip='']):focus::after {
+		top: calc(100% + 6px);
+		bottom: auto;
+		left: 0;
+		right: auto;
 	}
 
 	.picked {

@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Actions, PageServerLoad } from './$types';
 import { DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from '$lib/server/config';
-import { advanceChain, clearChain, ensureChainTicker, readChain, startChain } from '$lib/server/chain';
+import { advanceChain, clearChain, ensureChainTicker, firstPendingStage, readChain, startChain, startChainFrom } from '$lib/server/chain';
 import { loadManifest } from '$lib/server/manifest';
 import { browseForAudio, clearPicked, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
 import { readRecords } from '$lib/server/records';
@@ -203,6 +203,29 @@ export const actions: Actions = {
 		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 		if (anyStageLive(manifest, dirs) || readChain(DATA_DIR) !== null) return fail(409, { busy: true });
 		const started = startChain(manifest, picked.path, dirs);
+		if (started.busy) return fail(409, { busy: true });
+		ensureChainTicker(manifest, dirs);
+		return { started: true, execId: started.execId };
+	},
+	fullContinue: async ({ request }) => {
+		// Like fullStart, but resumes the selected run from its first pending step.
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		reconcile(manifest, dirs);
+		const form = await request.formData();
+		const runId = form.get('runId');
+		const confirmed = form.get('confirmed') === '1';
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		if (anyStageLive(manifest, dirs) || readChain(DATA_DIR) !== null) return fail(409, { busy: true });
+		const stage = firstPendingStage(manifest, runId, dirs, readRecords(DATA_DIR));
+		if (stage === null) return fail(409, { error: 'nothingToContinue' });
+		const gate = canStart(manifest, stage.id, runId, dirs, readRecords(DATA_DIR));
+		if (!gate.ok) return fail(409, { error: 'notAllowed', reason: gate.reason });
+		const overwrite = overwriteGate(manifest, stage.id, runId, dirs, readRecords(DATA_DIR), confirmed);
+		if (!overwrite.ok) return fail(409, { error: 'needsConfirmation', reason: overwrite.reason });
+		const started = startChainFrom(manifest, stage.id, runId, dirs);
 		if (started.busy) return fail(409, { busy: true });
 		ensureChainTicker(manifest, dirs);
 		return { started: true, execId: started.execId };

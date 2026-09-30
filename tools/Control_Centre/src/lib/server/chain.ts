@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Manifest } from "./manifest.ts";
-import { readRecords } from "./records.ts";
-import { canStart, reconcile, startAudioStage, startRunStage, type Dirs } from "./runner.ts";
+import type { Manifest, StageDef } from "./manifest.ts";
+import { readRecords, type RunRecord } from "./records.ts";
+import { canStart, reconcile, runStepStatus, startAudioStage, startRunStage, type Dirs } from "./runner.ts";
 import { resolveRunDir } from "./runs.ts";
 
 export interface ChainState {
@@ -41,6 +41,29 @@ export function startChain(
   const started = startAudioStage(manifest, manifest.stages[0].id, audioPath, dirs);
   if (started.busy) return started;
   writeChain(dirs.dataDir, { currentStage: manifest.stages[0].id, execId: started.execId, runId: null });
+  return { busy: false, execId: started.execId };
+}
+
+export function firstPendingStage(manifest: Manifest, runId: string, dirs: Dirs, records: RunRecord[]): StageDef | null {
+  for (const stage of manifest.stages) {
+    if (stage.argsFrom !== "runDir") continue;
+    const s = runStepStatus(manifest, stage.id, runId, dirs, records);
+    if (s.status !== "done" || s.outOfDate) return stage;
+  }
+  return null;
+}
+
+export function startChainFrom(
+  manifest: Manifest,
+  stageId: string,
+  runId: string,
+  dirs: Dirs
+): { busy: true } | { busy: false; execId: string } {
+  const stage = manifest.stages.find((s) => s.id === stageId);
+  if (!stage || stage.argsFrom !== "runDir") throw new Error(`unknown run-dir stage: ${stageId}`);
+  const started = startRunStage(manifest, stageId, runId, dirs);
+  if (started.busy) return started;
+  writeChain(dirs.dataDir, { currentStage: stageId, execId: started.execId, runId });
   return { busy: false, execId: started.execId };
 }
 

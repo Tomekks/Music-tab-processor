@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Manifest, StageDef } from "./manifest.ts";
 import { appendRecord, nowIso, readRecords } from "./records.ts";
-import { advanceChain, clearChain, ensureChainTicker, readChain, startChain } from "./chain.ts";
+import { advanceChain, clearChain, ensureChainTicker, firstPendingStage, readChain, startChain, startChainFrom } from "./chain.ts";
 import { startRunStage } from "./runner.ts";
 
 function makeScript(dir: string, name: string, body: string): string {
@@ -105,6 +105,144 @@ test("startChain writes the file and returns the execId", () => {
     assert.deepEqual(chain, { currentStage: "s01_ingest", execId: result.execId, runId: null });
   } finally {
     killStage(dataDir, "s01_ingest");
+  }
+});
+
+test("firstPendingStage returns the first not-started step", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-pend", ["audio.wav"]);
+  const found = firstPendingStage(manifest, "run-pend", dirs, readRecords(dataDir));
+  assert.equal(found?.id, "s02_separate");
+});
+
+test("firstPendingStage skips Done steps", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-pend", ["audio.wav", "stems"]);
+  const startedAt = nowIso();
+  appendStarted(dataDir, "exec-s02", "s02_separate", startedAt);
+  appendFinished(dataDir, "exec-s02", "s02_separate", startedAt, "run-pend", "done");
+  const found = firstPendingStage(manifest, "run-pend", dirs, readRecords(dataDir));
+  assert.equal(found?.id, "s03_transcribe");
+});
+
+test("firstPendingStage returns an Out of date Done step", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const scripts = makeScripts(dataDir);
+  const stage = (id: string, label: string, command: string, argsFrom: "audioPath" | "runDir", requires: string[], produces: string[]): StageDef => ({
+    id, label, command: [command], argsFrom, requires, produces, temp: [], reveal: "."
+  });
+  const manifest: Manifest = {
+    version: 1,
+    stages: [
+      stage("s01_ingest", "Ingestion", scripts.ingest, "audioPath", [], ["audio.wav"]),
+      stage("s02_separate", "Separation", scripts.separate, "runDir", ["audio.wav"], ["stems"]),
+      stage("s03_transcribe", "Transcription", scripts.transcribe, "runDir", ["stems"], ["notes"]),
+      stage("s04_tab", "Tab", scripts.tab, "runDir", ["notes"], ["tab.json"])
+    ]
+  };
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-pend", ["audio.wav", "stems", "notes"]);
+  const startedAt = nowIso();
+  appendStarted(dataDir, "exec-s02", "s02_separate", startedAt);
+  appendFinished(dataDir, "exec-s02", "s02_separate", startedAt, "run-pend", "done");
+  appendStarted(dataDir, "exec-s03", "s03_transcribe", startedAt);
+  appendFinished(dataDir, "exec-s03", "s03_transcribe", startedAt, "run-pend", "done");
+  // Pin every mtime explicitly (100 s apart): writing files stamps them with
+  // nanosecond mtimes while `new Date()` truncates to milliseconds, so a
+  // same-millisecond touch could otherwise land *older* than creation time.
+  const base = Date.now();
+  const older = new Date(base - 200_000);
+  const oldTime = new Date(base - 100_000);
+  const newTime = new Date(base);
+  utimesSync(join(runsDir, "run-pend", "audio.wav"), older, older);
+  utimesSync(join(runsDir, "run-pend", "notes"), oldTime, oldTime);
+  utimesSync(join(runsDir, "run-pend", "stems"), newTime, newTime);
+  const found = firstPendingStage(manifest, "run-pend", dirs, readRecords(dataDir));
+  assert.equal(found?.id, "s03_transcribe");
+});
+
+test("firstPendingStage returns null when all are Done and current", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-pend", ["audio.wav", "stems", "notes", "tab.json"]);
+  const startedAt = nowIso();
+  for (const [exec, stage] of [["exec-s02", "s02_separate"], ["exec-s03", "s03_transcribe"], ["exec-s04", "s04_tab"]] as const) {
+    appendStarted(dataDir, exec, stage, startedAt);
+    appendFinished(dataDir, exec, stage, startedAt, "run-pend", "done");
+  }
+  assert.equal(firstPendingStage(manifest, "run-pend", dirs, readRecords(dataDir)), null);
+});
+
+test("startChainFrom throws for step 1 and unknown stages", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-mid", ["audio.wav"]);
+  assert.throws(() => startChainFrom(manifest, "s01_ingest", "run-mid", dirs));
+  assert.throws(() => startChainFrom(manifest, "nope", "run-mid", dirs));
+});
+
+test("startChainFrom writes the chain and starts that stage", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-mid", ["audio.wav", "stems"]);
+  try {
+    const result = startChainFrom(manifest, "s03_transcribe", "run-mid", dirs);
+    assert.equal(result.busy, false);
+    if (result.busy) return;
+    assert.deepEqual(readChain(dataDir), { currentStage: "s03_transcribe", execId: result.execId, runId: "run-mid" });
+    const started = readRecords(dataDir).filter((r) => r.type === "started" && r.stage === "s03_transcribe");
+    assert.equal(started.length, 1);
+    assert.equal(started[0].execId, result.execId);
+  } finally {
+    killStage(dataDir, "s03_transcribe");
+  }
+});
+
+test("startChainFrom with a stage already live returns busy and writes nothing", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir, "sleep 30"));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-mid", ["audio.wav"]);
+  try {
+    const live = startRunStage(manifest, "s02_separate", "run-mid", dirs);
+    assert.equal(live.busy, false);
+    assert.deepEqual(startChainFrom(manifest, "s03_transcribe", "run-mid", dirs), { busy: true });
+    assert.equal(existsSync(join(dataDir, "chain.json")), false);
+  } finally {
+    killStage(dataDir, "s02_separate");
+    killStage(dataDir, "s03_transcribe");
+  }
+});
+
+test("startChainFrom then advanceChain with a fabricated done record starts the following stage", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const manifest = makeChainManifest(makeScripts(dataDir));
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  makeRun(runsDir, "run-mid", ["audio.wav", "stems"]);
+  try {
+    const result = startChainFrom(manifest, "s02_separate", "run-mid", dirs);
+    assert.equal(result.busy, false);
+    if (result.busy) return;
+    killStage(dataDir, "s02_separate");
+    const startedAt = readRecords(dataDir).find((r) => r.type === "started" && r.execId === result.execId)?.startedAt ?? nowIso();
+    appendFinished(dataDir, result.execId, "s02_separate", startedAt, "run-mid", "done");
+    advanceChain(manifest, dirs);
+    const chain = readChain(dataDir);
+    assert.equal(chain?.currentStage, "s03_transcribe");
+    assert.equal(chain?.runId, "run-mid");
+    const started = readRecords(dataDir).filter((r) => r.type === "started" && r.stage === "s03_transcribe");
+    assert.equal(started.length, 1);
+    assert.equal(started[0].execId, chain?.execId);
+  } finally {
+    killStage(dataDir, "s02_separate");
+    killStage(dataDir, "s03_transcribe");
   }
 });
 
