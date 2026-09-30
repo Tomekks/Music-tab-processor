@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import FolderOutput from '@lucide/svelte/icons/folder-output';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import X from '@lucide/svelte/icons/x';
@@ -93,7 +94,7 @@
 	});
 
 	$effect(() => {
-		if (anyRunning || awaitingExec !== undefined) {
+		if (anyRunning || awaitingExec !== undefined || data.chainActive) {
 			const id = setInterval(() => {
 				if (!document.hidden) invalidate('app:run');
 			}, 1000);
@@ -109,6 +110,14 @@
 		if (last.outcome === 'done' && last.runId !== null)
 			goto('/audio?run=' + encodeURIComponent(last.runId), { invalidateAll: true });
 	});
+
+	const followIngest: SubmitFunction = () => async ({ result, update }) => {
+		await update();
+		if (result.type === 'success' && typeof result.data?.execId === 'string') {
+			awaitingExec = result.data.execId;
+			setTimeout(() => (awaitingExec = undefined), 60000);
+		}
+	};
 </script>
 
 <h1 class="page-title">Audio processing</h1>
@@ -139,7 +148,7 @@
 				}}
 			>
 				<input type="hidden" name="runId" value={data.run.id} />
-				<button class="btn secondary" type="submit" disabled={data.busy}>Delete</button>
+				<button class="btn secondary" type="submit" disabled={data.busy || data.chainActive}>Delete</button>
 			</form>
 			<form method="GET" action="/audio">
 				<select name="run" value={data.run?.id} onchange={(e) => e.currentTarget.form?.requestSubmit()}>
@@ -215,21 +224,25 @@
 					aria-label="Show in Finder"><FolderOutput size={16} aria-hidden="true" /></button
 				>
 			</form>
+			<form method="POST" action="?/fullStart" use:enhance={followIngest}>
+				<button
+					class="btn secondary"
+					type="submit"
+					title={data.chainActive ? 'A Full start is running' : 'Ingest the picked file, then run every step'}
+					disabled={step1.status === 'running' || !data.picked || data.chainActive}
+				>
+					Full start
+				</button>
+			</form>
 			<form
 				method="POST"
 				action="?/start"
-				use:enhance={() => async ({ result, update }) => {
-					await update();
-					if (result.type === 'success' && typeof result.data?.execId === 'string') {
-						awaitingExec = result.data.execId;
-						setTimeout(() => (awaitingExec = undefined), 60000);
-					}
-				}}
+				use:enhance={followIngest}
 			>
 				<button
 					class="btn primary"
 					type="submit"
-					disabled={step1.status === 'running' || !data.picked}
+					disabled={step1.status === 'running' || !data.picked || data.chainActive}
 					title="Ingest the picked file as a new run"
 				>
 					Start
