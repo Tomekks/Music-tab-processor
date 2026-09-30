@@ -52,10 +52,18 @@
 	);
 
 	let open = $state(false);
-	let previous: Props['status'] | null = null;
+	let previousReal: boolean | null = null;
+	let autoOpened = false;
 	$effect(() => {
-		if (status === 'failed' && previous !== null && previous !== 'failed') open = true;
-		previous = status;
+		const real = status === 'failed' && outcome === 'failed';
+		if (real && previousReal === false) {
+			open = true;
+			autoOpened = true;
+		} else if (status === 'running' && autoOpened) {
+			open = false;
+			autoOpened = false;
+		}
+		previousReal = real;
 	});
 
 	let copied = $state(false);
@@ -82,7 +90,7 @@
 		<span class="status"><span class="dot {dotClass}">{label.glyph}</span> {label.text}</span>
 		<div class="controls">
 			{@render before?.()}
-			<button class="log-toggle" type="button" onclick={() => (open = !open)} aria-expanded={open}>
+			<button class="log-toggle" type="button" onclick={() => { open = !open; autoOpened = false; }} aria-expanded={open}>
 				Log {open ? '▾' : '▸'}
 			</button>
 			{@render after?.()}
