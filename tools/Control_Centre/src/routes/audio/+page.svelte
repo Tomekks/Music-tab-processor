@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
+	import FolderOutput from '@lucide/svelte/icons/folder-output';
+	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
 	import TabPlayer from '$lib/components/organisms/TabPlayer.svelte';
 	import type { ActionData, PageData } from './$types';
@@ -83,43 +85,50 @@
 
 {#if data.run}
 	<div class="subtitle-row">
-		<p class="subtitle">{heading}</p>
-		<form
-			method="POST"
-			action="?/deleteRun"
-			use:enhance={({ cancel }) => {
-				if (
-					!confirm(
-						`Move ${heading ?? data.run?.id} (${data.run?.id}) to the Trash?\n\nThe whole run folder moves (the audio copy and every step's output). You can restore it from the Trash. The history log is kept.`
-					)
-				) {
-					cancel();
-					return;
-				}
-				return async ({ result, update }) => {
-					await update();
-					if (result.type === 'success') await goto('/audio', { invalidateAll: true });
-				};
-			}}
-		>
-			<input type="hidden" name="runId" value={data.run.id} />
-			<button class="btn secondary" type="submit" disabled={data.busy}>Delete</button>
-		</form>
-		<form method="GET" action="/audio">
-			<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-				{#each data.runs as run}
-					<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
-				{/each}
-			</select>
-		</form>
+		<p class="subtitle">
+			{heading}{#if data.run.sampleRate > 0}
+				· {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch{/if}
+		</p>
+		<div class="picker-group">
+			<form
+				method="POST"
+				action="?/deleteRun"
+				use:enhance={({ cancel }) => {
+					if (
+						!confirm(
+							`Move ${heading ?? data.run?.id} (${data.run?.id}) to the Trash?\n\nThe whole run folder moves (the audio copy and every step's output). You can restore it from the Trash. The history log is kept.`
+						)
+					) {
+						cancel();
+						return;
+					}
+					return async ({ result, update }) => {
+						await update();
+						if (result.type === 'success') await goto('/audio', { invalidateAll: true });
+					};
+				}}
+			>
+				<input type="hidden" name="runId" value={data.run.id} />
+				<button class="btn secondary" type="submit" disabled={data.busy}>Delete</button>
+			</form>
+			<form method="GET" action="/audio">
+				<select name="run" value={data.run?.id} onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+					{#each data.runs as run}
+						<option value={run.id}>{run.label}</option>
+					{/each}
+				</select>
+			</form>
+		</div>
 	</div>
 {:else}
 	<div class="subtitle-row">
 		<p class="subtitle">No runs yet</p>
-		<form method="POST" action="?/deleteRun">
-			<button class="btn secondary" type="submit" disabled>Delete</button>
-		</form>
-		<select disabled><option>No runs yet</option></select>
+		<div class="picker-group">
+			<form method="POST" action="?/deleteRun">
+				<button class="btn secondary" type="submit" disabled>Delete</button>
+			</form>
+			<select disabled><option>No runs yet</option></select>
+		</div>
 	</div>
 {/if}
 
@@ -143,40 +152,50 @@
 		elapsed={step1.status === 'running' ? elapsed(step1.startedAt) : null}
 		log={step1.log}
 	>
-		{#if data.picked}
-			<span class="picked">{data.picked.name} ({formatSize(data.picked.size)})</span>
-		{/if}
-		<form method="POST" action="?/browse" use:enhance>
-			<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
-				Browse
-			</button>
-		</form>
-		{#if form?.invalid}
-			<span class="error">{form.invalid}</span>
-		{:else if form?.browseFailed}
-			<span class="error">Browse failed: {form.browseFailed}</span>
-		{/if}
-		<form
-			method="POST"
-			action="?/start"
-			use:enhance={() => async ({ result, update }) => {
-				await update();
-				if (result.type === 'success') await goto('/audio', { invalidateAll: true });
-			}}
-		>
-			<button
-				class="btn primary"
-				type="submit"
-				disabled={step1.status === 'running' || !data.picked}
+		{#snippet before()}
+			{#if data.picked}
+				<span class="picked">{data.picked.name} ({formatSize(data.picked.size)})</span>
+			{/if}
+			<form method="POST" action="?/browse" use:enhance>
+				<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
+					Browse
+				</button>
+			</form>
+			{#if form?.invalid}
+				<span class="error">{form.invalid}</span>
+			{:else if form?.browseFailed}
+				<span class="error">Browse failed: {form.browseFailed}</span>
+			{/if}
+		{/snippet}
+		{#snippet after()}
+			<form method="POST" action="?/reveal" use:enhance>
+				<input type="hidden" name="stage" value={step1.id} />
+				<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+				<button
+					class="btn secondary icon"
+					type="submit"
+					disabled={!step1.canReveal}
+					title="Show in Finder"
+					aria-label="Show in Finder"><FolderOutput size={16} aria-hidden="true" /></button
+				>
+			</form>
+			<form
+				method="POST"
+				action="?/start"
+				use:enhance={() => async ({ result, update }) => {
+					await update();
+					if (result.type === 'success') await goto('/audio', { invalidateAll: true });
+				}}
 			>
-				Start
-			</button>
-		</form>
-		<form method="POST" action="?/reveal" use:enhance>
-			<input type="hidden" name="stage" value={step1.id} />
-			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
-			<button class="btn secondary" type="submit" disabled={!step1.canReveal}>Show in Finder</button>
-		</form>
+				<button
+					class="btn primary"
+					type="submit"
+					disabled={step1.status === 'running' || !data.picked}
+				>
+					Start
+				</button>
+			</form>
+		{/snippet}
 	</StepRow>
 {/if}
 
@@ -190,60 +209,68 @@
 		elapsed={step.status === 'running' ? elapsed(step.startedAt) : null}
 		log={step.log}
 	>
-		<form
-			method="POST"
-			action="?/startStage"
-			use:enhance={({ cancel, formData }) => {
-				if (step.noRecord) {
-					if (!confirm(overwriteConfirmText(step))) {
-						cancel();
-						return;
-					}
-					formData.set('confirmed', '1');
-				}
-			}}
-		>
-			<input type="hidden" name="stage" value={step.id} />
-			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
-			<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
-		</form>
-		{#if step.canStop}
-			<form
-				method="POST"
-				action="?/stopStage"
-				use:enhance={({ cancel }) => {
-					if (!confirm(stopConfirmText(step))) {
-						cancel();
-						return;
-					}
-					stopping = true;
-					return async ({ update }) => {
-						await update();
-						stopping = false;
-					};
-				}}
-			>
+		{#snippet before()}
+			{#if !step.canStart && step.reason && step.status !== 'running'}
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex: the span needs keyboard focus for its tooltip -->
+				<span class="warn" tabindex="0" role="img" aria-label={step.reason} data-tip={step.reason}
+					><TriangleAlert size={16} aria-hidden="true" /></span
+				>
+			{/if}
+		{/snippet}
+		{#snippet after()}
+			<form method="POST" action="?/reveal" use:enhance>
 				<input type="hidden" name="stage" value={step.id} />
 				<input type="hidden" name="runId" value={data.run?.id ?? ''} />
-				<button class="btn secondary" type="submit" disabled={stopping}>Stop</button>
+				<button
+					class="btn secondary icon"
+					type="submit"
+					disabled={!step.canReveal}
+					title="Show in Finder"
+					aria-label="Show in Finder"><FolderOutput size={16} aria-hidden="true" /></button
+				>
 			</form>
-		{/if}
-		<form method="POST" action="?/reveal" use:enhance>
-			<input type="hidden" name="stage" value={step.id} />
-			<input type="hidden" name="runId" value={data.run?.id ?? ''} />
-			<button class="btn secondary" type="submit" disabled={!step.canReveal}>Show in Finder</button>
-		</form>
-		{#if !step.canStart && step.reason}
-			<span class="reason">{step.reason}</span>
-		{/if}
+			{#if step.canStop}
+				<form
+					method="POST"
+					action="?/stopStage"
+					use:enhance={({ cancel }) => {
+						if (!confirm(stopConfirmText(step))) {
+							cancel();
+							return;
+						}
+						stopping = true;
+						return async ({ update }) => {
+							await update();
+							stopping = false;
+						};
+					}}
+				>
+					<input type="hidden" name="stage" value={step.id} />
+					<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+					<button class="btn secondary" type="submit" disabled={stopping}>Stop</button>
+				</form>
+			{:else}
+				<form
+					method="POST"
+					action="?/startStage"
+					use:enhance={({ cancel, formData }) => {
+						if (step.noRecord) {
+							if (!confirm(overwriteConfirmText(step))) {
+								cancel();
+								return;
+							}
+							formData.set('confirmed', '1');
+						}
+					}}
+				>
+					<input type="hidden" name="stage" value={step.id} />
+					<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+					<button class="btn primary" type="submit" disabled={!step.canStart}> Start </button>
+				</form>
+			{/if}
+		{/snippet}
 	</StepRow>
 {/each}
-
-{#if data.run && data.run.sampleRate > 0}
-	<p class="run">
-		{heading} · {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch
-	</p>
-{/if}
 
 <style>
 	.page-title {
@@ -262,19 +289,39 @@
 		gap: var(--space-4);
 	}
 
+	.picker-group {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.warn {
+		position: relative;
+		display: inline-flex;
+		color: var(--foreground);
+		cursor: help;
+	}
+
+	.warn:hover::after,
+	.warn:focus-visible::after {
+		content: attr(data-tip);
+		position: absolute;
+		bottom: calc(100% + 6px);
+		right: 0;
+		white-space: nowrap;
+		padding: 4px 8px;
+		border-radius: 6px;
+		background: var(--color-surface);
+		color: var(--color-surface-text);
+		font-size: 0.85em;
+		z-index: 10;
+	}
+
 	.picked {
 		color: var(--foreground);
 	}
 
 	.error {
-		color: var(--foreground);
-	}
-
-	.reason {
-		color: var(--foreground);
-	}
-
-	.run {
 		color: var(--foreground);
 	}
 
@@ -303,5 +350,9 @@
 		background: var(--component-button-secondary-background);
 		color: var(--component-button-secondary-text);
 		border-color: var(--component-button-secondary-border);
+	}
+
+	.btn.icon {
+		padding-inline: var(--component-button-padding-y);
 	}
 </style>

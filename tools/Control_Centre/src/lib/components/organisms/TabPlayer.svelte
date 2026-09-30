@@ -21,6 +21,7 @@
 	let playing = $state(false);
 	let muted = $state(false);
 	let activeStep = $state<number | null>(player === null ? null : 0);
+	let strip: TabPreview | undefined = $state();
 
 	const disabled = $derived(preview === null || preview.steps.length === 0);
 
@@ -44,6 +45,7 @@
 		player.reset();
 		playing = false;
 		activeStep = 0;
+		strip?.scrollToStart();
 	}
 
 	function toggleMute() {
@@ -62,6 +64,7 @@
 				player.reset();
 				playing = false;
 				activeStep = 0;
+				strip?.scrollToStart();
 				return;
 			}
 			raf = requestAnimationFrame(tick);
@@ -106,7 +109,7 @@
 			{muted ? 'Sound off' : 'Sound on'}
 		</button>
 	</div>
-	<TabPreview {preview} {activeStep} follow={playing} />
+	<TabPreview bind:this={strip} {preview} {activeStep} follow={playing} />
 </div>
 
 <style>

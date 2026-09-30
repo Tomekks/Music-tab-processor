@@ -48,6 +48,10 @@
 		return 1 + Math.max(0, strings - 1 - s - 2) * 0.6;
 	}
 
+	export function scrollToStart() {
+		if (scroller) scroller.scrollLeft = 0;
+	}
+
 	$effect(() => {
 		const s = activeStep;
 		if (!follow || s === null || !scroller) return;
@@ -59,13 +63,13 @@
 </script>
 
 <div class="tab-preview" data-tab-preview bind:this={scroller}>
-	<svg {width} {height} role="img">
+	<svg width="100%" style="min-width: {width}px" {height} role="img">
 		<title>Tab preview</title>
 		{#each tuning as midi, s}
 			<line
 				x1={PAD_LEFT - 8}
 				y1={stringY(s)}
-				x2={width - PAD_RIGHT + 8}
+				x2="100%"
 				y2={stringY(s)}
 				stroke="var(--foreground)"
 				stroke-opacity="0.22"

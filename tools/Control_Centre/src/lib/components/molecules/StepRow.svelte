@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Check from '@lucide/svelte/icons/check';
+	import Copy from '@lucide/svelte/icons/copy';
 
 	interface Props {
 		title: string;
@@ -9,10 +11,11 @@
 		outOfDate?: boolean;
 		elapsed?: string | null;
 		log: string;
-		children?: Snippet;
+		before?: Snippet;
+		after?: Snippet;
 	}
 
-	let { title, status, outcome = null, noRecord = false, outOfDate = false, elapsed = null, log, children }: Props = $props();
+	let { title, status, outcome = null, noRecord = false, outOfDate = false, elapsed = null, log, before, after }: Props = $props();
 
 	const labels: Record<Props['status'], { glyph: string; text: string }> = {
 		notStarted: { glyph: '○', text: 'Not started' },
@@ -54,6 +57,18 @@
 		if (status === 'failed' && previous !== null && previous !== 'failed') open = true;
 		previous = status;
 	});
+
+	let copied = $state(false);
+
+	async function copyLog() {
+		try {
+			await navigator.clipboard.writeText(log);
+			copied = true;
+			setTimeout(() => (copied = false), 1500);
+		} catch (err) {
+			console.error(err);
+		}
+	}
 </script>
 
 <section class="step">
@@ -66,14 +81,31 @@
 		</div>
 		<span class="status"><span class="dot {dotClass}">{label.glyph}</span> {label.text}</span>
 		<div class="controls">
-			{@render children?.()}
+			{@render before?.()}
+			<button class="log-toggle" type="button" onclick={() => (open = !open)} aria-expanded={open}>
+				Log {open ? '▾' : '▸'}
+			</button>
+			{@render after?.()}
 		</div>
-		<button class="log-toggle" type="button" onclick={() => (open = !open)} aria-expanded={open}>
-			Log {open ? '▾' : '▸'}
-		</button>
 	</div>
 	{#if open}
-		<pre class="log">{log}</pre>
+		<div class="log-wrap">
+			<button
+				type="button"
+				class="copy"
+				aria-label="Copy log"
+				title="Copy log"
+				disabled={log === ''}
+				onclick={copyLog}
+			>
+				{#if copied}
+					<Check size={16} aria-hidden="true" />
+				{:else}
+					<Copy size={16} aria-hidden="true" />
+				{/if}
+			</button>
+			<pre class="log">{log}</pre>
+		</div>
 	{/if}
 </section>
 
@@ -160,6 +192,26 @@
 		cursor: pointer;
 		color: var(--foreground);
 		flex: 0 0 auto;
+	}
+
+	.log-wrap {
+		position: relative;
+	}
+
+	.copy {
+		position: absolute;
+		top: var(--space-2);
+		right: var(--space-2);
+		display: inline-flex;
+		background: none;
+		border: none;
+		cursor: pointer;
+		color: var(--foreground);
+	}
+
+	.copy:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 
 	.log {
