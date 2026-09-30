@@ -104,3 +104,20 @@ pairings, UX guidance for the editor itself) rather than more plumbing. When tha
 of UI styles, color palettes, font pairings, and UX guidelines (`search.py "<query>" --domain
 style|color|typography|ux|...`). Worth consulting then, not before — nothing in Tasks 1-6 above
 involves a visual design decision it would inform.
+
+## Note for future design-system plans: "used only" view per brand (owner request, 2026-09-30)
+
+Add a per-brand toggle in the editor that, when on, shows only the tokens and components that the
+brand's consuming surface actually uses in its latest build, and hides the rest; toggling it off
+shows everything again. Off by default. "If possible" — not yet scoped, so two things to settle first:
+- **What "used" means, and per whom.** `token-usage.test.mjs` already computes which tokens are
+  referenced (by CSS variable name, alias target, or utility class) but over one fixed set of scan
+  roots (the web app, the design system itself, and since slice 7 Control Center's `src`). A per-brand
+  view needs each brand mapped to the surface that consumes it (the `default` brand to the web app,
+  a future Control Center brand to Control Center), and a scan per surface. Today Control Center builds
+  whichever brand is active, so the mapping does not exist yet.
+- **"Latest build" vs source scan.** The cheap, deterministic version is a source scan like the
+  orphan test; a build-output scan would be exact for what ships but is heavier. Pick one when this
+  is planned.
+Also decide how the hidden set interacts with the existing inherited/overridden display (a used token
+that is merely inherited should stay visible).
