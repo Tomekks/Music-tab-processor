@@ -9,12 +9,12 @@ import { readRecords } from '$lib/server/records';
 import {
 	anyStageLive,
 	canStart,
+	ingestStatusForRun,
 	logPath,
 	overwriteGate,
 	reconcile,
 	runStepStatus,
 	slotRunId,
-	stageStatus,
 	startAudioStage,
 	startRunStage,
 	stopStage as stopStageRun
@@ -22,6 +22,7 @@ import {
 import { deleteStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, pickRun, readRunSummary, resolveRunDir, type RunSummary } from '$lib/server/runs';
+import { trashRun, trashWithFinder } from '$lib/server/trash';
 import { buildTabPreview, type TabPreviewData } from '$lib/tab';
 
 const STAGE_ID = 's01_ingest';
@@ -40,7 +41,17 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 	reconcile(manifest, dirs);
 	const records = readRecords(DATA_DIR);
 	const picked = pickRun(RUNS_DIR, url.searchParams.get('run'));
-	const run: RunSummary | null = picked.id === null ? null : readRunSummary(RUNS_DIR, picked.id);
+	const run: RunSummary | null =
+		picked.id === null
+			? null
+			: (readRunSummary(RUNS_DIR, picked.id) ?? {
+					id: picked.id,
+					title: picked.id,
+					artist: null,
+					durationSec: 0,
+					sampleRate: 0,
+					channels: 0
+				});
 	const runNotFound = picked.notFound;
 	const runs = listRuns(RUNS_DIR).map((entry) => {
 		const summary = readRunSummary(RUNS_DIR, entry.id);
@@ -52,7 +63,6 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 					: `${summary.title}${summary.artist ? ` — ${summary.artist}` : ''} · ${entry.ingestedAt.slice(0, 16).replace('T', ' ')}`
 		};
 	});
-	const step1 = stageStatus(manifest, STAGE_ID, dirs);
 	// While any stage is live the "waiting" reason is suppressed: the
 	// disabled Start button already says why.
 	const live = anyStageLive(manifest, dirs);
@@ -77,6 +87,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		}
 		const canReveal = resolveRevealDir(manifest, stage.id, run.id, RUNS_DIR) !== null;
 		if (stage.id === STAGE_ID) {
+			const step1 = ingestStatusForRun(manifest, dirs, run.id, records);
 			return {
 				id: stage.id,
 				label: stage.label,
@@ -91,7 +102,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 				canStop: false,
 				stopPreview: [] as string[],
 				canReveal,
-				log: readLogTail(DATA_DIR, stage.id)
+				log: step1.status === 'running' || step1.status === 'failed' ? readLogTail(DATA_DIR, stage.id) : ''
 			};
 		}
 		const perRun = runStepStatus(manifest, stage.id, run.id, dirs, records);
@@ -139,7 +150,8 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		runNotFound,
 		runs,
 		steps,
-		tabPreview
+		tabPreview,
+		busy: live
 	};
 };
 
@@ -229,5 +241,21 @@ export const actions: Actions = {
 		} catch (err) {
 			return fail(500, { error: 'revealFailed', reason: (err as Error).message });
 		}
+	},
+	deleteRun: async ({ request }) => {
+		// The client sends a run ID only; trashRun resolves and validates it.
+		const form = await request.formData();
+		const runId = form.get('runId');
+		if (typeof runId !== 'string') return fail(400, { error: 'badRun' });
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		const result = await trashRun(RUNS_DIR, runId, () => anyStageLive(manifest, dirs), trashWithFinder);
+		if (!result.ok) {
+			if (result.reason === 'busy')
+				return fail(409, { error: 'notAllowed', reason: 'Wait for the running step to finish, then delete.' });
+			if (result.reason === 'trashFailed') return fail(500, { error: 'trashFailed', reason: result.message });
+			return fail(400, { error: 'badRun' });
+		}
+		return { deleted: true };
 	}
 };

@@ -22,6 +22,11 @@
 		return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
 	}
 
+	function formatSize(bytes: number): string {
+		if (bytes < 1000000) return `${Math.max(1, Math.ceil(bytes / 1000))} KB`;
+		return `${(bytes / 1000000).toFixed(1)} MB`;
+	}
+
 	const heading = $derived(
 		data.run ? `${data.run.title}${data.run.artist ? ` — ${data.run.artist}` : ''}` : null
 	);
@@ -32,6 +37,7 @@
 		if (f.error === 'nothingToShow') return 'Nothing to show for that step yet.';
 		if (f.error === 'nothingToStop') return 'Nothing is running to stop.';
 		if (f.error === 'stopFailed') return f.reason ?? 'Could not stop the step.';
+		if (f.error === 'trashFailed') return `Could not move the run to the Trash: ${f.reason}`;
 		if (f.error === 'revealFailed') {
 			return f.reason ? `Could not open Finder: ${f.reason}` : 'Could not open Finder.';
 		}
@@ -77,19 +83,44 @@
 
 {#if data.run}
 	<div class="subtitle-row">
-		<p class="subtitle">{heading} · {data.run.id}</p>
-		{#if data.runs.length > 0}
-			<form method="GET" action="/audio">
-				<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-					{#each data.runs as run}
-						<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
-					{/each}
-				</select>
-			</form>
-		{/if}
+		<p class="subtitle">{heading}</p>
+		<form
+			method="POST"
+			action="?/deleteRun"
+			use:enhance={({ cancel }) => {
+				if (
+					!confirm(
+						`Move ${heading ?? data.run?.id} (${data.run?.id}) to the Trash?\n\nThe whole run folder moves (the audio copy and every step's output). You can restore it from the Trash. The history log is kept.`
+					)
+				) {
+					cancel();
+					return;
+				}
+				return async ({ result, update }) => {
+					await update();
+					if (result.type === 'success') await goto('/audio', { invalidateAll: true });
+				};
+			}}
+		>
+			<input type="hidden" name="runId" value={data.run.id} />
+			<button class="btn secondary" type="submit" disabled={data.busy}>Delete</button>
+		</form>
+		<form method="GET" action="/audio">
+			<select name="run" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+				{#each data.runs as run}
+					<option value={run.id} selected={run.id === data.run?.id}>{run.label}</option>
+				{/each}
+			</select>
+		</form>
 	</div>
 {:else}
-	<p class="subtitle">No runs yet</p>
+	<div class="subtitle-row">
+		<p class="subtitle">No runs yet</p>
+		<form method="POST" action="?/deleteRun">
+			<button class="btn secondary" type="submit" disabled>Delete</button>
+		</form>
+		<select disabled><option>No runs yet</option></select>
+	</div>
 {/if}
 
 {#if formError}
@@ -113,7 +144,7 @@
 		log={step1.log}
 	>
 		{#if data.picked}
-			<span class="picked">{data.picked.name} ({data.picked.size} bytes)</span>
+			<span class="picked">{data.picked.name} ({formatSize(data.picked.size)})</span>
 		{/if}
 		<form method="POST" action="?/browse" use:enhance>
 			<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
@@ -208,7 +239,7 @@
 	</StepRow>
 {/each}
 
-{#if data.run}
+{#if data.run && data.run.sampleRate > 0}
 	<p class="run">
 		{heading} · {Math.round(data.run.durationSec)}s · {data.run.sampleRate} Hz · {data.run.channels}ch
 	</p>

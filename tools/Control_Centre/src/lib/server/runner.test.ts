@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { Manifest } from "./manifest.ts";
 import { appendRecord, nowIso, readRecords } from "./records.ts";
-import { canStart, groupAlive, isOutOfDate, overwriteGate, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage, stopStage } from "./runner.ts";
+import { canStart, groupAlive, ingestStatusForRun, isOutOfDate, overwriteGate, reconcile, runStepStatus, stageStatus, startAudioStage, startRunStage, stopStage } from "./runner.ts";
 
 function makeScript(dir: string, name: string, body: string): string {
   const path = join(dir, name);
@@ -670,4 +670,66 @@ test("isOutOfDate rethrows a non-ENOENT stat error", () => {
   assert.throws(() => isOutOfDate(stage, fileAsDir), (err: unknown) => {
     return (err as NodeJS.ErrnoException).code === "ENOTDIR";
   });
+});
+
+test("ingestStatusForRun: a running slot wins over records and files", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeManifest(makeScript(dataDir, "sleep_stage.sh", "sleep 30"));
+  startAudioStage(manifest, "s01_ingest", join(dataDir, "in.m4a"), dirs);
+  const status = ingestStatusForRun(manifest, dirs, "any-run", readRecords(dataDir));
+  assert.equal(status.status, "running");
+  killGroup(dataDir);
+});
+
+test("ingestStatusForRun: a failed last record gives failed for any run", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeManifest("/bin/true");
+  const startedAt = nowIso();
+  appendStarted(dataDir, "exec-1", "s01_ingest", startedAt, null);
+  appendFinished(dataDir, "exec-1", "s01_ingest", startedAt, null, "failed");
+  const records = readRecords(dataDir);
+  for (const runId of ["run1", "run2"]) {
+    const status = ingestStatusForRun(manifest, dirs, runId, records);
+    assert.equal(status.status, "failed");
+    assert.equal(status.outcome, "failed");
+    assert.equal(status.startedAt, startedAt);
+  }
+});
+
+test("ingestStatusForRun: a failed record followed by a done record gives done", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeManifest("/bin/true");
+  const startedAt = nowIso();
+  appendFinished(dataDir, "exec-0", "s01_ingest", startedAt, null, "failed");
+  appendFinished(dataDir, "exec-1", "s01_ingest", startedAt, null, "done");
+  makeRunWithFiles(runsDir, "run1", startedAt.slice(0, 19), []);
+  const status = ingestStatusForRun(manifest, dirs, "run1", readRecords(dataDir));
+  assert.deepEqual(status, { status: "done", execId: null, startedAt: null, outcome: "done" });
+});
+
+test("ingestStatusForRun: deleted newest run with an exit-0 slot gives done for a remaining run", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeManifest("/bin/true");
+  const startedAt = nowIso();
+  writeFileSync(join(dataDir, "s01_ingest.json"), JSON.stringify({ execId: "exec-1", startedAt, pid: 999999999 }));
+  writeFileSync(join(dataDir, "s01_ingest.exit"), "0");
+  // The remaining run was ingested before the deleted newest run's slot
+  // started, so the old slot logic finds no run and reports failed.
+  makeRunWithFiles(runsDir, "old-run", "2020-01-01T00:00:00", []);
+  assert.equal(stageStatus(manifest, "s01_ingest", dirs).status, "failed");
+  const status = ingestStatusForRun(manifest, dirs, "old-run", readRecords(dataDir));
+  assert.deepEqual(status, { status: "done", execId: null, startedAt: null, outcome: "done" });
+});
+
+test("ingestStatusForRun: a run without metadata.json and no failure gives notStarted", () => {
+  const { dataDir, runsDir, pipelineRoot } = makeDirs();
+  const dirs = { dataDir, runsDir, pipelineRoot };
+  const manifest = makeManifest("/bin/true");
+  mkdirSync(join(runsDir, "empty-run"), { recursive: true });
+  const status = ingestStatusForRun(manifest, dirs, "empty-run", readRecords(dataDir));
+  assert.deepEqual(status, { status: "notStarted", execId: null, startedAt: null, outcome: null });
 });

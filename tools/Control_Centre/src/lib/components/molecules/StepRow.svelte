@@ -49,8 +49,10 @@
 	);
 
 	let open = $state(false);
+	let previous: Props['status'] | null = null;
 	$effect(() => {
-		if (status === 'failed') open = true;
+		if (status === 'failed' && previous !== null && previous !== 'failed') open = true;
+		previous = status;
 	});
 </script>
 

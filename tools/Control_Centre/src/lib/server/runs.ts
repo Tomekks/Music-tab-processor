@@ -84,19 +84,20 @@ export function readRunSummary(runsDir: string, id: string): RunSummary | null {
   } catch {
     return null;
   }
+  const artist = metadata.artist ?? null;
   if (
     typeof metadata.title !== "string" ||
     typeof metadata.durationSec !== "number" ||
     typeof metadata.sampleRate !== "number" ||
     typeof metadata.channels !== "number" ||
-    (metadata.artist !== null && typeof metadata.artist !== "string")
+    (artist !== null && typeof artist !== "string")
   ) {
     return null;
   }
   return {
     id,
     title: metadata.title,
-    artist: metadata.artist,
+    artist,
     durationSec: metadata.durationSec,
     sampleRate: metadata.sampleRate,
     channels: metadata.channels
