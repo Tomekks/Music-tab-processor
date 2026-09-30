@@ -38,6 +38,7 @@ const PAIRS = [
   ["surfaceActive/surfaceActiveText (dark)", darkTree, "semantic.color.surfaceActive", "semantic.color.surfaceActiveText"],
   ["background/statusDone (light)", lightTree, "semantic.color.background", "semantic.color.statusDone"],
   ["background/statusFailed (light)", lightTree, "semantic.color.background", "semantic.color.statusFailed"],
+  ["background/statusError (light)", lightTree, "semantic.color.background", "semantic.color.statusError"],
   ["background/statusDone (dark)", darkTree, "semantic.color.background", "semantic.color.statusDone"],
   ["background/statusFailed (dark)", darkTree, "semantic.color.background", "semantic.color.statusFailed"],
   ["background/statusError (dark)", darkTree, "semantic.color.background", "semantic.color.statusError"],

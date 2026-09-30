@@ -408,6 +408,10 @@
 	}
 
 	.subtitle {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		margin: 0;
 		color: var(--foreground);
 	}
 

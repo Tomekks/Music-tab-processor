@@ -133,11 +133,11 @@
 	}
 
 	.string-name {
-		font-family: var(--font-mono);
+		font-family: var(--font-geist-mono);
 		font-size: 10px;
 	}
 
 	.fret {
-		font-family: var(--font-mono);
+		font-family: var(--font-geist-mono);
 	}
 </style>

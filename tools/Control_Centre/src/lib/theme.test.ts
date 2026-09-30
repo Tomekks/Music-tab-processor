@@ -2,18 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { nextTheme, resolveTheme, THEME_STORAGE_KEY } from "./theme.ts";
 
-test("stored light or dark wins over the system", () => {
-  assert.equal(resolveTheme("light", true), "light");
-  assert.equal(resolveTheme("light", false), "light");
-  assert.equal(resolveTheme("dark", true), "dark");
-  assert.equal(resolveTheme("dark", false), "dark");
+test("stored light or dark wins", () => {
+  assert.equal(resolveTheme("light"), "light");
+  assert.equal(resolveTheme("dark"), "dark");
 });
 
-test("null and junk values follow the system", () => {
-  assert.equal(resolveTheme(null, true), "dark");
-  assert.equal(resolveTheme(null, false), "light");
-  assert.equal(resolveTheme("blue", true), "dark");
-  assert.equal(resolveTheme("", false), "light");
+test("null and junk values give dark", () => {
+  assert.equal(resolveTheme(null), "dark");
+  assert.equal(resolveTheme("blue"), "dark");
+  assert.equal(resolveTheme(""), "dark");
 });
 
 test("nextTheme flips both ways", () => {

@@ -18,7 +18,7 @@
 		height: 72px;
 		display: flex;
 		align-items: center;
-		padding: 0 var(--space-8);
+		padding: 0 64px 0 var(--space-8);
 		border-bottom: 1px solid var(--color-border);
 		background: var(--background);
 		color: var(--foreground);
