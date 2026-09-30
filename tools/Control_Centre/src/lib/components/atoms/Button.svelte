@@ -34,6 +34,7 @@
 		padding: var(--component-button-padding-y) var(--component-button-padding-x);
 		border-radius: var(--component-button-radius);
 		font-family: var(--component-button-font-family);
+		font-weight: var(--component-button-font-weight);
 		text-decoration: none;
 		cursor: pointer;
 		border: 1px solid transparent;

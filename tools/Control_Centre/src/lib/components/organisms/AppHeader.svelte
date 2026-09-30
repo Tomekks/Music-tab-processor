@@ -24,6 +24,10 @@
 		color: var(--foreground);
 	}
 
+	.title {
+		font-weight: var(--component-text-app-header-title-font-weight);
+	}
+
 	.toggle {
 		margin-left: auto;
 		display: inline-flex;

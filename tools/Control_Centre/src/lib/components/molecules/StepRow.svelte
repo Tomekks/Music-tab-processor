@@ -139,6 +139,8 @@
 	.title {
 		margin: 0;
 		color: var(--foreground);
+		font-weight: var(--component-text-section-title-font-weight);
+		font-size: var(--component-text-section-title-font-size);
 	}
 
 	.status {
@@ -199,6 +201,7 @@
 		border: none;
 		cursor: pointer;
 		color: var(--foreground);
+		font-weight: var(--component-button-font-weight);
 		flex: 0 0 auto;
 	}
 

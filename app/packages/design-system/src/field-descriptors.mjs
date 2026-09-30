@@ -52,6 +52,7 @@ export const SECTIONS = [
   { key: "component.segmentedControl", heading: "Segmented Control", group: "Components" },
   { key: "component.button", heading: "Button", group: "Components" },
   { key: "component.iconButton", heading: "Icon Button", group: "Components" },
+  { key: "component.text", heading: "Text styles" },
 ];
 
 /**
