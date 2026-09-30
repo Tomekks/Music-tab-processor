@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { nowIso } from "./records.ts";
 
@@ -91,4 +91,8 @@ export function readPickedForClient(dataDir: string): { name: string; size: numb
   const picked = readPicked(dataDir);
   if (!picked) return null;
   return { name: picked.name, size: picked.size };
+}
+
+export function clearPicked(dataDir: string): void {
+  rmSync(pickedPath(dataDir), { force: true });
 }

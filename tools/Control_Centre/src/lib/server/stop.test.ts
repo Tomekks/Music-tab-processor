@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { StageDef } from "./manifest.ts";
-import { deleteStageOutputs, isInsideRun, isSafeEntry } from "./stop.ts";
+import { deleteStageOutputs, isInsideRun, isSafeEntry, previewStageOutputs } from "./stop.ts";
 
 function makeRunDir(): string {
   return mkdtempSync(join(tmpdir(), "stop-"));
@@ -121,4 +121,29 @@ test("dryRun returns the same list as a real delete and touches nothing", () => 
   assert.deepEqual(real.deleted, preview.deleted);
   assert.equal(existsSync(join(runDir, "separation.json")), false);
   assert.equal(existsSync(join(runDir, "_demucs_raw")), false);
+});
+
+test("previewStageOutputs returns the real delete list and touches nothing", () => {
+  const runDir = makeRunDir();
+  const stage = stageWith({ produces: ["separation.json"], temp: ["_demucs_raw"] });
+  writeFileSync(join(runDir, "separation.json"), "x");
+  mkdirSync(join(runDir, "_demucs_raw"));
+  const startedAtMs = Date.now() - 1000;
+
+  const preview = previewStageOutputs(stage, runDir, startedAtMs);
+  assert.deepEqual(preview.deleted, ["separation.json", "_demucs_raw"]);
+  assert.equal(existsSync(join(runDir, "separation.json")), true);
+  assert.equal(existsSync(join(runDir, "_demucs_raw")), true);
+
+  const real = deleteStageOutputs(stage, runDir, startedAtMs);
+  assert.deepEqual(real.deleted, preview.deleted);
+});
+
+test("the page load only previews stop deletions, never deletes", () => {
+  const pageServer = new URL("../../routes/audio/+page.server.ts", import.meta.url);
+  assert.equal(
+    readFileSync(pageServer, "utf8").includes("deleteStageOutputs"),
+    false,
+    "the page load must only preview, never delete"
+  );
 });

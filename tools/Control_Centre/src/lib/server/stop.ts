@@ -67,3 +67,10 @@ export function deleteStageOutputs(
 
   return { deleted };
 }
+
+// What the page refresh shows for Stop: the same list a real delete would
+// remove, computed without touching anything. The page load must only call
+// this, never deleteStageOutputs.
+export function previewStageOutputs(stage: StageDef, runDir: string, startedAtMs: number): { deleted: string[] } {
+  return deleteStageOutputs(stage, runDir, startedAtMs, { dryRun: true });
+}

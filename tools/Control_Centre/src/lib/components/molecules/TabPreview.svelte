@@ -4,9 +4,13 @@
 
 	interface Props {
 		preview: TabPreviewData | null;
+		activeStep: number | null;
+		follow: boolean;
 	}
 
-	let { preview }: Props = $props();
+	let { preview, activeStep = null, follow = false }: Props = $props();
+
+	let scroller: HTMLDivElement | null = $state(null);
 
 	const COL_W = 36;
 	const ROW_H = 32;
@@ -43,16 +47,29 @@
 	function stringThickness(s: number, strings: number): number {
 		return 1 + Math.max(0, strings - 1 - s - 2) * 0.6;
 	}
+
+	export function scrollToStart() {
+		if (scroller) scroller.scrollLeft = 0;
+	}
+
+	$effect(() => {
+		const s = activeStep;
+		if (!follow || s === null || !scroller) return;
+		const x = 20 + noteX(s);
+		if (x - COL_W < scroller.scrollLeft || x + COL_W > scroller.scrollLeft + scroller.clientWidth) {
+			scroller.scrollLeft = x - scroller.clientWidth * 0.25;
+		}
+	});
 </script>
 
-<div class="tab-preview" data-tab-preview>
-	<svg {width} {height} role="img">
+<div class="tab-preview" data-tab-preview bind:this={scroller}>
+	<svg width="100%" style="min-width: {width}px" {height} role="img">
 		<title>Tab preview</title>
 		{#each tuning as midi, s}
 			<line
 				x1={PAD_LEFT - 8}
 				y1={stringY(s)}
-				x2={width - PAD_RIGHT + 8}
+				x2="100%"
 				y2={stringY(s)}
 				stroke="var(--foreground)"
 				stroke-opacity="0.22"
@@ -67,6 +84,17 @@
 				class="string-name">{s === n - 1 ? pitchClassName(midi).toLowerCase() : pitchClassName(midi)}</text
 			>
 		{/each}
+		{#if activeStep !== null}
+			<line
+				x1={noteX(activeStep)}
+				x2={noteX(activeStep)}
+				y1={PAD_Y - 6}
+				y2={height - PAD_Y + 6}
+				stroke="var(--foreground)"
+				stroke-width="1.5"
+				stroke-dasharray="3 2"
+			/>
+		{/if}
 		{#each steps as step}
 			<g data-step={step.index}>
 				{#each step.notes as note}
@@ -74,16 +102,16 @@
 						cx={noteX(step.index)}
 						cy={stringY(note.string)}
 						r={NOTE_R}
-						fill="var(--background)"
+						fill={step.index === activeStep ? 'var(--foreground)' : 'var(--background)'}
 						stroke="var(--foreground)"
-						stroke-width="1.2"
+						stroke-width={step.index === activeStep ? 0 : 1.2}
 					/>
 					<text
 						x={noteX(step.index)}
 						y={stringY(note.string) + NOTE_FONT * 0.35}
 						text-anchor="middle"
 						font-size={NOTE_FONT}
-						fill="var(--foreground)"
+						fill={step.index === activeStep ? 'var(--background)' : 'var(--foreground)'}
 						class="fret">{note.fret}</text
 					>
 				{/each}

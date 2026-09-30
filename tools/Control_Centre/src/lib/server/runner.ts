@@ -121,6 +121,26 @@ export function stageStatus(manifest: Manifest, stageId: string, dirs: Dirs): St
   return { status: "failed", execId: state.execId, startedAt: state.startedAt, outcome: "interrupted" };
 }
 
+// Step 1 (ingest) status for one selected run, for the audio page. The slot
+// is global, but its failure must not leak across runs: after the newest run
+// is deleted, stageStatus reports failed for an exit-0 slot whose run folder
+// is gone (findRunDir finds nothing), which would wrongly mark every
+// remaining run Failed. So failure comes only from the records, and done
+// comes only from the selected run's own produces files.
+export function ingestStatusForRun(manifest: Manifest, dirs: Dirs, runId: string, records: RunRecord[]): StepStatus {
+  const slot = stageStatus(manifest, "s01_ingest", dirs);
+  if (slot.status === "running") return slot;
+  const last = records.filter((r) => r.type === "finished" && r.stage === "s01_ingest").at(-1);
+  if (last !== undefined && (last.outcome === "failed" || last.outcome === "interrupted")) {
+    return { status: "failed", execId: null, startedAt: last.startedAt, outcome: last.outcome };
+  }
+  const stage = manifest.stages.find((s) => s.id === "s01_ingest");
+  if (stage && stage.produces.every((f) => existsSync(join(dirs.runsDir, runId, f)))) {
+    return { status: "done", execId: null, startedAt: null, outcome: "done" };
+  }
+  return { status: "notStarted", execId: null, startedAt: null, outcome: null };
+}
+
 // Fully synchronous between the liveness check and the state write (no
 // await), so two Start clicks cannot both pass the check in one process.
 function spawnStage(

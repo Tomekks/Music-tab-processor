@@ -52,13 +52,20 @@ project with no other stakeholders.
    - Checkpoint hash, and `git status --short` after the commit (no allowlisted file modified —
      the failure mode behind the repeated "built and tested locally, never committed" incident,
      `docs/DRIFT_LOG_archive.md`'s 2026-09-11 entry).
-   - The full, unedited `git diff --stat`.
+   - The full, unedited `git diff --stat`, pasted inline — never "see above" (the report is relayed
+     by hand; anything outside the pasted block is lost).
    - verify/build: exit codes and the runner's own `tests N, pass N, fail N` line.
-   - One line per Done probe: what was run, what was observed, ✓/✗.
+   - One line per Done probe the spec lists: what was run, what was observed, ✓/✗. Don't add probes
+     of your own when `verify` and `build` already prove the same point.
    - `file:line` only for safety-critical changes (deletes, overwrites, guards, anything the spec
-     marks risky); Claude reads the diff for the rest.
-   - Judgment calls made instead of asking a clarifying question (step 3), and any unplanned edit
-     that was reverted or restored, named explicitly — neither is visible in the final diff.
+     marks risky) — including every item the spec's Stop conditions or human check name (e.g. a
+     `{#key}` line, a dispose-on-destroy); Claude reads the diff for the rest.
+   - One line per spec risk that a test covers: `risk → test name`. A passing `tests N` count says
+     nothing about whether the risky cases are the ones tested.
+   - Judgment calls made instead of asking a clarifying question (step 3) — only those that change
+     behavior, an interface, or something the spec left open; skip mechanical fixes needed to
+     compile (import extensions, type casts, tooltip wording). Also any unplanned edit that was
+     reverted or restored, named explicitly — neither is visible in the final diff.
    - A deviation from an explicit spec requirement, classified `BLOCKING` / `NON-BLOCKING` /
      `NONE`. `BLOCKING` stops the loop (step 7) unless the spec is amended or Claude accepts it.
    - If a spec-stated fact (a line number, a file's shape, a count) was wrong against the live
@@ -66,6 +73,9 @@ project with no other stakeholders.
    - Claims that are `Inferred` (concluded from code structure, not run or observed), tagged as
      such; everything untagged is asserted as checked.
    - Out-of-scope observations.
+   - **Human-check draft** (when the spec has checks only a person can do — sound, GUI, real runs):
+     a numbered list, each item one action and one expected result, with the exact URL/command.
+     It is a draft: Claude reviews it, the owner runs it. The execution model never performs it.
 
 5. You relay the result back to Claude.
 6. **Claude's check is narrow, not a re-run.** Confirm the claimed file list against
@@ -85,6 +95,9 @@ project with no other stakeholders.
    done.
 10. The existing three-way question from `AGENTS.md`: push to git? push & deploy? skip for now?
 
+**How much critique a spec gets, and the prompt for the critic:** `critique-prompt.md` (none for S-tier
+unless a risk is flagged, Lite or Full otherwise, Plan for a whole plan).
+
 **One review round per spec, then execution is the review.** Step 1's check (and any review a
 second reviewer does before implementation starts) is the one pass a spec gets before it's
 handed off. If a spec is reviewed again after that — by request, or by a different reviewer —
@@ -94,6 +107,29 @@ significant issues; later passes: wording, a stale cross-reference) while findin
 things* during step 4 (a baseline test run, invoking a route directly, `git diff`) kept surfacing
 real bugs no amount of re-reading caught. Budget tokens for the red-green-verify cycle in step 4,
 not for additional reading passes before it.
+
+## 5b. The execution prompt (paste block)
+
+The spec is the task and this file is the process, so the prompt to the execution model carries
+only what is written in neither: which spec, which branch, and what not to commit. Fill in the
+two `<>` and send it unchanged otherwise.
+
+```text
+Execute <spec path>. Repo: <repo root>, work from <the spec's working folder>.
+
+Read AGENTS.md, then docs/web-app-workflow/execution-loop.md (§5), then the spec. Follow the
+spec, its Stop conditions and the §5 report format exactly. Ask a clarifying question before
+coding if anything is ambiguous.
+
+Setup: `git switch -c <new branch>` from <base branch> (<short hash>). Your one local checkpoint
+commit contains only the spec's "Modify only" files. Do not push or open a PR.
+```
+
+**Claude, when the owner asks for an execution prompt:** give this block, filled in, and nothing
+longer. Do not restate spec rules, safety rules or the report list (they live in the spec and
+§5 and would drift). Check first that the base branch and hash exist and the working tree has no
+uncommitted spec or doc edits the executor could pick up; if it has, say so or commit them first.
+If the executor skips a rule, fix the spec or §5, not the prompt.
 
 ## 5a. Keeping context small across a multi-spec plan
 

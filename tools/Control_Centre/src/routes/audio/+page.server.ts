@@ -3,25 +3,27 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Actions, PageServerLoad } from './$types';
 import { DATA_DIR, MANIFEST_PATH, PIPELINE_ROOT, PYTHON, RUNS_DIR } from '$lib/server/config';
+import { advanceChain, clearChain, ensureChainTicker, firstPendingStage, readChain, startChain, startChainFrom } from '$lib/server/chain';
 import { loadManifest } from '$lib/server/manifest';
-import { browseForAudio, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
+import { browseForAudio, clearPicked, readPickedForClient, readPicked, savePicked } from '$lib/server/pick';
 import { readRecords } from '$lib/server/records';
 import {
 	anyStageLive,
 	canStart,
+	ingestStatusForRun,
 	logPath,
 	overwriteGate,
 	reconcile,
 	runStepStatus,
 	slotRunId,
-	stageStatus,
 	startAudioStage,
 	startRunStage,
 	stopStage as stopStageRun
 } from '$lib/server/runner';
-import { deleteStageOutputs } from '$lib/server/stop';
+import { previewStageOutputs } from '$lib/server/stop';
 import { openInFinder, resolveRevealDir } from '$lib/server/reveal';
 import { listRuns, pickRun, readRunSummary, resolveRunDir, type RunSummary } from '$lib/server/runs';
+import { trashRun, trashWithFinder } from '$lib/server/trash';
 import { buildTabPreview, type TabPreviewData } from '$lib/tab';
 
 const STAGE_ID = 's01_ingest';
@@ -38,9 +40,20 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 	const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
 	const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
 	reconcile(manifest, dirs);
+	advanceChain(manifest, dirs);
 	const records = readRecords(DATA_DIR);
 	const picked = pickRun(RUNS_DIR, url.searchParams.get('run'));
-	const run: RunSummary | null = picked.id === null ? null : readRunSummary(RUNS_DIR, picked.id);
+	const run: RunSummary | null =
+		picked.id === null
+			? null
+			: (readRunSummary(RUNS_DIR, picked.id) ?? {
+					id: picked.id,
+					title: picked.id,
+					artist: null,
+					durationSec: 0,
+					sampleRate: 0,
+					channels: 0
+				});
 	const runNotFound = picked.notFound;
 	const runs = listRuns(RUNS_DIR).map((entry) => {
 		const summary = readRunSummary(RUNS_DIR, entry.id);
@@ -52,7 +65,6 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 					: `${summary.title}${summary.artist ? ` — ${summary.artist}` : ''} · ${entry.ingestedAt.slice(0, 16).replace('T', ' ')}`
 		};
 	});
-	const step1 = stageStatus(manifest, STAGE_ID, dirs);
 	// While any stage is live the "waiting" reason is suppressed: the
 	// disabled Start button already says why.
 	const live = anyStageLive(manifest, dirs);
@@ -77,6 +89,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		}
 		const canReveal = resolveRevealDir(manifest, stage.id, run.id, RUNS_DIR) !== null;
 		if (stage.id === STAGE_ID) {
+			const step1 = ingestStatusForRun(manifest, dirs, run.id, records);
 			return {
 				id: stage.id,
 				label: stage.label,
@@ -91,7 +104,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 				canStop: false,
 				stopPreview: [] as string[],
 				canReveal,
-				log: readLogTail(DATA_DIR, stage.id)
+				log: step1.status === 'running' || step1.status === 'failed' ? readLogTail(DATA_DIR, stage.id) : ''
 			};
 		}
 		const perRun = runStepStatus(manifest, stage.id, run.id, dirs, records);
@@ -99,7 +112,7 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		const canStop = perRun.status === 'running';
 		const stopPreview =
 			canStop && perRun.startedAt !== null
-				? deleteStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
+				? previewStageOutputs(stage, join(RUNS_DIR, run.id), Date.parse(perRun.startedAt)).deleted
 				: [];
 		const runDir = join(RUNS_DIR, run.id);
 		const overwritePreview = perRun.noRecord
@@ -133,13 +146,25 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 			tabPreview = null;
 		}
 	}
+	const lastFinished = records
+		.filter((r) => r.type === 'finished' && r.stage === STAGE_ID)
+		.at(-1);
 	return {
 		picked: readPickedForClient(DATA_DIR),
 		run,
 		runNotFound,
 		runs,
 		steps,
-		tabPreview
+		tabPreview,
+		busy: live,
+		chainActive: readChain(DATA_DIR) !== null,
+		lastIngest: lastFinished
+			? {
+					execId: lastFinished.execId,
+					outcome: lastFinished.outcome,
+					runId: lastFinished.runId ?? null
+				}
+			: null
 	};
 };
 
@@ -155,15 +180,54 @@ export const actions: Actions = {
 			return fail(400, { invalid: (err as Error).message });
 		}
 	},
+	clear: async () => {
+		clearPicked(DATA_DIR);
+		return { cleared: true };
+	},
 	start: async () => {
 		// The form sends nothing; the pick lives server-side in data/picked.json.
 		const picked = readPicked(DATA_DIR);
 		if (!picked) return fail(400, { noPick: true });
 		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
 		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
-		if (anyStageLive(manifest, dirs)) return fail(409, { busy: true });
+		if (anyStageLive(manifest, dirs) || readChain(DATA_DIR) !== null) return fail(409, { busy: true });
 		const started = startAudioStage(manifest, STAGE_ID, picked.path, dirs);
 		if (started.busy) return fail(409, { busy: true });
+		return { started: true, execId: started.execId };
+	},
+	fullStart: async () => {
+		// Like start, but the server then chains steps 2 to 4 by itself.
+		const picked = readPicked(DATA_DIR);
+		if (!picked) return fail(400, { noPick: true });
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		if (anyStageLive(manifest, dirs) || readChain(DATA_DIR) !== null) return fail(409, { busy: true });
+		const started = startChain(manifest, picked.path, dirs);
+		if (started.busy) return fail(409, { busy: true });
+		ensureChainTicker(manifest, dirs);
+		return { started: true, execId: started.execId };
+	},
+	fullContinue: async ({ request }) => {
+		// Like fullStart, but resumes the selected run from its first pending step.
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		reconcile(manifest, dirs);
+		const form = await request.formData();
+		const runId = form.get('runId');
+		const confirmed = form.get('confirmed') === '1';
+		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
+			return fail(400, { error: 'badRun' });
+		}
+		if (anyStageLive(manifest, dirs) || readChain(DATA_DIR) !== null) return fail(409, { busy: true });
+		const stage = firstPendingStage(manifest, runId, dirs, readRecords(DATA_DIR));
+		if (stage === null) return fail(409, { error: 'nothingToContinue' });
+		const gate = canStart(manifest, stage.id, runId, dirs, readRecords(DATA_DIR));
+		if (!gate.ok) return fail(409, { error: 'notAllowed', reason: gate.reason });
+		const overwrite = overwriteGate(manifest, stage.id, runId, dirs, readRecords(DATA_DIR), confirmed);
+		if (!overwrite.ok) return fail(409, { error: 'needsConfirmation', reason: overwrite.reason });
+		const started = startChainFrom(manifest, stage.id, runId, dirs);
+		if (started.busy) return fail(409, { busy: true });
+		ensureChainTicker(manifest, dirs);
 		return { started: true, execId: started.execId };
 	},
 	startStage: async ({ request }) => {
@@ -203,6 +267,7 @@ export const actions: Actions = {
 		if (typeof runId !== 'string' || resolveRunDir(RUNS_DIR, runId) === null) {
 			return fail(400, { error: 'badRun' });
 		}
+		clearChain(DATA_DIR);
 		const result = await stopStageRun(manifest, stage.id, runId, dirs);
 		if (!result.ok) {
 			if (result.reason === 'nothingToStop') return fail(409, { error: 'nothingToStop' });
@@ -229,5 +294,22 @@ export const actions: Actions = {
 		} catch (err) {
 			return fail(500, { error: 'revealFailed', reason: (err as Error).message });
 		}
+	},
+	deleteRun: async ({ request }) => {
+		// The client sends a run ID only; trashRun resolves and validates it.
+		const form = await request.formData();
+		const runId = form.get('runId');
+		if (typeof runId !== 'string') return fail(400, { error: 'badRun' });
+		if (readChain(DATA_DIR) !== null) return fail(409, { busy: true });
+		const manifest = loadManifest(MANIFEST_PATH, { python: PYTHON });
+		const dirs = { dataDir: DATA_DIR, runsDir: RUNS_DIR, pipelineRoot: PIPELINE_ROOT };
+		const result = await trashRun(RUNS_DIR, runId, () => anyStageLive(manifest, dirs), trashWithFinder);
+		if (!result.ok) {
+			if (result.reason === 'busy')
+				return fail(409, { error: 'notAllowed', reason: 'Wait for the running step to finish, then delete.' });
+			if (result.reason === 'trashFailed') return fail(500, { error: 'trashFailed', reason: result.message });
+			return fail(400, { error: 'badRun' });
+		}
+		return { deleted: true };
 	}
 };

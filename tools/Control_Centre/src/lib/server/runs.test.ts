@@ -140,3 +140,16 @@ test("readRunSummary returns the summary or null for a wrong type", () => {
   makeSummaryRun(dir, "bad-song-20260601-120000", "2026-06-01T12:00:00", { durationSec: "x" });
   assert.equal(readRunSummary(dir, "bad-song-20260601-120000"), null);
 });
+
+test("readRunSummary treats a missing artist key as null", () => {
+  const dir = mkdtempSync(join(tmpdir(), "runs-"));
+  makeSummaryRun(dir, "old-song-20260601-120000", "2026-06-01T12:00:00", { artist: undefined });
+  assert.deepEqual(readRunSummary(dir, "old-song-20260601-120000"), {
+    id: "old-song-20260601-120000",
+    title: "T",
+    artist: null,
+    durationSec: 1,
+    sampleRate: 44100,
+    channels: 2
+  });
+});

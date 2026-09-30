@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { isCancelError, readPicked, readPickedForClient, savePicked } from "./pick.ts";
+import { clearPicked, isCancelError, readPicked, readPickedForClient, savePicked } from "./pick.ts";
 import { appendRecord, readRecords } from "./records.ts";
 
 test("bad extension rejected", () => {
@@ -27,6 +27,16 @@ test("picked.json round-trips name and size, UI shape has no path", () => {
   assert.equal(readPicked(dir)?.path, file);
   assert.deepEqual(readPickedForClient(dir), { name: "song.wav", size: 16 });
   assert.ok(!("path" in (readPickedForClient(dir) as Record<string, unknown>)));
+});
+
+test("clearPicked removes the pick and is idempotent", () => {
+  const dir = mkdtempSync(join(tmpdir(), "pick-"));
+  const file = join(dir, "song.wav");
+  writeFileSync(file, "fake-audio-bytes");
+  savePicked(dir, file);
+  clearPicked(dir);
+  assert.equal(readPicked(dir), null);
+  assert.doesNotThrow(() => clearPicked(dir));
 });
 
 test("cancel parser recognises the osascript cancel error", () => {
