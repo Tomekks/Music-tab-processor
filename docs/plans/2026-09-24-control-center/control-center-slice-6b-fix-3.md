@@ -6,6 +6,8 @@
 
 Written against: `7fac5e6` (branch `feat/control-center-slice-6b-step-rows`, local; commit on the same branch)  ·  Blocked by: 6b fix 2 (done)  ·  Blocks: 6c.
 
+**Landed:** `e46fd7f`, +1 test (122 → 123), human-checked 2026-09-30.
+
 Owner's review of fix 2 (why): the inline message had no close control, and its text ran together ("…Designer.pdfKeeping…": Svelte trims a leading space inside `{#if}`). No Flowbite dependency: build the toast locally with this app's tokens.
 
 ## Scope

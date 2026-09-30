@@ -6,6 +6,8 @@
 
 Written against: `461a45f` (branch `feat/control-center-slice-6b-step-rows`, local; commit the fix on the same branch)  ·  Blocked by: 6b and 6b-fix (done)  ·  Blocks: 6c.
 
+**Landed:** `7fac5e6`, no new tests (122), human-checked 2026-09-30.
+
 Causes (read from the code and `records.jsonl`):
 0. `s01_ingest` creates a run folder named `<slug>-<timestamp>` (`ingest.py`, `run_dir.mkdir(exist_ok=False)`) and each finished ingest record carries the `runId` it produced. The page does not use that link; it guesses "newest run", which fails when the folder does not exist yet at the time of the reload (below) and would also fail if an ingest produced no new folder.
 1. `+page.svelte` refreshes every second only while a step is `running` in the loaded data. An ingest takes 0 to 1 s (the ingest records show `durationSec` 0 or 1), so it usually finishes before the page's first reload after Start. That reload still shows the old newest run (the new folder is not there yet), no step is `running`, so polling never starts and the page stays stale until a manual reload. The Start form then calls `goto('/audio', { invalidateAll: true })`, which only helps when the run already exists.
