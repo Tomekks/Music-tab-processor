@@ -133,11 +133,11 @@
 	}
 
 	.string-name {
-		font-family: monospace;
+		font-family: var(--font-mono);
 		font-size: 10px;
 	}
 
 	.fret {
-		font-family: monospace;
+		font-family: var(--font-mono);
 	}
 </style>

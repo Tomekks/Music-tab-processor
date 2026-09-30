@@ -20,9 +20,10 @@ const APP_ROOT = join(HERE, "../../.."); // .../app (src -> design-system -> pac
 // that depends on active-brand.json's current (mutable) pointer. See §0.
 const tree = JSON.parse(readFileSync(join(HERE, "../brands/default/tokens.json"), "utf8"));
 
-const SCAN_ROOTS = [HERE, join(APP_ROOT, "app"), join(APP_ROOT, "components")];
-const SCAN_EXTENSIONS = new Set([".tsx", ".ts", ".mjs", ".css"]);
+const SCAN_ROOTS = [HERE, join(APP_ROOT, "app"), join(APP_ROOT, "components"), join(APP_ROOT, "../tools/Control_Centre/src")];
+const SCAN_EXTENSIONS = new Set([".tsx", ".ts", ".mjs", ".css", ".svelte"]);
 const EXCLUDE_FILE = join(APP_ROOT, "app/design-tokens.generated.css"); // gitignored, generated -- see §2
+const EXCLUDE_GENERATED = ".generated.css"; // Control Center's copied generated tokens list every variable and would make every token look used
 
 function walk(dir) {
   let out = [];
@@ -34,7 +35,8 @@ function walk(dir) {
     } else if (
       SCAN_EXTENSIONS.has(extname(entry.name)) &&
       !/\.test\.(mjs|ts)$/.test(entry.name) &&
-      full !== EXCLUDE_FILE
+      full !== EXCLUDE_FILE &&
+      !entry.name.endsWith(EXCLUDE_GENERATED)
     ) {
       out.push(full);
     }
@@ -86,9 +88,6 @@ const KNOWN_ORPHANS = new Set([
   "semantic.state.focusOpacity",
   "component.slider.trackColor",
   "semantic.space.1",
-  "semantic.space.2",
-  "semantic.space.4",
-  "semantic.space.8",
 ]);
 
 function isOrphan(path) {

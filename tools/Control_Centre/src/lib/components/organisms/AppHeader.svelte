@@ -1,4 +1,6 @@
 <script lang="ts">
+	import ThemeToggle from '$lib/components/molecules/ThemeToggle.svelte';
+
 	interface Props {
 		title: string;
 	}
@@ -8,6 +10,7 @@
 
 <header class="app-header">
 	<span class="title">{title}</span>
+	<span class="toggle"><ThemeToggle /></span>
 </header>
 
 <style>
@@ -19,5 +22,10 @@
 		border-bottom: 1px solid var(--color-border);
 		background: var(--background);
 		color: var(--foreground);
+	}
+
+	.toggle {
+		margin-left: auto;
+		display: inline-flex;
 	}
 </style>

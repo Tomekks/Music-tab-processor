@@ -36,6 +36,11 @@ const PAIRS = [
   ["surface/surfaceText (dark)", darkTree, "semantic.color.surface", "semantic.color.surfaceText"],
   ["surfaceActive/surfaceActiveText (light)", lightTree, "semantic.color.surfaceActive", "semantic.color.surfaceActiveText"],
   ["surfaceActive/surfaceActiveText (dark)", darkTree, "semantic.color.surfaceActive", "semantic.color.surfaceActiveText"],
+  ["background/statusDone (light)", lightTree, "semantic.color.background", "semantic.color.statusDone"],
+  ["background/statusFailed (light)", lightTree, "semantic.color.background", "semantic.color.statusFailed"],
+  ["background/statusDone (dark)", darkTree, "semantic.color.background", "semantic.color.statusDone"],
+  ["background/statusFailed (dark)", darkTree, "semantic.color.background", "semantic.color.statusFailed"],
+  ["background/statusError (dark)", darkTree, "semantic.color.background", "semantic.color.statusError"],
 ];
 
 for (const [name, tree, fillPath, textPath] of PAIRS) {

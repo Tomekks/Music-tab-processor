@@ -149,15 +149,15 @@
 	}
 
 	.dot.done {
-		color: var(--status-done);
+		color: var(--color-status-done);
 	}
 
 	.dot.failed {
-		color: var(--status-failed);
+		color: var(--color-status-failed);
 	}
 
 	.dot.error {
-		color: var(--status-error);
+		color: var(--color-status-error);
 	}
 
 	.dot.running {

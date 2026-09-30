@@ -1,1 +1,18 @@
 @import "./design-tokens.generated.css";
+
+:root {
+	--font-geist-sans: 'Geist Variable', Arial, Helvetica, sans-serif;
+	--font-geist-mono: 'Geist Mono Variable', ui-monospace, monospace;
+}
+
+body {
+	font-family: var(--font-sans);
+}
+
+[data-theme='dark'] {
+	color-scheme: dark;
+}
+
+[data-theme='light'] {
+	color-scheme: light;
+}
