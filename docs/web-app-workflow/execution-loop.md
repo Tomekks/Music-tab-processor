@@ -108,6 +108,29 @@ things* during step 4 (a baseline test run, invoking a route directly, `git diff
 real bugs no amount of re-reading caught. Budget tokens for the red-green-verify cycle in step 4,
 not for additional reading passes before it.
 
+## 5b. The execution prompt (paste block)
+
+The spec is the task and this file is the process, so the prompt to the execution model carries
+only what is written in neither: which spec, which branch, and what not to commit. Fill in the
+two `<>` and send it unchanged otherwise.
+
+```text
+Execute <spec path>. Repo: <repo root>, work from <the spec's working folder>.
+
+Read AGENTS.md, then docs/web-app-workflow/execution-loop.md (§5), then the spec. Follow the
+spec, its Stop conditions and the §5 report format exactly. Ask a clarifying question before
+coding if anything is ambiguous.
+
+Setup: `git switch -c <new branch>` from <base branch> (<short hash>). Your one local checkpoint
+commit contains only the spec's "Modify only" files. Do not push or open a PR.
+```
+
+**Claude, when the owner asks for an execution prompt:** give this block, filled in, and nothing
+longer. Do not restate spec rules, safety rules or the report list (they live in the spec and
+§5 and would drift). Check first that the base branch and hash exist and the working tree has no
+uncommitted spec or doc edits the executor could pick up; if it has, say so or commit them first.
+If the executor skips a rule, fix the spec or §5, not the prompt.
+
 ## 5a. Keeping context small across a multi-spec plan
 
 Round trips, not spec length, dominate token burn — every turn reloads full context on both
