@@ -6,6 +6,8 @@
 
 Written against: `e46fd7f` (branch `feat/control-center-slice-6b-step-rows`, local; commit on the same branch)  ·  Blocked by: 6b fix 3 (done)  ·  Blocks: nothing (the owner's real-song passes follow).
 
+**Landed:** `eda147e`, +16 tests (123 → 139), human-checked 2026-09-30.
+
 Decisions (owner, 2026-09-30): Full start = ingest the picked file as a new run, then steps 2 to 4 on that run; the server drives the chain (no open page needed); failure or Stop halts the chain with no extra message (step states and logs already show it); no skipping (a new run has nothing done).
 
 ## Scope

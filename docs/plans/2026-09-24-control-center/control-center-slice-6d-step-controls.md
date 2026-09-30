@@ -6,6 +6,8 @@
 
 Written against: `eda147e` (branch `feat/control-center-slice-6b-step-rows`, local; commit on the same branch)  ·  Blocked by: 6c (done, human-checked)  ·  Blocks: nothing.
 
+**Landed:** `0a57a41`, +8 tests (139 → 147), human-checked 2026-09-30.
+
 Decisions (owner, 2026-09-30): one bar above step 1, both Full buttons in it; Full continue starts from the first step that is not Done or is Out of date (step 1 is never re-run by it); disabled reasons on steps 1 to 4 and on both Full buttons; subtitle order unchanged; run details in a hover/focus tooltip on an info icon.
 
 ## Scope
