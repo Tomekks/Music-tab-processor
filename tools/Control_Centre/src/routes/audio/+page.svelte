@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { goto, invalidate } from '$app/navigation';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
-	import TabPreview from '$lib/components/molecules/TabPreview.svelte';
+	import TabPlayer from '$lib/components/organisms/TabPlayer.svelte';
 	import type { ActionData, PageData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -12,6 +12,9 @@
 	const step1 = $derived(data.steps.find((s) => s.id === 's01_ingest'));
 	const later = $derived(data.steps.filter((s) => s.id !== 's01_ingest'));
 	const anyRunning = $derived(data.steps.some((s) => s.status === 'running'));
+	const playerKey = $derived(
+		`${data.run?.id ?? ''}|${data.tabPreview?.steps.length ?? 0}|${data.tabPreview?.steps.reduce((n, st) => n + st.notes.length, 0) ?? 0}|${data.tabPreview?.steps.at(-1)?.startTimeSec ?? 0}`
+	);
 
 	function elapsed(startedAt: string | null): string | null {
 		if (!startedAt) return null;
@@ -98,7 +101,7 @@
 {/if}
 
 {#if data.run}
-	<TabPreview preview={data.tabPreview} />
+	{#key playerKey}<TabPlayer preview={data.tabPreview} />{/key}
 {/if}
 
 {#if step1}
