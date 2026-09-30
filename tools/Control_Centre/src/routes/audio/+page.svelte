@@ -10,6 +10,7 @@
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
 	let stopping = $state(false);
+	let awaitingExec = $state<string | undefined>(undefined);
 
 	const step1 = $derived(data.steps.find((s) => s.id === 's01_ingest'));
 	const later = $derived(data.steps.filter((s) => s.id !== 's01_ingest'));
@@ -72,12 +73,21 @@
 	);
 
 	$effect(() => {
-		if (anyRunning) {
+		if (anyRunning || awaitingExec !== undefined) {
 			const id = setInterval(() => {
 				if (!document.hidden) invalidate('app:run');
 			}, 1000);
 			return () => clearInterval(id);
 		}
+	});
+
+	$effect(() => {
+		if (awaitingExec === undefined) return;
+		const last = data.lastIngest;
+		if (last === null || last.execId !== awaitingExec) return;
+		awaitingExec = undefined;
+		if (last.outcome === 'done' && last.runId !== null)
+			goto('/audio?run=' + encodeURIComponent(last.runId), { invalidateAll: true });
 	});
 </script>
 
@@ -154,15 +164,19 @@
 	>
 		{#snippet before()}
 			{#if data.picked}
-				<span class="picked">{data.picked.name} ({formatSize(data.picked.size)})</span>
+				<span class="picked" title={data.picked.name}
+					>{data.picked.name} ({formatSize(data.picked.size)})</span
+				>
 			{/if}
 			<form method="POST" action="?/browse" use:enhance>
 				<button class="btn secondary" type="submit" disabled={step1.status === 'running'}>
 					Browse
 				</button>
 			</form>
+		{/snippet}
+		{#snippet notice()}
 			{#if form?.invalid}
-				<span class="error">{form.invalid}</span>
+				<span class="error">{form.invalid}{#if data.picked} Keeping {data.picked.name}.{/if}</span>
 			{:else if form?.browseFailed}
 				<span class="error">Browse failed: {form.browseFailed}</span>
 			{/if}
@@ -184,13 +198,17 @@
 				action="?/start"
 				use:enhance={() => async ({ result, update }) => {
 					await update();
-					if (result.type === 'success') await goto('/audio', { invalidateAll: true });
+					if (result.type === 'success' && typeof result.data?.execId === 'string') {
+						awaitingExec = result.data.execId;
+						setTimeout(() => (awaitingExec = undefined), 60000);
+					}
 				}}
 			>
 				<button
 					class="btn primary"
 					type="submit"
 					disabled={step1.status === 'running' || !data.picked}
+					title="Ingest the picked file as a new run"
 				>
 					Start
 				</button>
@@ -319,6 +337,12 @@
 
 	.picked {
 		color: var(--foreground);
+		flex: 0 1 auto;
+		min-width: 0;
+		max-width: 24rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.error {

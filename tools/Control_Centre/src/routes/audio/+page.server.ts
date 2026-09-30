@@ -144,6 +144,9 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 			tabPreview = null;
 		}
 	}
+	const lastFinished = records
+		.filter((r) => r.type === 'finished' && r.stage === STAGE_ID)
+		.at(-1);
 	return {
 		picked: readPickedForClient(DATA_DIR),
 		run,
@@ -151,7 +154,14 @@ export const load: PageServerLoad = async ({ depends, url }) => {
 		runs,
 		steps,
 		tabPreview,
-		busy: live
+		busy: live,
+		lastIngest: lastFinished
+			? {
+					execId: lastFinished.execId,
+					outcome: lastFinished.outcome,
+					runId: lastFinished.runId ?? null
+				}
+			: null
 	};
 };
 

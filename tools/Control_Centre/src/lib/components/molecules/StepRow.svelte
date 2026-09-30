@@ -13,9 +13,10 @@
 		log: string;
 		before?: Snippet;
 		after?: Snippet;
+		notice?: Snippet;
 	}
 
-	let { title, status, outcome = null, noRecord = false, outOfDate = false, elapsed = null, log, before, after }: Props = $props();
+	let { title, status, outcome = null, noRecord = false, outOfDate = false, elapsed = null, log, before, after, notice }: Props = $props();
 
 	const labels: Record<Props['status'], { glyph: string; text: string }> = {
 		notStarted: { glyph: '○', text: 'Not started' },
@@ -96,6 +97,9 @@
 			{@render after?.()}
 		</div>
 	</div>
+	{#if notice}
+		<div class="notice">{@render notice()}</div>
+	{/if}
 	{#if open}
 		<div class="log-wrap">
 			<button
@@ -194,6 +198,10 @@
 		margin-left: auto;
 	}
 
+	.notice {
+		padding-top: var(--space-2);
+	}
+
 	.log-toggle {
 		background: none;
 		border: none;
@@ -225,6 +233,8 @@
 	.log {
 		margin: var(--space-2) 0 0;
 		padding: var(--space-2);
+		padding-right: 2.5rem;
+		min-height: 3rem;
 		background: var(--color-surface);
 		color: var(--color-surface-text);
 		overflow: auto;
