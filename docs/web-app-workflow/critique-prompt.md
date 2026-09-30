@@ -20,7 +20,19 @@ section below (plus the spec checks when one of its specs is attached).
 ```text
 Critique <path>. Depth: <Lite | Full | Plan>. Read docs/web-app-workflow/critique-prompt.md
 (section "Rules for the critic") and follow it. Read-only: change no file.
+Already decided or answered (do not raise again): <list, or "none">.
+Previous critique of this file: <its findings in one line each and how each was resolved, or "none">.
 ```
+
+**Claude, when the owner asks for a critique prompt:** always give this paste block, filled in, and
+nothing longer. The path, the depth (from the table above) and the two lists are the only things
+that change; the rules live in this file so they cannot drift between prompts. Never describe the
+risks you expect the critic to find (it anchors the review). Fill "already decided" from the
+conversation so answered questions are not asked again.
+
+**Claude, after the critique comes back:** verify each finding against the live code before acting
+on it. A critic once cited an `osascript` call in a file that runs `open`. Record which findings
+held up.
 
 ## Rules for the critic
 
@@ -59,4 +71,14 @@ too big or right? Split only at a real seam, not by size (`tiering.md`).
 4. **Questions for the owner**: anything you cannot resolve from the files; do not guess.
 5. **Verdict**: one line: ready, ready after the blocking items, or not ready.
 
-Do not restate the spec, do not praise, do not rewrite the design.
+Rules on the output itself:
+- **Cite or ask.** A finding needs a `file:line` or spec section. If you cannot cite it, it belongs
+  under Questions.
+- **Tag inference.** Mark any claim you concluded from reading rather than checked (opened a file,
+  ran a command) as `Inferred`.
+- **Repeat review.** If this file was critiqued before, open with one line on what is new since,
+  and check only that; do not re-audit the rest.
+- **Verified claims: one line.** Say "all quoted excerpts match" once and list only the claims you
+  could not confirm. Do not narrate what you checked.
+- **Length.** Lite at most 10 lines, Full at most about 40, Plan as needed.
+- Do not restate the spec, do not praise, do not rewrite the design.
