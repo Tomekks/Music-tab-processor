@@ -3,8 +3,9 @@
 	import type { LayoutData } from './$types';
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
+	import '@fontsource-variable/geist';
+	import '@fontsource-variable/geist-mono';
 	import '../lib/design-tokens.css';
-	import '../lib/status-colors.css';
 	import AppHeader from '$lib/components/organisms/AppHeader.svelte';
 	import Sidebar from '$lib/components/organisms/Sidebar.svelte';
 

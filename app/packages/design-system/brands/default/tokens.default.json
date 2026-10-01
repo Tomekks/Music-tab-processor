@@ -20,7 +20,10 @@
       "surfaceActive": { "$value": "{primitive.color.ink}", "$type": "color" },
       "surfaceActiveText": { "$value": "{primitive.color.paper}", "$type": "color" },
       "playbackActive": { "$value": "#141413", "$type": "color" },
-      "loopRange": { "$value": "{primitive.color.accent}", "$type": "color" }
+      "loopRange": { "$value": "{primitive.color.accent}", "$type": "color" },
+      "statusDone": { "$value": "#2e7d32", "$type": "color", "$description": "Done status dot in Control Center step rows." },
+      "statusFailed": { "$value": "#c62828", "$type": "color", "$description": "Failed status dot in Control Center step rows." },
+      "statusError": { "$value": "#a85600", "$type": "color", "$description": "Interrupted status dot in Control Center step rows." }
     },
     "state": {
       "hoverOpacity": { "$value": "8%", "$type": "percentage" },
@@ -77,6 +80,7 @@
       "paddingY": { "$value": "{semantic.space.1_5}", "$type": "dimension" },
       "radius": { "$value": "{semantic.radius.base}", "$type": "dimension" },
       "fontFamily": { "$value": "{semantic.typography.sans}", "$type": "fontFamily" },
+      "fontWeight": { "$value": "600", "$type": "number", "$description": "Weight of button labels; matches the web app's font-semibold." },
       "primaryBackground": { "$value": "{semantic.color.accent}", "$type": "color" },
       "primaryText": { "$value": "{semantic.color.onAccent}", "$type": "color" },
       "secondaryBackground": { "$value": "{semantic.color.surface}", "$type": "color" },
@@ -93,6 +97,14 @@
       "secondaryIcon": { "$value": "{semantic.color.surfaceText}", "$type": "color" },
       "secondaryBorder": { "$value": "{semantic.color.border}", "$type": "color" },
       "ghostIcon": { "$value": "{semantic.color.surfaceText}", "$type": "color" }
+    },
+    "text": {
+      "pageTitleFontWeight": { "$value": "700", "$type": "number", "$description": "Weight of the page title; matches the web app's font-bold." },
+      "pageTitleFontSize": { "$value": "30px", "$type": "dimension", "$description": "Size of the page title; matches the web app's text-3xl." },
+      "pageSubtitleFontSize": { "$value": "18px", "$type": "dimension", "$description": "Size of the page subtitle." },
+      "sectionTitleFontWeight": { "$value": "600", "$type": "number", "$description": "Weight of section titles; matches the web app's font-semibold." },
+      "sectionTitleFontSize": { "$value": "18px", "$type": "dimension", "$description": "Size of section titles." },
+      "appHeaderTitleFontWeight": { "$value": "600", "$type": "number", "$description": "Weight of the app header title; matches the web app's font-semibold." }
     }
   },
   "dark": {
@@ -106,7 +118,10 @@
         "surfaceHover": { "$value": "#5c5c5c", "$type": "color" },
         "surfaceActive": { "$value": "{primitive.color.white}", "$type": "color" },
         "surfaceActiveText": { "$value": "#212121", "$type": "color" },
-        "playbackActive": { "$value": "#ededed", "$type": "color" }
+        "playbackActive": { "$value": "#ededed", "$type": "color" },
+        "statusDone": { "$value": "#66bb6a", "$type": "color" },
+        "statusFailed": { "$value": "#ef5350", "$type": "color" },
+        "statusError": { "$value": "#ffa726", "$type": "color" }
       }
     }
   }

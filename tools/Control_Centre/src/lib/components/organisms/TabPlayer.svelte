@@ -3,12 +3,14 @@
 	import TabPreview from '$lib/components/molecules/TabPreview.svelte';
 	import { Player } from '$lib/player';
 	import type { TabPreviewData } from '$lib/tab';
+	import type { Snippet } from 'svelte';
 
 	interface Props {
 		preview: TabPreviewData | null;
+		trailing?: Snippet;
 	}
 
-	let { preview }: Props = $props();
+	let { preview, trailing }: Props = $props();
 
 	const initialPreview = untrack(() => preview);
 	const player =
@@ -108,6 +110,9 @@
 		>
 			{muted ? 'Sound off' : 'Sound on'}
 		</button>
+		{#if trailing}
+			<div class="trailing">{@render trailing()}</div>
+		{/if}
 	</div>
 	<TabPreview bind:this={strip} {preview} {activeStep} follow={playing} />
 </div>
@@ -115,8 +120,16 @@
 <style>
 	.controls {
 		display: flex;
+		align-items: stretch;
 		gap: 8px;
 		margin-bottom: 12px;
+	}
+
+	.trailing {
+		margin-left: auto;
+		display: flex;
+		align-items: stretch;
+		gap: var(--space-2);
 	}
 
 	.btn {
@@ -126,6 +139,7 @@
 		padding: var(--component-button-padding-y) var(--component-button-padding-x);
 		border-radius: var(--component-button-radius);
 		font-family: var(--component-button-font-family);
+		font-weight: var(--component-button-font-weight);
 		cursor: pointer;
 		border: 1px solid transparent;
 	}

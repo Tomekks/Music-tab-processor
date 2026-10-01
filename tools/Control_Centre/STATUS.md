@@ -46,5 +46,9 @@ never a bare `node build`).
 
 **Status:** slice 6d done — one control bar above the steps (Browse, picked file, Full start, Full continue); disabled buttons explain why on hover; run details under an info icon.
 
+**Status:** slice 7 done — Geist fonts, the light/dark button and the status colours come from the design system.
+
+**Status:** slice 7b done — text weights and sizes come from component tokens that mirror the web app's; the run picker and Delete sit in the player row.
+
 Verified on Node v26.3.1 only. **Accepted `npm audit` finding (2026-09-29):** 3 low, all one advisory (GHSA-pxg6-pf52-xh8x, `cookie` < 0.7.0, pulled in by `@sveltejs/kit`). Control Center sets and reads no cookies and binds to 127.0.0.1, so it is unreachable; never run `npm audit fix --force` (it proposes downgrading Kit to 0.0.30). Resolves with a Kit release that bumps `cookie`. Plan: `docs/plans/2026-09-24-control-center/`.
 Spec: `docs/plans/2026-09-24-control-center/control-center-slice-1-shell.md`.

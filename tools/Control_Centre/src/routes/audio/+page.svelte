@@ -4,6 +4,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import FolderOutput from '@lucide/svelte/icons/folder-output';
 	import Info from '@lucide/svelte/icons/info';
+	import Trash from '@lucide/svelte/icons/trash';
 	import X from '@lucide/svelte/icons/x';
 	import StepRow from '$lib/components/molecules/StepRow.svelte';
 	import Toast from '$lib/components/molecules/Toast.svelte';
@@ -161,16 +162,40 @@
 <h1 class="page-title">Audio processing</h1>
 
 {#if data.run}
-	<div class="subtitle-row">
-		<p class="subtitle">
-			{heading}{#if data.run.sampleRate > 0}
-				{' '}
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex: the span needs keyboard focus for its tooltip -->
-				<span class="tip info" tabindex="0" role="img" aria-label={infoDetails} data-tip={infoDetails}
-					><Info size={16} aria-hidden="true" /></span
-				>{/if}
-		</p>
-		<div class="picker-group">
+	<p class="subtitle">
+		{heading}{#if data.run.sampleRate > 0}
+			{' '}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex: the span needs keyboard focus for its tooltip -->
+			<span class="tip info" tabindex="0" role="img" aria-label={infoDetails} data-tip={infoDetails}
+				><Info size={16} aria-hidden="true" /></span
+			>{/if}
+	</p>
+{:else}
+	<p class="subtitle">No runs yet</p>
+{/if}
+
+{#if formError}
+	<p class="error">{actionErrorText(formError)}</p>
+{/if}
+
+{#if data.runNotFound}
+	<p>Run not found; showing the newest run.</p>
+{/if}
+
+{#if data.run}
+	{#key playerKey}<TabPlayer preview={data.tabPreview}>
+		{#snippet trailing()}
+			<form method="GET" action="/audio">
+				<select
+					name="run"
+					value={data.run?.id}
+					onchange={(e) => e.currentTarget.form?.requestSubmit()}
+				>
+					{#each data.runs as run}
+						<option value={run.id}>{run.label}</option>
+					{/each}
+				</select>
+			</form>
 			<form
 				method="POST"
 				action="?/deleteRun"
@@ -189,40 +214,32 @@
 					};
 				}}
 			>
-				<input type="hidden" name="runId" value={data.run.id} />
-				<button class="btn secondary" type="submit" disabled={data.busy || data.chainActive}>Delete</button>
+				<input type="hidden" name="runId" value={data.run?.id ?? ''} />
+				<button
+					class="btn secondary icon"
+					type="submit"
+					disabled={data.busy || data.chainActive}
+					title="Move this run to the Trash"
+					aria-label="Move this run to the Trash"
+					><Trash size={16} aria-hidden="true" /></button
+				>
 			</form>
-			<form method="GET" action="/audio">
-				<select name="run" value={data.run?.id} onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-					{#each data.runs as run}
-						<option value={run.id}>{run.label}</option>
-					{/each}
-				</select>
-			</form>
-		</div>
-	</div>
+		{/snippet}
+	</TabPlayer>{/key}
 {:else}
-	<div class="subtitle-row">
-		<p class="subtitle">No runs yet</p>
-		<div class="picker-group">
-			<form method="POST" action="?/deleteRun">
-				<button class="btn secondary" type="submit" disabled>Delete</button>
-			</form>
-			<select disabled><option>No runs yet</option></select>
-		</div>
+	<div class="empty-row">
+		<form method="POST" action="?/deleteRun">
+			<button
+				class="btn secondary icon"
+				type="submit"
+				disabled
+				title="Move this run to the Trash"
+				aria-label="Move this run to the Trash"
+				><Trash size={16} aria-hidden="true" /></button
+			>
+		</form>
+		<select disabled><option>No runs yet</option></select>
 	</div>
-{/if}
-
-{#if formError}
-	<p class="error">{actionErrorText(formError)}</p>
-{/if}
-
-{#if data.runNotFound}
-	<p>Run not found; showing the newest run.</p>
-{/if}
-
-{#if data.run}
-	{#key playerKey}<TabPlayer preview={data.tabPreview} />{/key}
 {/if}
 
 <div class="control-bar">
@@ -405,23 +422,35 @@
 	.page-title {
 		color: var(--foreground);
 		margin: 0;
+		font-weight: var(--component-text-page-title-font-weight);
+		font-size: var(--component-text-page-title-font-size);
 	}
 
 	.subtitle {
-		color: var(--foreground);
-	}
-
-	.subtitle-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--space-4);
-	}
-
-	.picker-group {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
+		margin: 0 0 var(--space-6);
+		color: var(--foreground);
+		font-size: var(--component-text-page-subtitle-font-size);
+	}
+
+	.empty-row {
+		display: flex;
+		justify-content: flex-end;
+		gap: var(--space-2);
+	}
+
+	:global(.trailing) select,
+	.empty-row select {
+		padding: var(--component-button-padding-y) var(--component-button-padding-x);
+		border-radius: var(--component-button-radius);
+		font-family: var(--component-button-font-family);
+		font-size: inherit;
+		border: 1px solid var(--component-button-secondary-border);
+		background: var(--component-button-secondary-background);
+		color: var(--component-button-secondary-text);
+		box-sizing: border-box;
 	}
 
 	.control-bar {
@@ -485,6 +514,7 @@
 		padding: var(--component-button-padding-y) var(--component-button-padding-x);
 		border-radius: var(--component-button-radius);
 		font-family: var(--component-button-font-family);
+		font-weight: var(--component-button-font-weight);
 		cursor: pointer;
 		border: 1px solid transparent;
 	}
