@@ -27,6 +27,17 @@ Redesign the `/design-system` editor as a daily **workbench** for one user: pick
 
 Brands as a top-level section (the switcher stays), per-state color tables, composed-screen previews, per-component changelog, resizable panels, hover definitions on terms, contrast badges, quick-control knobs.
 
+## Later: framework translator (noted 2026-10-01, not in the first pass)
+
+The design system should hold one definition of each Token and Component, with the framework integration (React for the web app, Svelte for Control Center) kept in separate adapters. Today the Tokens already work this way (one `tokens.json`, `build-tokens.mjs` emits the CSS both apps use); Components do not (hand-written React Button in `app/`, separate hand-written Svelte Button in Control Center, both styled by the same variables).
+
+Staged approach, each step only when the previous one starts to hurt:
+1. The Component registry carries a spec per Component (Variants, States, which Tokens each part uses), framework-neutral.
+2. Per-framework adapters implement the spec by hand, with a conformance test that every spec'd Variant and State exists in each framework.
+3. A generator from spec to framework code only if the Component count and framework count justify it.
+
+Trigger to revisit: a new Variant or Component had to be added in two frameworks and one drifted, or a third consumer appears. Likely needs an ADR. This also decides where the workbench can live (its canvas previews use real Components), so settle it before moving the workbench to another framework.
+
 ## Open questions
 
 1. Flat A–Z list or two-level categories? (Flat chosen in the wireframe; at 100+ Components consider a category filter.)
