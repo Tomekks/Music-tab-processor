@@ -1,0 +1,220 @@
+{
+  "name": "Design System Workbench - Structure v1",
+  "viewport": { "width": 1440, "height": 900 },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [0, 16],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          { "name": "Back to Control Center", "type": "link", "height": 40 },
+          { "name": "Brand: default", "type": "input", "height": 40, "maxWidth": 240, "grow": true },
+          { "name": "Mode: Light | Dark", "type": "input", "height": 40, "maxWidth": 160, "grow": true },
+          { "name": "Spacer", "grow": true, "direction": "vertical", "children": [] },
+          {
+            "name": "Save Status",
+            "direction": "vertical",
+            "gap": 4,
+            "children": [
+              { "name": "3 unsaved changes", "type": "text", "height": 24 },
+              { "name": "Not yet deployed", "type": "text", "variant": "caption", "height": 16 }
+            ]
+          },
+          { "name": "Discard", "type": "link", "height": 40 },
+          { "name": "Save", "type": "button", "height": 40 }
+        ]
+      },
+      { "name": "Top Bar Divider", "type": "divider" },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              { "name": "Search (Cmd+K)", "type": "input", "height": 40 },
+              {
+                "name": "Foundations Group",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  { "name": "Foundations", "type": "text", "variant": "caption", "height": 24 },
+                  { "name": "Color", "type": "link", "height": 40 },
+                  { "name": "Space", "type": "link", "height": 40 },
+                  { "name": "Radius", "type": "link", "height": 40 },
+                  { "name": "Typography", "type": "link", "height": 40 },
+                  { "name": "State opacities", "type": "link", "height": 40 },
+                  { "name": "Focus ring", "type": "link", "height": 40 },
+                  { "name": "Layout", "type": "link", "height": 40 }
+                ]
+              },
+              {
+                "name": "Components Group",
+                "direction": "vertical",
+                "gap": 12,
+                "grow": true,
+                "children": [
+                  { "name": "Components", "type": "text", "variant": "caption", "height": 24 },
+                  {
+                    "name": "Category: Actions",
+                    "direction": "vertical",
+                    "gap": 4,
+                    "children": [
+                      { "name": "Actions (collapsible)", "type": "text", "height": 32 },
+                      { "name": "Button (selected)", "type": "button", "height": 40 },
+                      { "name": "Icon Button", "type": "link", "height": 40 }
+                    ]
+                  },
+                  {
+                    "name": "Category: Inputs",
+                    "direction": "vertical",
+                    "gap": 4,
+                    "children": [
+                      { "name": "Inputs (collapsible)", "type": "text", "height": 32 },
+                      { "name": "Color Field", "type": "link", "height": 40 },
+                      { "name": "Slider", "type": "link", "height": 40 },
+                      { "name": "Segmented Control", "type": "link", "height": 40 }
+                    ]
+                  },
+                  { "name": "More categories...", "type": "text", "variant": "caption", "height": 24 }
+                ]
+              },
+              { "name": "Sidebar Divider", "type": "divider" },
+              { "name": "Glossary", "type": "link", "height": 40 }
+            ]
+          },
+          {
+            "name": "Canvas",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  { "name": "Components / Actions / Button", "type": "text", "variant": "caption", "height": 16 },
+                  { "name": "Button", "type": "text", "variant": "display", "height": 48 },
+                  { "name": "One-line purpose of this component", "type": "text", "height": 24 }
+                ]
+              },
+              {
+                "name": "Variants by States",
+                "direction": "vertical",
+                "gap": 16,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Column Labels",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "children": [
+                      { "name": "Variant", "type": "text", "variant": "caption", "width": 96, "height": 16 },
+                      { "name": "Default", "type": "text", "variant": "caption", "height": 16, "grow": true },
+                      { "name": "Hover", "type": "text", "variant": "caption", "height": 16, "grow": true },
+                      { "name": "Pressed", "type": "text", "variant": "caption", "height": 16, "grow": true },
+                      { "name": "Disabled", "type": "text", "variant": "caption", "height": 16, "grow": true }
+                    ]
+                  },
+                  {
+                    "name": "Row: Primary",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      { "name": "Primary", "type": "link", "width": 96, "height": 40 },
+                      { "name": "Primary Default", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Primary Hover", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Primary Pressed", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Primary Disabled", "type": "card", "grow": true, "height": 96 }
+                    ]
+                  },
+                  {
+                    "name": "Row: Secondary",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      { "name": "Secondary", "type": "link", "width": 96, "height": 40 },
+                      { "name": "Secondary Default", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Secondary Hover", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Secondary Pressed", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Secondary Disabled", "type": "card", "grow": true, "height": 96 }
+                    ]
+                  },
+                  {
+                    "name": "Row: Ghost",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      { "name": "Ghost", "type": "link", "width": 96, "height": 40 },
+                      { "name": "Ghost Default", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Ghost Hover", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Ghost Pressed", "type": "card", "grow": true, "height": 96 },
+                      { "name": "Ghost Disabled", "type": "card", "grow": true, "height": 96 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Right Inspector",
+            "width": 320,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Inspector Header",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  { "name": "Button", "type": "text", "variant": "heading", "height": 32 },
+                  { "name": "Selected: Primary variant", "type": "text", "variant": "caption", "height": 16 }
+                ]
+              },
+              {
+                "name": "Shared Tokens",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  { "name": "Shared by all variants", "type": "text", "height": 24 },
+                  { "name": "Padding X", "type": "input", "height": 40 },
+                  { "name": "Padding Y", "type": "input", "height": 40 },
+                  { "name": "Radius", "type": "input", "height": 40 },
+                  { "name": "Font weight", "type": "input", "height": 40 }
+                ]
+              },
+              { "name": "Inspector Divider", "type": "divider" },
+              {
+                "name": "Variant Tokens",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  { "name": "Primary variant only", "type": "text", "height": 24 },
+                  { "name": "Background", "type": "input", "height": 40 },
+                  { "name": "Text", "type": "input", "height": 40 }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

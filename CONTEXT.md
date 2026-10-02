@@ -43,3 +43,41 @@ brand, Main included.
 Always-latest — every consumer reads the design system's current values on
 each load, no versioning or pinning. CSS-only output (custom properties);
 no second export format planned until a real non-CSS consumer exists.
+
+### Tokens and structure
+
+**Token**:
+A single named design value (a color, a length, a font) that a Brand sets.
+_Avoid_: Variable, field (both still appear in the editor's UI and code)
+
+**Foundation**:
+A group of cross-cutting Tokens that belong to no single Component: color
+roles, radius, space, typography, state opacities, focus ring, layout.
+_Avoid_: Semantic tokens, globals
+
+**Component**:
+A reusable interface element of the design system that owns its own group of
+Tokens (Button, Icon Button, Slider, Segmented Control, Color Field).
+_Avoid_: Widget, control
+
+**Variant**:
+A named version of a Component chosen by one of its options, such as a
+Button's primary or secondary look.
+_Avoid_: Type, kind, style
+
+**State**:
+A condition a Component can be in that changes its look: hover, pressed,
+disabled, focused.
+_Avoid_: Status
+
+**Override**:
+A Child brand's own value for a Token in a given Mode, replacing the value it
+would inherit from Main. An Override can be switched off, which falls back to
+Main's value while keeping the stored value, and switched back on to restore
+it. Revert is different: it removes the Override entirely.
+_Avoid_: Customization, local value
+
+**Mode**:
+The light or dark appearance a Brand is shown in. A Token that differs
+between Modes has a value for each.
+_Avoid_: Theme (reserved against Brand), dark theme
