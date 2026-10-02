@@ -21,6 +21,7 @@ Redesign the `/design-system` editor as a daily **workbench** for one user: pick
 - **Extension point:** one Component registry (name, Variants, preview, optional category); the inspector is generated from token descriptors, so a new Token needs no UI change.
 - **Rollout:** replace `/design-system` in place, after baseline screenshots and a Nielsen heuristics pass on today's editor.
 - **Variants:** styles of one Component (primary, secondary, ghost); "iterations" means Variants.
+- **Reset features:** reset a single Token to its default, and a "Reset to default" button for all of a Component's Tokens (placed in the inspector header). Both act on the staged edit, so Discard undoes them. What "default" means is still open (question 9).
 
 ## Deferred (not in this plan's first pass)
 
@@ -36,6 +37,7 @@ Brands as a top-level section (the switcher stays), per-state color tables, comp
 6. Ghost exists on Icon Button only; Button has primary and secondary today.
 7. Home for the "Generate from seed colors" tool (probably Foundations, Color). Primitives stay hidden.
 8. Whether the undeployed note stays beside Saved, and the exact Mode toggle position.
+9. What "default" means for the reset features. Today the code has three: factory defaults (`tokens.default.json`, Main brand only), Revert in a child brand (deletes the Override, falls back to Main), and "set as default". Recommended: in Main, reset to factory default; in a child brand, reset to Main's value (Revert). Needs a glossary term to keep "reset", "revert" and "default" distinct, and a place for the control on each row and in the inspector header (not drawn in the wireframe yet).
 
 ## Next session
 
