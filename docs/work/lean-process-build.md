@@ -2,7 +2,7 @@
 
 Status: active
 Branch: master
-Next: all three PRs are merged to master (#59 d3b48d5, #60 41f0909, #61 8bbc002). Cleanup is waiting for the owner's yes (list was shown, not yet approved): (1) `git cherry-pick` the latest local commit on `lean-process` ("docs(work): wrap", this file only) onto master FIRST, deleting `lean-process` before that loses it; (2) remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`; (3) delete the merged branches `lean-process`, `feat/cc-stage-durations`, `docs/wrap-after-lean-merge` (local and remote); (4) in the main folder `git checkout master && git pull`. Open PRs #54-#58 are dependabot, not ours (#54 is a real break). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list).
+Next: cleanup finished 2026-10-03 (worktree removed, merged branches deleted, main folder on master). Nothing is open for the lean process itself. Next real work: the trial, 3 real tasks via delegate.sh (one Quick, one Full with a Delete list); wait for real work, do not invent tasks. Open PRs #54-#58 are dependabot, not ours (#54 is a real break: close it or bump react with react-dom). Local master has 2 unpushed docs commits (this file); they ride along with the next PR (master needs a PR).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
