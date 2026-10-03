@@ -34,7 +34,11 @@ if [ "$WITH_ENV" -eq 1 ]; then
     [ -f "$ROOT/$f" ] && cp "$ROOT/$f" "$f" && echo "copied $f"
   done
 fi
-[ -d "$ROOT/.venv" ] && ln -s "$ROOT/.venv" .venv && echo "linked .venv"
+if [ -d "$ROOT/.venv" ]; then
+  ln -s "$ROOT/.venv" .venv && echo "linked .venv"
+  # .gitignore's `.venv/` matches folders only; hide the symlink locally so it never counts as a changed file.
+  echo ".venv" >> "$(git rev-parse --git-path info/exclude)"
+fi
 
 # Task file from the template, with Branch and Written against already filled in.
 if [ -f docs/work/TEMPLATE.md ]; then
