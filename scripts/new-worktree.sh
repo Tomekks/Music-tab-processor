@@ -25,7 +25,7 @@ done
 
 # Task file from the template, with Branch and Written against already filled in.
 if [ -f docs/work/TEMPLATE.md ]; then
-  sed "s/<branch name>/$NAME/; s/<commit hash>/$(git rev-parse --short HEAD)/; s/<short name>/$NAME/" \
+  sed "s/<<branch name>>/$NAME/; s/<<commit hash>>/$(git rev-parse --short HEAD)/; s/<<short name>>/$NAME/" \
     docs/work/TEMPLATE.md > "docs/work/$NAME.md"
   echo "created docs/work/$NAME.md (fill it in, then: scripts/check-brief.sh docs/work/$NAME.md)"
 fi

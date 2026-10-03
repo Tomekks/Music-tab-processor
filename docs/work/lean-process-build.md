@@ -20,7 +20,7 @@ Read only this file, then the rules files named under Done. Skip `START_HERE.md`
 - P3 step B `20464bf`: new `AGENTS.md` (68 lines), area `AGENTS.md` files, `CLAUDE.md` → `@AGENTS.md`.
 - `/start` `386847e` + update: `.claude/commands/start.md`, `scripts/start.sh`; session rules now in `AGENTS.md`.
   Owner set: ~10 new tests per task max; caps `AGENTS.md` ≤ 80 lines, rules files ≤ 70.
-- P3 step C (this checkpoint): `scripts/{check-rules,verify-pipeline,new-worktree,check-brief}.sh`, verify footer
+- P3 step C `d562c9c`: `scripts/{check-rules,verify-pipeline,new-worktree,check-brief}.sh`, verify footer
   with count + time, rule-id claims moved to `docs/rules/covers.txt`, `shellcheck` installed (all scripts clean).
 
 ## Next (P3, in order; each ends with an owner stop)

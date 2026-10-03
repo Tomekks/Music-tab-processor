@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Checks a task file has the required parts. Checks form, not content.
 # Usage: scripts/check-brief.sh <task-file>
+# Unfilled <<placeholders>> from TEMPLATE.md fail the check.
 # Heading names match what scripts/start.sh reads (Status/Branch/Next/## Questions).
 set -uo pipefail
 F="${1:?usage: scripts/check-brief.sh <task-file>}"
@@ -20,6 +21,9 @@ awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#
 
 grep -qE '^[[:space:]]*[-*0-9].*`' <(awk 'tolower($0) ~ /acceptance checks/ {f=1; next} f && /^#/ {exit} f' "$F") \
   || bad "BAD: 'Acceptance checks' has no item with a \`command\`"
+
+# Unfilled template placeholders look like <<this>>.
+if grep -q '<<[^>]*>>' "$F"; then bad "UNFILLED placeholders:"; grep -n '<<[^>]*>>' "$F" | head -5; fi
 
 [ "$FAIL" -eq 0 ] && echo "check-brief: OK" || echo "check-brief: FAIL"
 exit "$FAIL"
