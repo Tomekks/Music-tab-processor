@@ -563,7 +563,7 @@
 
 <script>
 const WIREFRAME_DATA = {
-  "name": "Design System Workbench - Foundations v4 (real tokens)",
+  "name": "Design System Workbench - Child brand, dark mode v1",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -584,14 +584,14 @@ const WIREFRAME_DATA = {
         "align": "center",
         "children": [
           {
-            "name": "Design System - brand: default (switcher)",
+            "name": "Design System - brand: demo-child (child of default) (switcher)",
             "type": "input",
             "height": 40,
             "grow": true,
             "maxWidth": 320
           },
           {
-            "name": "Mode toggle (moon / sun icon)",
+            "name": "Mode toggle (dark active)",
             "type": "icon",
             "width": 40,
             "height": 40
@@ -833,7 +833,13 @@ const WIREFRAME_DATA = {
                     ]
                   },
                   {
-                    "name": "Row background",
+                    "name": "Greyed rows follow Main; flip the toggle on the right to override in this brand. Dark values are overrides too.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row background [inherited]",
                     "direction": "horizontal",
                     "gap": 12,
                     "align": "center",
@@ -841,6 +847,54 @@ const WIREFRAME_DATA = {
                     "children": [
                       {
                         "name": "background",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #1A1A19",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#1A1A19",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Base page background, the app shell root",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row foreground [inherited]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "foreground",
                         "type": "text",
                         "height": 24,
                         "width": 150
@@ -854,43 +908,8 @@ const WIREFRAME_DATA = {
                       {
                         "name": "#FAF9F5",
                         "type": "text",
-                        "variant": "caption",
-                        "height": 16,
-                        "width": 64
-                      },
-                      {
-                        "name": "Base page background, the app shell root",
-                        "type": "text",
                         "height": 16,
                         "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row foreground",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "foreground",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "swatch #141413",
-                        "type": "icon",
-                        "width": 32,
-                        "height": 32
-                      },
-                      {
-                        "name": "#141413",
-                        "type": "text",
-                        "variant": "caption",
-                        "height": 16,
                         "width": 64
                       },
                       {
@@ -899,11 +918,24 @@ const WIREFRAME_DATA = {
                         "height": 16,
                         "variant": "caption",
                         "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
                       }
                     ]
                   },
                   {
-                    "name": "Row accent (selected)",
+                    "name": "Row accent [overridden]",
                     "direction": "horizontal",
                     "gap": 12,
                     "align": "center",
@@ -916,16 +948,16 @@ const WIREFRAME_DATA = {
                         "width": 150
                       },
                       {
-                        "name": "swatch #AE97F7",
+                        "name": "swatch #7C5CE0",
                         "type": "icon",
                         "width": 32,
                         "height": 32
                       },
                       {
-                        "name": "#AE97F7",
+                        "name": "#7C5CE0",
                         "type": "text",
-                        "variant": "caption",
                         "height": 16,
+                        "variant": "caption",
                         "width": 64
                       },
                       {
@@ -934,11 +966,30 @@ const WIREFRAME_DATA = {
                         "height": 16,
                         "variant": "caption",
                         "grow": true
+                      },
+                      {
+                        "name": "Revert",
+                        "type": "link",
+                        "height": 24,
+                        "width": 50
+                      },
+                      {
+                        "name": "overridden",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 70
+                      },
+                      {
+                        "name": "on",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
                       }
                     ]
                   },
                   {
-                    "name": "Row border",
+                    "name": "Row border [inherited]",
                     "direction": "horizontal",
                     "gap": 12,
                     "align": "center",
@@ -951,16 +1002,16 @@ const WIREFRAME_DATA = {
                         "width": 150
                       },
                       {
-                        "name": "swatch #E6DFD8",
+                        "name": "swatch #3A3834",
                         "type": "icon",
                         "width": 32,
                         "height": 32
                       },
                       {
-                        "name": "#E6DFD8",
+                        "name": "#3A3834",
                         "type": "text",
-                        "variant": "caption",
                         "height": 16,
+                        "variant": "caption",
                         "width": 64
                       },
                       {
@@ -969,11 +1020,24 @@ const WIREFRAME_DATA = {
                         "height": 16,
                         "variant": "caption",
                         "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
                       }
                     ]
                   },
                   {
-                    "name": "Row surface",
+                    "name": "Row surface [inherited]",
                     "direction": "horizontal",
                     "gap": 12,
                     "align": "center",
@@ -986,16 +1050,16 @@ const WIREFRAME_DATA = {
                         "width": 150
                       },
                       {
-                        "name": "swatch #FFFFFF",
+                        "name": "swatch #262624",
                         "type": "icon",
                         "width": 32,
                         "height": 32
                       },
                       {
-                        "name": "#FFFFFF",
+                        "name": "#262624",
                         "type": "text",
-                        "variant": "caption",
                         "height": 16,
+                        "variant": "caption",
                         "width": 64
                       },
                       {
@@ -1004,6 +1068,19 @@ const WIREFRAME_DATA = {
                         "height": 16,
                         "variant": "caption",
                         "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
                       }
                     ]
                   },
@@ -1012,575 +1089,6 @@ const WIREFRAME_DATA = {
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
-                  }
-                ]
-              },
-              {
-                "name": "Divider B",
-                "type": "divider"
-              },
-              {
-                "name": "Section: State",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: State",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "State",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.state - opacities shared by hover, pressed, focus, disabled, muted, loop.",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row hoverOpacity",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "hoverOpacity",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "8%",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Overlay strength on hover",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row pressedOpacity",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "pressedOpacity",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "12%",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Overlay strength while pressed",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row disabledOpacity",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "disabledOpacity",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "50%",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Dimming of disabled controls",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "... 4 more rows, generated from tokens.json",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
-                  }
-                ]
-              },
-              {
-                "name": "Divider C",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Focus ring",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: Focus ring",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Focus ring",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.focus - one ring style for every interactive Component.",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row ringWidth",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "ringWidth",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "2px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Outline thickness",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row ringOffset",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "ringOffset",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "2px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Gap between element and ring",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row ringColor",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "ringColor",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "swatch #AE97F7",
-                        "type": "icon",
-                        "width": 32,
-                        "height": 32
-                      },
-                      {
-                        "name": "#AE97F7",
-                        "type": "text",
-                        "variant": "caption",
-                        "height": 16,
-                        "width": 64
-                      },
-                      {
-                        "name": "Alias of accent",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "Divider D",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Radius",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: Radius",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Radius",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.radius",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row base",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "base",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "8px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Default corner radius",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "Divider E",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Space",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: Space",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Space",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.space - seven steps.",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row 1",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "1",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "4px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Tightest gap",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row 2",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "2",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "8px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Small gap",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row 4",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "4",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "16px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Default gap",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "... 4 more rows, generated from tokens.json",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
-                  }
-                ]
-              },
-              {
-                "name": "Divider F",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Typography",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: Typography",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Typography",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.typography - the two font families. Text styles (size, weight, description) per Component for now; Title and Body styles are slice 3.",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row sans",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "sans",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "[T] Geist Sans",
-                        "type": "input",
-                        "height": 32,
-                        "grow": true
-                      },
-                      {
-                        "name": "Used by every Component unless set otherwise",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row mono",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "mono",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "[T] Geist Mono",
-                        "type": "input",
-                        "height": 32,
-                        "grow": true
-                      },
-                      {
-                        "name": "Used by Color Field",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "Divider G",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Layout",
-                "direction": "vertical",
-                "gap": 8,
-                "children": [
-                  {
-                    "name": "Heading row: Layout",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Layout",
-                        "type": "text",
-                        "variant": "heading",
-                        "height": 32
-                      },
-                      {
-                        "name": "? help icon (lucide circle-help) - hover: semantic.layout",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Row sidebarWidth",
-                    "direction": "horizontal",
-                    "gap": 12,
-                    "align": "center",
-                    "height": 40,
-                    "children": [
-                      {
-                        "name": "sidebarWidth",
-                        "type": "text",
-                        "height": 24,
-                        "width": 150
-                      },
-                      {
-                        "name": "240px",
-                        "type": "input",
-                        "height": 32,
-                        "width": 96
-                      },
-                      {
-                        "name": "Width of the web app sidebar",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption",
-                        "grow": true
-                      }
-                    ]
                   }
                 ]
               }
@@ -1616,14 +1124,14 @@ const WIREFRAME_DATA = {
                         "variant": "heading"
                       },
                       {
-                        "name": "Reset to default",
+                        "name": "Revert to Main",
                         "type": "link",
                         "height": 24
                       }
                     ]
                   },
                   {
-                    "name": "Foundations / Color / semantic.color.accent",
+                    "name": "demo-child / Color / semantic.color.accent",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
@@ -1640,76 +1148,123 @@ const WIREFRAME_DATA = {
                 "gap": 8,
                 "children": [
                   {
-                    "name": "What it is for (editable)",
+                    "name": "What it is for (shared with Main)",
                     "type": "text",
                     "height": 24
                   },
                   {
-                    "name": "Active tab text/border, selected song row, primary Button background. Editable text, saved with the token.",
+                    "name": "Active tab text/border, selected row, primary Button background.",
                     "type": "input",
-                    "height": 96
+                    "height": 72
                   }
                 ]
               },
               {
-                "name": "Value section",
+                "name": "Values",
                 "direction": "vertical",
-                "gap": 12,
+                "gap": 16,
                 "children": [
                   {
-                    "name": "Value",
-                    "type": "text",
-                    "height": 24
-                  },
-                  {
-                    "name": "Light row",
-                    "direction": "horizontal",
+                    "name": "Light block",
+                    "direction": "vertical",
                     "gap": 8,
-                    "align": "center",
                     "children": [
                       {
-                        "name": "Light",
+                        "name": "Light header",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Light",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "on",
+                            "type": "input",
+                            "width": 44,
+                            "height": 24
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Light value row",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "#4A90D9",
+                            "type": "input",
+                            "height": 40,
+                            "grow": true
+                          },
+                          {
+                            "name": " ",
+                            "type": "input",
+                            "width": 40,
+                            "height": 40
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Override in this brand. Main: #AE97F7",
                         "type": "text",
-                        "height": 24,
-                        "width": 96
-                      },
-                      {
-                        "name": "#AE97F7",
-                        "type": "input",
-                        "height": 40,
-                        "grow": true
-                      },
-                      {
-                        "name": "swatch = color picker",
-                        "type": "input",
-                        "width": 40,
-                        "height": 40
+                        "height": 16,
+                        "variant": "caption"
                       }
                     ]
                   },
                   {
-                    "name": "Dark row",
-                    "direction": "horizontal",
+                    "name": "Dark (editing now) block",
+                    "direction": "vertical",
                     "gap": 8,
-                    "align": "center",
                     "children": [
                       {
-                        "name": "Dark",
+                        "name": "Dark (editing now) header",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Dark (editing now)",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "on",
+                            "type": "input",
+                            "width": 44,
+                            "height": 24
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Dark (editing now) value row",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "#7C5CE0",
+                            "type": "input",
+                            "height": 40,
+                            "grow": true
+                          },
+                          {
+                            "name": " ",
+                            "type": "input",
+                            "width": 40,
+                            "height": 40
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Override in this brand. Main dark: #AE97F7. Switch off to inherit without losing this value.",
                         "type": "text",
-                        "height": 24,
-                        "width": 96
-                      },
-                      {
-                        "name": "#AE97F7",
-                        "type": "input",
-                        "height": 40,
-                        "grow": true
-                      },
-                      {
-                        "name": "swatch = color picker",
-                        "type": "input",
-                        "width": 40,
-                        "height": 40
+                        "height": 16,
+                        "variant": "caption"
                       }
                     ]
                   }
@@ -1720,57 +1275,9 @@ const WIREFRAME_DATA = {
                 "type": "divider"
               },
               {
-                "name": "Used by section",
-                "direction": "vertical",
-                "gap": 4,
-                "children": [
-                  {
-                    "name": "Used by header row",
-                    "direction": "horizontal",
-                    "justify": "space-between",
-                    "align": "center",
-                    "children": [
-                      {
-                        "name": "Used by (4)  - expandable, generated",
-                        "type": "text",
-                        "height": 24
-                      },
-                      {
-                        "name": "chevron (expand / collapse)",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Expanded list: each row opens that Component page with the Variant selected",
-                    "direction": "vertical",
-                    "gap": 0,
-                    "children": [
-                      {
-                        "name": "Button / Primary - background",
-                        "type": "link",
-                        "height": 32
-                      },
-                      {
-                        "name": "Button / Primary - hover mix (code, not a token)",
-                        "type": "link",
-                        "height": 32
-                      },
-                      {
-                        "name": "Slider - fill",
-                        "type": "link",
-                        "height": 32
-                      },
-                      {
-                        "name": "Segmented Control / Selected - background",
-                        "type": "link",
-                        "height": 32
-                      }
-                    ]
-                  }
-                ]
+                "name": "Used by (4)  v",
+                "type": "text",
+                "height": 24
               }
             ]
           }

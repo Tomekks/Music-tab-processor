@@ -1,0 +1,724 @@
+{
+  "name": "Design System Workbench - Child brand, dark mode v1",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [
+          0,
+          16
+        ],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          {
+            "name": "Design System - brand: demo-child (child of default) (switcher)",
+            "type": "input",
+            "height": 40,
+            "grow": true,
+            "maxWidth": 320
+          },
+          {
+            "name": "Mode toggle (dark active)",
+            "type": "icon",
+            "width": 40,
+            "height": 40
+          },
+          {
+            "name": "Spacer",
+            "grow": true,
+            "direction": "vertical",
+            "children": []
+          },
+          {
+            "name": "Save Status",
+            "direction": "horizontal",
+            "gap": 16,
+            "align": "center",
+            "children": [
+              {
+                "name": "3 unsaved changes",
+                "type": "text",
+                "height": 24
+              },
+              {
+                "name": "Not deployed",
+                "type": "text",
+                "variant": "caption",
+                "height": 24
+              }
+            ]
+          },
+          {
+            "name": "Discard",
+            "type": "link",
+            "height": 40
+          },
+          {
+            "name": "Save",
+            "type": "button",
+            "height": 40
+          }
+        ]
+      },
+      {
+        "name": "Top Bar Divider",
+        "type": "divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar (fixed in view; its list scrolls inside this column)",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              {
+                "name": "Search (Cmd+K)",
+                "type": "input",
+                "height": 40
+              },
+              {
+                "name": "Top Sections",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Glossary",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Foundations (selected)",
+                    "type": "button",
+                    "height": 48
+                  }
+                ]
+              },
+              {
+                "name": "Sidebar Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Components (A-Z, scrolls within the sidebar)",
+                "direction": "vertical",
+                "gap": 4,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Components",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 24
+                  },
+                  {
+                    "name": "Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Color Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Icon Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Segmented Control",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Slider",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sidebar / Canvas Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Canvas (the only column that scrolls the page content; sidebars stay fixed)",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Foundations",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Heading row: Foundations",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Foundations",
+                        "type": "text",
+                        "variant": "display",
+                        "height": 48
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: Shared values every Component reads, generated from the brand tokens.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Jump links",
+                "direction": "horizontal",
+                "gap": 16,
+                "children": [
+                  {
+                    "name": "Color",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "State",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Focus ring",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Radius",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Space",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Typography",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Layout",
+                    "type": "link",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Divider A",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Color",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Heading row: Color",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Color",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.color - swatch, hex, and the one-line use. Select a row to edit it in the inspector.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Greyed rows follow Main; flip the toggle on the right to override in this brand. Dark values are overrides too.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row background [inherited]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "background",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #1A1A19",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#1A1A19",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Base page background, the app shell root",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row foreground [inherited]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "foreground",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #FAF9F5",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#FAF9F5",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Default text color across the app",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row accent [overridden]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "accent (selected)",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #7C5CE0",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#7C5CE0",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Active tab, selected row, primary Button",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "Revert",
+                        "type": "link",
+                        "height": 24,
+                        "width": 50
+                      },
+                      {
+                        "name": "overridden",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 70
+                      },
+                      {
+                        "name": "on",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row border [inherited]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "border",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #3A3834",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#3A3834",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Inputs, cards and dividers",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row surface [inherited]",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "surface",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #262624",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#262624",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 64
+                      },
+                      {
+                        "name": "Input fields, kbd hints",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      },
+                      {
+                        "name": "inherited from Main",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "width": 120
+                      },
+                      {
+                        "name": "off",
+                        "type": "input",
+                        "width": 44,
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 10 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Canvas / Inspector Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Right Inspector (fixed in view; scrolls inside this column if tall)",
+            "width": 320,
+            "direction": "vertical",
+            "padding": 24,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Inspector Header",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Title Row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "accent",
+                        "type": "text",
+                        "height": 32,
+                        "variant": "heading"
+                      },
+                      {
+                        "name": "Revert to Main",
+                        "type": "link",
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "demo-child / Color / semantic.color.accent",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Header Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Description section",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "What it is for (shared with Main)",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Active tab text/border, selected row, primary Button background.",
+                    "type": "input",
+                    "height": 72
+                  }
+                ]
+              },
+              {
+                "name": "Values",
+                "direction": "vertical",
+                "gap": 16,
+                "children": [
+                  {
+                    "name": "Light block",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Light header",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Light",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "on",
+                            "type": "input",
+                            "width": 44,
+                            "height": 24
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Light value row",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "#4A90D9",
+                            "type": "input",
+                            "height": 40,
+                            "grow": true
+                          },
+                          {
+                            "name": " ",
+                            "type": "input",
+                            "width": 40,
+                            "height": 40
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Override in this brand. Main: #AE97F7",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Dark (editing now) block",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Dark (editing now) header",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Dark (editing now)",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "on",
+                            "type": "input",
+                            "width": 44,
+                            "height": 24
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Dark (editing now) value row",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "#7C5CE0",
+                            "type": "input",
+                            "height": 40,
+                            "grow": true
+                          },
+                          {
+                            "name": " ",
+                            "type": "input",
+                            "width": 40,
+                            "height": 40
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Override in this brand. Main dark: #AE97F7. Switch off to inherit without losing this value.",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Section Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Used by (4)  v",
+                "type": "text",
+                "height": 24
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1116,7 +1116,7 @@
                         "grow": true
                       },
                       {
-                        "name": "pick",
+                        "name": "swatch = color picker",
                         "type": "input",
                         "width": 40,
                         "height": 40
@@ -1142,7 +1142,7 @@
                         "grow": true
                       },
                       {
-                        "name": "pick",
+                        "name": "swatch = color picker",
                         "type": "input",
                         "width": 40,
                         "height": 40
