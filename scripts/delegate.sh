@@ -25,7 +25,7 @@ fi
 
 if printf '%s\n' "$OUT" | grep -qE '^run-builder: (stopped|DRIFT|never|task says|.Modify only|builder model|refusing)|no such file'; then
   echo "delegate: STOPPED BEFORE THE MODEL RAN (pre-flight):"
-  printf '%s\n' "$OUT" | grep -E '^run-builder:|^check-brief|^  ' | head -8
+  printf '%s\n' "$OUT" | grep -v '^run-builder: .* on .*timeout' | head -8
   exit 2
 fi
 if printf '%s\n' "$OUT" | grep -q 'WARNING a free-tier model'; then

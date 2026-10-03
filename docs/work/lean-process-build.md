@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: plan step 3: write scripts/delegate.sh (short deny list, logs in docs/work/runs/ + gitignore, Muse retry then deepseek fallback), then step 7 real task in int-test worktree, then gate.
+Next: plan step 7: one real small task through scripts/delegate.sh (draft the task file, owner approves the brief, run, Claude reviews the diff), then the decision gate. Ask owner first about the stale int-test worktree (uncommitted old script edits, blocks a merge).
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -42,7 +42,7 @@ none run on a real task). Cost was Claude tokens spent debugging plumbing, not o
 Principle: check facts after the work (scope, verify, deliverable exists), not prevention rules before it.
 1. DONE. `-free` leak traced: one session (2026-10-02 19:33), a builder canary test run without `-m` on a fake file, so opencode used its default free model. No repo content, no other sessions. Real path (`run-builder.sh`) always passes `-m` and rejects `*free*`; delegate.sh must do the same.
 2. DONE. `verify-task.sh` fails when any `Modify only` path is missing (red/green shown in a scratch repo, shellcheck clean).
-3. `scripts/delegate.sh <task>`: the only thing Claude runs. Brief + branch + drift check, builder via `oc-run.sh`,
+3. DONE cf87300 (tested with a fake opencode: pre-flight stop, model down, no commit, out of scope, success + deletion + env scrub; NOT yet with a real model). `scripts/delegate.sh <task>`: the only thing Claude runs. Brief + branch + drift check, builder via `oc-run.sh`,
    `check-scope`, `verify-task`; prints ~10 lines with a plain failure reason (model down / stalled / out of scope /
    verify failed). Builder gets a normal shell with a short deny list (`git push*`, curl/wget, `rm -rf`, `.env*`,
    `contracts/`, anything outside the worktree), tested once by hand. Logs go to `docs/work/runs/` (gitignored), not mktemp.
@@ -57,6 +57,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 6. Claude-side budget: two failed builder runs for non-provider reasons -> stop and report, no more plumbing debugging.
 7. One real small task in the existing `int-test` worktree (reuse, then remove with owner OK).
 8. Decision gate: record pass/fail + reason here. Two non-provider failures -> drop opencode, use a Haiku subagent.
+8a. Deletions (owner agreed 2026-10-03): builder cannot delete. Brief has an optional `**Delete (approved with this brief):**` list; owner approves it at the brief; finish.sh `git rm`s exactly those; check-scope allows them. Builder shell is an ALLOW-list (stricter than the deny-list first agreed; owner said approve, will critique after).
 8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.
 

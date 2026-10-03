@@ -29,8 +29,10 @@ task file. Nothing else. Do not invent process.
 - Stop when every acceptance check passes. Don't keep polishing.
 
 ## When you finish
-You have no general shell. Your shell runs only read-only git, `lsof -i`, and exactly
-`bash scripts/verify-task.sh` and `bash scripts/finish.sh`.
+Your shell is a short allow-list: read-only git, `lsof -i`, `npm --prefix app run test|lint|typecheck|verify`,
+`node --test <file>`, `bash scripts/verify-task.sh` and `bash scripts/finish.sh`. Everything else is denied. You cannot
+delete files: only paths under the brief's `Delete:` list are removed, by `finish.sh`. Any other deletion: write a
+question under `Questions` and STOP.
 1. Run `bash scripts/verify-task.sh`. If it says FAIL, fix once and run it again; still failing: STOP and report.
 2. Write the report into the task file's `## Report`: one line per acceptance check
    (command → observed → ✓/✗); **Decisions the spec didn't settle** (anything you chose that changes

@@ -110,12 +110,12 @@
   <div class="flow">
     <div class="st"><span class="lane l-claude">Claude</span><b>1. Write the task file</b><small>what changes, allowed files, checks</small></div>
     <div class="st"><span class="lane l-you">You</span><b>2. Approve the brief</b><small>the "What changes for you" block</small></div>
-    <div class="st planned"><span class="lane l-script">Script</span><b>3. Pre-flight</b><small>brief complete, right branch, files unchanged since written, never master, never a free model</small></div>
-    <div class="st planned"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree, normal shell, short banned list (no push, internet, deleting, secrets); test first; writes <code>## Report</code></small></div>
-    <div class="st planned"><span class="lane l-script">Script</span><b>5. Watchdog</b><small>kills a dead run: no output 60 s, stalled 180 s. Log kept (last 200 lines)</small></div>
-    <div class="st planned"><span class="lane l-script">Script</span><b>6. Facts check</b><small>only allowed files changed? checks pass? every promised file exists?</small></div>
-    <div class="st planned"><span class="lane l-script">Script</span><b>7. Checkpoint commit</b><small>one commit, made by the script, not the model</small></div>
-    <div class="st planned"><span class="lane l-script">Script</span><b>8. ~10-line summary</b><small>pass/fail, plain reason if failed, diff stat, log path</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>3. Pre-flight</b><small>brief complete, right branch, files unchanged since written, never master, never a free model</small></div>
+    <div class="st planned"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree; shell allow-list only (git read, tests, 2 scripts; no push, internet, rm); secrets stripped from its environment; test first; writes <code>## Report</code></small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>5. Watchdog</b><small>kills a dead run: no output 60 s, stalled 180 s. Log kept (last 200 lines)</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>6. Facts check</b><small>only allowed files changed? checks pass? every promised file exists?</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>7. Checkpoint commit</b><small>one commit, made by the script, not the model. Files on the brief's <b>Delete:</b> list (approved at step 2) are removed here; the builder cannot delete</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>8. ~10-line summary</b><small>pass/fail, plain reason if failed, diff stat, log path</small></div>
     <div class="st"><span class="lane l-claude">Claude</span><b>9. Review the diff</b><small>reads the summary, the Report and the diff; raw log only on failure (<code>tail -40</code>)</small></div>
     <div class="st"><span class="lane l-you">You</span><b>10. Test + ship</b><small>your checklist; push / deploy only on your yes</small></div>
   </div>
@@ -235,7 +235,7 @@ docs/
     <tr><td><code>scripts/verify-pipeline.sh</code></td><td>Runs the pipeline's tests, only when pipeline files are staged.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag planned">planned P3 F</span></td></tr>
     <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
-    <tr><td><code>scripts/delegate.sh &lt;task&gt;</code></td><td>The one command Claude runs to hand a task to the builder: pre-flight, build, watchdog, facts check, commit, short summary. Stops and asks before switching models.</td><td>Claude runs it</td><td><span class="tag planned">planned (next)</span></td></tr>
+    <tr><td><code>scripts/delegate.sh &lt;task&gt;</code></td><td>The one command Claude runs to hand a task to the builder: pre-flight, build, watchdog, facts check, commit, short summary. Stops and asks before switching models.</td><td>Claude runs it</td><td><span class="tag built">built</span> cf87300, tested with a fake model (outage, no commit, out of scope, success)</td></tr>
     <tr><td><code>scripts/verify-task.sh</code></td><td>The builder's "run the checks" step. Now also fails if a promised file is missing.</td><td>Automatic</td><td><span class="tag built">built</span> 73809b4</td></tr>
     <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part (files, size, risk, checks with expected results). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: environment files, install, port, safety hooks.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
@@ -273,7 +273,8 @@ docs/
     <tr><td>P3 C</td><td>Scripts: rule check, pipeline check, worktree setup, brief check; footer time and totals</td><td><span class="tag built">built</span> f575300</td></tr>
     <tr><td>P3 D</td><td>Task template, scorecard, missed-log</td><td><span class="tag built">built</span> 5850d80</td></tr>
     <tr><td>P3 E</td><td>Opencode: builder, reviewer, run-builder.sh, run-reviewer.sh, MCP off, saved in git</td><td><span class="tag built">built</span> 3c5733d, ba9a0b9 (flaky on first use, being simplified)</td></tr>
-    <tr><td>P3 E2</td><td>Simplified hand-off: <code>delegate.sh</code>, short banned list, capped logs, Claude reviews, ask before model switch. One real task, then a keep-or-drop gate.</td><td><span class="tag planned">next</span></td></tr>
+    <tr><td>P3 E2</td><td>Simplified hand-off: <code>delegate.sh</code>, shell allow-list, capped logs, approved deletions, ask before model switch</td><td><span class="tag built">built</span> cf87300 (tested with a fake model, not yet with a real one)</td></tr>
+    <tr><td>P3 E3</td><td>One real small task through <code>delegate.sh</code>, then the keep-or-drop gate</td><td><span class="tag planned">next</span></td></tr>
     <tr><td>P3 F, G</td><td><code>/next</code>, <code>/wrap</code>; skill pruning</td><td><span class="tag planned">planned</span></td></tr>
     <tr><td>P3 H</td><td>Full dry run on a harmless task</td><td><span class="tag planned">planned</span></td></tr>
     <tr><td>P3 I</td><td>Remove Superpowers (you run the uninstall)</td><td><span class="tag planned">planned</span></td></tr>
