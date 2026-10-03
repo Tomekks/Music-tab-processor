@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/cc-stage-durations
 Next: owner approves the brief, then Claude runs scripts/delegate.sh on this file.
-Written against: a6d5552
+Written against: 145a218
 
 ## What changes for you
 Nothing visible in the app. A new, tested function `stageDurations(records)` turns Control Center's run records into the fastest, median and slowest seconds per pipeline stage, plus how many runs were done, failed or stopped. It makes the numbers you worked out by hand on 2026-09-30 repeatable. Nothing uses it yet; what to measure for quality is decided later.
@@ -51,7 +51,7 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Put anything else in the owner checklist.)
 - Run: `bash scripts/verify-task.sh` / Expected: the control centre section shows `pass` of at least 161 with `fail 0`, and the last line is `verify-task: PASS`
-- Run: `git diff --stat a6d5552..HEAD` / Expected: exactly the two new files plus this task file
+- Run: `git diff --stat 145a218..HEAD` / Expected: exactly the two new files plus this task file
 
 ## Owner checklist
 - [ ] In the worktree, run `node --input-type=module -e 'const m=await import("./tools/Control_Centre/src/lib/server/stats.ts"); const r=await import("./tools/Control_Centre/src/lib/server/records.ts"); console.log(m.stageDurations(r.readRecords("/Users/tomsvarpins/Projects/guitar_tab_processor/tools/Control_Centre/data")))'` → prints one entry per stage, with medians roughly 14 s separation, 7 s transcription, 4 s tab, as you recorded on 2026-09-30.
