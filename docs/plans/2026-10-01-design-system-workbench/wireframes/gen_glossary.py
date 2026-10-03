@@ -42,7 +42,7 @@ def term_card(x, editing=False, new=False):
         if new: body[0]["name"] = "Definition"; body[1]["name"] = "Avoid: (words not to use, comma separated)"
     else:
         body = [t(x["def"][:300] + ("..." if len(x["def"]) > 300 else ""), None, None)] + ([t("Avoid: " + x["avoid"], "caption", 16)] if x["avoid"] else [])
-    c = {"name": "Term: " + x["term"], "direction": "vertical", "gap": 4, "padding": [8, 16], "children": [title] + body}
+    c = {"name": "Term: " + x["term"], "direction": "vertical", "gap": 4, "padding": [4, 16], "children": [title] + body}
     return c
 
 content = []
