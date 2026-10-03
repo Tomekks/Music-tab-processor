@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/cc-stage-durations
-Next: owner approves the brief, then Claude runs scripts/delegate.sh on this file.
+Next: done; awaiting owner checklist.
 Written against: 145a218
 
 ## What changes for you
@@ -24,10 +24,10 @@ Files touched: 2. Expected diff: about 120 lines. New tests: 9.
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): none. Review level: 1 (Claude reviews the diff).
 
 ## Steps
-- [ ] Read `tools/Control_Centre/src/lib/server/records.ts` (the `RunRecord` shape) and one existing test beside it for style (`node:test`, `node:assert/strict`, relative imports ending in `.ts`).
-- [ ] Write `stats.test.ts` first with the 9 cases below; run it and see it fail (the module does not exist yet).
-- [ ] Write `stats.ts`; run the tests until they pass.
-- [ ] Run `bash scripts/verify-task.sh`, fill `## Report`, run `bash scripts/finish.sh`.
+- [x] Read `tools/Control_Centre/src/lib/server/records.ts` (the `RunRecord` shape) and one existing test beside it for style (`node:test`, `node:assert/strict`, relative imports ending in `.ts`).
+- [x] Write `stats.test.ts` first with the 9 cases below; run it and see it fail (the module does not exist yet).
+- [x] Write `stats.ts`; run the tests until they pass.
+- [x] Run `bash scripts/verify-task.sh`, fill `## Report`, run `bash scripts/finish.sh`.
 
 **The function.** In `stats.ts`:
 `export function stageDurations(records: RunRecord[]): Record<string, StageStats>` and
@@ -60,3 +60,18 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 (none open)
 
 ## Report
+- `bash scripts/verify-task.sh` → control centre `pass 161 fail 0`, last line `verify-task: PASS` → ✓
+- `git diff --stat 145a218..HEAD` → pending `finish.sh` commit; before commit only task file differs, new files untracked → ✓ (to confirm after finish)
+- Decisions the spec didn't settle: NONE (followed spec literally; unknown outcomes produce no count and no stage entry unless another counted outcome created it).
+- Spec fact wrong: NONE.
+- Noticed but not touched: NONE.
+- Test-first: `node --test tools/Control_Centre/src/lib/server/stats.test.ts` before `stats.ts` existed → fail 1 (module not found) → ✓ red; after → pass 9 fail 0 → ✓ green.
+- Owner checklist: Not run (builder cannot run it).
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-cc-stage-durations.md              |  20 +++--
+ tools/Control_Centre/src/lib/server/stats.test.ts | 105 ++++++++++++++++++++++
+ tools/Control_Centre/src/lib/server/stats.ts      |  59 ++++++++++++
+ 3 files changed, 179 insertions(+), 5 deletions(-)
+```
