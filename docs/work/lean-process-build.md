@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-system` FAILED once (test staged-save #10 read the old token value right after a revert; 37 passed, 1 failed). The same check passed on the two earlier commits and c9d516d changed only docs, so it looks like a timing flake in an app test, not our change: re-run the failed job (`gh run rerun --failed`, run id 37147295336, owner OK), then merge #59 when green (owner asked to merge). If it fails again, that test needs a look before merging. Then retarget PR #60 (feat/cc-stage-durations, stacked on lean-process) to master and merge it, then remove the worktree `../guitar_tab_processor-feat-cc-stage-durations` (owner OK). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). This file has one unpushed edit (pushing restarts CI, so push after the merge decision).
+Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-system` FAILED once (test staged-save #10 read the old token value right after a revert; 37 passed, 1 failed). The same check passed on the two earlier commits and c9d516d changed only docs, so it looks like a timing flake in an app test, not our change: re-run the failed job (`gh run rerun --failed`, run id 37147295336, owner OK), then merge #59 when green (owner asked to merge). If it fails again, that test needs a look before merging. Then retarget PR #60 (feat/cc-stage-durations, stacked on lean-process) to master (it shows no CI checks because the workflow only runs for PRs targeting master; checks start after the retarget) and merge it, then remove the worktree `../guitar_tab_processor-feat-cc-stage-durations` (owner OK). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). This file has one unpushed edit (pushing restarts CI, so push after the merge decision).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
@@ -28,7 +28,7 @@ Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-
 
 ## Watch-outs
 - The pre-redaction backups (tags, refs/original, old objects) were deleted 2026-10-03. Never `git push --tags` or `--all`.
-- Flaky test to look at later: `app/e2e/design-system/staged-save.spec.ts:334` ("All-variables edits still auto-commit") failed once in CI on a docs-only commit; reads the tokens file right after the revert response.
+- `e2e-design-system` is flaky in CI, not caused by our PRs: master commit 750ee0e passed on 2026-10-01 and failed on a re-run 2026-10-02; different tests fail on different runs (staged-save #10 on PR #59, deploy-status #4 on PR #58). Dependabot PR #54 (react-dom 19.3.0) is a real break: `npm ci` ERESOLVE, react is pinned at 19.2.8; it needs react bumped together. #54 and #58 are not ours.
 - `~/.config/opencode/opencode.json` contains a Figma client secret (exposed once in chat); rotate it if sensitive.
 - opencode CLI is 2.0.20; the desktop app is 1.18.x and shares the database.
 - The working directory can drift mid-session: run `pwd` before writing absolute paths.
