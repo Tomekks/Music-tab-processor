@@ -1,0 +1,622 @@
+{
+  "name": "Design System Workbench - Unsaved, saved and error states v1",
+  "viewport": {
+    "width": 1440,
+    "height": 1300
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "gap": 24,
+    "padding": 32,
+    "children": [
+      {
+        "name": "Top bar status slot, five states",
+        "type": "text",
+        "height": 32,
+        "variant": "heading"
+      },
+      {
+        "name": "State: 1. Nothing changed: status slot empty, no Save or Discard",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "1. Nothing changed: status slot empty, no Save or Discard",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": " ",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 2. Unsaved edits: click the count to open the changes list",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "2. Unsaved edits: click the count to open the changes list",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "3 unsaved changes  v",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              },
+              {
+                "name": "Save",
+                "type": "button",
+                "height": 40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 3. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "3. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "Saved 3 tokens 14:02",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 4. Save failed: stays until dismissed or a retry works; edits stay staged",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "4. Save failed: stays until dismissed or a retry works; edits stay staged",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "Couldn't save accent, hoverOpacity: tokens.json is read-only",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "x icon (lucide x) - dismiss",
+                    "type": "icon",
+                    "width": 20,
+                    "height": 20
+                  }
+                ]
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              },
+              {
+                "name": "Retry save",
+                "type": "button",
+                "height": 40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 5. File changed on disk since you opened it: Save stops, nothing is overwritten",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "5. File changed on disk since you opened it: Save stops, nothing is overwritten",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "tokens.json changed outside the workbench",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Review changes",
+                "type": "link",
+                "height": 40
+              },
+              {
+                "name": "Reload",
+                "type": "button",
+                "height": 40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Changes list",
+        "type": "text",
+        "height": 32,
+        "variant": "heading"
+      },
+      {
+        "name": "Changes list (opens from 'N unsaved changes'; click a row to jump to it)",
+        "width": 760,
+        "direction": "vertical",
+        "gap": 8,
+        "padding": 16,
+        "type": "card",
+        "children": [
+          {
+            "name": "Unsaved changes (4)",
+            "type": "text",
+            "height": 32,
+            "variant": "heading"
+          },
+          {
+            "name": "Change: semantic.color.accent",
+            "direction": "horizontal",
+            "gap": 12,
+            "align": "center",
+            "height": 40,
+            "children": [
+              {
+                "name": "Token",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 56
+              },
+              {
+                "name": "semantic.color.accent",
+                "type": "text",
+                "height": 24,
+                "width": 240
+              },
+              {
+                "name": "was #AE97F7",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 120
+              },
+              {
+                "name": "now #4A90D9",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "grow": true
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              }
+            ]
+          },
+          {
+            "name": "Change: semantic.state.hoverOpacity",
+            "direction": "horizontal",
+            "gap": 12,
+            "align": "center",
+            "height": 40,
+            "children": [
+              {
+                "name": "Token",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 56
+              },
+              {
+                "name": "semantic.state.hoverOpacity",
+                "type": "text",
+                "height": 24,
+                "width": 240
+              },
+              {
+                "name": "was 8%",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 120
+              },
+              {
+                "name": "now 10%",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "grow": true
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              }
+            ]
+          },
+          {
+            "name": "Change: component.button.paddingX",
+            "direction": "horizontal",
+            "gap": 12,
+            "align": "center",
+            "height": 40,
+            "children": [
+              {
+                "name": "Token",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 56
+              },
+              {
+                "name": "component.button.paddingX",
+                "type": "text",
+                "height": 24,
+                "width": 240
+              },
+              {
+                "name": "was 16px",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 120
+              },
+              {
+                "name": "now 20px",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "grow": true
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              }
+            ]
+          },
+          {
+            "name": "Change: Variant",
+            "direction": "horizontal",
+            "gap": 12,
+            "align": "center",
+            "height": 40,
+            "children": [
+              {
+                "name": "Term",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 56
+              },
+              {
+                "name": "Variant",
+                "type": "text",
+                "height": 24,
+                "width": 240
+              },
+              {
+                "name": "was A named version of a Component...",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 120
+              },
+              {
+                "name": "now (definition edited)",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "grow": true
+              },
+              {
+                "name": "Discard",
+                "type": "link",
+                "height": 40
+              }
+            ]
+          },
+          {
+            "name": "Divider",
+            "type": "divider"
+          },
+          {
+            "name": "Footer",
+            "direction": "horizontal",
+            "justify": "space-between",
+            "align": "center",
+            "children": [
+              {
+                "name": "Discard removes only that change. Cmd+Z undoes the last edit.",
+                "type": "text",
+                "height": 16,
+                "variant": "caption"
+              },
+              {
+                "name": "Save all",
+                "type": "button",
+                "height": 40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Edited row marker (in lists and on the canvas)",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "Edited rows get a dot until saved or discarded",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Sample row",
+            "direction": "horizontal",
+            "gap": 12,
+            "align": "center",
+            "height": 40,
+            "children": [
+              {
+                "name": "edited dot",
+                "type": "icon",
+                "width": 10,
+                "height": 10
+              },
+              {
+                "name": "accent",
+                "type": "text",
+                "height": 24,
+                "width": 150
+              },
+              {
+                "name": "swatch #4A90D9",
+                "type": "icon",
+                "width": 32,
+                "height": 32
+              },
+              {
+                "name": "#4A90D9",
+                "type": "text",
+                "height": 16,
+                "variant": "caption",
+                "width": 64
+              },
+              {
+                "name": "was #AE97F7",
+                "type": "text",
+                "height": 16,
+                "variant": "caption"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Leaving with unsaved edits",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "Moving between pages keeps edits staged. Closing or reloading the tab shows the browser's own 'Leave site?' warning when something is unsaved.",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          }
+        ]
+      }
+    ]
+  }
+}
