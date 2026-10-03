@@ -39,6 +39,9 @@ done
 
 mkdir -p docs/work/runs; LOG="${LOG_FILE:-docs/work/runs/$(basename "$TASK" .md).log}"
 PROMPT="Build the task in $TASK. Read docs/rules/executor.md first, then the task file${EXTRA:+, then these area rules:$EXTRA}. Follow them exactly."
+if [ "${BUILDER_MODE:-}" = critique ]; then
+  PROMPT="Do NOT build anything. Read docs/rules/executor.md and the task file $TASK as if you had to build it cold. Under '## Questions' in the task file write at most 5 lines, only things that are ambiguous, contradictory or missing so you could not build it without guessing (name the exact spot). No suggestions, no redesign, no improvements. If you could build it as written, write exactly: clear. Edit nothing else."
+fi
 
 echo "run-builder: $MODEL on $TASK (timeout ${TIMEOUT}s, log $LOG)"
 # env -i: the builder never sees tokens or secrets from this shell, only what opencode needs to run.

@@ -14,7 +14,7 @@
 		"predev": "npm run tokens",
 		"prebuild": "npm run tokens",
 		"test": "node --test \"src/**/*.test.ts\"",
-		"verify": "npm run check && npm test",
+		"verify": "npm run tokens && npm run check && npm test",
 		"start": "HOST=127.0.0.1 PORT=5173 node build"
 	},
 	"devDependencies": {

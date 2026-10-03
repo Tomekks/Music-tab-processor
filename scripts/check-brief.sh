@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks a task file has the required parts. Checks form, not content.
 # Usage: scripts/check-brief.sh <task-file>
-# Unfilled <<placeholders>> from TEMPLATE.md fail the check.
+# Unfilled <<placeholders>> from TEMPLATE.md / TEMPLATE-quick.md fail the check.
 # Heading names match what scripts/start.sh reads (Status/Branch/Next/## Questions).
 set -uo pipefail
 F="${1:?usage: scripts/check-brief.sh <task-file>}"
@@ -9,7 +9,10 @@ F="${1:?usage: scripts/check-brief.sh <task-file>}"
 FAIL=0
 bad() { echo "$1"; FAIL=1; }
 
-for h in "Status:" "Branch:" "Next:" "Written against" "Modify only" "Do NOT touch" "Size" "Risk" "Acceptance checks" "Questions"; do
+# "Template: quick" (docs/work/TEMPLATE-quick.md) has no Size/Risk sections; the full template needs both.
+HEADS=(Status: Branch: Next: "Written against" "Modify only" "Do NOT touch" "Acceptance checks" Questions)
+grep -qix "Template:[[:space:]]*quick" "$F" && HEADS+=(Rules) || HEADS+=(Size Risk)
+for h in "${HEADS[@]}"; do
   grep -qiE "^[#*[:space:]-]*$h" "$F" || bad "MISSING: $h"
 done
 

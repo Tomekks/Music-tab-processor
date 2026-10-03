@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: owner reviews the dry-run result below; decide push/merge of feat/cc-stage-durations (unpushed, in worktree ../guitar_tab_processor-feat-cc-stage-durations); then loose ends and F, G, I.
+Next: FREEZE process changes (docs/rules/process.md, Changing the process). Run 3 more real tasks via delegate.sh: one Quick, one Full with a Delete list (exercises deletion + --critique). Control Center candidates: see docs/plans/2026-09-24-control-center. Decide push/merge of feat/cc-stage-durations (unpushed).
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -59,6 +59,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 8. Decision gate: record pass/fail + reason here. Two non-provider failures -> drop opencode, use a Haiku subagent.
 7a. Real task chosen 2026-10-03 (owner): Control Center stage-duration summary (`stageDurations`, 2 new files). Worktree `../guitar_tab_processor-feat-cc-stage-durations`, branch `feat/cc-stage-durations`. Old int-test worktree deleted with owner OK. Fixed on the way: verify-task now sees committed changes and runs Control Centre verify; new-worktree generates CC tokens and hides the .venv symlink.
 7b. GATE RESULT 2026-10-03: PASS. delegate.sh with Muse, first try, no retry, no model switch: 3 files in scope, verify 162/162, deliverables present, ~594k tokens $0.01. Claude review (read diff + 3 deliberate code breaks) found 2 untested rules; cause was the brief's weak test 5, fixed with one extra test (`8e0d845`). Real-data check matched the 2026-09-30 figures. Not yet exercised with a real model: deletion list, retry on outage, deepseek fallback.
+7c. After the gate (owner approved): quick template + check-brief support + new-worktree --quick; delegate.sh --critique; executor break-and-restore rule; delegate prints a scorecard row (finish.sh can't: scorecard is outside the task's scope); CC `verify` runs `tokens` first; removed run-reviewer, test-agents, oc-health, reviewer agent. Then freeze (see process.md).
 8a. Deletions (owner agreed 2026-10-03): builder cannot delete. Brief has an optional `**Delete (approved with this brief):**` list; owner approves it at the brief; finish.sh `git rm`s exactly those; check-scope allows them. Builder shell is an ALLOW-list (stricter than the deny-list first agreed; owner said approve, will critique after).
 8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.

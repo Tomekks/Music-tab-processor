@@ -15,7 +15,9 @@ at a real seam.
    do it, run verify, commit. Risk triggers: deletes data or files, touches `contracts/`, shell or
    network, schema, deploy, secrets. A bug: reproduce it and state the root cause with evidence
    before any fix brief.
-2. **Brief.** A cheap model drafts a task file from `docs/work/TEMPLATE.md`. First block is
+2. **Brief.** A cheap model drafts a task file: `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of
+   plain logic, `TEMPLATE.md` for any risk trigger, UI or audio, or 4+ files. Optional cold read:
+   `delegate.sh <task> --critique` (at most 5 questions or "clear"; one round). First block is
    **"What changes for you"**; the owner approves that block. The brief also states files touched (N),
    risk triggers, expected size, acceptance checks (`Run:` command / `Expected:` output), and the
    owner's checklist. `scripts/check-brief.sh` checks form, not content. Read live files first; record
@@ -52,8 +54,13 @@ Output stays terse (`git diff --stat`, `pytest -q`, `tail`): scripts compute, ag
 
 ## Loops
 One review round per brief; a second review names only what changed since the first. One fix loop, then
-escalate. Two failed attempts: stop and report.
-Split a task only at a real seam, not by size.
+escalate. Two failed attempts: stop and report. Split a task only at a real seam, not by size.
+
+## Changing the process
+- A critique reports only a concrete failing case or contradiction, never redesigns. A suggestion says what it
+  adds and removes; a net addition needs an observed failure. Scripts: only after a failure or a step done twice.
+- After a passing gate, no process changes until 3 more real tasks run; only an actual failure reopens it.
+  A proposal states: problem seen (evidence), change, how the owner will know, what it adds.
 
 ## Docs hygiene
 Indexes stay indexes; new reasoning goes in the topic file. Finished task files are deleted (git is the

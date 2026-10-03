@@ -13,6 +13,8 @@ task file. Nothing else. Do not invent process.
 - Edit only the paths under `Modify only:`; never those under `Do NOT touch:`. A change outside the
   list looks necessary: STOP and report.
 - Test first for logic and bug fixes; show it red, then make it pass. Follow `docs/rules/verify.md`.
+- After green, break each rule in your code once (edit it), see the matching test fail, then restore it. One
+  report line per rule: rule → test that failed. A rule no test catches gets a test.
 - Use the ladder, in order: does it need to exist, existing code, standard library or built-in,
   an already-installed dependency, one line, and only then new code. No new abstraction or dependency
   the task didn't ask for.
