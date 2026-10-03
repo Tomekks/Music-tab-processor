@@ -1,5 +1,7 @@
 # Start here
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 If you are an AI model or agent picking up this project with no memory of any prior conversation about it: this file tells you what to do, in order.
 
 ## 1. Orient yourself — read these, in order

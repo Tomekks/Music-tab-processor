@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: owner decides P3b (banners vs full move); then 3 more real tasks via delegate.sh (process frozen); settle feat/cc-stage-durations (unpushed).
+Next: build step done (E-I, P3b banners). Run 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list); process frozen until then. Settle feat/cc-stage-durations (unpushed). Then P4: decide move/delete of the old docs, using the scorecard; P5 Playwright spike. Merge lean-process to master when the owner says.
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -63,6 +63,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 7d. F done (e34d1ea): /next and /wrap are prompt-only commands. PROCESS.html brought up to date (2026-10-03). G, I, P3b wait for owner yes (config / uninstall / moving docs).
 7e. G done 2026-10-03 (owner yes): skillOverrides off for design, brand, slides, ui-styling, design-system, find-skills (in gitignored .claude/settings.local.json; takes effect next session). I: kept files are clean of `superpowers`; owner runs `claude plugin uninstall superpowers@superpowers-marketplace`. P3b finding: every old doc is still referenced by kept files (GUIDE.md, BACKLOG.md, pipeline/VERIFY.md, app/STATUS.md, .githooks/pre-commit, README.md), so a move breaks ~10 files; recommended banners on superseded docs instead, move/delete decided after the trial (P4).
 7f. I done 2026-10-03: owner ran the uninstall (superpowers 6.3.0, user scope, confirmed gone from `claude plugin list`).
+7g. P3b done 2026-10-03 (owner chose banners): 11 old workflow docs carry a SUPERSEDED banner (START_HERE, DEVELOPMENT_PROCESS, WEB_APP_WORKFLOW, web-app-workflow/{spec-template,execution-loop,tiering,token-discipline}, DRIFT_CHECK, DRIFT_LOG, GOVERNING_DOCS_CHECKLIST, SESSION_HANDOFF). critique-prompt.md left as is (owner still pastes from it). Nothing moved or deleted.
 8a. Deletions (owner agreed 2026-10-03): builder cannot delete. Brief has an optional `**Delete (approved with this brief):**` list; owner approves it at the brief; finish.sh `git rm`s exactly those; check-scope allows them. Builder shell is an ALLOW-list (stricter than the deny-list first agreed; owner said approve, will critique after).
 8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.

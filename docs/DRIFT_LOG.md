@@ -1,5 +1,7 @@
 # Drift log
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 Short entries only. See `docs/DRIFT_CHECK.md` for the procedure this follows.
 
 Format for each entry:
