@@ -75,7 +75,7 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 1. **Orient:** read `app/AGENTS.md` first: this Next.js version differs from training data, so read the relevant guide in `app/node_modules/next/dist/docs/` before writing any code.
 2. **Baseline:** run `lsof -i :3000` (stale-server check), start the `app/` dev server, screenshot `/design-system` (light and dark, Main and one child brand), jot a short Nielsen heuristics pass. Both feed the case study.
 3. **Wireframes** (`/wireframe`, same folder): Foundations page; child-brand dark mode with the override control; Cmd+K palette; Glossary; unsaved and save-error states. Resolve the open questions above as they come up.
-4. **Specs, one per slice, each critiqued before execution** (suggested order): child-brand dark overrides data model (touches brand merging and token writes; confirm against `resolveBrandTree` and `token-writes.mjs` first, and write ADR 0011) → shell (top bar, three columns, registry, sidebar) → Foundations page → Component page and inspector → Cmd+K palette → Glossary → polish pass.
+4. **Specs, one per slice, each critiqued before execution** (suggested order): child-brand dark overrides data model (touches brand merging and token writes; confirm against `resolveBrandTree` and `token-writes.mjs` first, and write ADR 0012; 0011 is the framework decision) → shell (top bar, three columns, registry, sidebar) → Foundations page → Component page and inspector → Cmd+K palette → Glossary → polish pass.
 5. **Housekeeping:** `tools/Control_Centre/CONTEXT.md` and `CONTEXT-MAP.md` still say "no code exists yet"; fix separately.
 
 ## Notes
