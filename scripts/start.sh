@@ -16,6 +16,7 @@ echo "branch:  ${BRANCH:-(detached)}"
 ACTIVE=()
 for f in "$WORK"/*.md; do
   [ -f "$f" ] || continue
+  [ "${f##*/}" = TEMPLATE.md ] && continue   # the blank template is not a task
   grep -qE '^Status:[[:space:]]*active' "$f" || continue
   [ -z "$WANT" ] || [[ "${f##*/}" == *"$WANT"* ]] || continue
   ACTIVE+=("$f")

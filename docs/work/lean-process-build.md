@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: P3 step C (scripts: check-rules.sh, verify-pipeline.sh, new-worktree.sh, check-brief.sh; footer duration + test count), then D, E, F (/next, /wrap), G, H, I.
+Next: run scripts/oc-health.sh, then read "Where we stopped"; fix verify-task so a missing deliverable fails; dry run (stop 3) on one small real task using worktree ../guitar_tab_processor-int-test; then F, G, H, I.
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -25,6 +25,11 @@ Step E is committed (`3c5733d`); the owner dry run (stop 3) has NOT happened. In
      task; check `opencode stats --models --days 1`. Until it answers, set `BUILDER_MODEL=opencode-go/deepseek-v4.1-flash`.
   3. Transient: the first `opencode debug agents` / `mcp list` right after a config change or in a new dir can print
      nothing; repeat it. Not a config bug.
+- **Added after that (`ba9a0b9`):** `scripts/oc-run.sh` (kills dead runs in 60 s: no output / stalled / total), `oc-health.sh`
+  (45 s "is opencode answering" check, run it first), `test-agents.sh` (9 permission probes, 27 s, all held). The reviewer
+  worked in the real worktree once the endpoint recovered; the earlier hang was a provider outage, not the script.
+- **Reviewer finding to fix:** `verify-task.sh` passes even when the task's deliverable file is missing; acceptance checks
+  must assert the deliverable exists (a test, or a check in verify).
 - **Leftover to clean (ask first):** throwaway worktree `../guitar_tab_processor-int-test` (branch `int-test`, filled task
   file `docs/work/int-test.md`, untracked). Use it to retest the reviewer, then run the builder there, then
   `git worktree remove ../guitar_tab_processor-int-test` and delete branch `int-test`.
