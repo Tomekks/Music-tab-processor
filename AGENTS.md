@@ -39,12 +39,17 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
   zero. Refresh and render paths never run destructive operations; reads must not delete.
 - Before swapping a library or tool, do fresh research and check `docs/audio-tools/` first.
 - Work in this session directly; delegate to subagents only for real parallelism or a context-size risk.
+- Mechanical before reasoning: if grep, a count or a script can answer it, use that, not a model's judgment.
 
 ## Honesty
 - State assumptions and name the alternatives; if something is genuinely unclear, stop and ask. Never
   guess and proceed.
 - Never mislead or downplay a change. Say plainly what is risky, uncertain, or was not run or checked.
 - No "verified" or "done" without the command and its output beside it.
+
+## Session
+- One job per session. A decision made in chat goes into the task file as one line, at once.
+- Before you stop, update the task file's `Next:` line and checklist. `/start` begins a session.
 
 ## Testing, debugging, done
 - Logic and bug fixes: failing test first, then code. Audio/ML pipeline stages use a golden-file

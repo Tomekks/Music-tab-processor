@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: P3 step B (new AGENTS.md and area files) is in progress in another session; then C, D, E, F (/start, /next, /wrap), G, H, I.
+Next: P3 step C (scripts: check-rules.sh, verify-pipeline.sh, new-worktree.sh, check-brief.sh; footer duration + test count), then D, E, F (/next, /wrap), G, H, I.
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -16,7 +16,9 @@ Read only this file, then the rules files named under Done. Skip `START_HERE.md`
 - P1 `ac07158`: `docs/PROCESS.html` (old vs new, risks, commands, progress).
 - P2 `d3cef64`: rule ledger in `docs/work/ledger/` (242 rules: 160 KEEP / 20 MERGE / 26 SUPERSEDED / 37 DROP;
   296 incident lines → 33 lessons). Owner rulings: `ledger/decisions.md`. Gaps G1–G10: `ledger/incident-table.md`.
-- P3 step A (this checkpoint): `docs/rules/{process,verify,executor,models}.md` written and accepted.
+- P3 step A `3d8cbf1`: `docs/rules/{process,verify,executor,models}.md` written and accepted.
+- P3 step B `20464bf`: new `AGENTS.md` (68 lines), area `AGENTS.md` files, `CLAUDE.md` → `@AGENTS.md`.
+- `/start` `386847e` + update: `.claude/commands/start.md`, `scripts/start.sh`; session rules now in `AGENTS.md`.
   Owner set: ~10 new tests per task max; caps `AGENTS.md` ≤ 80 lines, rules files ≤ 70.
 
 ## Next (P3, in order; each ends with an owner stop)

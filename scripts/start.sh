@@ -47,12 +47,11 @@ echo "next:    $NEXT"
 Q="$(awk '/^## Questions/{f=1;next} /^## /{f=0} f && NF && $0 !~ /none open/' "$T")"
 [ -z "$Q" ] || echo "WARNING: open questions in the task file for the owner."
 
-# Working-tree state.
+# Working-tree state (untracked paths are ignored: they are always present here and only add noise).
 CHANGED="$(git status --short | grep -vc '^??' || true)"
-UNTRACKED="$(git status --short | grep -c '^??' || true)"
-[ "$CHANGED" -eq 0 ] || echo "WARNING: $CHANGED uncommitted tracked change(s). If you did not make them, another session may be working here."
-[ "$UNTRACKED" -eq 0 ] || echo "note:    $UNTRACKED untracked path(s)"
-if UP="$(git rev-list --count '@{u}..HEAD' 2>/dev/null)"; then echo "unpushed: $UP commit(s)"; else echo "unpushed: no upstream (branch not pushed)"; fi
+if UP="$(git rev-list --count '@{u}..HEAD' 2>/dev/null)"; then PUSH="$UP unpushed"; else PUSH="no upstream (not pushed)"; fi
+echo "git:     $CHANGED uncommitted tracked, $PUSH"
+[ "$CHANGED" -eq 0 ] || echo "WARNING: uncommitted tracked changes. If you did not make them, another session may be working here."
 
 # Stale task file: commits since it last changed (uncommitted edits count as fresh).
 if git diff --quiet HEAD -- "$T" 2>/dev/null; then
@@ -67,6 +66,5 @@ fi
 AGE=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
 [ "$AGE" -lt 14 ] || echo "COLD START: last commit $AGE days ago. Also read docs/GUIDE.md, docs/ARCHITECTURE.md, docs/DECISIONS.md."
 
-# Approximate boot size of what the command tells the agent to read.
-CH=$(cat AGENTS.md "$T" 2>/dev/null | wc -c | tr -d ' ')
-echo "boot:    ~$((CH / 4)) tokens (AGENTS.md + task file)"
+# Approximate size of the one file /start asks the agent to read (AGENTS.md is already loaded).
+echo "boot:    ~$(( $(wc -c < "$T" | tr -d ' ') / 4 )) tokens (task file)"
