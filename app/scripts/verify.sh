@@ -56,6 +56,5 @@ E2E_N="$(find e2e -name '*.spec.ts' | wc -l | tr -d ' ')"
 
 echo ""
 echo "VERIFY: PASS"
-echo "  ran:     typecheck ✓  lint ✓  unit $UNIT  design-system $DS  build $BUILD"
-echo "  total:   $TOTAL_TESTS tests in $((SECONDS - START))s"
+echo "  ran:     typecheck ✓  lint ✓  unit $UNIT  design-system $DS  build $BUILD  ($TOTAL_TESTS tests, $((SECONDS - START))s)"
 echo "  not run: e2e ($E2E_N specs; npm run test:e2e)"

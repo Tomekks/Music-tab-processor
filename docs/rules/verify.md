@@ -48,5 +48,3 @@ before writing a hand-built absolute path.
 ## Evidence
 No "verified" or "confirmed" without the command and its output next to it. Say plainly what was not
 run. A manual check that mutates generated files (e.g. `tokens.json`) ends with its revert and rebuild.
-
-<!-- covers: R010 R068 R084 R085 R121 R123 R124 R125 R126 R127 R143 R154 R155 R156 R158 R159 R165 R184 R208 R212 R226 R229 -->

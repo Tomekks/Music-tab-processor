@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Pipeline check: pytest + a footer. Runs only when pipeline/ or contracts/ files are staged
+# Pipeline check: pytest + a footer. Runs only when pipeline/ files are staged
 # (the pre-commit hook calls it with no args). `--all` forces a run.
 # Prints the same kind of footer as `npm run verify`: what ran with counts, what did not.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-if [ "${1:-}" != "--all" ] && ! git diff --cached --name-only | grep -qE '^(pipeline|contracts)/'; then
-  echo "verify-pipeline: no pipeline/ or contracts/ files staged, skipped (use --all to force)"
+if [ "${1:-}" != "--all" ] && ! git diff --cached --name-only | grep -q '^pipeline/'; then
+  echo "verify-pipeline: no pipeline/ files staged, skipped (use --all to force)"
   exit 0
 fi
 

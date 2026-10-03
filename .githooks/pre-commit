@@ -43,16 +43,13 @@ if [ -f app/package.json ] && git diff --cached --name-only | grep -q '^app/'; t
   rm -f "$VOUT"
 fi
 
-if git diff --cached --name-only | grep -qE '^(pipeline|contracts)/'; then
-  echo "pre-commit: verify (pipeline/)..."
-  if ! bash scripts/verify-pipeline.sh >"$VPOUT" 2>&1; then
-    cat "$VPOUT"; rm -f "$VPOUT"
-    echo ""
-    echo "BLOCKED: pipeline checks failed for the staged changes. Fix it, then commit again."
-    exit 1
-  fi
-  tail -n 3 "$VPOUT"
+if ! bash scripts/verify-pipeline.sh >"$VPOUT" 2>&1; then
+  cat "$VPOUT"; rm -f "$VPOUT"
+  echo ""
+  echo "BLOCKED: pipeline checks failed for the staged changes. Fix it, then commit again."
+  exit 1
 fi
+grep -q '^PIPELINE VERIFY' "$VPOUT" && tail -n 3 "$VPOUT"
 rm -f "$VPOUT"
 
 echo "pre-commit: OK"

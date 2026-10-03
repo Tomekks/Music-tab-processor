@@ -8,8 +8,8 @@ Next: P3 step C (scripts: check-rules.sh, verify-pipeline.sh, new-worktree.sh, c
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
 
 ## Resume (read this first in a new session)
-Read only this file, then the rules files named under Done. Skip `START_HERE.md` and the walk test:
-`CLAUDE.md` still points at the old boot chain until step B replaces it. Check `pwd` and the branch first.
+Read only this file, then the rules files named under Done. Skip `START_HERE.md` and the walk test
+(`CLAUDE.md` now loads `AGENTS.md`; the old docs stay until P3b). Check `pwd` and the branch first.
 
 ## Done (committed unless noted)
 - P0 `7806ccf`: verify footer, `npm run coverage`, pre-commit runs verify for staged `app/`, Stop hook.
@@ -20,17 +20,15 @@ Read only this file, then the rules files named under Done. Skip `START_HERE.md`
 - P3 step B `20464bf`: new `AGENTS.md` (68 lines), area `AGENTS.md` files, `CLAUDE.md` → `@AGENTS.md`.
 - `/start` `386847e` + update: `.claude/commands/start.md`, `scripts/start.sh`; session rules now in `AGENTS.md`.
   Owner set: ~10 new tests per task max; caps `AGENTS.md` ≤ 80 lines, rules files ≤ 70.
+- P3 step C (this checkpoint): `scripts/{check-rules,verify-pipeline,new-worktree,check-brief}.sh`, verify footer
+  with count + time, rule-id claims moved to `docs/rules/covers.txt`, `shellcheck` installed (all scripts clean).
 
 ## Next (P3, in order; each ends with an owner stop)
-- **B** New `AGENTS.md` (≤ 80): map, ask-first list (merge old #2+#3), engineering posture + ladder,
-  honesty, testing/debugging/done, worktree rule, G1/G4. `CLAUDE.md` → one line `@AGENTS.md`. Area files:
-  `app/AGENTS.md` (keep the Next.js docs warning, G8 tokens, verify, stage, deploy-from-root),
-  `pipeline/AGENTS.md` (STATUS.md rule, golden files, contracts, G9), `tools/Control_Centre/AGENTS.md` (G10).
-  Claim ledger rows R065, R067 in a `covers:` line. Show diff → **stop 2**.
-- **C** Scripts: `check-rules.sh` (every KEEP/MERGE id in some `covers:` line + size caps), `verify-pipeline.sh`
-  (only when `pipeline/` staged), `new-worktree.sh` (env files, install, port, set `core.hooksPath`,
-  copy `.opencode`), `check-brief.sh`. Add duration + test count to the verify footer.
-- **D** `docs/work/TEMPLATE.md`, `scorecard.md`, `missed.md`.
+- **D** `docs/work/TEMPLATE.md`, `scorecard.md`, `missed.md`. Template headings must match `check-brief.sh` and `start.sh`
+  (Status/Branch/Next/Written against/Modify only/Do NOT touch/Size/Risk/Acceptance checks/Questions); then derive
+  check-brief's heading list from the template. `new-worktree.sh` should create the task file from it.
+  Also: run check-rules in pre-commit when rule files are staged + a small CI job; `start.sh` hooks warning done;
+  `scripts/check-brief.sh --drift` and a `finish` helper for the builder (with F).
 - **E** Opencode: `builder` (update `.opencode/agents/delegate-builder.md`: allow verify/git add/commit, deny push/rm/network,
   stop-and-ask not decide), read-only `reviewer`, `/exec` and `/review` commands, project `opencode.json` with MCP off,
   un-ignore `.opencode/agents` + `commands`. Claim R107–R109. Dry run → **stop 3**.

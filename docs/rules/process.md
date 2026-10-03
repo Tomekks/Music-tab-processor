@@ -61,5 +61,3 @@ record); the backlog keeps its Archive. Owner-only to-dos live in the task file 
 swapping a tool or library, do fresh research and check `docs/audio-tools/` first. Size caps
 (`AGENTS.md` ≤ 80 lines, each rules file ≤ 70) are enforced by `scripts/check-rules.sh`; that replaces
 the old drift log. If the process misses something the old one caught, log it in `docs/work/missed.md`.
-
-<!-- covers: R076 R077 R115 R117 R129 R141 R142 R006 R011 R012 R013 R015 R023 R041 R042 R045 R046 R055 R058 R059 R071 R072 R074 R080 R081 R094 R095 R102 R105 R106 R111 R112 R113 R116 R118 R133 R134 R135 R136 R139 R144 R153 R157 R162 R164 R166 R200 R205 R211 R213 R214 R228 R230 -->

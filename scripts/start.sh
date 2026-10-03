@@ -10,6 +10,7 @@ BRANCH="$(git branch --show-current)"
 
 echo "folder:  $(pwd)"
 echo "branch:  ${BRANCH:-(detached)}"
+[ "$(git config core.hooksPath)" = ".githooks" ] || echo "WARNING: safety hooks are off here (secret scan, verify). Run: git config core.hooksPath .githooks"
 
 # Active task files (top level of docs/work only), optionally filtered by name.
 ACTIVE=()
