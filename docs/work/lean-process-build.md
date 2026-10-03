@@ -8,8 +8,28 @@ Next: P3 step C (scripts: check-rules.sh, verify-pipeline.sh, new-worktree.sh, c
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
 
 ## Resume (read this first in a new session)
-Read only this file, then the rules files named under Done. Skip `START_HERE.md` and the walk test
+Read only this file (start with 'Where we stopped'), then the rules files named under Done. Skip `START_HERE.md` and the walk test
 (`CLAUDE.md` now loads `AGENTS.md`; the old docs stay until P3b). Check `pwd` and the branch first.
+
+## Where we stopped (2026-10-02 night) - read this first tomorrow
+Step E is committed (`3c5733d`); the owner dry run (stop 3) has NOT happened. Integration check results:
+- **Works (tested for real):** `new-worktree.sh --base lean-process` (real install, no env files copied, hooks on, `.venv`
+  linked); `verify-task.sh` and `verify-pipeline.sh --all` PASS inside the worktree; agents/MCP-off visible to opencode;
+  permissions (probe agent): edits to code and task file allowed, `scripts/`, `docs/rules/`, `package.json`, `.env*`,
+  `git diff --no-index`, `git log --output`, compound shell tricks all denied; builder end to end in a scratch repo
+  (deepseek): one commit, scope OK, honest report.
+- **Not working / unresolved:**
+  1. `run-reviewer.sh` on a real task in the real worktree: **timed out at 240 s with no output** (deepseek). Same agent
+     worked in scratch dirs. Next: in the worktree run `opencode run --standalone --agent reviewer -m opencode-go/deepseek-v4.1-flash --print-logs --log-level debug "say hi"` and compare with a scratch dir.
+  2. **Muse** (default builder) stopped answering mid-session, even for "say hi" (provider side?). Retry once with a tiny
+     task; check `opencode stats --models --days 1`. Until it answers, set `BUILDER_MODEL=opencode-go/deepseek-v4.1-flash`.
+  3. Transient: the first `opencode debug agents` / `mcp list` right after a config change or in a new dir can print
+     nothing; repeat it. Not a config bug.
+- **Leftover to clean (ask first):** throwaway worktree `../guitar_tab_processor-int-test` (branch `int-test`, filled task
+  file `docs/work/int-test.md`, untracked). Use it to retest the reviewer, then run the builder there, then
+  `git worktree remove ../guitar_tab_processor-int-test` and delete branch `int-test`.
+- **Then:** stop 3 = dry run on a small real task (draft task file, owner approves the "What changes for you" block,
+  builder, then reviewer).
 
 ## Done (committed unless noted)
 - P0 `7806ccf`: verify footer, `npm run coverage`, pre-commit runs verify for staged `app/`, Stop hook.
