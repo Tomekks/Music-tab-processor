@@ -5,5 +5,3 @@
   once in the script and render that string.
 - On a `<select>`, set `value={...}` on the `<select>`, not `selected` on each `<option>`: after the user
   changes it, the DOM selection is "dirty" and later data changes won't update it.
-
-<!-- covers: R210 -->

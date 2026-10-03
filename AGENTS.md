@@ -64,5 +64,3 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 ## Worktrees
 Use a worktree (`scripts/new-worktree.sh`) when the work needs isolation from the current workspace or
 splits into independent parallel pieces. Rare at this size. It sets `core.hooksPath` and the env files.
-
-<!-- covers: R001 R002 R003 R004 R005 R007 R008 R009 R016 R017 R018 R019 R020 R021 R064 R065 R066 R067 R070 R075 R103 R110 R114 R120 R176 R178 R185 R189 R190 R191 R193 R197 R223 R227 R231 R232 R233 R235 R237 R238 R239 R240 R207 -->

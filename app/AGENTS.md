@@ -18,5 +18,3 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   to the app's read-only shape (today's clean result is specific to a read-only, no-auth app).
 - Stack versions and generated files: don't trust stale version notes; check `package.json` and lockfile.
 - Four npm-audit findings from `esbuild` via `drizzle-kit` are dev-tool-only; leave them, don't downgrade.
-
-<!-- covers: R022 R027 R032 R033 R073 R096 R242 -->
