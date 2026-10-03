@@ -2106,16 +2106,16 @@
                             "width": 190
                           },
                           {
-                            "name": "240px",
+                            "name": "240",
+                            "type": "input",
+                            "height": 32,
+                            "width": 72
+                          },
+                          {
+                            "name": "px  v  (or %)",
                             "type": "input",
                             "height": 32,
                             "width": 96
-                          },
-                          {
-                            "name": "17% of window",
-                            "type": "input",
-                            "height": 32,
-                            "width": 120
                           },
                           {
                             "name": "info icon (lucide info) - empty: no description yet, click to add one",

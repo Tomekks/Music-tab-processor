@@ -39,10 +39,13 @@ def row(name, value, desc, kind, child=None, selected=False):
     if kind == "color":
         ch += [{"name": "swatch " + value, "type": "icon", "width": 32, "height": 32}, t(value, "caption", 16, width=64)]
     else:
-        w = 200 if kind == "font" else 96
-        ch += [{"name": value, "type": "input", "height": 32, "width": w}]
         if kind == "pct":
-            ch += [{"name": "17% of window", "type": "input", "height": 32, "width": 120}]
+            # one value with a unit switch (px = fixed, % = share of the window width)
+            ch += [{"name": value.replace("px", ""), "type": "input", "height": 32, "width": 72},
+                   {"name": "px  v  (or %)", "type": "input", "height": 32, "width": 96}]
+        else:
+            w = 200 if kind == "font" else 96
+            ch += [{"name": value, "type": "input", "height": 32, "width": w}]
     ch.append(info_icon(desc))
     ch.append({"name": " ", "grow": True, "height": 1})
     if child:
