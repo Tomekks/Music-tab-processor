@@ -86,24 +86,24 @@
   <h2>At a glance: one task, start to finish</h2>
   <p class="sub">Solid border = built or in force. Dashed = planned. Red = risky until proven. The colored tag shows who acts.</p>
   <div class="legend">
-    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse spark</span><span class="lane l-reviewer">Reviewer: deepseek</span><span class="lane l-script">Script</span>
+    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse spark</span><span class="lane l-script">Script</span>
   </div>
   <div class="flow">
     <div class="st"><span class="lane l-you">You</span><b>1. Idea</b><small>what hurts, what you want</small></div>
     <div class="st"><span class="lane l-claude">Claude</span><b>2. Grill + research</b><small>questions, outside ideas</small></div>
     <div class="st"><span class="lane l-claude">Claude</span><b>3. Wireframe + plan</b><small>slices with user stories</small></div>
     <div class="st"><span class="lane l-script">Rule</span><b>4. Size it</b><small>one-sentence test + risk triggers</small></div>
-    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>5. Brief</b><small>"what changes for you": you approve it</small></div>
-    <div class="st planned risk"><span class="lane l-reviewer">Reviewer / Claude</span><b>6. Review</b><small>level 0, 1 or 2, fresh session</small></div>
-    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>7. Build</b><small>run-builder.sh in its own worktree, test first</small></div>
+    <div class="st planned"><span class="lane l-builder">Builder</span><b>5. Brief</b><small>"what changes for you": you approve it</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>6. Review</b><small>level 0, 1 or 2: Claude reads the report and the diff, spot-checks one claim, no re-runs</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>7. Build</b><small>Claude runs delegate.sh; own worktree, test first, then breaks each rule once to prove a test fails</small></div>
     <div class="st"><span class="lane l-script">Script</span><b>8. Check</b><small>verify footer: counts, time, what did not run</small></div>
-    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>9. Report</b><small>4 core lines + extras, scorecard line</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>9. Report</b><small>4 core lines + extras; delegate.sh prints the scorecard row</small></div>
     <div class="st"><span class="lane l-you">You</span><b>10. You test</b><small>checklist written up front</small></div>
     <div class="st"><span class="lane l-you">You</span><b>11. Ship</b><small>commit; push / deploy only on your yes</small></div>
   </div>
 
   <h2>At a glance: Claude hands a task to opencode (simplified plan, 2026-10-03)</h2>
-  <p class="sub">Claude runs one command, <code>scripts/delegate.sh &lt;task&gt;</code>. You never copy or paste between models: results come back through the task file and a short printed summary. You decide at the two <b>You</b> steps and at any model switch. All dashed steps are planned, not built yet.</p>
+  <p class="sub">Claude runs one command, <code>scripts/delegate.sh &lt;task&gt;</code>. You never copy or paste between models: results come back through the task file and a short printed summary. You decide at the two <b>You</b> steps and at any model switch. Proven once with a real model on a real task (2026-10-03). Dashed = not built yet.</p>
   <div class="legend">
     <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse (opencode)</span><span class="lane l-script">Script</span>
   </div>
@@ -112,7 +112,7 @@
     <div class="st"><span class="lane l-you">You</span><b>2. Approve the brief</b><small>the "What changes for you" block. Quick template (1-3 files of plain logic) or full template (any risk trigger, UI/audio, 4+ files)</small></div>
     <div class="st"><span class="lane l-builder">Builder</span><b>2b. Cold read (optional)</b><small><code>delegate.sh --critique</code>: builds nothing, writes at most 5 questions or "clear"; one round, Claude amends</small></div>
     <div class="st"><span class="lane l-script">Script</span><b>3. Pre-flight</b><small>brief complete, right branch, files unchanged since written, never master, never a free model</small></div>
-    <div class="st planned"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree; shell allow-list only (git read, tests, 2 scripts; no push, internet, rm); secrets stripped from its environment; test first; writes <code>## Report</code></small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree; shell allow-list only (git read, tests, 2 scripts; no push, internet, rm); secrets stripped from its environment; test first; writes <code>## Report</code></small></div>
     <div class="st"><span class="lane l-script">Script</span><b>5. Watchdog</b><small>kills a dead run: no output 60 s, stalled 180 s. Log kept (last 200 lines)</small></div>
     <div class="st"><span class="lane l-script">Script</span><b>6. Facts check</b><small>only allowed files changed? checks pass? every promised file exists?</small></div>
     <div class="st"><span class="lane l-script">Script</span><b>7. Checkpoint commit</b><small>one commit, made by the script, not the model. Files on the brief's <b>Delete:</b> list (approved at step 2) are removed here; the builder cannot delete</small></div>
@@ -147,7 +147,8 @@
     <div class="st"><span class="lane l-script">Script</span><b>start.sh</b><small>branch, active task, Next, warnings</small></div>
     <div class="st"><span class="lane l-claude">Agent</span><b>Reads task file</b><small>AGENTS.md already loaded</small></div>
     <div class="st"><span class="lane l-claude">Agent</span><b>Works one job</b><small>decisions go in the task file as one line</small></div>
-    <div class="st planned"><span class="lane l-you">You</span><b>/wrap</b><small>planned: ticks list, updates Next</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>/wrap</b><small>ticks done items, adds chat decisions, rewrites Next, commits the task file only</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>/next</b><small>any time: which step you are on and what you do now</small></div>
     <div class="st"><span class="lane l-script">Git</span><b>Checkpoint commit</b><small>verify runs automatically</small></div>
   </div>
 
@@ -159,11 +160,11 @@
   <h2>At a glance: where the rules live now</h2>
   <table>
     <tr><th>File</th><th>Lines</th><th>Cap</th><th>Holds</th><th>Status</th></tr>
-    <tr><td><code>AGENTS.md</code></td><td>68</td><td>80</td><td>Map, ask-first list, engineering posture, honesty, session, testing and debugging, worktrees</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>docs/rules/process.md</code></td><td>65</td><td>70</td><td>The flow, sizing, review levels, reports, loops</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>docs/rules/verify.md</code></td><td>52</td><td>70</td><td>What the checker covers and doesn't, limits, testing budget</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>docs/rules/executor.md</code></td><td>44</td><td>70</td><td>Everything a cheap builder needs on a cold start</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>docs/rules/models.md</code></td><td>27</td><td>70</td><td>Which model does what, never the free tier, switch on evidence</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>AGENTS.md</code></td><td>66</td><td>80</td><td>Map, ask-first list, engineering posture, honesty, session, testing and debugging, worktrees</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/process.md</code></td><td>70</td><td>70</td><td>The flow, sizing, quick vs full brief, review levels, reports, loops, rules for changing the process</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/verify.md</code></td><td>50</td><td>70</td><td>What the checker covers and doesn't, limits, testing budget</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/executor.md</code></td><td>49</td><td>70</td><td>Everything a cheap builder needs on a cold start</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/models.md</code></td><td>31</td><td>70</td><td>Which model does what, never the free tier, switch only after asking the owner</td><td><span class="tag built">built</span></td></tr>
     <tr><td>area files: <code>app/</code>, <code>pipeline/</code>, <code>tools/Control_Centre/</code></td><td>22 / 11 / 9</td><td>-</td><td>Gotchas and verify commands per area</td><td><span class="tag built">built</span></td></tr>
   </table>
   <p class="sub"><b>Safety check:</b> from the old docs, 242 rule lines were sorted (160 keep, 20 merge, 26 replaced, 36 drop), and 296 incident lines gave 33 lessons. <code>check-rules.sh</code> confirms every kept rule is claimed by a new file: 179 to cover, 155 claimed, 24 exempt, OK. Limits agreed: about 10 new tests per task, verify in about 60 s, 2 failed attempts then stop.</p>
@@ -234,12 +235,12 @@ docs/
     <tr><td><code>/start</code></td><td>Welcomes a fresh agent: runs the script, loads the task file, reports in 2 lines. Stops on any warning.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/start.sh</code></td><td>Prints branch, active task, its <code>Next:</code>, stray changes, stale-file and cold-start warnings.</td><td>Automatic (via /start)</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/verify-pipeline.sh</code></td><td>Runs the pipeline's tests, only when pipeline files are staged.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag planned">planned P3 F</span></td></tr>
-    <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
+    <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag built">built</span> e34d1ea</td></tr>
+    <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag built">built</span> e34d1ea</td></tr>
     <tr><td><code>scripts/delegate.sh &lt;task&gt;</code></td><td>The one command Claude runs to hand a task to the builder: pre-flight, build, watchdog, facts check, commit, short summary. Stops and asks before switching models. <code>--critique</code> = cold read of the brief only. Prints a ready scorecard row.</td><td>Claude runs it</td><td><span class="tag built">built</span> cf87300, tested with a fake model (outage, no commit, out of scope, success)</td></tr>
     <tr><td><code>scripts/verify-task.sh</code></td><td>The builder's "run the checks" step. Now also fails if a promised file is missing.</td><td>Automatic</td><td><span class="tag built">built</span> 73809b4</td></tr>
-    <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part (files, size, risk, checks with expected results). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: environment files, install, port, safety hooks.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part for its template (quick or full). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: install (app and Control Centre), design tokens, safety hooks. <code>--quick</code> starts from the short task form.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/check-rules.sh</code></td><td>Confirms every rule marked "keep" in the ledger still exists in the new files.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/restore-old-docs.sh</code></td><td>Puts the old docs back where they were, using the map in <code>docs/_old/MAP.md</code>.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
     <tr><td><code>git grep -i "word" pre-lean -- docs AGENTS.md</code></td><td>Searches the old rules for a word, to find where something used to be said.</td><td>You type, or ask Claude</td><td><span class="tag built">works now</span></td></tr>
@@ -253,6 +254,16 @@ docs/
     <b>Say plainly what was not checked.</b>
     <b>Change only what the task needs.</b>
     <b>You say yes</b> before push, deploy or delete. <b>Limits:</b> about 10 new tests per task, verify in about 60 s, two failed attempts then stop, rule files stay under their line caps.
+  </div>
+
+  <h2>7b. Changing the process (the freeze)</h2>
+  <div class="panel">
+    <ol class="steps">
+      <li>A critique reports only a concrete failing case or a contradiction, never redesigns.</li>
+      <li>A suggestion says what it adds and what it removes; a net addition needs a failure we actually saw.</li>
+      <li>Scripts only after a failure or a manual step done twice. Off the delegate path, they go.</li>
+      <li>After a passing gate, no process changes until 3 more real tasks run. Only a real failure reopens it.</li>
+    </ol>
   </div>
 
   <h2>8. If you feel something is missing</h2>
@@ -277,11 +288,12 @@ docs/
     <tr><td>P3 E2</td><td>Simplified hand-off: <code>delegate.sh</code>, shell allow-list, capped logs, approved deletions, ask before model switch</td><td><span class="tag built">built</span> cf87300 (tested with a fake model, not yet with a real one)</td></tr>
     <tr><td>P3 E2b</td><td>After the first real task: quick template, <code>--critique</code>, break-and-restore rule for the builder, scorecard row in the summary, change-the-process rules, unused scripts removed</td><td><span class="tag built">built</span> (owner approved 2026-10-03)</td></tr>
     <tr><td>P3 E3</td><td>One real small task through <code>delegate.sh</code>, then the keep-or-drop gate</td><td><span class="tag built">1 of 3+ real tasks done</span> passed; next: a quick task, then a full task with a deletion</td></tr>
-    <tr><td>P3 F, G</td><td><code>/next</code>, <code>/wrap</code>; skill pruning</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P3 H</td><td>Full dry run on a harmless task</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P3 I</td><td>Remove Superpowers (you run the uninstall)</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3 F</td><td><code>/next</code>, <code>/wrap</code> (prompt-only)</td><td><span class="tag built">built</span> e34d1ea</td></tr>
+    <tr><td>P3 G</td><td>Skill pruning (turn off skills this project never uses)</td><td><span class="tag planned">planned, needs your yes</span></td></tr>
+    <tr><td>P3 H</td><td>Dry run on a real task through <code>delegate.sh</code> (Control Center stage durations)</td><td><span class="tag built">passed 2026-10-03</span></td></tr>
+    <tr><td>P3 I</td><td>Remove Superpowers (you run the uninstall). Kept files no longer mention it; only the old docs do.</td><td><span class="tag planned">planned, needs your yes</span></td></tr>
     <tr><td>P3b</td><td>Move old docs to <code>docs/_old/</code> with a map and restore script</td><td><span class="tag planned">planned, needs your yes</span></td></tr>
-    <tr><td>trial</td><td>2–3 real tasks; scorecard decides what stays</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>trial</td><td>3 more real tasks (one quick, one full with a Delete list); scorecard decides what stays. Process is frozen until then.</td><td><span class="tag planned">1 of 4 done</span></td></tr>
     <tr><td>P4, P5</td><td>Delete old docs after a clean trial; Playwright layout experiment</td><td><span class="tag planned">planned</span></td></tr>
   </table>
 </main>
@@ -303,25 +315,25 @@ const ROWS = [
   {c:"changed", t:"Plan + task checklist", d:"Plan and one checklist. No status page.", w:"Claude", s:"planned"}],
  ["Size the task",
   {c:"changed", t:"Claude names a tier", d:"Trivial, Bounded or Architectural; heavier if in doubt; you approve any skip.", w:"Claude"},
-  {c:"new", r:1, t:"One-sentence test", d:"If you can describe the change in one sentence and nothing risky is touched, just do it. The brief states how many files and any risk.", w:"Rule + brief", s:"planned"}],
+  {c:"new", r:1, t:"One-sentence test", d:"If you can describe the change in one sentence and nothing risky is touched, just do it. The brief states how many files and any risk.", w:"Rule + brief", s:"built"}],
  ["Spec / brief",
   {c:"changed", t:"Long spec", d:"7 sections and a 143-line template, written by Claude.", w:"Claude"},
   {c:"new", r:1, t:"Short brief", d:"A cheap model drafts it. It starts with \"what changes for you\", which you approve.", w:"Cheap model + You", s:"planned"}],
  ["Review",
   {c:"changed", t:"Second-model critic", d:"Reads the spec for risky work. Claude checks every finding.", w:"2nd model + Claude"},
-  {c:"new", r:1, t:"Levels 0 / 1 / 2", d:"None, a quick cheap check, or full Claude review. Risky work reviews the code change itself.", w:"Cheap model / Claude", s:"planned"}],
+  {c:"new", r:1, t:"Levels 0 / 1 / 2", d:"None, a quick cold read (--critique), or Claude reads the report and the diff. Risky work reviews the code change itself.", w:"Cheap model / Claude", s:"built"}],
  ["Hand-off",
   {c:"changed", t:"You are the courier", d:"Claude writes the prompt; you copy it over and copy the report back.", w:"You"},
-  {c:"changed", t:"3-line prompt", d:"Questions go in the task file; the builder stops and waits. No relay chain.", w:"You", s:"planned"}],
+  {c:"changed", t:"3-line prompt", d:"Questions go in the task file; the builder stops and waits. Claude runs one command, delegate.sh; no relay chain, no copy and paste.", w:"You", s:"built"}],
  ["Build",
   {c:"same", t:"Cheap model builds", d:"One local checkpoint commit; stops if the spec is unclear.", w:"Cheap model"},
-  {c:"changed", r:1, t:"Own code copy", d:"Builds in a separate copy (worktree), test first, stops when unsure.", w:"Cheap model", s:"planned"}],
+  {c:"changed", r:1, t:"Own code copy", d:"Builds in a separate copy (worktree) through one command, delegate.sh. Test first, stops when unsure, no push or internet.", w:"Cheap model", s:"built"}],
  ["Check",
   {c:"changed", t:"Self-check + spot-check", d:"The builder checks its own report; Claude spot-checks.", w:"Builder + Claude"},
   {c:"new", t:"Automatic checker", d:"Prints what ran (with counts) and what did not. Blocks \"done\" and blocks saving a broken change, for any tool.", w:"Script", s:"built"}],
  ["Report",
   {c:"changed", t:"11-item report", d:"One fixed format for every task.", w:"Builder"},
-  {c:"changed", r:1, t:"Short report", d:"Four core lines plus extras by task kind, plus one scorecard line.", w:"Builder", s:"planned"}],
+  {c:"changed", r:1, t:"Short report", d:"Four core lines plus extras by task kind, plus one scorecard line.", w:"Builder", s:"built"}],
  ["You test",
   {c:"same", t:"Hand checklist", d:"Sound, layout, real songs. Drafted by the builder.", w:"You"},
   {c:"same", t:"Hand checklist", d:"Same, but written up front, so you can test early. Layout checks planned.", w:"You", s:"planned"}],
