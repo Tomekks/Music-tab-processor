@@ -1,8 +1,8 @@
 # Task: lean process (merged to master via PR #59, 2026-10-03)
 
-Status: active
+Status: done
 Branch: master
-Next: nothing is open for the lean process. Next real work is the trial: 3 real tasks via delegate.sh (one Quick, one Full with a Delete list); wait for real work, do not invent tasks. Local master is 4 commits ahead of origin (all docs or command edits: task file x3, `.claude/commands` x1); master is protected, so they go out in a PR together with the next real change (owner asked for no separate PR). Open PRs #54-#58 are dependabot, not ours (#54 is a real break: react-dom 19.3.0 needs a newer react than the pinned 19.2.8; close it or bump both). No worktrees, no local-only leftovers.
+Next: closed 2026-10-03 (build done, kept for the decisions and the trial list). Nothing is open for the lean process. Next real work is the trial: 3 real tasks via delegate.sh (one Quick, one Full with a Delete list); wait for real work, do not invent tasks. Local master is 4 commits ahead of origin (all docs or command edits: task file x3, `.claude/commands` x1); master is protected, so they go out in a PR together with the next real change (owner asked for no separate PR). Open PRs #54-#58 are dependabot, not ours (#54 is a real break: react-dom 19.3.0 needs a newer react than the pinned 19.2.8; close it or bump both). No worktrees, no local-only leftovers.
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
