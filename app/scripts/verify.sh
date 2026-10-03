@@ -26,6 +26,8 @@ run_tests() {
   PASS_N="$(awk '/^ℹ pass /{print $3}' "$OUT")"
   TESTS_N="$(awk '/^ℹ tests /{print $3}' "$OUT")"
   TOTAL_TESTS=$((TOTAL_TESTS + ${TESTS_N:-0}))
+  # A runner that finds no tests still exits 0; that must not read as PASS.
+  [ "${TESTS_N:-0}" -gt 0 ] || { echo "VERIFY: FAIL (zero tests ran: $*)"; exit 1; }
 }
 
 count_files() { find "$@" -name '*.test.*' -not -path '*/node_modules/*' | wc -l | tr -d ' '; }

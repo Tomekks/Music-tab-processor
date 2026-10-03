@@ -2,15 +2,27 @@
 # New isolated copy of the repo for one task: branch + worktree next to the main checkout, with the
 # gitignored files a fresh checkout lacks (env files, .opencode config, .venv link), safety hooks on,
 # and dependencies installed.
-# Usage: scripts/new-worktree.sh <branch-name> [--no-install]
+# Usage: scripts/new-worktree.sh <branch-name> [--base <branch>] [--no-install]
+# The new branch starts from master unless --base says otherwise (never from whatever is checked out).
 set -euo pipefail
-NAME="${1:?usage: scripts/new-worktree.sh <branch-name> [--no-install]}"
+NAME="${1:?usage: scripts/new-worktree.sh <branch-name> [--base <branch>] [--no-install]}"
+shift
+BASE=master; INSTALL=1
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --base) BASE="${2:?--base needs a branch}"; shift 2 ;;
+    --no-install) INSTALL=0; shift ;;
+    *) echo "unknown option: $1"; exit 1 ;;
+  esac
+done
+SLUG="${NAME//\//-}"   # feat/x -> feat-x for folder and task file names
 cd "$(git rev-parse --show-toplevel)"
 ROOT="$(pwd)"
-DEST="$(cd "$ROOT/.." && pwd)/$(basename "$ROOT")-$NAME"
+DEST="$(cd "$ROOT/.." && pwd)/$(basename "$ROOT")-$SLUG"
 [ ! -e "$DEST" ] || { echo "already exists: $DEST"; exit 1; }
 
-git worktree add -b "$NAME" "$DEST"
+git rev-parse --verify --quiet "$BASE" >/dev/null || { echo "base branch not found: $BASE"; exit 1; }
+git worktree add -b "$NAME" "$DEST" "$BASE"
 cd "$DEST"
 git config core.hooksPath .githooks
 
@@ -25,12 +37,12 @@ done
 
 # Task file from the template, with Branch and Written against already filled in.
 if [ -f docs/work/TEMPLATE.md ]; then
-  sed "s/<<branch name>>/$NAME/; s/<<commit hash>>/$(git rev-parse --short HEAD)/; s/<<short name>>/$NAME/" \
-    docs/work/TEMPLATE.md > "docs/work/$NAME.md"
-  echo "created docs/work/$NAME.md (fill it in, then: scripts/check-brief.sh docs/work/$NAME.md)"
+  sed "s#<<branch name>>#$NAME#; s#<<commit hash>>#$(git rev-parse --short HEAD)#; s#<<short name>>#$NAME#" \
+    docs/work/TEMPLATE.md > "docs/work/$SLUG.md"
+  echo "created docs/work/$SLUG.md (fill it in, then: scripts/check-brief.sh docs/work/$SLUG.md)"
 fi
 
-if [ "${2:-}" != "--no-install" ]; then
+if [ "$INSTALL" -eq 1 ]; then
   (cd app && npm install --silent) && echo "installed app dependencies"
 fi
 

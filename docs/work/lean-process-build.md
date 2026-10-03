@@ -40,6 +40,7 @@ Read only this file, then the rules files named under Done. Skip `START_HERE.md`
   2–3 real tasks, then P4 delete, P5 Playwright layout spike.
 
 ## Decisions to remember
+- `scripts/new-worktree.sh` branches from `master`; until `lean-process` merges, use `--base lean-process` or the worktree lacks the template and scripts.
 - Reviewer = `opencode-go/deepseek-v4.1-flash`; builder = `opencode-go/muse-spark-1.3-contributor`. Never `-free` ids.
 - Mechanical before reasoning. Pipeline checks only when pipeline files change. `.opencode/` is gitignored today.
 - Hand opencode jobs through `scripts/ledger/classify.sh` style: isolated temp dir, 7-minute timeout, validated output.
