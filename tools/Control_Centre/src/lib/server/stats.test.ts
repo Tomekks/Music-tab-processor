@@ -103,3 +103,14 @@ test("two stages are summarized separately", () => {
     s02: { done: 1, failed: 1, stopped: 0, minSec: 10, medianSec: 10, maxSec: 10 },
   });
 });
+
+test("the last finished record per execId wins, and a lone interrupted run counts as stopped", () => {
+  const records = [
+    finished("a", "s01", "failed", 3),
+    finished("a", "s01", "done", 5),
+    finished("b", "s01", "interrupted"),
+  ];
+  assert.deepEqual(stageDurations(records), {
+    s01: { done: 1, failed: 0, stopped: 1, minSec: 5, medianSec: 5, maxSec: 5 },
+  });
+});
