@@ -563,7 +563,7 @@
 
 <script>
 const WIREFRAME_DATA = {
-  "name": "Design System Workbench - Command palette v1",
+  "name": "Design System Workbench - Command palette v2",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -573,390 +573,57 @@ const WIREFRAME_DATA = {
     "direction": "vertical",
     "children": [
       {
-        "name": "Dimmed workbench behind (the page you were on stays as it was; unsaved changes unaffected)",
-        "direction": "vertical",
+        "name": "Dimmed workbench behind (page and unsaved changes unaffected)",
+        "direction": "horizontal",
+        "gap": 48,
         "grow": true,
-        "align": "center",
+        "justify": "center",
         "padding": [
-          96,
-          0
+          64,
+          24
         ],
         "children": [
           {
-            "name": "Command palette (Cmd+K / click the sidebar search)",
-            "width": 640,
+            "name": "State 1: opened, nothing typed",
+            "width": 600,
             "direction": "vertical",
-            "gap": 0,
+            "gap": 8,
             "children": [
               {
-                "name": "Search row",
-                "direction": "horizontal",
-                "gap": 12,
-                "align": "center",
-                "height": 56,
-                "padding": [
-                  0,
-                  16
-                ],
-                "children": [
-                  {
-                    "name": "search icon (lucide search)",
-                    "type": "icon",
-                    "width": 20,
-                    "height": 20
-                  },
-                  {
-                    "name": "button",
-                    "type": "input",
-                    "height": 40,
-                    "grow": true
-                  },
-                  {
-                    "name": "esc",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
-                  }
-                ]
+                "name": "State 1: opened, nothing typed",
+                "type": "text",
+                "height": 16,
+                "variant": "caption"
               },
               {
-                "name": "Divider",
-                "type": "divider"
-              },
-              {
-                "name": "Results (scroll inside the palette; grouped by type, all matches shown)",
+                "name": "Palette",
                 "direction": "vertical",
-                "gap": 12,
-                "padding": 12,
                 "children": [
                   {
-                    "name": "Group: Components",
-                    "direction": "vertical",
-                    "gap": 0,
+                    "name": "Search row",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 56,
+                    "padding": [
+                      0,
+                      16
+                    ],
                     "children": [
                       {
-                        "name": "Components",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption"
+                        "name": "search icon (lucide search)",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
                       },
                       {
-                        "name": "Result: Button",
-                        "type": "card",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
+                        "name": "Search components, variants, tokens, terms...",
+                        "type": "input",
                         "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Button (selected)",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Component",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
+                        "grow": true
                       },
                       {
-                        "name": "Result: Icon Button",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Icon Button",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Component",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Group: Variants",
-                    "direction": "vertical",
-                    "gap": 0,
-                    "children": [
-                      {
-                        "name": "Variants",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption"
-                      },
-                      {
-                        "name": "Result: Button / Primary",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Button / Primary",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Variant",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: Button / Secondary",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Button / Secondary",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Variant",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: Icon Button / Primary",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Icon Button / Primary",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Variant",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: Icon Button / Secondary",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Icon Button / Secondary",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Variant",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: Icon Button / Ghost",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "Icon Button / Ghost",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Variant",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Group: Tokens",
-                    "direction": "vertical",
-                    "gap": 0,
-                    "children": [
-                      {
-                        "name": "Tokens",
-                        "type": "text",
-                        "height": 16,
-                        "variant": "caption"
-                      },
-                      {
-                        "name": "Result: component.button.primaryBackground",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "component.button.primaryBackground",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Token",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: component.button.primaryText",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "component.button.primaryText",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Token",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: component.button.secondaryBackground",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "component.button.secondaryBackground",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Token",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: component.button.secondaryText",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "component.button.secondaryText",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Token",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Result: component.button.secondaryBorder",
-                        "direction": "horizontal",
-                        "justify": "space-between",
-                        "align": "center",
-                        "height": 40,
-                        "padding": [
-                          0,
-                          12
-                        ],
-                        "children": [
-                          {
-                            "name": "component.button.secondaryBorder",
-                            "type": "text",
-                            "height": 24
-                          },
-                          {
-                            "name": "Token",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          }
-                        ]
-                      },
-                      {
-                        "name": "... all other matches continue in the scrolling list",
+                        "name": "esc",
                         "type": "text",
                         "height": 16,
                         "variant": "caption"
@@ -964,18 +631,349 @@ const WIREFRAME_DATA = {
                     ]
                   },
                   {
-                    "name": "Group: Terms (Glossary)",
+                    "name": "Divider",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Results (scroll inside the palette)",
                     "direction": "vertical",
-                    "gap": 0,
+                    "gap": 12,
+                    "padding": 12,
                     "children": [
                       {
-                        "name": "Terms (Glossary)",
+                        "name": "Group: Unsaved changes (3) - jump back to what you were editing",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Unsaved changes (3) - jump back to what you were editing",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "Result (selected): semantic.color.accent",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "swatch #4A90D9",
+                                "type": "icon",
+                                "width": 24,
+                                "height": 24
+                              },
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "semantic.color.accent (selected)",
+                                    "type": "text",
+                                    "height": 24
+                                  },
+                                  {
+                                    "name": "was #AE97F7  now #4A90D9",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Token",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  },
+                                  {
+                                    "name": "edited",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ],
+                            "type": "card"
+                          },
+                          {
+                            "name": "Result: semantic.state.hoverOpacity",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "semantic.state.hoverOpacity",
+                                    "type": "text",
+                                    "height": 24
+                                  },
+                                  {
+                                    "name": "was 8%  now 10%",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Token",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  },
+                                  {
+                                    "name": "edited",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Result: component.button.paddingX",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "component.button.paddingX",
+                                    "type": "text",
+                                    "height": 24
+                                  },
+                                  {
+                                    "name": "was 16px  now 20px",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Token",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  },
+                                  {
+                                    "name": "edited",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Group: Recent",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Recent",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "Result: Button / Primary",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "Button / Primary",
+                                    "type": "text",
+                                    "height": 24
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Variant",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Result: Foundations",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "Foundations",
+                                    "type": "text",
+                                    "height": 24
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Page",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Result: Slider",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "Slider",
+                                    "type": "text",
+                                    "height": 24
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Component",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider 2",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Footer hints",
+                    "direction": "horizontal",
+                    "gap": 24,
+                    "height": 40,
+                    "align": "center",
+                    "padding": [
+                      0,
+                      16
+                    ],
+                    "children": [
+                      {
+                        "name": "up / down  move",
                         "type": "text",
                         "height": 16,
                         "variant": "caption"
                       },
                       {
-                        "name": "no match for 'button'",
+                        "name": "enter  open",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "esc  close",
                         "type": "text",
                         "height": 16,
                         "variant": "caption"
@@ -983,39 +981,230 @@ const WIREFRAME_DATA = {
                     ]
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "name": "State 2: typing \"dividers\" (matches a description, not a name)",
+            "width": 600,
+            "direction": "vertical",
+            "gap": 8,
+            "children": [
+              {
+                "name": "State 2: typing \"dividers\" (matches a description, not a name)",
+                "type": "text",
+                "height": 16,
+                "variant": "caption"
               },
               {
-                "name": "Divider 2",
-                "type": "divider"
-              },
-              {
-                "name": "Footer hints",
-                "direction": "horizontal",
-                "gap": 24,
-                "height": 40,
-                "align": "center",
-                "padding": [
-                  0,
-                  16
-                ],
+                "name": "Palette",
+                "direction": "vertical",
                 "children": [
                   {
-                    "name": "up / down  move",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Search row",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 56,
+                    "padding": [
+                      0,
+                      16
+                    ],
+                    "children": [
+                      {
+                        "name": "search icon (lucide search)",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      },
+                      {
+                        "name": "dividers",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "esc",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
                   },
                   {
-                    "name": "enter  open",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Divider",
+                    "type": "divider"
                   },
                   {
-                    "name": "esc  close",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Results (scroll inside the palette)",
+                    "direction": "vertical",
+                    "gap": 12,
+                    "padding": 12,
+                    "children": [
+                      {
+                        "name": "Group: Tokens",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Tokens",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "Result (selected): semantic.color.border",
+                            "direction": "horizontal",
+                            "gap": 12,
+                            "align": "center",
+                            "padding": [
+                              8,
+                              12
+                            ],
+                            "children": [
+                              {
+                                "name": "swatch #E6DFD8",
+                                "type": "icon",
+                                "width": 24,
+                                "height": 24
+                              },
+                              {
+                                "name": "Label block",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "grow": true,
+                                "children": [
+                                  {
+                                    "name": "semantic.color.border (selected)",
+                                    "type": "text",
+                                    "height": 24
+                                  },
+                                  {
+                                    "name": "Default border color for inputs, cards, and [dividers]",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Meta",
+                                "direction": "vertical",
+                                "gap": 2,
+                                "align": "flex-end",
+                                "children": [
+                                  {
+                                    "name": "Token",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  },
+                                  {
+                                    "name": "From Main",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              }
+                            ],
+                            "type": "card"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Group: Components",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Components",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "no match",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Group: Variants",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Variants",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "no match",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Group: Terms (Glossary)",
+                        "direction": "vertical",
+                        "gap": 0,
+                        "children": [
+                          {
+                            "name": "Terms (Glossary)",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          },
+                          {
+                            "name": "no match",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider 2",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Footer hints",
+                    "direction": "horizontal",
+                    "gap": 24,
+                    "height": 40,
+                    "align": "center",
+                    "padding": [
+                      0,
+                      16
+                    ],
+                    "children": [
+                      {
+                        "name": "up / down  move",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "enter  open",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "esc  close",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
                   }
                 ]
               }
