@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs the builder model on one task file, with the checks that don't need a model before and after.
 # Usage: scripts/run-builder.sh <task-file>      (run it inside the task's worktree, on its branch)
-# Env:   BUILDER_MODEL (default muse-spark), BUILDER_TIMEOUT seconds (default 1200)
+# Env:   BUILDER_MODEL (default muse-spark), BUILDER_TIMEOUT seconds total (default 1200); dead runs are cut off early, see scripts/oc-run.sh
 set -uo pipefail
 TASK="${1:?usage: scripts/run-builder.sh <task-file>}"
 cd "$(git rev-parse --show-toplevel)" || exit 1
@@ -43,13 +43,17 @@ LOGDIR="$(mktemp -d)"; LOG="$LOGDIR/builder.log"
 PROMPT="Build the task in $TASK. Read docs/rules/executor.md first, then the task file${EXTRA:+, then these area rules:$EXTRA}. Follow them exactly."
 
 echo "run-builder: $MODEL on $TASK (timeout ${TIMEOUT}s, log $LOG)"
-perl -e 'alarm shift; exec @ARGV' "$TIMEOUT" opencode run --standalone --agent builder -m "$MODEL" \
-  --title "build: $(basename "$TASK" .md)" "$PROMPT" > "$LOG" 2>&1
+bash scripts/oc-run.sh "$LOG" "$TIMEOUT" -- --agent builder -m "$MODEL" \
+  --title "build: $(basename "$TASK" .md)" "$PROMPT"
 RC=$?
 
 # 5. What happened, from facts not from the model's own summary.
-[ "$RC" -ne 142 ] || echo "run-builder: TIMEOUT after ${TIMEOUT}s (stuck, or the model is not responding)."
-[ -s "$LOG" ] || echo "run-builder: no output at all, the model may be unavailable right now."
+case "$RC" in
+  124) echo "run-builder: TIMEOUT: stopped after ${TIMEOUT}s." ;;
+  125) echo "run-builder: NO RESPONSE within ${FIRST_OUTPUT_TIMEOUT:-60}s, so the model or endpoint is down right now. Retry later, or set BUILDER_MODEL to another opencode-go/ model." ;;
+  126) echo "run-builder: STALLED, no new output for ${STALL_TIMEOUT:-180}s, stopped." ;;
+  127) echo "run-builder: finished with an empty log (silent failure)." ;;
+esac
 if grep -qiE '^> [^ ]+ · .*free' "$LOG"; then echo "run-builder: WARNING a free-tier model answered. Stop and tell the owner."; fi
 echo "--- last 25 lines of the builder's output"; grep -vE '^\s*$' "$LOG" | tail -25
 echo "--- git log -1"; git log -1 --oneline
