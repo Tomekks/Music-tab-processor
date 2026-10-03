@@ -13,6 +13,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+START=$SECONDS
+TOTAL_TESTS=0
 OUT="$(mktemp)"
 trap 'rm -f "$OUT"' EXIT
 
@@ -23,6 +25,7 @@ run_tests() {
   "$@" 2>&1 | tee "$OUT"
   PASS_N="$(awk '/^ℹ pass /{print $3}' "$OUT")"
   TESTS_N="$(awk '/^ℹ tests /{print $3}' "$OUT")"
+  TOTAL_TESTS=$((TOTAL_TESTS + ${TESTS_N:-0}))
 }
 
 count_files() { find "$@" -name '*.test.*' -not -path '*/node_modules/*' | wc -l | tr -d ' '; }
@@ -54,4 +57,5 @@ E2E_N="$(find e2e -name '*.spec.ts' | wc -l | tr -d ' ')"
 echo ""
 echo "VERIFY: PASS"
 echo "  ran:     typecheck ✓  lint ✓  unit $UNIT  design-system $DS  build $BUILD"
+echo "  total:   $TOTAL_TESTS tests in $((SECONDS - START))s"
 echo "  not run: e2e ($E2E_N specs; npm run test:e2e)"

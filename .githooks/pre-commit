@@ -27,6 +27,8 @@ if echo "$STAGED_DIFF" | grep -Ei "$PATTERN" > /dev/null 2>&1; then
   exit 1
 fi
 
+VPOUT="$(mktemp)"
+
 if [ -f app/package.json ] && git diff --cached --name-only | grep -q '^app/'; then
   echo "pre-commit: verify (app/)..."
   VOUT="$(mktemp)"
@@ -37,8 +39,20 @@ if [ -f app/package.json ] && git diff --cached --name-only | grep -q '^app/'; t
     echo "BLOCKED: 'npm run verify' failed for the staged app/ changes. Fix it, then commit again."
     exit 1
   fi
-  tail -n 3 "$VOUT"
+  tail -n 4 "$VOUT"
   rm -f "$VOUT"
 fi
+
+if git diff --cached --name-only | grep -qE '^(pipeline|contracts)/'; then
+  echo "pre-commit: verify (pipeline/)..."
+  if ! bash scripts/verify-pipeline.sh >"$VPOUT" 2>&1; then
+    cat "$VPOUT"; rm -f "$VPOUT"
+    echo ""
+    echo "BLOCKED: pipeline checks failed for the staged changes. Fix it, then commit again."
+    exit 1
+  fi
+  tail -n 3 "$VPOUT"
+fi
+rm -f "$VPOUT"
 
 echo "pre-commit: OK"
