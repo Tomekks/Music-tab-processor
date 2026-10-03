@@ -178,20 +178,33 @@
                   {
                     "name": "Title row",
                     "direction": "horizontal",
-                    "gap": 8,
+                    "justify": "space-between",
                     "align": "center",
                     "children": [
                       {
-                        "name": "Glossary",
-                        "type": "text",
-                        "height": 48,
-                        "variant": "display"
+                        "name": "Title with help",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Glossary",
+                            "type": "text",
+                            "height": 48,
+                            "variant": "display"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: The words this design system uses. Edit a term with its pencil; saved with Save.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
                       },
                       {
-                        "name": "? help icon (lucide circle-help) - hover: The words this design system uses. Edit a term with its pencil; saved with Save.",
-                        "type": "icon",
-                        "width": 20,
-                        "height": 20
+                        "name": "+ Add term",
+                        "type": "button",
+                        "height": 40
                       }
                     ]
                   },
@@ -227,7 +240,7 @@
                   {
                     "name": "Group: Brands",
                     "direction": "vertical",
-                    "gap": 12,
+                    "gap": 4,
                     "children": [
                       {
                         "name": "Brands",
@@ -238,8 +251,11 @@
                       {
                         "name": "Term: Brand",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -248,7 +264,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -256,8 +272,7 @@
                                   {
                                     "name": "Brand",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -271,8 +286,7 @@
                           },
                           {
                             "name": "A full, resolvable set of design-system token values (color, radius, space, typography, etc.) that styles one consuming project or surface. Every brand shares the same token schema \u2014 no brand adds or removes a variable another brand lacks; brands diverge only in values, never in shape.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Theme, skin",
@@ -285,8 +299,11 @@
                       {
                         "name": "Term: Main brand",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -295,7 +312,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -303,8 +320,7 @@
                                   {
                                     "name": "Main brand",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -318,8 +334,7 @@
                           },
                           {
                             "name": "The one brand that cannot be deleted (implemented today as \"default\"/the root brand). Every other brand's Revert action resets a field against Main's live current value.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Default brand, root brand (both still used in code/specs; Main is the product-facing term)",
@@ -332,8 +347,11 @@
                       {
                         "name": "Term: Child brand",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -342,7 +360,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -350,8 +368,7 @@
                                   {
                                     "name": "Child brand",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -365,16 +382,18 @@
                           },
                           {
                             "name": "Any brand other than Main. Its `tokens.json` stays sparse \u2014 an unedited field is simply absent and resolves live from Main at read time (today's shipped `resolveBrandTree` mechanism, kept as-is). Editing a field creates a real override; Revert deletes it, returning to live inheritance.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           }
                         ]
                       },
                       {
                         "name": "Term: New brand",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -383,7 +402,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -391,8 +410,7 @@
                                   {
                                     "name": "New brand (create action)",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -406,16 +424,18 @@
                           },
                           {
                             "name": "Creates a child brand with zero overrides \u2014 every field inherits Main's live value from creation onward, following any future Main edit automatically until a specific field is touched.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           }
                         ]
                       },
                       {
                         "name": "Term: Duplicate brand",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -424,7 +444,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -432,8 +452,7 @@
                                   {
                                     "name": "Duplicate brand (create action)",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -447,16 +466,18 @@
                           },
                           {
                             "name": "Creates a child brand with every field explicitly overridden to the chosen source brand's current values, frozen at that instant. Does not follow the source (or Main) afterward for any field that was set at duplication time \u2014 only an explicit edit or Revert changes it from there. Available on any br...",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           }
                         ]
                       },
                       {
                         "name": "Term: Distribution",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -465,7 +486,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -473,8 +494,7 @@
                                   {
                                     "name": "Distribution",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -488,8 +508,7 @@
                           },
                           {
                             "name": "Always-latest \u2014 every consumer reads the design system's current values on each load, no versioning or pinning. CSS-only output (custom properties); no second export format planned until a real non-CSS consumer exists.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           }
                         ]
                       }
@@ -502,7 +521,7 @@
                   {
                     "name": "Group: Tokens and structure",
                     "direction": "vertical",
-                    "gap": 12,
+                    "gap": 4,
                     "children": [
                       {
                         "name": "Tokens and structure",
@@ -513,8 +532,11 @@
                       {
                         "name": "Term: Token",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -523,7 +545,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -531,8 +553,7 @@
                                   {
                                     "name": "Token",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -546,8 +567,7 @@
                           },
                           {
                             "name": "A single named design value (a color, a length, a font) that a Brand sets.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Variable, field (both still appear in the editor's UI and code)",
@@ -560,8 +580,11 @@
                       {
                         "name": "Term: Foundation",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -570,7 +593,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -578,8 +601,7 @@
                                   {
                                     "name": "Foundation",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -593,8 +615,7 @@
                           },
                           {
                             "name": "A group of cross-cutting Tokens that belong to no single Component: color roles, radius, space, typography, state opacities, focus ring, layout.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Semantic tokens, globals",
@@ -607,8 +628,11 @@
                       {
                         "name": "Term: Component",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -617,7 +641,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -625,8 +649,7 @@
                                   {
                                     "name": "Component",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -640,8 +663,7 @@
                           },
                           {
                             "name": "A reusable interface element of the design system that owns its own group of Tokens (Button, Icon Button, Slider, Segmented Control, Color Field).",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Widget, control",
@@ -654,8 +676,11 @@
                       {
                         "name": "Term: Variant",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -664,7 +689,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -672,8 +697,7 @@
                                   {
                                     "name": "Variant",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   },
                                   {
                                     "name": "edited",
@@ -684,36 +708,46 @@
                                 ]
                               },
                               {
-                                "name": "Done / Cancel",
-                                "type": "link",
-                                "height": 24
+                                "name": "Actions",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Save",
+                                    "type": "button",
+                                    "height": 32
+                                  },
+                                  {
+                                    "name": "x icon (lucide x) - cancel",
+                                    "type": "icon",
+                                    "width": 20,
+                                    "height": 20
+                                  }
+                                ]
                               }
                             ]
                           },
                           {
-                            "name": "A named version of a Component chosen by one of its options, such as a Button's primary or secondary look.  [editable text box]",
+                            "name": "A named version of a Component chosen by one of its options, such as a Button's primary or secondary look.",
                             "type": "input",
-                            "height": 120
+                            "height": 72
                           },
                           {
-                            "name": "Avoid: Type, kind, style  [editable]",
+                            "name": "Avoid: Type, kind, style",
                             "type": "input",
-                            "height": 40
-                          },
-                          {
-                            "name": "Saved with Save, like a token edit. The term name is fixed.",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
+                            "height": 32
                           }
-                        ],
-                        "type": "card"
+                        ]
                       },
                       {
                         "name": "Term: State",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -722,7 +756,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -730,8 +764,7 @@
                                   {
                                     "name": "State",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -745,8 +778,7 @@
                           },
                           {
                             "name": "A condition a Component can be in that changes its look: hover, pressed, disabled, focused.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Status",
@@ -759,8 +791,11 @@
                       {
                         "name": "Term: Override",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -769,7 +804,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -777,8 +812,7 @@
                                   {
                                     "name": "Override",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -792,8 +826,7 @@
                           },
                           {
                             "name": "A Child brand's own value for a Token in a given Mode, replacing the value it would inherit from Main. An Override can be switched off, which falls back to Main's value while keeping the stored value, and switched back on to restore it. Revert is different: it removes the Override entirely.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Customization, local value",
@@ -806,8 +839,11 @@
                       {
                         "name": "Term: Mode",
                         "direction": "vertical",
-                        "gap": 8,
-                        "padding": 16,
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
                         "children": [
                           {
                             "name": "Title row",
@@ -816,7 +852,7 @@
                             "align": "center",
                             "children": [
                               {
-                                "name": "Term + marker",
+                                "name": "Name block",
                                 "direction": "horizontal",
                                 "gap": 8,
                                 "align": "center",
@@ -824,8 +860,7 @@
                                   {
                                     "name": "Mode",
                                     "type": "text",
-                                    "height": 32,
-                                    "variant": "heading"
+                                    "height": 24
                                   }
                                 ]
                               },
@@ -839,14 +874,81 @@
                           },
                           {
                             "name": "The light or dark appearance a Brand is shown in. A Token that differs between Modes has a value for each.",
-                            "type": "text",
-                            "height": 72
+                            "type": "text"
                           },
                           {
                             "name": "Avoid: Theme (reserved against Brand), dark theme",
                             "type": "text",
                             "height": 16,
                             "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: (new term)",
+                        "direction": "vertical",
+                        "gap": 4,
+                        "padding": [
+                          8,
+                          16
+                        ],
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Name block",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "New term name",
+                                    "type": "input",
+                                    "height": 32,
+                                    "width": 240
+                                  },
+                                  {
+                                    "name": "Group (Brands / Tokens and structure) v",
+                                    "type": "input",
+                                    "height": 32,
+                                    "width": 240
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Actions",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Save",
+                                    "type": "button",
+                                    "height": 32
+                                  },
+                                  {
+                                    "name": "x icon (lucide x) - cancel",
+                                    "type": "icon",
+                                    "width": 20,
+                                    "height": 20
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Definition",
+                            "type": "input",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: (words not to use, comma separated)",
+                            "type": "input",
+                            "height": 32
                           }
                         ]
                       }
