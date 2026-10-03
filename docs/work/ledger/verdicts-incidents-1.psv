@@ -1,0 +1,50 @@
+I001|INCIDENT|VERIFY|-|N|Verify baseline metrics before setting ceilings
+I002|INCIDENT|PROCESS|-|N|Commit and show git status after building
+I003|INCIDENT|PROCESS|I002|N|Commit and show git status after building
+I004|INCIDENT|AREA|-|N|Pace metronome by real onset gaps
+I005|NOISE|-|-|N|Take no action on this line
+I006|INCIDENT|AREA|-|N|Capture artist field during pipeline runs
+I007|NOISE|-|-|N|Take no action on this line
+I008|NOISE|-|-|N|Take no action on this line
+I009|NOISE|-|-|N|Take no action on this line
+I010|NOISE|-|-|N|Take no action on this line
+I011|NOISE|-|-|N|Take no action on this line
+I012|INCIDENT|VERIFY|-|N|Re-run tests before claiming blocked
+I013|INCIDENT|ENGINEERING|-|N|Clean up temp files in finally blocks
+I014|NOISE|-|-|N|Take no action on this line
+I015|NOISE|-|-|N|Take no action on this line
+I016|NOISE|-|-|N|Take no action on this line
+I017|NOISE|-|-|N|Take no action on this line
+I018|INCIDENT|VERIFY|-|N|Check output counts not just exit codes
+I019|NOISE|-|-|N|Take no action on this line
+I020|NOISE|-|-|N|Take no action on this line
+I021|NOISE|-|-|N|Take no action on this line
+I022|NOISE|-|-|N|Take no action on this line
+I023|NOISE|-|-|N|Take no action on this line
+I024|NOISE|-|-|N|Take no action on this line
+I025|NOISE|-|-|N|Take no action on this line
+I026|NOISE|-|-|N|Take no action on this line
+I027|NOISE|-|-|N|Take no action on this line
+I028|NOISE|-|-|N|Take no action on this line
+I029|NOISE|-|-|N|Take no action on this line
+I030|NOISE|-|-|N|Take no action on this line
+I031|NOISE|-|-|N|Take no action on this line
+I032|NOISE|-|-|N|Take no action on this line
+I033|INCIDENT|ENGINEERING|-|N|Replace hardcoded values with design tokens
+I034|NOISE|-|-|N|Take no action on this line
+I035|NOISE|-|-|N|Take no action on this line
+I036|NOISE|-|-|N|Take no action on this line
+I037|NOISE|-|-|N|Take no action on this line
+I038|NOISE|-|-|N|Take no action on this line
+I039|NOISE|-|-|N|Take no action on this line
+I040|NOISE|-|-|N|Take no action on this line
+I041|INCIDENT|VERIFY|I018|N|Check output counts not just exit codes
+I042|NOISE|-|-|N|Take no action on this line
+I043|INCIDENT|ENGINEERING|-|N|Handle all token types in dispatch tables
+I044|NOISE|-|-|N|Take no action on this line
+I045|NOISE|-|-|N|Take no action on this line
+I046|NOISE|-|-|N|Take no action on this line
+I047|NOISE|-|-|N|Take no action on this line
+I048|NOISE|-|-|N|Take no action on this line
+I049|NOISE|-|-|N|Take no action on this line
+I050|NOISE|-|-|N|Take no action on this line

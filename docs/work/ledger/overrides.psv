@@ -1,0 +1,7 @@
+R046|KEEP|PROCESS|-|N|Backlog status values stay; only task files are deleted when done (Claude correction)
+R055|KEEP|PROCESS|-|N|Backlog keeps done/rejected items in an Archive section (Claude correction)
+R095|KEEP|PROCESS|-|N|Human-only to-dos need a home, e.g. a section in the task file or backlog (Claude correction)
+R122|KEEP|EXECUTOR|-|N|Builder must commit and show git status after commit; past incident of uncommitted work (Claude correction)
+R149|KEEP|EXECUTOR|-|N|Spec drift check: record base commit, compare quoted code before editing (Claude correction)
+R228|KEEP|PROCESS|-|N|Root-cause-first debugging and worktree rules are restated in the new design, not replaced (Claude correction)
+R220|SUPERSEDED|-|-|N|One process for the whole repo; per-area routing no longer needed (Claude correction)

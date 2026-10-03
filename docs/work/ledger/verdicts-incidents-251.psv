@@ -1,0 +1,46 @@
+I251|NOISE|-|-|N|Take no lesson from this
+I252|INCIDENT|EXECUTOR|-|N|Treat interrupted Stop as not a failure
+I253|NOISE|-|-|N|Take no lesson from this
+I254|NOISE|-|-|N|Take no lesson from this
+I255|NOISE|-|-|N|Take no lesson from this
+I256|NOISE|-|-|N|Take no lesson from this
+I257|INCIDENT|ENGINEERING|-|N|Set value on select not selected on options
+I258|NOISE|-|-|N|Take no lesson from this
+I259|NOISE|-|-|N|Take no lesson from this
+I260|INCIDENT|VERIFY|-|N|Check port free before running Playwright tests
+I261|NOISE|-|-|N|Take no lesson from this
+I262|NOISE|-|-|N|Take no lesson from this
+I263|NOISE|-|-|N|Take no lesson from this
+I264|NOISE|-|-|N|Take no lesson from this
+I265|NOISE|-|-|N|Take no lesson from this
+I266|NOISE|-|-|N|Take no lesson from this
+I267|NOISE|-|-|N|Take no lesson from this
+I268|NOISE|-|-|N|Take no lesson from this
+I269|NOISE|-|-|N|Take no lesson from this
+I270|NOISE|-|-|N|Take no lesson from this
+I271|NOISE|-|-|N|Take no lesson from this
+I272|INCIDENT|ENGINEERING|-|N|Resolve venv-local binaries relative to sys.executable
+I273|INCIDENT|MODELS|-|N|Target simple songs complexity blocks transcription
+I274|NOISE|-|-|N|Take no lesson from this
+I275|NOISE|-|-|N|Take no lesson from this
+I276|NOISE|-|-|N|Take no lesson from this
+I277|NOISE|-|-|N|Take no lesson from this
+I278|NOISE|-|-|N|Take no lesson from this
+I279|INCIDENT|PROCESS|-|N|Commit and push work before marking done
+I280|NOISE|-|-|N|Take no lesson from this
+I281|NOISE|-|-|N|Take no lesson from this
+I282|NOISE|-|-|N|Take no lesson from this
+I283|NOISE|-|-|N|Take no lesson from this
+I284|NOISE|-|-|N|Take no lesson from this
+I285|NOISE|-|-|N|Take no lesson from this
+I286|NOISE|-|-|N|Take no lesson from this
+I287|INCIDENT|PROCESS|-|N|Read live files before writing specs
+I288|INCIDENT|PROCESS|-|N|Keep specs scoped to avoid cross-file drift
+I289|INCIDENT|VERIFY|-|N|Show command output for every verification claim
+I290|INCIDENT|VERIFY|-|N|Restore mutated generated files after manual checks
+I291|INCIDENT|VERIFY|-|N|Verify UI behavior with Playwright not manual staging
+I292|INCIDENT|PROCESS|-|N|Avoid splitting specs that share interfaces
+I293|NOISE|-|-|N|Take no lesson from this
+I294|NOISE|-|-|N|Take no lesson from this
+I295|NOISE|-|-|N|Take no lesson from this
+I296|NOISE|-|-|N|Take no lesson from this

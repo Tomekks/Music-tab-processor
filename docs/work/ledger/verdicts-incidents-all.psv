@@ -1,0 +1,296 @@
+I001|INCIDENT|VERIFY|-|N|Verify baseline metrics before setting ceilings
+I002|INCIDENT|PROCESS|-|N|Commit and show git status after building
+I003|INCIDENT|PROCESS|I002|N|Commit and show git status after building
+I004|INCIDENT|AREA|-|N|Pace metronome by real onset gaps
+I005|NOISE|-|-|N|Take no action on this line
+I006|INCIDENT|AREA|-|N|Capture artist field during pipeline runs
+I007|NOISE|-|-|N|Take no action on this line
+I008|NOISE|-|-|N|Take no action on this line
+I009|NOISE|-|-|N|Take no action on this line
+I010|NOISE|-|-|N|Take no action on this line
+I011|NOISE|-|-|N|Take no action on this line
+I012|INCIDENT|VERIFY|-|N|Re-run tests before claiming blocked
+I013|INCIDENT|ENGINEERING|-|N|Clean up temp files in finally blocks
+I014|NOISE|-|-|N|Take no action on this line
+I015|NOISE|-|-|N|Take no action on this line
+I016|NOISE|-|-|N|Take no action on this line
+I017|NOISE|-|-|N|Take no action on this line
+I018|INCIDENT|VERIFY|-|N|Check output counts not just exit codes
+I019|NOISE|-|-|N|Take no action on this line
+I020|NOISE|-|-|N|Take no action on this line
+I021|NOISE|-|-|N|Take no action on this line
+I022|NOISE|-|-|N|Take no action on this line
+I023|NOISE|-|-|N|Take no action on this line
+I024|NOISE|-|-|N|Take no action on this line
+I025|NOISE|-|-|N|Take no action on this line
+I026|NOISE|-|-|N|Take no action on this line
+I027|NOISE|-|-|N|Take no action on this line
+I028|NOISE|-|-|N|Take no action on this line
+I029|NOISE|-|-|N|Take no action on this line
+I030|NOISE|-|-|N|Take no action on this line
+I031|NOISE|-|-|N|Take no action on this line
+I032|NOISE|-|-|N|Take no action on this line
+I033|INCIDENT|ENGINEERING|-|N|Replace hardcoded values with design tokens
+I034|NOISE|-|-|N|Take no action on this line
+I035|NOISE|-|-|N|Take no action on this line
+I036|NOISE|-|-|N|Take no action on this line
+I037|NOISE|-|-|N|Take no action on this line
+I038|NOISE|-|-|N|Take no action on this line
+I039|NOISE|-|-|N|Take no action on this line
+I040|NOISE|-|-|N|Take no action on this line
+I041|INCIDENT|VERIFY|I018|N|Check output counts not just exit codes
+I042|NOISE|-|-|N|Take no action on this line
+I043|INCIDENT|ENGINEERING|-|N|Handle all token types in dispatch tables
+I044|NOISE|-|-|N|Take no action on this line
+I045|NOISE|-|-|N|Take no action on this line
+I046|NOISE|-|-|N|Take no action on this line
+I047|NOISE|-|-|N|Take no action on this line
+I048|NOISE|-|-|N|Take no action on this line
+I049|NOISE|-|-|N|Take no action on this line
+I050|NOISE|-|-|N|Take no action on this line
+I051|NOISE|-|-|N|Do not treat plans as incidents
+I052|INCIDENT|PROCESS|-|N|Commit spec file together with implemented code
+I053|NOISE|-|-|N|Do not treat plans as incidents
+I054|NOISE|-|-|N|Do not treat plans as incidents
+I055|NOISE|-|-|N|Do not treat plans as incidents
+I056|NOISE|-|-|N|Do not treat plans as incidents
+I057|NOISE|-|-|N|Do not treat plans as incidents
+I058|NOISE|-|-|N|Do not treat plans as incidents
+I059|NOISE|-|-|N|Do not treat plans as incidents
+I060|INCIDENT|ENGINEERING|-|N|Sort numeric token fields by resolved value
+I061|NOISE|-|-|N|Do not treat plans as incidents
+I062|INCIDENT|ENGINEERING|I060|N|Sort numeric token fields by resolved value
+I063|NOISE|-|-|N|Do not treat plans as incidents
+I064|NOISE|-|-|N|Do not treat plans as incidents
+I065|NOISE|-|-|N|Do not treat plans as incidents
+I066|NOISE|-|-|N|Do not treat plans as incidents
+I067|NOISE|-|-|N|Do not treat plans as incidents
+I068|NOISE|-|-|N|Do not treat plans as incidents
+I069|NOISE|-|-|N|Do not treat plans as incidents
+I070|NOISE|-|-|N|Do not treat plans as incidents
+I071|NOISE|-|-|N|Do not treat plans as incidents
+I072|NOISE|-|-|N|Do not treat plans as incidents
+I073|NOISE|-|-|N|Do not treat plans as incidents
+I074|NOISE|-|-|N|Do not treat plans as incidents
+I075|NOISE|-|-|N|Do not treat plans as incidents
+I076|NOISE|-|-|N|Do not treat plans as incidents
+I077|NOISE|-|-|N|Do not treat plans as incidents
+I078|NOISE|-|-|N|Do not treat plans as incidents
+I079|NOISE|-|-|N|Do not treat plans as incidents
+I080|NOISE|-|-|N|Do not treat plans as incidents
+I081|NOISE|-|-|N|Do not treat plans as incidents
+I082|NOISE|-|-|N|Do not treat plans as incidents
+I083|NOISE|-|-|N|Do not treat plans as incidents
+I084|NOISE|-|-|N|Do not treat plans as incidents
+I085|NOISE|-|-|N|Do not treat plans as incidents
+I086|NOISE|-|-|N|Do not treat plans as incidents
+I087|NOISE|-|-|N|Do not treat plans as incidents
+I088|NOISE|-|-|N|Do not treat plans as incidents
+I089|NOISE|-|-|N|Do not treat plans as incidents
+I090|NOISE|-|-|N|Do not treat plans as incidents
+I091|INCIDENT|ENGINEERING|-|N|Ensure preview slider reflects current token values
+I092|NOISE|-|-|N|Do not treat plans as incidents
+I093|NOISE|-|-|N|Do not treat plans as incidents
+I094|NOISE|-|-|N|Do not treat plans as incidents
+I095|NOISE|-|-|N|Do not treat plans as incidents
+I096|NOISE|-|-|N|Do not treat plans as incidents
+I097|NOISE|-|-|N|Do not treat plans as incidents
+I098|NOISE|-|-|N|Do not treat plans as incidents
+I099|NOISE|-|-|N|Do not treat plans as incidents
+I100|NOISE|-|-|N|Do not treat plans as incidents
+I101|NOISE|-|-|N|-
+I102|NOISE|-|-|N|-
+I103|NOISE|-|-|N|-
+I104|NOISE|-|-|N|-
+I105|NOISE|-|-|N|-
+I106|NOISE|-|-|N|-
+I107|NOISE|-|-|N|-
+I108|NOISE|-|-|N|-
+I109|NOISE|-|-|N|-
+I110|NOISE|-|-|N|-
+I111|NOISE|-|-|N|-
+I112|INCIDENT|ENGINEERING|-|N|Validate brand target exists before switching
+I113|NOISE|-|-|N|-
+I114|NOISE|-|-|N|-
+I115|NOISE|-|-|N|-
+I116|NOISE|-|-|N|-
+I117|NOISE|-|-|N|-
+I118|INCIDENT|VERIFY|-|N|Run typecheck on cleanup return values
+I119|NOISE|-|-|N|-
+I120|NOISE|-|-|N|-
+I121|NOISE|-|-|N|-
+I122|NOISE|-|-|N|-
+I123|NOISE|-|-|N|-
+I124|NOISE|-|-|N|-
+I125|NOISE|-|-|N|-
+I126|NOISE|-|-|N|-
+I127|NOISE|-|-|N|-
+I128|NOISE|-|-|N|-
+I129|NOISE|-|-|N|-
+I130|NOISE|-|-|N|-
+I131|NOISE|-|-|N|-
+I132|NOISE|-|-|N|-
+I133|NOISE|-|-|N|-
+I134|NOISE|-|-|N|-
+I135|NOISE|-|-|N|-
+I136|NOISE|-|-|N|-
+I137|NOISE|-|-|N|-
+I138|NOISE|-|-|N|-
+I139|NOISE|-|-|N|-
+I140|NOISE|-|-|N|-
+I141|NOISE|-|-|N|-
+I142|NOISE|-|-|N|-
+I143|NOISE|-|-|N|-
+I144|NOISE|-|-|N|-
+I145|NOISE|-|-|N|-
+I146|NOISE|-|-|N|-
+I147|NOISE|-|-|N|-
+I148|NOISE|-|-|N|-
+I149|NOISE|-|-|N|-
+I150|NOISE|-|-|N|-
+I151|NOISE|-|-|N|-
+I152|NOISE|-|-|N|-
+I153|NOISE|-|-|N|-
+I154|NOISE|-|-|N|-
+I155|NOISE|-|-|N|-
+I156|NOISE|-|-|N|-
+I157|NOISE|-|-|N|-
+I158|NOISE|-|-|N|-
+I159|NOISE|-|-|N|-
+I160|NOISE|-|-|N|-
+I161|NOISE|-|-|N|-
+I162|NOISE|-|-|N|-
+I163|NOISE|-|-|N|-
+I164|INCIDENT|ENGINEERING|-|N|Validate tempo input and never divide by zero
+I165|NOISE|-|-|N|-
+I166|NOISE|-|-|N|-
+I167|NOISE|-|-|N|-
+I168|NOISE|-|-|N|-
+I169|NOISE|-|-|N|-
+I170|NOISE|-|-|N|-
+I171|INCIDENT|VERIFY|-|N|Decouple test fixtures from real brands directory
+I172|NOISE|-|-|N|-
+I173|NOISE|-|-|N|-
+I174|NOISE|-|-|N|-
+I175|NOISE|-|-|N|-
+I176|NOISE|-|-|N|-
+I177|NOISE|-|-|N|-
+I178|NOISE|-|-|N|-
+I179|NOISE|-|-|N|-
+I180|NOISE|-|-|N|-
+I181|NOISE|-|-|N|-
+I182|NOISE|-|-|N|-
+I183|NOISE|-|-|N|-
+I184|NOISE|-|-|N|-
+I185|NOISE|-|-|N|-
+I186|NOISE|-|-|N|-
+I187|INCIDENT|VERIFY|-|N|Run full test suite before declaring done
+I188|NOISE|-|-|N|-
+I189|NOISE|-|-|N|-
+I190|NOISE|-|-|N|-
+I191|NOISE|-|-|N|-
+I192|NOISE|-|-|N|-
+I193|NOISE|-|-|N|-
+I194|NOISE|-|-|N|-
+I195|NOISE|-|-|N|-
+I196|INCIDENT|ENGINEERING|-|N|Scope writes to selected brand tokens file
+I197|NOISE|-|-|N|-
+I198|NOISE|-|-|N|-
+I199|INCIDENT|VERIFY|I171|N|Decouple test fixtures from real brands directory
+I200|NOISE|-|-|N|-
+I201|NOISE|-|-|N|-
+I202|NOISE|-|-|N|-
+I203|NOISE|-|-|N|-
+I204|NOISE|-|-|N|-
+I205|NOISE|-|-|N|-
+I206|NOISE|-|-|N|-
+I207|NOISE|-|-|N|-
+I208|NOISE|-|-|N|-
+I209|NOISE|-|-|N|-
+I210|NOISE|-|-|N|-
+I211|NOISE|-|-|N|-
+I212|NOISE|-|-|N|-
+I213|NOISE|-|-|N|-
+I214|NOISE|-|-|N|-
+I215|NOISE|-|-|N|-
+I216|NOISE|-|-|N|-
+I217|INCIDENT|EXECUTOR|-|N|Set runner cwd explicitly to pipeline root
+I218|INCIDENT|ENGINEERING|-|N|Define semantic color and font size tokens
+I219|NOISE|-|-|N|-
+I220|NOISE|-|-|N|-
+I221|INCIDENT|ENGINEERING|-|N|Build display strings in script to preserve spaces
+I222|NOISE|-|-|N|-
+I223|NOISE|-|-|N|-
+I224|NOISE|-|-|N|-
+I225|NOISE|-|-|N|-
+I226|NOISE|-|-|N|-
+I227|NOISE|-|-|N|-
+I228|NOISE|-|-|N|-
+I229|NOISE|-|-|N|-
+I230|NOISE|-|-|N|-
+I231|NOISE|-|-|N|-
+I232|NOISE|-|-|N|-
+I233|NOISE|-|-|N|-
+I234|NOISE|-|-|N|-
+I235|NOISE|-|-|N|-
+I236|NOISE|-|-|N|-
+I237|NOISE|-|-|N|-
+I238|NOISE|-|-|N|-
+I239|NOISE|-|-|N|-
+I240|NOISE|-|-|N|-
+I241|NOISE|-|-|N|-
+I242|NOISE|-|-|N|-
+I243|NOISE|-|-|N|-
+I244|NOISE|-|-|N|-
+I245|NOISE|-|-|N|-
+I246|NOISE|-|-|N|-
+I247|NOISE|-|-|N|-
+I248|NOISE|-|-|N|-
+I249|NOISE|-|-|N|-
+I250|NOISE|-|-|N|-
+I251|NOISE|-|-|N|Take no lesson from this
+I252|INCIDENT|EXECUTOR|-|N|Treat interrupted Stop as not a failure
+I253|NOISE|-|-|N|Take no lesson from this
+I254|NOISE|-|-|N|Take no lesson from this
+I255|NOISE|-|-|N|Take no lesson from this
+I256|NOISE|-|-|N|Take no lesson from this
+I257|INCIDENT|ENGINEERING|-|N|Set value on select not selected on options
+I258|NOISE|-|-|N|Take no lesson from this
+I259|NOISE|-|-|N|Take no lesson from this
+I260|INCIDENT|VERIFY|-|N|Check port free before running Playwright tests
+I261|NOISE|-|-|N|Take no lesson from this
+I262|NOISE|-|-|N|Take no lesson from this
+I263|NOISE|-|-|N|Take no lesson from this
+I264|NOISE|-|-|N|Take no lesson from this
+I265|NOISE|-|-|N|Take no lesson from this
+I266|NOISE|-|-|N|Take no lesson from this
+I267|NOISE|-|-|N|Take no lesson from this
+I268|NOISE|-|-|N|Take no lesson from this
+I269|NOISE|-|-|N|Take no lesson from this
+I270|NOISE|-|-|N|Take no lesson from this
+I271|NOISE|-|-|N|Take no lesson from this
+I272|INCIDENT|ENGINEERING|-|N|Resolve venv-local binaries relative to sys.executable
+I273|INCIDENT|MODELS|-|N|Target simple songs complexity blocks transcription
+I274|NOISE|-|-|N|Take no lesson from this
+I275|NOISE|-|-|N|Take no lesson from this
+I276|NOISE|-|-|N|Take no lesson from this
+I277|NOISE|-|-|N|Take no lesson from this
+I278|NOISE|-|-|N|Take no lesson from this
+I279|INCIDENT|PROCESS|-|N|Commit and push work before marking done
+I280|NOISE|-|-|N|Take no lesson from this
+I281|NOISE|-|-|N|Take no lesson from this
+I282|NOISE|-|-|N|Take no lesson from this
+I283|NOISE|-|-|N|Take no lesson from this
+I284|NOISE|-|-|N|Take no lesson from this
+I285|NOISE|-|-|N|Take no lesson from this
+I286|NOISE|-|-|N|Take no lesson from this
+I287|INCIDENT|PROCESS|-|N|Read live files before writing specs
+I288|INCIDENT|PROCESS|-|N|Keep specs scoped to avoid cross-file drift
+I289|INCIDENT|VERIFY|-|N|Show command output for every verification claim
+I290|INCIDENT|VERIFY|-|N|Restore mutated generated files after manual checks
+I291|INCIDENT|VERIFY|-|N|Verify UI behavior with Playwright not manual staging
+I292|INCIDENT|PROCESS|-|N|Avoid splitting specs that share interfaces
+I293|NOISE|-|-|N|Take no lesson from this
+I294|NOISE|-|-|N|Take no lesson from this
+I295|NOISE|-|-|N|Take no lesson from this
+I296|NOISE|-|-|N|Take no lesson from this

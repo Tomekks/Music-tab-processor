@@ -1,0 +1,242 @@
+R001|KEEP|ENGINEERING|-|N|Prefer simple direct solutions over enterprise ceremony
+R002|MERGE|ENGINEERING|R001|Y|Same proportionality rule qualified with priority exceptions
+R003|KEEP|AGENTS|-|N|Work inline by default avoid subagent delegation
+R004|KEEP|AGENTS|-|N|State assumptions name alternatives ask when unclear
+R005|KEEP|AGENTS|-|N|Contracts are explicit-task-only modularity seams
+R006|KEEP|PROCESS|-|N|Research alternatives fresh before swapping libraries tools
+R007|KEEP|ENGINEERING|-|N|Keep layers separate communicate only via contracts
+R008|KEEP|ENGINEERING|-|N|Small functions do not rewrite unrelated working code
+R009|KEEP|SAFETY|-|N|No inbound internet access without explicit approval
+R010|KEEP|VERIFY|-|N|Use pre-commit hook never bypass credential block
+R011|KEEP|PROCESS|-|N|App procedure binding without explicit skip approval
+R012|KEEP|VERIFY|-|N|Always preview app changes with staging build
+R013|KEEP|PROCESS|-|N|Always ask push choice never assume skip
+R014|DROP|-|-|N|Choice label definition not a rule
+R015|MERGE|PROCESS|R013|N|Same app push approval rule as above
+R016|KEEP|AGENTS|-|N|Change only what task requires clean orphans
+R017|KEEP|SAFETY|-|N|Require approval for every file change creation deletion
+R018|MERGE|SAFETY|R009|N|Same no-inbound-access rule restated as hard
+R019|KEEP|SAFETY|-|N|Never mislead plainly disclose risks side effects
+R020|KEEP|SAFETY|-|N|Deletions need specific case-by-case permission
+R021|KEEP|SAFETY|-|N|Every commit push needs explicit separate yes
+R022|KEEP|REFERENCE|-|N|Next generated block regenerates do not commit
+R023|KEEP|PROCESS|-|N|Start every session reading AGENTS plus task
+R024|SUPERSEDED|-|-|Y|Cold-start-only deep reads; normally AGENTS plus task
+R025|SUPERSEDED|-|-|N|Walk test now cold-start only after gap
+R026|DROP|-|-|N|Bootstrap rationale history not a rule
+R027|KEEP|DECISION|-|N|Leave dev-only audit findings unfixed avoid downgrade
+R028|DROP|-|-|Y|Pipeline coverage status snapshot only
+R029|SUPERSEDED|-|-|N|Drift log removed; git history is record
+R030|SUPERSEDED|-|-|N|Status pages removed; git history is record
+R031|DROP|-|-|N|Deployment event status snapshot
+R032|KEEP|REFERENCE|-|N|Stack versions plus generated files disclaimer
+R033|KEEP|SAFETY|-|N|Requires re-review if read-only shape changes
+R034|DROP|-|-|Y|Unbuilt feature list is backlog status
+R035|DROP|-|-|N|File scope description not a rule
+R036|DROP|-|-|N|Plugin install status record
+R037|DROP|-|-|N|Plugin install status record
+R038|DROP|-|-|N|File scope disclaimer not a rule
+R039|DROP|-|-|Y|Mostly unbuilt status plus review reminder
+R040|DROP|-|-|Y|Planned features not yet built
+R041|KEEP|PROCESS|-|N|Check tool catalog before fresh research pass
+R042|KEEP|PROCESS|-|N|Keep registry as index file per stage
+R043|KEEP|AREA|-|N|Current transcription choice plus fallbacks
+R044|KEEP|SAFETY|-|N|Confirm exact entry before adding backlog item
+R045|KEEP|PROCESS|-|N|Edit board source not generated markdown
+R046|KEEP|PROCESS|-|N|Backlog status values stay; only task files are deleted when done (Claude correction)
+R047|DROP|-|-|Y|Missing dependency pin status fact
+R048|DROP|-|-|N|Option evaluation cons not a rule
+R049|DROP|-|-|N|Completed CI task history
+R050|DROP|-|-|Y|Backlog accuracy audit still unjudged
+R051|DROP|-|-|Y|Backlog testing task, not a rule
+R052|DROP|-|-|Y|Backlog feature request, not a rule
+R053|KEEP|SAFETY|-|N|Public audio must be royalty-free, never ripped
+R054|DROP|-|-|Y|Trivial backlog fix, not a rule
+R055|KEEP|PROCESS|-|N|Backlog keeps done/rejected items in an Archive section (Claude correction)
+R056|DROP|-|-|N|Finished task history, not a rule
+R057|KEEP|AREA|-|N|Stage interface constraint keeps components swappable
+R058|KEEP|PROCESS|-|N|Keeps decisions index thin, prevents re-litigation
+R059|MERGE|PROCESS|R058|N|Duplicates index rule above
+R060|KEEP|DECISION|-|N|Core scope reframe guides all work
+R061|KEEP|DECISION|-|N|Hosting constraints guide deployment behavior
+R062|KEEP|SAFETY|-|N|Points to safety reasoning behind hard rules
+R063|DROP|-|-|N|Legend for old status system, not rule
+R064|KEEP|AGENTS|-|N|Prevents silent assumption-picking, forces clarification
+R065|KEEP|PROCESS|-|N|Isolation and parallelism still valid when needed
+R066|KEEP|ENGINEERING|-|N|Minimal-code ladder prevents over-engineering
+R067|KEEP|PROCESS|-|N|Root-cause before fix prevents shallow patches
+R068|KEEP|VERIFY|-|N|Defines required local checks before commit
+R069|DROP|-|-|Y|Planned lint gate, not an active rule
+R070|KEEP|SAFETY|-|N|Prevents unapproved commits, requires explicit ask
+R071|KEEP|PROCESS|-|N|Master is PR-only with required verify check
+R072|MERGE|PROCESS|R071|N|Same PR-only workflow as previous row
+R073|KEEP|AREA|-|N|Staging catches production-only app issues
+R074|KEEP|PROCESS|-|N|Forces explicit deploy choice every time
+R075|KEEP|AREA|-|N|Deploy command allowed only after explicit choice
+R076|MERGE|PROCESS|R071|N|Diagram restates PR-only verify rule
+R077|MERGE|PROCESS|R071|N|Diagram restates verify check requirement
+R078|DROP|-|-|N|Diagram fragment, not a standalone rule
+R079|KEEP|ENGINEERING|-|N|Self-contained names keep docs discoverable
+R080|KEEP|PROCESS|-|N|Prevents unnecessary doc splits
+R081|MERGE|PROCESS|R058|N|Same index-thin rule as decisions index
+R082|SUPERSEDED|-|-|Y|Drift checks run only on cold start
+R083|SUPERSEDED|-|-|N|Walk test runs only on cold start
+R084|KEEP|VERIFY|-|N|Catches mismatched commit messages cheaply
+R085|KEEP|VERIFY|-|N|Expensive resume check catches stale understanding
+R086|SUPERSEDED|-|-|N|Drift log removed, git history is record
+R087|DROP|-|-|N|Single historical check entry, not rule
+R088|DROP|-|-|N|Historical merge observation, not a rule
+R089|SUPERSEDED|-|-|N|Finished work deleted, git history is record
+R090|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
+R091|KEEP|PROCESS|-|N|Triage rule focuses audits when time-limited
+R092|SUPERSEDED|-|-|N|New sessions read AGENTS plus task file
+R093|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
+R094|KEEP|PROCESS|-|N|Prevents over-reading, opens depth on demand
+R095|KEEP|PROCESS|-|N|Human-only to-dos need a home, e.g. a section in the task file or backlog (Claude correction)
+R096|KEEP|SAFETY|-|N|New write paths require fresh security review
+R097|DROP|-|-|Y|Open backup task, not a rule
+R098|DROP|-|-|N|Finished credential rotation history, not rule
+R099|DROP|-|-|Y|Deploy nuance useful but history, not rule
+R100|SUPERSEDED|-|-|Y|Handoff removed, verify footer replaces checks
+R101|SUPERSEDED|-|-|N|Sessions read AGENTS plus task file only
+R102|KEEP|PROCESS|-|N|Specs require set sections for Bounded Architectural
+R103|KEEP|AGENTS|-|N|No empirical claim without evidence
+R104|SUPERSEDED|-|-|N|Replaced by Levels 0 1 2 review
+R105|KEEP|VERIFY|-|N|Critic stays read-only changes no file
+R106|KEEP|VERIFY|-|N|List decided items to prevent re-raising
+R107|KEEP|VERIFY|-|N|Always give filled paste block for critique
+R108|MERGE|VERIFY|R107|N|Same paste-block restriction as R107
+R109|MERGE|VERIFY|R107|N|Same paste-block single-source as R107
+R110|KEEP|ENGINEERING|-|N|Prefer simple reliable over clever heavy
+R111|KEEP|VERIFY|-|N|Never invent findings stop when sound
+R112|KEEP|VERIFY|-|N|Done must be checkable command or result
+R113|KEEP|PROCESS|-|N|Split plans only at real seams
+R114|KEEP|AGENTS|-|N|Do not guess ask owner instead
+R115|KEEP|VERIFY|-|N|Rechecks check only changed scope
+R116|KEEP|VERIFY|-|N|Report verified claims in one line
+R117|MERGE|VERIFY|R116|N|Same concise verified-claims rule as R116
+R118|KEEP|VERIFY|-|N|No restating praising or redesigning spec
+R119|KEEP|PROCESS|-|N|Relay spec amendments before implementing
+R120|KEEP|AGENTS|-|N|Ask on genuine ambiguity not fallback
+R121|KEEP|VERIFY|-|N|Keep reports short Claude rechecks evidence
+R122|KEEP|EXECUTOR|-|N|Builder must commit and show git status after commit; past incident of uncommitted work (Claude correction)
+R123|KEEP|VERIFY|-|N|Paste full diff stat inline for relay
+R124|KEEP|VERIFY|-|N|One line per Done probe with observation
+R125|KEEP|VERIFY|-|N|Limit file line to safety-critical changes
+R126|KEEP|VERIFY|-|N|Report judgment calls made without asking
+R127|KEEP|VERIFY|-|N|Draft human checks for person-only verification
+R128|KEEP|EXECUTOR|-|N|Builder never runs human-only checks
+R129|MERGE|VERIFY|R115|N|Same incremental recheck as R115
+R130|KEEP|EXECUTOR|-|N|Fill only spec branch and nocommit
+R131|KEEP|EXECUTOR|-|N|Only Modify only files no push PR
+R132|KEEP|EXECUTOR|-|N|Keep prompt lean rules live in spec
+R133|KEEP|PROCESS|-|N|Plan references specs never duplicates them
+R134|KEEP|PROCESS|-|N|Growing plan docs go unread keep light
+R135|MERGE|PROCESS|R133|N|Same single-source plan rule as R133
+R136|KEEP|PROCESS|-|N|Write tier justification before opening files
+R137|KEEP|PROCESS|-|N|Embed risky logic fully only shrink narrative
+R138|KEEP|PROCESS|-|N|Full specs need bad-case table
+R139|KEEP|PROCESS|-|N|No building during spec one spike allowed
+R140|KEEP|PROCESS|-|N|Spike answers tool question then stops
+R141|MERGE|PROCESS|R137|N|Same never-trim-risk as R137
+R142|KEEP|PROCESS|-|N|Never cut crash paths breakable assertions
+R143|KEEP|VERIFY|-|N|Verified claims need command plus output
+R144|KEEP|PROCESS|-|N|Require one-paragraph user story
+R145|KEEP|SAFETY|-|N|Require exact allowlist and blocklist paths
+R146|KEEP|PROCESS|-|N|Require explicit nongoals with spec reference
+R147|KEEP|SAFETY|-|N|Always forbid credentials add task bans
+R148|KEEP|PROCESS|-|N|Reference code by path plus quote
+R149|KEEP|EXECUTOR|-|N|Spec drift check: record base commit, compare quoted code before editing (Claude correction)
+R150|KEEP|PROCESS|-|N|Embed code only for ambiguous logic
+R151|KEEP|PROCESS|-|N|Requires explicit edge-case behavior not vague handling
+R152|MERGE|PROCESS|R151|N|Continuation detailing error types and recovery
+R153|KEEP|PROCESS|-|N|Steps ordered to keep code never broken
+R154|KEEP|VERIFY|-|N|Limits Run Expected to greenfield localisation only
+R155|KEEP|VERIFY|-|N|Requires diff-stat matches Modify-only scope
+R156|KEEP|VERIFY|-|N|Rejects unverifiable execution-model criteria
+R157|KEEP|PROCESS|-|N|Mandates explicit STOP conditions without improvisation
+R158|KEEP|VERIFY|-|N|First drift check via git status porcelain
+R159|KEEP|VERIFY|-|N|Second drift check via diff against base
+R160|MERGE|VERIFY|R159|N|Completes diff check with excerpt comparison rule
+R161|MERGE|VERIFY|R158|N|Clarifies untracked files outside scope ignored
+R162|KEEP|PROCESS|-|N|Requires spec-specific risks beyond generic stops
+R163|KEEP|PROCESS|-|N|Stops on verify failure or out-of-scope need
+R164|KEEP|PROCESS|-|N|Tests spec executability by unfamiliar model
+R165|KEEP|VERIFY|-|N|Requires verifications as commands with expected results
+R166|KEEP|PROCESS|-|N|Ensures reviewer understands approval from story alone
+R167|SUPERSEDED|-|-|N|Deleted finished work; git history is record
+R168|SUPERSEDED|-|-|N|Levels 0-2 review and brief-grill split replace
+R169|SUPERSEDED|-|-|N|No status pages; git history is record
+R170|SUPERSEDED|-|-|N|No status pages; git history is record
+R171|SUPERSEDED|-|-|N|No status pages; git history is record
+R172|KEEP|AGENTS|-|N|Never paste raw logs; report pass-fail diff-stat
+R173|MERGE|AGENTS|R172|N|Notes auto-compact; same token discipline idea
+R174|KEEP|DECISION|-|N|Defines goal as recognizable not note-perfect
+R175|KEEP|DECISION|-|N|Keeps heavy pipeline local; serverless unsuitable
+R176|KEEP|SAFETY|-|N|Never expose Mac; keep sides unconnected
+R177|KEEP|SAFETY|-|N|Never store audio stems MIDI for copyright
+R178|KEEP|DECISION|-|N|Keeps auto-deploy off with separate gates
+R179|DROP|-|-|Y|Backlog UI idea not a rule
+R180|DROP|-|-|N|File-scope description not actionable rule
+R181|KEEP|DECISION|-|N|ASCII baseline with opt-in richer layers
+R182|KEEP|DECISION|-|N|Synthesized playback not original for beginners
+R183|KEEP|ENGINEERING|-|N|Enforces boundary type and schema checking
+R184|KEEP|VERIFY|-|N|Requires CI tests linting every commit
+R185|KEEP|ENGINEERING|-|N|Complexity ceilings trigger immediate refactor
+R186|KEEP|ENGINEERING|-|N|Cost fixes concretely not by feel
+R187|KEEP|MODELS|-|N|Must work with any model without conventions
+R188|SUPERSEDED|-|-|N|Superpowers removed; rules restated in AGENTS.md
+R189|KEEP|SAFETY|-|N|Ask before commit push deletion; explain outbound
+R190|KEEP|AGENTS|-|N|Surface assumptions; ask on ambiguous tasks
+R191|KEEP|AGENTS|-|N|Clean only orphans own edit creates
+R192|KEEP|DECISION|-|N|Rejects always-on hooks for token overhead
+R193|KEEP|ENGINEERING|-|N|Minimum code; no unasked abstraction
+R194|KEEP|DECISION|-|N|Always-populated brands with click-to-reset
+R195|KEEP|DECISION|-|N|Never retarget to frozen Duplicate brand
+R196|DROP|-|-|N|Case-study tone note not repo rule
+R197|MERGE|SAFETY|R189|N|Commit ask-policy duplicates safety principles
+R198|KEEP|ENGINEERING|-|N|Defer comment rewrites until fix confirmed
+R199|DROP|-|-|N|Historical progress status not a rule
+R200|KEEP|PROCESS|-|N|Defaults critique block; execution prompt on request
+R201|DROP|-|-|N|Merged PR status history not a rule
+R202|DROP|-|-|Y|Future plan outline needs human review
+R203|DROP|-|-|Y|Resume point not a rule needs human check
+R204|DROP|-|-|Y|Case-study decisions for human second look
+R205|KEEP|PROCESS|-|N|Write reasoning once in spec not plan
+R206|KEEP|SAFETY|-|N|Prevents leaking repo to free-tier models
+R207|KEEP|AGENTS|-|N|Saves tokens avoids needless subagent overhead
+R208|KEEP|VERIFY|-|N|Prevents misleading failures from stale server
+R209|KEEP|SAFETY|-|N|Hands off sensitive actions never deploys directly
+R210|KEEP|AREA|-|N|Teaching pace for Control Center builds
+R211|KEEP|PROCESS|-|N|Keeps discovery cheap without losing thoroughness
+R212|KEEP|VERIFY|-|N|Catches misplaced writes after cwd drift
+R213|KEEP|VERIFY|-|N|Prevents applying false review-suggested fixes
+R214|KEEP|VERIFY|-|N|Summaries invent details require raw source
+R215|KEEP|AGENTS|-|N|Routes low-token wireframing to installed skill
+R216|KEEP|EXECUTOR|-|N|Keeps specs lean but preserves correctness checks
+R217|MERGE|AGENTS|R218|N|Same slash-command trigger as next row
+R218|KEEP|AGENTS|-|N|Routes slash command to graphify skill
+R219|SUPERSEDED|-|-|N|Replaced by cold-start-only orientation reading
+R220|SUPERSEDED|-|-|N|One process for the whole repo; per-area routing no longer needed (Claude correction)
+R221|SUPERSEDED|-|-|N|Superpowers removed; rules restated in AGENTS.md
+R222|SUPERSEDED|-|-|N|AGENTS.md rules now bind directly, no skills
+R223|KEEP|ENGINEERING|-|N|Keeps solutions minimal and reversible
+R224|SUPERSEDED|-|-|Y|Replaced by briefs plus grilling and planning
+R225|KEEP|REFERENCE|-|N|Maps stage contracts for memoryless readers
+R226|KEEP|VERIFY|-|N|TDD plus golden-file substitute for audio
+R227|KEEP|ENGINEERING|-|N|Picks minimal implementation when tests ambiguous
+R228|KEEP|PROCESS|-|N|Root-cause-first debugging and worktree rules are restated in the new design, not replaced (Claude correction)
+R229|KEEP|VERIFY|-|N|Requires real checks, not mental pass
+R230|KEEP|PROCESS|-|N|Keeps trivial changes lightweight
+R231|KEEP|REFERENCE|-|N|Read contracts before producing or consuming
+R232|KEEP|REFERENCE|-|N|Locates numbered stages in order
+R233|KEEP|ENGINEERING|-|N|Prevents messy spikes becoming production silently
+R234|KEEP|EXECUTOR|-|N|Defines unambiguous spec for execution model
+R235|KEEP|AREA|-|N|Prevents wrong-directory Vercel deploy
+R236|DROP|-|-|N|Obvious non-action, not a rule
+R237|KEEP|DECISION|-|N|Explains why gates stay separate
+R238|KEEP|AGENTS|-|N|Binds all models, not just Claude
+R239|KEEP|SAFETY|-|N|Prevents surprising outbound network calls
+R240|KEEP|SAFETY|-|N|Protects shared system configuration
+R241|SUPERSEDED|-|-|N|Drift log removed; cold-start check replaces
+R242|KEEP|AREA|-|N|Training data mismatches installed Next.js

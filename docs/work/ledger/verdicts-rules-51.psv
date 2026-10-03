@@ -1,0 +1,50 @@
+R051|DROP|-|-|Y|Backlog testing task, not a rule
+R052|DROP|-|-|Y|Backlog feature request, not a rule
+R053|KEEP|SAFETY|-|N|Public audio must be royalty-free, never ripped
+R054|DROP|-|-|Y|Trivial backlog fix, not a rule
+R055|SUPERSEDED|-|-|N|Finished work deleted, git history is record
+R056|DROP|-|-|N|Finished task history, not a rule
+R057|KEEP|AREA|-|N|Stage interface constraint keeps components swappable
+R058|KEEP|PROCESS|-|N|Keeps decisions index thin, prevents re-litigation
+R059|MERGE|PROCESS|R058|N|Duplicates index rule above
+R060|KEEP|DECISION|-|N|Core scope reframe guides all work
+R061|KEEP|DECISION|-|N|Hosting constraints guide deployment behavior
+R062|KEEP|SAFETY|-|N|Points to safety reasoning behind hard rules
+R063|DROP|-|-|N|Legend for old status system, not rule
+R064|KEEP|AGENTS|-|N|Prevents silent assumption-picking, forces clarification
+R065|KEEP|PROCESS|-|N|Isolation and parallelism still valid when needed
+R066|KEEP|ENGINEERING|-|N|Minimal-code ladder prevents over-engineering
+R067|KEEP|PROCESS|-|N|Root-cause before fix prevents shallow patches
+R068|KEEP|VERIFY|-|N|Defines required local checks before commit
+R069|DROP|-|-|Y|Planned lint gate, not an active rule
+R070|KEEP|SAFETY|-|N|Prevents unapproved commits, requires explicit ask
+R071|KEEP|PROCESS|-|N|Master is PR-only with required verify check
+R072|MERGE|PROCESS|R071|N|Same PR-only workflow as previous row
+R073|KEEP|AREA|-|N|Staging catches production-only app issues
+R074|KEEP|PROCESS|-|N|Forces explicit deploy choice every time
+R075|KEEP|AREA|-|N|Deploy command allowed only after explicit choice
+R076|MERGE|PROCESS|R071|N|Diagram restates PR-only verify rule
+R077|MERGE|PROCESS|R071|N|Diagram restates verify check requirement
+R078|DROP|-|-|N|Diagram fragment, not a standalone rule
+R079|KEEP|ENGINEERING|-|N|Self-contained names keep docs discoverable
+R080|KEEP|PROCESS|-|N|Prevents unnecessary doc splits
+R081|MERGE|PROCESS|R058|N|Same index-thin rule as decisions index
+R082|SUPERSEDED|-|-|Y|Drift checks run only on cold start
+R083|SUPERSEDED|-|-|N|Walk test runs only on cold start
+R084|KEEP|VERIFY|-|N|Catches mismatched commit messages cheaply
+R085|KEEP|VERIFY|-|N|Expensive resume check catches stale understanding
+R086|SUPERSEDED|-|-|N|Drift log removed, git history is record
+R087|DROP|-|-|N|Single historical check entry, not rule
+R088|DROP|-|-|N|Historical merge observation, not a rule
+R089|SUPERSEDED|-|-|N|Finished work deleted, git history is record
+R090|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
+R091|KEEP|PROCESS|-|N|Triage rule focuses audits when time-limited
+R092|SUPERSEDED|-|-|N|New sessions read AGENTS plus task file
+R093|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
+R094|KEEP|PROCESS|-|N|Prevents over-reading, opens depth on demand
+R095|SUPERSEDED|-|-|N|Finished work deleted, git history is record
+R096|KEEP|SAFETY|-|N|New write paths require fresh security review
+R097|DROP|-|-|Y|Open backup task, not a rule
+R098|DROP|-|-|N|Finished credential rotation history, not rule
+R099|DROP|-|-|Y|Deploy nuance useful but history, not rule
+R100|SUPERSEDED|-|-|Y|Handoff removed, verify footer replaces checks

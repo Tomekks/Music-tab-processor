@@ -1,0 +1,50 @@
+R001|KEEP|ENGINEERING|-|N|Prefer simple direct solutions over enterprise ceremony
+R002|MERGE|ENGINEERING|R001|Y|Same proportionality rule qualified with priority exceptions
+R003|KEEP|AGENTS|-|N|Work inline by default avoid subagent delegation
+R004|KEEP|AGENTS|-|N|State assumptions name alternatives ask when unclear
+R005|KEEP|AGENTS|-|N|Contracts are explicit-task-only modularity seams
+R006|KEEP|PROCESS|-|N|Research alternatives fresh before swapping libraries tools
+R007|KEEP|ENGINEERING|-|N|Keep layers separate communicate only via contracts
+R008|KEEP|ENGINEERING|-|N|Small functions do not rewrite unrelated working code
+R009|KEEP|SAFETY|-|N|No inbound internet access without explicit approval
+R010|KEEP|VERIFY|-|N|Use pre-commit hook never bypass credential block
+R011|KEEP|PROCESS|-|N|App procedure binding without explicit skip approval
+R012|KEEP|VERIFY|-|N|Always preview app changes with staging build
+R013|KEEP|PROCESS|-|N|Always ask push choice never assume skip
+R014|DROP|-|-|N|Choice label definition not a rule
+R015|MERGE|PROCESS|R013|N|Same app push approval rule as above
+R016|KEEP|AGENTS|-|N|Change only what task requires clean orphans
+R017|KEEP|SAFETY|-|N|Require approval for every file change creation deletion
+R018|MERGE|SAFETY|R009|N|Same no-inbound-access rule restated as hard
+R019|KEEP|SAFETY|-|N|Never mislead plainly disclose risks side effects
+R020|KEEP|SAFETY|-|N|Deletions need specific case-by-case permission
+R021|KEEP|SAFETY|-|N|Every commit push needs explicit separate yes
+R022|KEEP|REFERENCE|-|N|Next generated block regenerates do not commit
+R023|KEEP|PROCESS|-|N|Start every session reading AGENTS plus task
+R024|SUPERSEDED|-|-|Y|Cold-start-only deep reads; normally AGENTS plus task
+R025|SUPERSEDED|-|-|N|Walk test now cold-start only after gap
+R026|DROP|-|-|N|Bootstrap rationale history not a rule
+R027|KEEP|DECISION|-|N|Leave dev-only audit findings unfixed avoid downgrade
+R028|DROP|-|-|Y|Pipeline coverage status snapshot only
+R029|SUPERSEDED|-|-|N|Drift log removed; git history is record
+R030|SUPERSEDED|-|-|N|Status pages removed; git history is record
+R031|DROP|-|-|N|Deployment event status snapshot
+R032|KEEP|REFERENCE|-|N|Stack versions plus generated files disclaimer
+R033|KEEP|SAFETY|-|N|Requires re-review if read-only shape changes
+R034|DROP|-|-|Y|Unbuilt feature list is backlog status
+R035|DROP|-|-|N|File scope description not a rule
+R036|DROP|-|-|N|Plugin install status record
+R037|DROP|-|-|N|Plugin install status record
+R038|DROP|-|-|N|File scope disclaimer not a rule
+R039|DROP|-|-|Y|Mostly unbuilt status plus review reminder
+R040|DROP|-|-|Y|Planned features not yet built
+R041|KEEP|PROCESS|-|N|Check tool catalog before fresh research pass
+R042|KEEP|PROCESS|-|N|Keep registry as index file per stage
+R043|KEEP|AREA|-|N|Current transcription choice plus fallbacks
+R044|KEEP|SAFETY|-|N|Confirm exact entry before adding backlog item
+R045|KEEP|PROCESS|-|N|Edit board source not generated markdown
+R046|SUPERSEDED|-|-|N|Finished work now deleted; git is record
+R047|DROP|-|-|Y|Missing dependency pin status fact
+R048|DROP|-|-|N|Option evaluation cons not a rule
+R049|DROP|-|-|N|Completed CI task history
+R050|DROP|-|-|Y|Backlog accuracy audit still unjudged

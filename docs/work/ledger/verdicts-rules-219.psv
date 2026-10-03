@@ -1,0 +1,24 @@
+R219|SUPERSEDED|-|-|N|Replaced by cold-start-only orientation reading
+R220|KEEP|AREA|-|N|Routes app work to dedicated workflow
+R221|SUPERSEDED|-|-|N|Superpowers removed; rules restated in AGENTS.md
+R222|SUPERSEDED|-|-|N|AGENTS.md rules now bind directly, no skills
+R223|KEEP|ENGINEERING|-|N|Keeps solutions minimal and reversible
+R224|SUPERSEDED|-|-|Y|Replaced by briefs plus grilling and planning
+R225|KEEP|REFERENCE|-|N|Maps stage contracts for memoryless readers
+R226|KEEP|VERIFY|-|N|TDD plus golden-file substitute for audio
+R227|KEEP|ENGINEERING|-|N|Picks minimal implementation when tests ambiguous
+R228|SUPERSEDED|-|-|Y|Replaced by Levels 0,1,2 review
+R229|KEEP|VERIFY|-|N|Requires real checks, not mental pass
+R230|KEEP|PROCESS|-|N|Keeps trivial changes lightweight
+R231|KEEP|REFERENCE|-|N|Read contracts before producing or consuming
+R232|KEEP|REFERENCE|-|N|Locates numbered stages in order
+R233|KEEP|ENGINEERING|-|N|Prevents messy spikes becoming production silently
+R234|KEEP|EXECUTOR|-|N|Defines unambiguous spec for execution model
+R235|KEEP|AREA|-|N|Prevents wrong-directory Vercel deploy
+R236|DROP|-|-|N|Obvious non-action, not a rule
+R237|KEEP|DECISION|-|N|Explains why gates stay separate
+R238|KEEP|AGENTS|-|N|Binds all models, not just Claude
+R239|KEEP|SAFETY|-|N|Prevents surprising outbound network calls
+R240|KEEP|SAFETY|-|N|Protects shared system configuration
+R241|SUPERSEDED|-|-|N|Drift log removed; cold-start check replaces
+R242|KEEP|AREA|-|N|Training data mismatches installed Next.js

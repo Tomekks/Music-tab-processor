@@ -1,0 +1,18 @@
+R201|DROP|-|-|N|Merged PR status history not a rule
+R202|DROP|-|-|Y|Future plan outline needs human review
+R203|DROP|-|-|Y|Resume point not a rule needs human check
+R204|DROP|-|-|Y|Case-study decisions for human second look
+R205|KEEP|PROCESS|-|N|Write reasoning once in spec not plan
+R206|KEEP|SAFETY|-|N|Prevents leaking repo to free-tier models
+R207|KEEP|AGENTS|-|N|Saves tokens avoids needless subagent overhead
+R208|KEEP|VERIFY|-|N|Prevents misleading failures from stale server
+R209|KEEP|SAFETY|-|N|Hands off sensitive actions never deploys directly
+R210|KEEP|AREA|-|N|Teaching pace for Control Center builds
+R211|KEEP|PROCESS|-|N|Keeps discovery cheap without losing thoroughness
+R212|KEEP|VERIFY|-|N|Catches misplaced writes after cwd drift
+R213|KEEP|VERIFY|-|N|Prevents applying false review-suggested fixes
+R214|KEEP|VERIFY|-|N|Summaries invent details require raw source
+R215|KEEP|AGENTS|-|N|Routes low-token wireframing to installed skill
+R216|KEEP|EXECUTOR|-|N|Keeps specs lean but preserves correctness checks
+R217|MERGE|AGENTS|R218|N|Same slash-command trigger as next row
+R218|KEEP|AGENTS|-|N|Routes slash command to graphify skill

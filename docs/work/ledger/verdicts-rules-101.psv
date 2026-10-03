@@ -1,0 +1,50 @@
+R101|SUPERSEDED|-|-|N|Sessions read AGENTS plus task file only
+R102|KEEP|PROCESS|-|N|Specs require set sections for Bounded Architectural
+R103|KEEP|AGENTS|-|N|No empirical claim without evidence
+R104|SUPERSEDED|-|-|N|Replaced by Levels 0 1 2 review
+R105|KEEP|VERIFY|-|N|Critic stays read-only changes no file
+R106|KEEP|VERIFY|-|N|List decided items to prevent re-raising
+R107|KEEP|VERIFY|-|N|Always give filled paste block for critique
+R108|MERGE|VERIFY|R107|N|Same paste-block restriction as R107
+R109|MERGE|VERIFY|R107|N|Same paste-block single-source as R107
+R110|KEEP|ENGINEERING|-|N|Prefer simple reliable over clever heavy
+R111|KEEP|VERIFY|-|N|Never invent findings stop when sound
+R112|KEEP|VERIFY|-|N|Done must be checkable command or result
+R113|KEEP|PROCESS|-|N|Split plans only at real seams
+R114|KEEP|AGENTS|-|N|Do not guess ask owner instead
+R115|KEEP|VERIFY|-|N|Rechecks check only changed scope
+R116|KEEP|VERIFY|-|N|Report verified claims in one line
+R117|MERGE|VERIFY|R116|N|Same concise verified-claims rule as R116
+R118|KEEP|VERIFY|-|N|No restating praising or redesigning spec
+R119|KEEP|PROCESS|-|N|Relay spec amendments before implementing
+R120|KEEP|AGENTS|-|N|Ask on genuine ambiguity not fallback
+R121|KEEP|VERIFY|-|N|Keep reports short Claude rechecks evidence
+R122|DROP|-|-|N|History of past commit failure incident
+R123|KEEP|VERIFY|-|N|Paste full diff stat inline for relay
+R124|KEEP|VERIFY|-|N|One line per Done probe with observation
+R125|KEEP|VERIFY|-|N|Limit file line to safety-critical changes
+R126|KEEP|VERIFY|-|N|Report judgment calls made without asking
+R127|KEEP|VERIFY|-|N|Draft human checks for person-only verification
+R128|KEEP|EXECUTOR|-|N|Builder never runs human-only checks
+R129|MERGE|VERIFY|R115|N|Same incremental recheck as R115
+R130|KEEP|EXECUTOR|-|N|Fill only spec branch and nocommit
+R131|KEEP|EXECUTOR|-|N|Only Modify only files no push PR
+R132|KEEP|EXECUTOR|-|N|Keep prompt lean rules live in spec
+R133|KEEP|PROCESS|-|N|Plan references specs never duplicates them
+R134|KEEP|PROCESS|-|N|Growing plan docs go unread keep light
+R135|MERGE|PROCESS|R133|N|Same single-source plan rule as R133
+R136|KEEP|PROCESS|-|N|Write tier justification before opening files
+R137|KEEP|PROCESS|-|N|Embed risky logic fully only shrink narrative
+R138|KEEP|PROCESS|-|N|Full specs need bad-case table
+R139|KEEP|PROCESS|-|N|No building during spec one spike allowed
+R140|KEEP|PROCESS|-|N|Spike answers tool question then stops
+R141|MERGE|PROCESS|R137|N|Same never-trim-risk as R137
+R142|KEEP|PROCESS|-|N|Never cut crash paths breakable assertions
+R143|KEEP|VERIFY|-|N|Verified claims need command plus output
+R144|KEEP|PROCESS|-|N|Require one-paragraph user story
+R145|KEEP|SAFETY|-|N|Require exact allowlist and blocklist paths
+R146|KEEP|PROCESS|-|N|Require explicit nongoals with spec reference
+R147|KEEP|SAFETY|-|N|Always forbid credentials add task bans
+R148|KEEP|PROCESS|-|N|Reference code by path plus quote
+R149|SUPERSEDED|-|-|Y|No drift log git history is record
+R150|KEEP|PROCESS|-|N|Embed code only for ambiguous logic
