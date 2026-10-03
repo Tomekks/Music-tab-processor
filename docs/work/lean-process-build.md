@@ -1,8 +1,8 @@
-# Task: lean process (branch `lean-process`, PR #59)
+# Task: lean process (merged to master via PR #59, 2026-10-03)
 
 Status: active
-Branch: lean-process
-Next: owner decides: merge PR #59 (CI green 2026-10-03), then retarget PR #60 (feat/cc-stage-durations, stacked) to master and merge. After that: delete local backups (tags `backup/*`, `refs/original`) and remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`, each with owner OK. Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list).
+Branch: master
+Next: PR #59 is merged (master d3b48d5). PR #60 (stage durations) is retargeted to master and waits for its CI: owner says "merge #60" when green. Then, each with owner OK: remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`, delete the merged branches (`lean-process`, `feat/cc-stage-durations`, `docs/wrap-after-lean-merge`, local and remote), and in the main folder `git checkout master && git pull`. Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). If the e2e check flakes on a PR, re-run it (see Watch-outs).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
@@ -19,7 +19,7 @@ Next: owner decides: merge PR #59 (CI green 2026-10-03), then retarget PR #60 (f
 - Builder shell is an allow-list (read-only git, tests, the two scripts); Claude reviews the diff; builder cannot delete, push or go online.
 - Build a script only after a real failure or a step done twice. Mechanical before reasoning. Pipeline checks only when pipeline files change.
 - Delegation pays off across many tasks, not on tiny ones; Level 0 changes need no brief.
-- `scripts/new-worktree.sh` branches from `master`; until `lean-process` merges, pass `--base lean-process`.
+- `scripts/new-worktree.sh` branches from `master` (the lean process is on master now, no `--base` needed).
 
 ## Later (not before the trial)
 - **P4:** decide move/delete of the old workflow docs, using the scorecard. **P5:** Playwright layout spike.
@@ -27,7 +27,8 @@ Next: owner decides: merge PR #59 (CI green 2026-10-03), then retarget PR #60 (f
 - Control Center next steps are in `docs/plans/2026-09-24-control-center/` (quality grilling, then tempo control); the design-system workbench is in `docs/plans/2026-10-01-design-system-workbench/`.
 
 ## Watch-outs
-- Local-only private text: backup tags `backup/*` and `refs/original/*` still hold the pre-redaction ledger rows. Never run `git push --tags` or `--all`. Delete them once the PRs are merged (owner OK).
+- The pre-redaction backups (tags, refs/original, old objects) were deleted 2026-10-03. Never `git push --tags` or `--all`.
+- `e2e-design-system` is flaky in CI, not caused by our PRs: master commit 750ee0e passed on 2026-10-01 and failed on a re-run 2026-10-02; different tests fail on different runs (staged-save #10 on PR #59, deploy-status #4 on PR #58). Dependabot PR #54 (react-dom 19.3.0) is a real break: `npm ci` ERESOLVE, react is pinned at 19.2.8; it needs react bumped together. #54 and #58 are not ours.
 - `~/.config/opencode/opencode.json` contains a Figma client secret (exposed once in chat); rotate it if sensitive.
 - opencode CLI is 2.0.20; the desktop app is 1.18.x and shares the database.
 - The working directory can drift mid-session: run `pwd` before writing absolute paths.
