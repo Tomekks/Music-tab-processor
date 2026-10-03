@@ -1,5 +1,5 @@
 {
-  "name": "Design System Workbench - Foundations v2 (real tokens)",
+  "name": "Design System Workbench - Foundations v3 (real tokens)",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -79,7 +79,7 @@
         "grow": true,
         "children": [
           {
-            "name": "Left Sidebar",
+            "name": "Left Sidebar (fixed in view; its list scrolls inside this column)",
             "width": 280,
             "direction": "vertical",
             "padding": 16,
@@ -112,7 +112,7 @@
                 "type": "divider"
               },
               {
-                "name": "Components (real ones only, A-Z; grows as components are built)",
+                "name": "Components (A-Z, scrolls within the sidebar)",
                 "direction": "vertical",
                 "gap": 4,
                 "grow": true,
@@ -158,7 +158,7 @@
             "direction": "vertical"
           },
           {
-            "name": "Canvas (flexes with screen width)",
+            "name": "Canvas (the only column that scrolls the page content; sidebars stay fixed)",
             "grow": true,
             "direction": "vertical",
             "padding": 32,
@@ -176,15 +176,24 @@
                     "variant": "caption"
                   },
                   {
-                    "name": "Foundations",
-                    "type": "text",
-                    "height": 48,
-                    "variant": "display"
-                  },
-                  {
-                    "name": "Shared values every Component reads. Generated from the brand tokens: 15 colors, 7 states, 3 focus, 1 radius, 7 space, 2 fonts, 1 layout.",
-                    "type": "text",
-                    "height": 24
+                    "name": "Heading row: Foundations",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Foundations",
+                        "type": "text",
+                        "variant": "display",
+                        "height": 48
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: Shared values every Component reads, generated from the brand tokens.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   }
                 ]
               },
@@ -240,16 +249,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Color",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.color - swatch, hex, and the one-line use. Select a row to edit it in the inspector.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Color",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Color",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.color - swatch, hex, and the one-line use. Select a row to edit it in the inspector.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row background",
@@ -444,16 +461,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "State",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.state - opacities shared by hover, pressed, focus, disabled, muted, loop.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: State",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "State",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.state - opacities shared by hover, pressed, focus, disabled, muted, loop.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row hoverOpacity",
@@ -557,16 +582,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Focus ring",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.focus - one ring style for every interactive Component.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Focus ring",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Focus ring",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.focus - one ring style for every interactive Component.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row ringWidth",
@@ -671,16 +704,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Radius",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.radius",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Radius",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Radius",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.radius",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row base",
@@ -722,16 +763,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Space",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.space - seven steps.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Space",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Space",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.space - seven steps.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row 1",
@@ -835,16 +884,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Typography",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.typography - the two font families. Text styles (size, weight, description) per Component for now; Title and Body styles are slice 3.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Typography",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Typography",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.typography - the two font families. Text styles (size, weight, description) per Component for now; Title and Body styles are slice 3.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row sans",
@@ -914,16 +971,24 @@
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Layout",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "semantic.layout",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
+                    "name": "Heading row: Layout",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Layout",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: semantic.layout",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
                     "name": "Row sidebarWidth",
@@ -963,7 +1028,7 @@
             "direction": "vertical"
           },
           {
-            "name": "Right Inspector (scrolls if tall; collapses below 1200px)",
+            "name": "Right Inspector (fixed in view; scrolls inside this column if tall)",
             "width": 320,
             "direction": "vertical",
             "padding": 24,
