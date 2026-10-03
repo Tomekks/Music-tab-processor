@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: plan step 7: one real small task through scripts/delegate.sh (draft the task file, owner approves the brief, run, Claude reviews the diff), then the decision gate. Ask owner first about the stale int-test worktree (uncommitted old script edits, blocks a merge).
+Next: owner approves the brief in ../guitar_tab_processor-feat-cc-stage-durations/docs/work/feat-cc-stage-durations.md; then run scripts/delegate.sh on it from that worktree, Claude reviews the diff, then the decision gate.
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -57,6 +57,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 6. Claude-side budget: two failed builder runs for non-provider reasons -> stop and report, no more plumbing debugging.
 7. One real small task in the existing `int-test` worktree (reuse, then remove with owner OK).
 8. Decision gate: record pass/fail + reason here. Two non-provider failures -> drop opencode, use a Haiku subagent.
+7a. Real task chosen 2026-10-03 (owner): Control Center stage-duration summary (`stageDurations`, 2 new files). Worktree `../guitar_tab_processor-feat-cc-stage-durations`, branch `feat/cc-stage-durations`. Old int-test worktree deleted with owner OK. Fixed on the way: verify-task now sees committed changes and runs Control Centre verify; new-worktree generates CC tokens and hides the .venv symlink.
 8a. Deletions (owner agreed 2026-10-03): builder cannot delete. Brief has an optional `**Delete (approved with this brief):**` list; owner approves it at the brief; finish.sh `git rm`s exactly those; check-scope allows them. Builder shell is an ALLOW-list (stricter than the deny-list first agreed; owner said approve, will critique after).
 8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.
