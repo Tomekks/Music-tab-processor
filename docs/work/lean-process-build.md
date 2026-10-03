@@ -1,8 +1,8 @@
-# Task: lean process (branch `lean-process`, PR #59)
+# Task: lean process (merged to master via PR #59, 2026-10-03)
 
 Status: active
-Branch: lean-process
-Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-system` FAILED once (test staged-save #10 read the old token value right after a revert; 37 passed, 1 failed). The same check passed on the two earlier commits and c9d516d changed only docs, so it looks like a timing flake in an app test, not our change: re-run the failed job (`gh run rerun --failed`, run id 37147295336, owner OK), then merge #59 when green (owner asked to merge). If it fails again, that test needs a look before merging. Then retarget PR #60 (feat/cc-stage-durations, stacked on lean-process) to master (it shows no CI checks because the workflow only runs for PRs targeting master; checks start after the retarget) and merge it, then remove the worktree `../guitar_tab_processor-feat-cc-stage-durations` (owner OK). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). This file has one unpushed edit (pushing restarts CI, so push after the merge decision).
+Branch: master
+Next: PR #59 is merged (master d3b48d5). PR #60 (stage durations) is retargeted to master and waits for its CI: owner says "merge #60" when green. Then, each with owner OK: remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`, delete the merged branches (`lean-process`, `feat/cc-stage-durations`, `docs/wrap-after-lean-merge`, local and remote), and in the main folder `git checkout master && git pull`. Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). If the e2e check flakes on a PR, re-run it (see Watch-outs).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
@@ -19,7 +19,7 @@ Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-
 - Builder shell is an allow-list (read-only git, tests, the two scripts); Claude reviews the diff; builder cannot delete, push or go online.
 - Build a script only after a real failure or a step done twice. Mechanical before reasoning. Pipeline checks only when pipeline files change.
 - Delegation pays off across many tasks, not on tiny ones; Level 0 changes need no brief.
-- `scripts/new-worktree.sh` branches from `master`; until `lean-process` merges, pass `--base lean-process`.
+- `scripts/new-worktree.sh` branches from `master` (the lean process is on master now, no `--base` needed).
 
 ## Later (not before the trial)
 - **P4:** decide move/delete of the old workflow docs, using the scorecard. **P5:** Playwright layout spike.
