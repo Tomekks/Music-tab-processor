@@ -1,8 +1,8 @@
 # Task: Control Center stage-duration summary
 
-Status: active
+Status: done
 Branch: feat/cc-stage-durations
-Next: done; awaiting owner checklist.
+Next: none. Built, reviewed and merged in PR #60 (2026-10-03); checked by Claude against the real local records (medians matched the 2026-09-30 figures); the owner has not run the checklist command.
 Written against: 145a218
 
 ## What changes for you
