@@ -1,0 +1,1117 @@
+{
+  "name": "Design System Workbench - Foundations v2 (real tokens)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [
+          0,
+          16
+        ],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          {
+            "name": "Design System - brand: default (switcher)",
+            "type": "input",
+            "height": 40,
+            "grow": true,
+            "maxWidth": 320
+          },
+          {
+            "name": "Mode toggle (moon / sun icon)",
+            "type": "icon",
+            "width": 40,
+            "height": 40
+          },
+          {
+            "name": "Spacer",
+            "grow": true,
+            "direction": "vertical",
+            "children": []
+          },
+          {
+            "name": "Save Status",
+            "direction": "horizontal",
+            "gap": 16,
+            "align": "center",
+            "children": [
+              {
+                "name": "3 unsaved changes",
+                "type": "text",
+                "height": 24
+              },
+              {
+                "name": "Not deployed",
+                "type": "text",
+                "variant": "caption",
+                "height": 24
+              }
+            ]
+          },
+          {
+            "name": "Discard",
+            "type": "link",
+            "height": 40
+          },
+          {
+            "name": "Save",
+            "type": "button",
+            "height": 40
+          }
+        ]
+      },
+      {
+        "name": "Top Bar Divider",
+        "type": "divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              {
+                "name": "Search (Cmd+K)",
+                "type": "input",
+                "height": 40
+              },
+              {
+                "name": "Top Sections",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Glossary",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Foundations (selected)",
+                    "type": "button",
+                    "height": 48
+                  }
+                ]
+              },
+              {
+                "name": "Sidebar Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Components (real ones only, A-Z; grows as components are built)",
+                "direction": "vertical",
+                "gap": 4,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Components",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 24
+                  },
+                  {
+                    "name": "Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Color Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Icon Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Segmented Control",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Slider",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sidebar / Canvas Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Canvas (flexes with screen width)",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Foundations",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Foundations",
+                    "type": "text",
+                    "height": 48,
+                    "variant": "display"
+                  },
+                  {
+                    "name": "Shared values every Component reads. Generated from the brand tokens: 15 colors, 7 states, 3 focus, 1 radius, 7 space, 2 fonts, 1 layout.",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Jump links",
+                "direction": "horizontal",
+                "gap": 16,
+                "children": [
+                  {
+                    "name": "Color",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "State",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Focus ring",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Radius",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Space",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Typography",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Layout",
+                    "type": "link",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Divider A",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Color",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Color",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.color - swatch, hex, and the one-line use. Select a row to edit it in the inspector.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row background",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "background",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #FAF9F5",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#FAF9F5",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Base page background, the app shell root",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row foreground",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "foreground",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #141413",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#141413",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Default text color across the app",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row accent (selected)",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "accent (selected)",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #AE97F7",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Active tab, selected row, primary Button",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row border",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "border",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #E6DFD8",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#E6DFD8",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Inputs, cards and dividers",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row surface",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "surface",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #FFFFFF",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#FFFFFF",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Input fields, kbd hints",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 10 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Divider B",
+                "type": "divider"
+              },
+              {
+                "name": "Section: State",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "State",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.state - opacities shared by hover, pressed, focus, disabled, muted, loop.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row hoverOpacity",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "hoverOpacity",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "8%",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Overlay strength on hover",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row pressedOpacity",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "pressedOpacity",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "12%",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Overlay strength while pressed",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row disabledOpacity",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "disabledOpacity",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "50%",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Dimming of disabled controls",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 4 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Divider C",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Focus ring",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Focus ring",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.focus - one ring style for every interactive Component.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row ringWidth",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "ringWidth",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "2px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Outline thickness",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row ringOffset",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "ringOffset",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "2px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Gap between element and ring",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row ringColor",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "ringColor",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #AE97F7",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Alias of accent",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider D",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Radius",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Radius",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.radius",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row base",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "base",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "8px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Default corner radius",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider E",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Space",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Space",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.space - seven steps.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row 1",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "1",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "4px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Tightest gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row 2",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "2",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "8px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Small gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row 4",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "4",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "16px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Default gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 4 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Divider F",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Typography",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Typography",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.typography - the two font families. Text styles (size, weight, description) per Component for now; Title and Body styles are slice 3.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row sans",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "sans",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "[T] Geist Sans",
+                        "type": "input",
+                        "height": 32,
+                        "grow": true
+                      },
+                      {
+                        "name": "Used by every Component unless set otherwise",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row mono",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "mono",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "[T] Geist Mono",
+                        "type": "input",
+                        "height": 32,
+                        "grow": true
+                      },
+                      {
+                        "name": "Used by Color Field",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider G",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Layout",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Layout",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.layout",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row sidebarWidth",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "sidebarWidth",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "240px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Width of the web app sidebar",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Canvas / Inspector Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Right Inspector (scrolls if tall; collapses below 1200px)",
+            "width": 320,
+            "direction": "vertical",
+            "padding": 24,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Inspector Header",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Title Row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "accent",
+                        "type": "text",
+                        "height": 32,
+                        "variant": "heading"
+                      },
+                      {
+                        "name": "Reset to default",
+                        "type": "link",
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Foundations / Color / semantic.color.accent",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Header Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Description section",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "What it is for (editable)",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Active tab text/border, selected song row, primary Button background. Editable text, saved with the token.",
+                    "type": "input",
+                    "height": 96
+                  }
+                ]
+              },
+              {
+                "name": "Value section",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  {
+                    "name": "Value",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Light row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Light",
+                        "type": "text",
+                        "height": 24,
+                        "width": 96
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "pick",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Dark row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Dark",
+                        "type": "text",
+                        "height": 24,
+                        "width": 96
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "pick",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Section Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Used by section",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Used by (generated, read-only)",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Button primary, Slider fill, Segmented Control selected, ...",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "caption"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

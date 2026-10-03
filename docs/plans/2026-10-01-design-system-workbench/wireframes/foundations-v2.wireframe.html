@@ -479,6 +479,7 @@
     width: 100%;
     flex-shrink: 0;
   }
+  .wf-type-divider.wf-type-divider-v { width: 1px; height: auto; align-self: stretch; flex-shrink: 0; }
 
   .wf-type-table {
     width: 100%;
@@ -562,7 +563,7 @@
 
 <script>
 const WIREFRAME_DATA = {
-  "name": "Design System Workbench - Foundations v1",
+  "name": "Design System Workbench - Foundations v2 (real tokens)",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -675,7 +676,7 @@ const WIREFRAME_DATA = {
                 "type": "divider"
               },
               {
-                "name": "Components (flat A-Z, all shown, list scrolls)",
+                "name": "Components (real ones only, A-Z; grows as components are built)",
                 "direction": "vertical",
                 "gap": 4,
                 "grow": true,
@@ -687,22 +688,7 @@ const WIREFRAME_DATA = {
                     "height": 24
                   },
                   {
-                    "name": "Badge",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Breadcrumbs",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
                     "name": "Button",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Card",
                     "type": "link",
                     "height": 48
                   },
@@ -712,22 +698,7 @@ const WIREFRAME_DATA = {
                     "height": 48
                   },
                   {
-                    "name": "Divider",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
                     "name": "Icon Button",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Menu",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Panel",
                     "type": "link",
                     "height": 48
                   },
@@ -737,32 +708,7 @@ const WIREFRAME_DATA = {
                     "height": 48
                   },
                   {
-                    "name": "Select",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
                     "name": "Slider",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Tabs",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Text Field",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Toast",
-                    "type": "link",
-                    "height": 48
-                  },
-                  {
-                    "name": "Tooltip",
                     "type": "link",
                     "height": 48
                   }
@@ -800,14 +746,14 @@ const WIREFRAME_DATA = {
                     "variant": "display"
                   },
                   {
-                    "name": "The shared values every Component is built from. Changes here ripple to every Component.",
+                    "name": "Shared values every Component reads. Generated from the brand tokens: 15 colors, 7 states, 3 focus, 1 radius, 7 space, 2 fonts, 1 layout.",
                     "type": "text",
                     "height": 24
                   }
                 ]
               },
               {
-                "name": "Section jump links",
+                "name": "Jump links",
                 "direction": "horizontal",
                 "gap": 16,
                 "children": [
@@ -817,7 +763,12 @@ const WIREFRAME_DATA = {
                     "height": 24
                   },
                   {
-                    "name": "Space",
+                    "name": "State",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
+                    "name": "Focus ring",
                     "type": "link",
                     "height": 24
                   },
@@ -827,17 +778,12 @@ const WIREFRAME_DATA = {
                     "height": 24
                   },
                   {
+                    "name": "Space",
+                    "type": "link",
+                    "height": 24
+                  },
+                  {
                     "name": "Typography",
-                    "type": "link",
-                    "height": 24
-                  },
-                  {
-                    "name": "State opacities",
-                    "type": "link",
-                    "height": 24
-                  },
-                  {
-                    "name": "Focus ring",
                     "type": "link",
                     "height": 24
                   },
@@ -849,13 +795,13 @@ const WIREFRAME_DATA = {
                 ]
               },
               {
-                "name": "Foundations Divider",
+                "name": "Divider A",
                 "type": "divider"
               },
               {
                 "name": "Section: Color",
                 "direction": "vertical",
-                "gap": 12,
+                "gap": 8,
                 "children": [
                   {
                     "name": "Color",
@@ -864,427 +810,315 @@ const WIREFRAME_DATA = {
                     "variant": "heading"
                   },
                   {
-                    "name": "Semantic colors (accent, surface, text, border, status), light and dark per Mode. Primitives stay hidden.",
+                    "name": "semantic.color - swatch, hex, and the one-line use. Select a row to edit it in the inspector.",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
                   },
                   {
-                    "name": "Accent group",
+                    "name": "Row background",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Accent",
+                        "name": "background",
                         "type": "text",
                         "height": 24,
-                        "width": 96
+                        "width": 150
                       },
                       {
-                        "name": "accent base",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "swatch #FAF9F5",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
                       },
                       {
-                        "name": "accent hover",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "#FAF9F5",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
                       },
                       {
-                        "name": "accent pressed",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "accent subtle",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "Base page background, the app shell root",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
                       }
                     ]
                   },
                   {
-                    "name": "Surface group",
+                    "name": "Row foreground",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Surface",
+                        "name": "foreground",
                         "type": "text",
                         "height": 24,
-                        "width": 96
+                        "width": 150
                       },
                       {
-                        "name": "surface page",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "swatch #141413",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
                       },
                       {
-                        "name": "surface raised",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "#141413",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
                       },
                       {
-                        "name": "surface sunken",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "surface overlay",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "Default text color across the app",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
                       }
                     ]
                   },
                   {
-                    "name": "Text group",
+                    "name": "Row accent (selected)",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Text",
+                        "name": "accent (selected)",
                         "type": "text",
                         "height": 24,
-                        "width": 96
+                        "width": 150
                       },
                       {
-                        "name": "text primary",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "swatch #AE97F7",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
                       },
                       {
-                        "name": "text secondary",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "#AE97F7",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
                       },
                       {
-                        "name": "text muted",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "text on-accent",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "Active tab, selected row, primary Button",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
                       }
                     ]
                   },
                   {
-                    "name": "Border group",
+                    "name": "Row border",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Border",
+                        "name": "border",
                         "type": "text",
                         "height": 24,
-                        "width": 96
+                        "width": 150
                       },
                       {
-                        "name": "border default",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "swatch #E6DFD8",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
                       },
                       {
-                        "name": "border strong",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "#E6DFD8",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
                       },
                       {
-                        "name": "border subtle",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "border focus",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "Inputs, cards and dividers",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
                       }
                     ]
                   },
                   {
-                    "name": "Generate from seed colors (open question 7)",
-                    "type": "button",
-                    "height": 40
+                    "name": "Row surface",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "surface",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #FFFFFF",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#FFFFFF",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Input fields, kbd hints",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 10 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
                   }
                 ]
               },
               {
-                "name": "Divider 1",
+                "name": "Divider B",
                 "type": "divider"
               },
               {
-                "name": "Section: Space",
+                "name": "Section: State",
                 "direction": "vertical",
-                "gap": 12,
+                "gap": 8,
                 "children": [
                   {
-                    "name": "Space",
+                    "name": "State",
                     "type": "text",
                     "height": 32,
                     "variant": "heading"
                   },
                   {
-                    "name": "Spacing scale; each step is a named Token.",
+                    "name": "semantic.state - opacities shared by hover, pressed, focus, disabled, muted, loop.",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
                   },
                   {
-                    "name": "Space steps",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "children": [
-                      {
-                        "name": "4",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "8",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "12",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "16",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "24",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "32",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "48",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "Divider 2",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Radius",
-                "direction": "vertical",
-                "gap": 12,
-                "children": [
-                  {
-                    "name": "Radius",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "Corner radius scale.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
-                  },
-                  {
-                    "name": "Radius steps",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "children": [
-                      {
-                        "name": "none 0",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "sm 4",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "md 8",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "lg 12",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "full",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "Divider 3",
-                "type": "divider"
-              },
-              {
-                "name": "Section: Typography",
-                "direction": "vertical",
-                "gap": 12,
-                "children": [
-                  {
-                    "name": "Typography",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
-                  },
-                  {
-                    "name": "Font families, then text styles (size, weight, line height) shown with a live sample.",
-                    "type": "text",
-                    "height": 16,
-                    "variant": "caption"
-                  },
-                  {
-                    "name": "Font family row",
+                    "name": "Row hoverOpacity",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Sans",
+                        "name": "hoverOpacity",
                         "type": "text",
                         "height": 24,
-                        "width": 96
+                        "width": 150
                       },
                       {
-                        "name": "[T] Geist Sans",
+                        "name": "8%",
                         "type": "input",
-                        "height": 40,
-                        "grow": true
+                        "height": 32,
+                        "width": 96
                       },
                       {
-                        "name": "Mono",
+                        "name": "Overlay strength on hover",
                         "type": "text",
-                        "height": 24,
-                        "width": 48
-                      },
-                      {
-                        "name": "[T] Geist Mono",
-                        "type": "input",
-                        "height": 40,
+                        "height": 16,
+                        "variant": "caption",
                         "grow": true
                       }
                     ]
                   },
                   {
-                    "name": "Text styles",
-                    "type": "table",
-                    "columns": [
+                    "name": "Row pressedOpacity",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
                       {
-                        "name": "Style",
-                        "width": 140
+                        "name": "pressedOpacity",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
                       },
                       {
-                        "name": "Sample",
+                        "name": "12%",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Overlay strength while pressed",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
                         "grow": true
-                      },
-                      {
-                        "name": "Size / weight",
-                        "width": 160
                       }
-                    ],
-                    "rows": 5
-                  }
-                ]
-              },
-              {
-                "name": "Divider 4",
-                "type": "divider"
-              },
-              {
-                "name": "Section: State opacities",
-                "direction": "vertical",
-                "gap": 12,
-                "children": [
-                  {
-                    "name": "State opacities",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "heading"
+                    ]
                   },
                   {
-                    "name": "Shared hover, pressed and disabled opacities (not yet verified in code, open question 5).",
+                    "name": "Row disabledOpacity",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "disabledOpacity",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "50%",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Dimming of disabled controls",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 4 more rows, generated from tokens.json",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
-                  },
-                  {
-                    "name": "Opacity steps",
-                    "direction": "horizontal",
-                    "gap": 8,
-                    "children": [
-                      {
-                        "name": "hover",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "pressed",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "disabled",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      }
-                    ]
                   }
                 ]
               },
               {
-                "name": "Divider 5",
+                "name": "Divider C",
                 "type": "divider"
               },
               {
                 "name": "Section: Focus ring",
                 "direction": "vertical",
-                "gap": 12,
+                "gap": 8,
                 "children": [
                   {
                     "name": "Focus ring",
@@ -1293,26 +1127,98 @@ const WIREFRAME_DATA = {
                     "variant": "heading"
                   },
                   {
-                    "name": "One focus style used by every interactive Component.",
+                    "name": "semantic.focus - one ring style for every interactive Component.",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
                   },
                   {
-                    "name": "Focus row",
+                    "name": "Row ringWidth",
                     "direction": "horizontal",
                     "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "Focus sample: ring on a button",
-                        "type": "card",
-                        "height": 72,
-                        "grow": true
-                      },
-                      {
-                        "name": "Ring width / offset / color",
+                        "name": "ringWidth",
                         "type": "text",
                         "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "2px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Outline thickness",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row ringOffset",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "ringOffset",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "2px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Gap between element and ring",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row ringColor",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "ringColor",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "swatch #AE97F7",
+                        "type": "icon",
+                        "width": 32,
+                        "height": 32
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "width": 64
+                      },
+                      {
+                        "name": "Alias of accent",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
                         "grow": true
                       }
                     ]
@@ -1320,13 +1226,256 @@ const WIREFRAME_DATA = {
                 ]
               },
               {
-                "name": "Divider 6",
+                "name": "Divider D",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Radius",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Radius",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.radius",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row base",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "base",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "8px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Default corner radius",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider E",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Space",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Space",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.space - seven steps.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row 1",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "1",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "4px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Tightest gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row 2",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "2",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "8px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Small gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row 4",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "4",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "16px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
+                      },
+                      {
+                        "name": "Default gap",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "... 4 more rows, generated from tokens.json",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Divider F",
+                "type": "divider"
+              },
+              {
+                "name": "Section: Typography",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Typography",
+                    "type": "text",
+                    "height": 32,
+                    "variant": "heading"
+                  },
+                  {
+                    "name": "semantic.typography - the two font families. Text styles (size, weight, description) per Component for now; Title and Body styles are slice 3.",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Row sans",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "sans",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "[T] Geist Sans",
+                        "type": "input",
+                        "height": 32,
+                        "grow": true
+                      },
+                      {
+                        "name": "Used by every Component unless set otherwise",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row mono",
+                    "direction": "horizontal",
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
+                    "children": [
+                      {
+                        "name": "mono",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
+                      },
+                      {
+                        "name": "[T] Geist Mono",
+                        "type": "input",
+                        "height": 32,
+                        "grow": true
+                      },
+                      {
+                        "name": "Used by Color Field",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider G",
                 "type": "divider"
               },
               {
                 "name": "Section: Layout",
                 "direction": "vertical",
-                "gap": 12,
+                "gap": 8,
                 "children": [
                   {
                     "name": "Layout",
@@ -1335,39 +1484,36 @@ const WIREFRAME_DATA = {
                     "variant": "heading"
                   },
                   {
-                    "name": "Page widths and breakpoints.",
+                    "name": "semantic.layout",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
                   },
                   {
-                    "name": "Layout row",
+                    "name": "Row sidebarWidth",
                     "direction": "horizontal",
-                    "gap": 8,
+                    "gap": 12,
+                    "align": "center",
+                    "height": 40,
                     "children": [
                       {
-                        "name": "max content width",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "sidebarWidth",
+                        "type": "text",
+                        "height": 24,
+                        "width": 150
                       },
                       {
-                        "name": "breakpoint sm",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "240px",
+                        "type": "input",
+                        "height": 32,
+                        "width": 96
                       },
                       {
-                        "name": "breakpoint md",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
-                      },
-                      {
-                        "name": "breakpoint lg",
-                        "type": "card",
-                        "grow": true,
-                        "height": 56
+                        "name": "Width of the web app sidebar",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption",
+                        "grow": true
                       }
                     ]
                   }
@@ -1399,7 +1545,7 @@ const WIREFRAME_DATA = {
                     "align": "center",
                     "children": [
                       {
-                        "name": "accent base",
+                        "name": "accent",
                         "type": "text",
                         "height": 32,
                         "variant": "heading"
@@ -1412,7 +1558,7 @@ const WIREFRAME_DATA = {
                     ]
                   },
                   {
-                    "name": "Foundations / Color (selected)",
+                    "name": "Foundations / Color / semantic.color.accent",
                     "type": "text",
                     "height": 16,
                     "variant": "caption"
@@ -1422,6 +1568,23 @@ const WIREFRAME_DATA = {
               {
                 "name": "Header Divider",
                 "type": "divider"
+              },
+              {
+                "name": "Description section",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "What it is for (editable)",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Active tab text/border, selected song row, primary Button background. Editable text, saved with the token.",
+                    "type": "input",
+                    "height": 96
+                  }
+                ]
               },
               {
                 "name": "Value section",
@@ -1452,7 +1615,7 @@ const WIREFRAME_DATA = {
                         "grow": true
                       },
                       {
-                        "name": "Color picker",
+                        "name": "pick",
                         "type": "input",
                         "width": 40,
                         "height": 40
@@ -1472,13 +1635,13 @@ const WIREFRAME_DATA = {
                         "width": 96
                       },
                       {
-                        "name": "#9B82F0",
+                        "name": "#AE97F7",
                         "type": "input",
                         "height": 40,
                         "grow": true
                       },
                       {
-                        "name": "Color picker",
+                        "name": "pick",
                         "type": "input",
                         "width": 40,
                         "height": 40
@@ -1497,12 +1660,12 @@ const WIREFRAME_DATA = {
                 "gap": 8,
                 "children": [
                   {
-                    "name": "Used by",
+                    "name": "Used by (generated, read-only)",
                     "type": "text",
                     "height": 24
                   },
                   {
-                    "name": "Button primary background, Tabs selected, Slider fill, ...",
+                    "name": "Button primary, Slider fill, Segmented Control selected, ...",
                     "type": "text",
                     "height": 32,
                     "variant": "caption"
@@ -2054,7 +2217,7 @@ function barWidth(row, col) {
 function renderNode(node, container, path) {
   if (node.type === 'divider') {
     const el = document.createElement('div');
-    el.className = 'wf-type-divider';
+    el.className = 'wf-type-divider' + (node.direction === 'vertical' ? ' wf-type-divider-v' : '');
     el.dataset.path = path;
     el.draggable = true;
     container.appendChild(el);
