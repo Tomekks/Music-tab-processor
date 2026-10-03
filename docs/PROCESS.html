@@ -56,12 +56,24 @@
     .cols { grid-template-columns:1fr; }
     .cell[data-side]::before { content:attr(data-side); display:block; font-size:12px; color:var(--mute); margin-bottom:4px; }
   }
+
+  .flow { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px; }
+  .st { flex:1 1 135px; min-width:125px; background:var(--card); border:2px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px; }
+  .st b { display:block; }
+  .st small { color:var(--mute); }
+  .st.planned { border-style:dashed; }
+  .st.risk { background:var(--risk-bg); border-color:var(--risk); }
+  .lane { display:inline-block; font-size:11px; padding:0 8px; border-radius:99px; color:#fff; margin-bottom:4px; }
+  .l-you{background:#7a5bb0}.l-claude{background:#b8701f}.l-builder{background:#2f8f5b}.l-reviewer{background:#2a7ba0}.l-script{background:#6b6b66}
+  .bar { height:24px; border-radius:4px; background:var(--same); color:#fff; font-size:13px; padding:0 8px; line-height:24px; margin:5px 0; white-space:nowrap; overflow:hidden; }
+  .bar.new { background:var(--new); }
+  .meter { display:inline-block; height:10px; background:var(--new); border-radius:3px; vertical-align:middle; }
 </style>
 </head>
 <body>
 <main>
   <h1>How we build: old vs new</h1>
-  <p class="sub">Reference page for this project. Open it in a browser; agents do not load it by default. Status as of the <code>lean-process</code> branch.</p>
+  <p class="sub">Reference page for this project. Open it in a browser; agents do not load it by default. Updated after P3 step C on the <code>lean-process</code> branch.</p>
 
   <div class="legend">
     <span class="chip same">Same as old</span>
@@ -70,6 +82,52 @@
     <span class="chip risk">⚠ Risky: not yet proven</span>
   </div>
   <p class="sub"><b>Built</b> = exists and tested. <b>Planned</b> = agreed in the design, not built yet.</p>
+
+  <h2>At a glance: one task, start to finish</h2>
+  <p class="sub">Solid border = built or in force. Dashed = planned. Red = risky until proven. The colored tag shows who acts.</p>
+  <div class="legend">
+    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse spark</span><span class="lane l-reviewer">Reviewer: deepseek</span><span class="lane l-script">Script</span>
+  </div>
+  <div class="flow">
+    <div class="st"><span class="lane l-you">You</span><b>1. Idea</b><small>what hurts, what you want</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>2. Grill + research</b><small>questions, outside ideas</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>3. Wireframe + plan</b><small>slices with user stories</small></div>
+    <div class="st"><span class="lane l-script">Rule</span><b>4. Size it</b><small>one-sentence test + risk triggers</small></div>
+    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>5. Brief</b><small>"what changes for you": you approve it</small></div>
+    <div class="st planned risk"><span class="lane l-reviewer">Reviewer / Claude</span><b>6. Review</b><small>level 0, 1 or 2, fresh session</small></div>
+    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>7. Build</b><small>/exec in its own worktree, test first</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>8. Check</b><small>verify footer: counts, time, what did not run</small></div>
+    <div class="st planned risk"><span class="lane l-builder">Builder</span><b>9. Report</b><small>4 core lines + extras, scorecard line</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>10. You test</b><small>checklist written up front</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>11. Ship</b><small>commit; push / deploy only on your yes</small></div>
+  </div>
+
+  <h2>At a glance: one session</h2>
+  <div class="flow">
+    <div class="st"><span class="lane l-you">You</span><b>/start</b><small>built, tested</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>start.sh</b><small>branch, active task, Next, warnings</small></div>
+    <div class="st"><span class="lane l-claude">Agent</span><b>Reads task file</b><small>AGENTS.md already loaded</small></div>
+    <div class="st"><span class="lane l-claude">Agent</span><b>Works one job</b><small>decisions go in the task file as one line</small></div>
+    <div class="st planned"><span class="lane l-you">You</span><b>/wrap</b><small>planned: ticks list, updates Next</small></div>
+    <div class="st"><span class="lane l-script">Git</span><b>Checkpoint commit</b><small>verify runs automatically</small></div>
+  </div>
+
+  <h2>At a glance: what a session start costs</h2>
+  <p class="sub">Approximate tokens, from file sizes divided by 4. Fixed costs (tool and skill lists, memory index) are not included in either bar.</p>
+  <div class="bar" style="width:100%">Old: START_HERE + 8 docs + walk test: about 11,400</div>
+  <div class="bar new" style="width:24%;min-width:230px">New: AGENTS.md ~1,200 + task file ~1,000</div>
+
+  <h2>At a glance: where the rules live now</h2>
+  <table>
+    <tr><th>File</th><th>Lines</th><th>Cap</th><th>Holds</th><th>Status</th></tr>
+    <tr><td><code>AGENTS.md</code></td><td>68</td><td>80</td><td>Map, ask-first list, engineering posture, honesty, session, testing and debugging, worktrees</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/process.md</code></td><td>65</td><td>70</td><td>The flow, sizing, review levels, reports, loops</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/verify.md</code></td><td>52</td><td>70</td><td>What the checker covers and doesn't, limits, testing budget</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/executor.md</code></td><td>44</td><td>70</td><td>Everything a cheap builder needs on a cold start</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/models.md</code></td><td>27</td><td>70</td><td>Which model does what, never the free tier, switch on evidence</td><td><span class="tag built">built</span></td></tr>
+    <tr><td>area files: <code>app/</code>, <code>pipeline/</code>, <code>tools/Control_Centre/</code></td><td>22 / 11 / 9</td><td>-</td><td>Gotchas and verify commands per area</td><td><span class="tag built">built</span></td></tr>
+  </table>
+  <p class="sub"><b>Safety check:</b> from the old docs, 242 rule lines were sorted (160 keep, 20 merge, 26 replaced, 36 drop), and 296 incident lines gave 33 lessons. <code>check-rules.sh</code> confirms every kept rule is claimed by a new file: 179 to cover, 155 claimed, 24 exempt, OK. Limits agreed: about 10 new tests per task, verify in about 60 s, 2 failed attempts then stop.</p>
 
   <h2>1. Side by side, step by step</h2>
   <div class="grid" id="compare" aria-label="Old versus new process comparison"></div>
@@ -114,13 +172,13 @@ docs/
   plans/ (81 files, 13 plans)
   __PLANS/ (status pages)
 archive/</pre></div>
-    <div class="panel"><b>New (proposed, not built)</b><pre>AGENTS.md   short map + hard rules
+    <div class="panel"><b>New (partly built)</b><pre>AGENTS.md   short map + hard rules       [built]
 CONTEXT.md  glossary only
 docs/
-  rules/     process, verify, executor, models
+  rules/     process, verify, executor, models   [built]
   decisions/ big choices and why
   reference/ architecture, audio research
-  work/      active task files, scorecard, missed.md
+  work/      active task files [started], scorecard, missed.md [planned]
 (finished work: deleted; git is the record)</pre></div>
   </div>
 
@@ -134,11 +192,14 @@ docs/
     <tr><td><code>npm run test:e2e</code></td><td>Runs the browser tests (Playwright).</td><td>You type</td><td><span class="tag built">exists</span></td></tr>
     <tr><td>Save-time check</td><td>Blocks saving a change (git commit) if the checker fails. Works for any tool.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
     <tr><td>"Done" check</td><td>Stops Claude from saying "done" while the app code fails the checker.</td><td>Automatic (Claude only)</td><td><span class="tag built">built</span></td></tr>
-    <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
+    <tr><td><code>/start</code></td><td>Welcomes a fresh agent: runs the script, loads the task file, reports in 2 lines. Stops on any warning.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/start.sh</code></td><td>Prints branch, active task, its <code>Next:</code>, stray changes, stale-file and cold-start warnings.</td><td>Automatic (via /start)</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/verify-pipeline.sh</code></td><td>Runs the pipeline's tests, only when pipeline files are staged.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag planned">planned P3 F</span></td></tr>
     <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
-    <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part (files, size, risk, checks with expected results). Checks form, not content.</td><td>Automatic</td><td><span class="tag planned">planned P3</span></td></tr>
-    <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: environment files, install, port, safety hooks.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
-    <tr><td><code>scripts/check-rules.sh</code></td><td>Confirms every rule marked "keep" in the ledger still exists in the new files.</td><td>You type</td><td><span class="tag planned">planned P2</span></td></tr>
+    <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part (files, size, risk, checks with expected results). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: environment files, install, port, safety hooks.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/check-rules.sh</code></td><td>Confirms every rule marked "keep" in the ledger still exists in the new files.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/restore-old-docs.sh</code></td><td>Puts the old docs back where they were, using the map in <code>docs/_old/MAP.md</code>.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
     <tr><td><code>git grep -i "word" pre-lean -- docs AGENTS.md</code></td><td>Searches the old rules for a word, to find where something used to be said.</td><td>You type, or ask Claude</td><td><span class="tag built">works now</span></td></tr>
     <tr><td><code>/grill-with-docs</code>, <code>/wireframe</code>, <code>/code-review</code></td><td>Your kept skills: the questioning session, layout sketches, and a fresh-eyes code review.</td><td>You type</td><td><span class="tag built">exists</span></td></tr>
@@ -150,7 +211,7 @@ docs/
     <b>Use a script before reasoning</b> where one can answer (search, count, check).
     <b>Say plainly what was not checked.</b>
     <b>Change only what the task needs.</b>
-    <b>You say yes</b> before push, deploy or delete.
+    <b>You say yes</b> before push, deploy or delete. <b>Limits:</b> about 10 new tests per task, verify in about 60 s, two failed attempts then stop, rule files stay under their line caps.
   </div>
 
   <h2>8. If you feel something is missing</h2>
@@ -163,20 +224,30 @@ docs/
   <h2>9. Build progress</h2>
   <table>
     <tr><th>Phase</th><th>What</th><th>Status</th></tr>
-    <tr><td>P0</td><td>Checker with footer, coverage report, save-time and "done" gates</td><td><span class="tag built">built</span> commit 7806ccf</td></tr>
-    <tr><td>P1</td><td>This page</td><td><span class="tag built">built</span> (review pending)</td></tr>
-    <tr><td>P2</td><td>Rule ledger (226 rule lines), spot-checked</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P3</td><td>New short rules, <code>/next</code>, <code>/wrap</code>, brief check, worktree script, remove Superpowers</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P3b</td><td>Move old docs into <code>docs/_old/</code> with a map and a restore script (a move, nothing deleted)</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>trial</td><td>Run 2–3 real tasks on the new process</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P4</td><td>Delete old docs (only after a clean trial)</td><td><span class="tag planned">planned</span></td></tr>
-    <tr><td>P5</td><td>Layout test experiment</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P0</td><td>Checker with footer, coverage report, save-time and "done" gates</td><td><span class="tag built">built</span> 7806ccf</td></tr>
+    <tr><td>P1</td><td>This page</td><td><span class="tag built">built</span> kept up to date</td></tr>
+    <tr><td>P2</td><td>Rule ledger and incident table</td><td><span class="tag built">built</span> d3cef64</td></tr>
+    <tr><td>P3 A</td><td>The 4 rule files</td><td><span class="tag built">built</span> 3d8cbf1</td></tr>
+    <tr><td>P3 B</td><td>New <code>AGENTS.md</code>, area files, <code>CLAUDE.md</code> pointer</td><td><span class="tag built">built</span> 20464bf</td></tr>
+    <tr><td>P3 /start</td><td>Session-start command and script</td><td><span class="tag built">built</span> 386847e, fcd63f1</td></tr>
+    <tr><td>P3 C</td><td>Scripts: rule check, pipeline check, worktree setup, brief check; footer time and totals</td><td><span class="tag built">built</span> f575300</td></tr>
+    <tr><td>P3 D</td><td>Task template, scorecard, missed-log</td><td><span class="tag planned">next</span></td></tr>
+    <tr><td>P3 E</td><td>Opencode: builder, reviewer, <code>/exec</code>, <code>/review</code>, MCP off, saved in git</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3 F, G</td><td><code>/next</code>, <code>/wrap</code>; skill pruning</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3 H</td><td>Full dry run on a harmless task</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3 I</td><td>Remove Superpowers (you run the uninstall)</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3b</td><td>Move old docs to <code>docs/_old/</code> with a map and restore script</td><td><span class="tag planned">planned, needs your yes</span></td></tr>
+    <tr><td>trial</td><td>2–3 real tasks; scorecard decides what stays</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P4, P5</td><td>Delete old docs after a clean trial; Playwright layout experiment</td><td><span class="tag planned">planned</span></td></tr>
   </table>
 </main>
 
 <script>
 // side: old|new cells use classes same|changed|new|gone, plus risk and status flags
 const ROWS = [
+ ["Rules",
+  {c:"changed", t:"About 10 docs, 226 rule lines", d:"Rules spread over AGENTS.md, workflow files, templates, decisions, plus Superpowers.", w:"Everyone"},
+  {c:"changed", t:"AGENTS.md + 4 rule files", d:"68-line map plus process, verify, executor, models (each 70 lines or fewer). A script checks every kept rule is still covered.", w:"Script", s:"built"}],
  ["Think",
   {c:"same", t:"Idea + grilling", d:"You describe it; Claude asks questions until nothing is left.", w:"You + Claude"},
   {c:"same", t:"Idea + grilling", d:"Unchanged. This is where Claude's tokens go.", w:"You + Claude"}],
@@ -215,7 +286,7 @@ const ROWS = [
   {c:"same", t:"Ask before push / deploy", d:"Unchanged.", w:"You"}],
  ["Next session",
   {c:"changed", t:"Handover prompts", d:"Several prompts to wrap up; boot reads about 10 documents.", w:"You + Claude"},
-  {c:"changed", r:1, t:"Task file is the state", d:"Boot reads <code>AGENTS.md</code> and the task file only.", w:"Script + rule", s:"planned"}]
+  {c:"changed", r:1, t:"/start + task file", d:"<code>/start</code> runs a script and loads the task file only: about 2,200 tokens vs about 11,400. Needs a real fresh-session trial.", w:"Script + agent", s:"built"}]
 ];
 const el = document.getElementById("compare");
 const add = (cls, html, attrs="") => { const d=document.createElement("div"); d.className=cls; d.innerHTML=html; if(attrs) d.setAttribute(...attrs.split("=")); el.appendChild(d); return d; };
