@@ -10,6 +10,8 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 | Candidates for bake-off | `qwen3.8-max`, `kimi-k3`, `deepseek-v4-pro` | See below |
 
 ## Rules
+- **Muse trains on prompts:** the default builder is cheap because its prompts and completions may train Meta
+  models (owner accepted this 2026-10-02). Never send secrets, `.env` contents or credentials to any model.
 - **Never use free-tier models** (ids ending `-free`), whichever provider. Paid `opencode-go/` ids only.
 - **Start cheapest. Switch on evidence only:** verify fails twice, or a reviewer finds a correctness
   bug. Log each switch as one line in `docs/work/scorecard.md` (date, task, from → to, why).
