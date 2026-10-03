@@ -57,6 +57,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 6. Claude-side budget: two failed builder runs for non-provider reasons -> stop and report, no more plumbing debugging.
 7. One real small task in the existing `int-test` worktree (reuse, then remove with owner OK).
 8. Decision gate: record pass/fail + reason here. Two non-provider failures -> drop opencode, use a Haiku subagent.
+8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.
 
 ## Done (committed unless noted)

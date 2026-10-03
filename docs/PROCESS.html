@@ -102,6 +102,44 @@
     <div class="st"><span class="lane l-you">You</span><b>11. Ship</b><small>commit; push / deploy only on your yes</small></div>
   </div>
 
+  <h2>At a glance: Claude hands a task to opencode (simplified plan, 2026-10-03)</h2>
+  <p class="sub">Claude runs one command, <code>scripts/delegate.sh &lt;task&gt;</code>. You never copy or paste between models: results come back through the task file and a short printed summary. You decide at the two <b>You</b> steps and at any model switch. All dashed steps are planned, not built yet.</p>
+  <div class="legend">
+    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse (opencode)</span><span class="lane l-script">Script</span>
+  </div>
+  <div class="flow">
+    <div class="st"><span class="lane l-claude">Claude</span><b>1. Write the task file</b><small>what changes, allowed files, checks</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>2. Approve the brief</b><small>the "What changes for you" block</small></div>
+    <div class="st planned"><span class="lane l-script">Script</span><b>3. Pre-flight</b><small>brief complete, right branch, files unchanged since written, never master, never a free model</small></div>
+    <div class="st planned"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree, normal shell, short banned list (no push, internet, deleting, secrets); test first; writes <code>## Report</code></small></div>
+    <div class="st planned"><span class="lane l-script">Script</span><b>5. Watchdog</b><small>kills a dead run: no output 60 s, stalled 180 s. Log kept (last 200 lines)</small></div>
+    <div class="st planned"><span class="lane l-script">Script</span><b>6. Facts check</b><small>only allowed files changed? checks pass? every promised file exists?</small></div>
+    <div class="st planned"><span class="lane l-script">Script</span><b>7. Checkpoint commit</b><small>one commit, made by the script, not the model</small></div>
+    <div class="st planned"><span class="lane l-script">Script</span><b>8. ~10-line summary</b><small>pass/fail, plain reason if failed, diff stat, log path</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>9. Review the diff</b><small>reads the summary, the Report and the diff; raw log only on failure (<code>tail -40</code>)</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>10. Test + ship</b><small>your checklist; push / deploy only on your yes</small></div>
+  </div>
+  <div class="cols">
+    <div class="panel risk">
+      <b>If Muse is down (step 4 or 5)</b>
+      <ol class="steps">
+        <li>Script retries Muse <b>once</b>.</li>
+        <li>Still down: script <b>stops</b> and prints "Muse down, recommend deepseek-v4.1-flash, switch?".</li>
+        <li>Claude asks <b>you</b>. On yes it re-runs with the other model; the report names which model built it.</li>
+        <li>Never a <code>-free</code> model, never a silent switch.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <b>Guard rails on Claude's side</b>
+      <ol class="steps">
+        <li>Two failed builder runs that are <b>not</b> a provider outage: stop and report. No more plumbing debugging.</li>
+        <li>Decision gate after one real task: if it fails twice for non-provider reasons, drop opencode and use a Claude Haiku subagent.</li>
+        <li>The only record that matters is the task file; the raw log is a fallback.</li>
+      </ol>
+    </div>
+  </div>
+  <p class="sub"><b>Why the checks sit after the build, not before:</b> a script looking at what actually changed cannot be fooled by a model's own summary, and it is cheap. Long lists of "you may not do X" rules are fragile and cost more to maintain. Removed from the old design: the opencode reviewer, the roughly 40-rule permission list, the permission test script, the separate health-check script.</p>
+
   <h2>At a glance: one session</h2>
   <div class="flow">
     <div class="st"><span class="lane l-you">You</span><b>/start</b><small>built, tested</small></div>
@@ -197,6 +235,8 @@ docs/
     <tr><td><code>scripts/verify-pipeline.sh</code></td><td>Runs the pipeline's tests, only when pipeline files are staged.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag planned">planned P3 F</span></td></tr>
     <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
+    <tr><td><code>scripts/delegate.sh &lt;task&gt;</code></td><td>The one command Claude runs to hand a task to the builder: pre-flight, build, watchdog, facts check, commit, short summary. Stops and asks before switching models.</td><td>Claude runs it</td><td><span class="tag planned">planned (next)</span></td></tr>
+    <tr><td><code>scripts/verify-task.sh</code></td><td>The builder's "run the checks" step. Now also fails if a promised file is missing.</td><td>Automatic</td><td><span class="tag built">built</span> 73809b4</td></tr>
     <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part (files, size, risk, checks with expected results). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: environment files, install, port, safety hooks.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
     <tr><td><code>scripts/check-rules.sh</code></td><td>Confirms every rule marked "keep" in the ledger still exists in the new files.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
@@ -231,8 +271,9 @@ docs/
     <tr><td>P3 B</td><td>New <code>AGENTS.md</code>, area files, <code>CLAUDE.md</code> pointer</td><td><span class="tag built">built</span> 20464bf</td></tr>
     <tr><td>P3 /start</td><td>Session-start command and script</td><td><span class="tag built">built</span> 386847e, fcd63f1</td></tr>
     <tr><td>P3 C</td><td>Scripts: rule check, pipeline check, worktree setup, brief check; footer time and totals</td><td><span class="tag built">built</span> f575300</td></tr>
-    <tr><td>P3 D</td><td>Task template, scorecard, missed-log</td><td><span class="tag planned">next</span></td></tr>
-    <tr><td>P3 E</td><td>Opencode: builder, reviewer, run-builder.sh, run-reviewer.sh, MCP off, saved in git</td><td><span class="tag planned">planned</span></td></tr>
+    <tr><td>P3 D</td><td>Task template, scorecard, missed-log</td><td><span class="tag built">built</span> 5850d80</td></tr>
+    <tr><td>P3 E</td><td>Opencode: builder, reviewer, run-builder.sh, run-reviewer.sh, MCP off, saved in git</td><td><span class="tag built">built</span> 3c5733d, ba9a0b9 (flaky on first use, being simplified)</td></tr>
+    <tr><td>P3 E2</td><td>Simplified hand-off: <code>delegate.sh</code>, short banned list, capped logs, Claude reviews, ask before model switch. One real task, then a keep-or-drop gate.</td><td><span class="tag planned">next</span></td></tr>
     <tr><td>P3 F, G</td><td><code>/next</code>, <code>/wrap</code>; skill pruning</td><td><span class="tag planned">planned</span></td></tr>
     <tr><td>P3 H</td><td>Full dry run on a harmless task</td><td><span class="tag planned">planned</span></td></tr>
     <tr><td>P3 I</td><td>Remove Superpowers (you run the uninstall)</td><td><span class="tag planned">planned</span></td></tr>
