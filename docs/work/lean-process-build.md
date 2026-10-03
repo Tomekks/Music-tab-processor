@@ -23,15 +23,17 @@ Read only this file, then the rules files named under Done. Skip `START_HERE.md`
 - P3 step C `d562c9c`: `scripts/{check-rules,verify-pipeline,new-worktree,check-brief}.sh`, verify footer
   with count + time, rule-id claims moved to `docs/rules/covers.txt`, `shellcheck` installed (all scripts clean).
 
+- P3 step D `5850d80`: `docs/work/{TEMPLATE,scorecard,missed}.md`; new-worktree creates the task file.
+- P3 step E (this checkpoint): `.opencode/agents/{builder,reviewer}.md` (default deny, tested), `opencode.json`,
+  `scripts/{run-builder,run-reviewer,check-scope,finish,verify-task}.sh`. Tested end to end in a scratch repo
+  with deepseek (builder obeyed, one commit, scope OK). **Owner stop 3 is the dry run on a real task.**
+  Lessons: `opencode run` ignores an agent's `model` (always `-m`); a project `model` key hangs every run;
+  custom tools and `/exec` don't work in 2.0.20; muse stopped responding mid-session (provider side).
+
 ## Next (P3, in order; each ends with an owner stop)
-- **D** `docs/work/TEMPLATE.md`, `scorecard.md`, `missed.md`. Template headings must match `check-brief.sh` and `start.sh`
-  (Status/Branch/Next/Written against/Modify only/Do NOT touch/Size/Risk/Acceptance checks/Questions); then derive
-  check-brief's heading list from the template. `new-worktree.sh` should create the task file from it.
-  Also: run check-rules in pre-commit when rule files are staged + a small CI job; `start.sh` hooks warning done;
-  `scripts/check-brief.sh --drift` and a `finish` helper for the builder (with F).
-- **E** Opencode: `builder` (update `.opencode/agents/delegate-builder.md`: allow verify/git add/commit, deny push/rm/network,
-  stop-and-ask not decide), read-only `reviewer`, `/exec` and `/review` commands, project `opencode.json` with MCP off,
-  un-ignore `.opencode/agents` + `commands`. Claim R107–R109. Dry run → **stop 3**.
+- **Loose ends (small):** derive check-brief's heading list from TEMPLATE.md; run check-rules in pre-commit when rule files
+  are staged + a CI job; delete the unused `.opencode/agents/delegate-builder.md` (owner OK needed); scorecard row from
+  `opencode stats` in run-builder.sh.
 - **F** `/next`, `/wrap` skills calling scripts. **G** skill pruning via `skillOverrides` (off: design, brand, slides,
   ui-styling, banner-design, design-system, grill-me, find-skills; keep grilling, domain-modeling, grill-with-docs,
   wireframe, code-review, ui-ux-pro-max). **H** full dry run of the flow on a harmless task.

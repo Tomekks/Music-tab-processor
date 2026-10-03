@@ -30,7 +30,8 @@ case study prmpting.md
 
 # OpenCode CLI's local tool config/agents (self-contained, not part of this repo's
 # app or pipeline) -- local-only.
-/.opencode/
+/.opencode/*
+!/.opencode/agents/
 
 # Personal skill definitions for various AI tools -- local-only, not this project's code.
 /Skills/

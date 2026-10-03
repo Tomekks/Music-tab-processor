@@ -25,6 +25,7 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<n
 - [ ] <<step, in order, one line each; tick as you go>>
 
 ## Acceptance checks
+(The builder can only run `bash scripts/verify-task.sh` and read-only git. Put anything else in the owner checklist.)
 - Run: `<<command>>` / Expected: <<exact output or footer line>>
 
 ## Owner checklist

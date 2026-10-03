@@ -21,7 +21,13 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 - Which model suits which task is unknown until the scorecard has about 10 rows. Don't guess before then.
 
 ## Running opencode
-- Set `OPENCODE_DISABLE_CLAUDE_CODE=1` (so it doesn't load `~/.claude` skills and notes); the project
-  `opencode.json` switches off the GitHub and Figma connections.
+- The wrapper scripts set `OPENCODE_DISABLE_CLAUDE_CODE=1` (no `~/.claude` notes) and the project
+  `opencode.json` switches off the GitHub and Figma connections and sets a paid default model.
 - `opencode stats --models --days 0` shows tokens and cost per model; read it before and after a task.
-- The builder works in its own worktree, started with `/exec <task file>`; the reviewer with `/review`.
+- **Reviews:** when the owner asks for a review, Claude gives only the one-line command
+  `scripts/run-reviewer.sh <task file> "<already decided / answered>"` (fill the note from the conversation, so
+  answered questions are not raised again). Never describe the risks you expect it to find: that anchors the
+  review. The rules live in `.opencode/agents/reviewer.md` so they cannot drift between prompts.
+- Start the builder with `scripts/run-builder.sh <task file>` (in its own worktree) and the reviewer with
+  `scripts/run-reviewer.sh <task file>`. The scripts pass `-m` explicitly: `opencode run` ignores an agent's
+  `model` setting and would use the default, which can be a free-tier model.

@@ -29,8 +29,8 @@ at a real seam.
    say "sound" in one line when it is, never invent findings, and don't restate or redesign. Verified
    claims get one line ("all quoted excerpts match"); list only what couldn't be confirmed. Verify a
    review's claims against the code before acting on them; a detailed critique can still be false.
-4. **Build** with `/exec` in its own worktree for any Bounded-or-larger feature; trivial fixes stay on
-   the current branch (`docs/rules/executor.md`).
+4. **Build** with `scripts/run-builder.sh <task file>` in its own worktree for any Bounded-or-larger
+   feature; trivial fixes stay on the current branch (`docs/rules/executor.md`).
 5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`).
 6. **Report.** Every report: commit, `git diff --stat`, verify footer, "decisions the spec didn't
    settle" (or NONE). Extras by kind: feature = one line per acceptance check + owner checklist; bug fix =
