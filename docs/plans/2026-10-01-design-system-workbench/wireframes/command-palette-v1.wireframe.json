@@ -1,0 +1,464 @@
+{
+  "name": "Design System Workbench - Command palette v1",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Dimmed workbench behind (the page you were on stays as it was; unsaved changes unaffected)",
+        "direction": "vertical",
+        "grow": true,
+        "align": "center",
+        "padding": [
+          96,
+          0
+        ],
+        "children": [
+          {
+            "name": "Command palette (Cmd+K / click the sidebar search)",
+            "width": 640,
+            "direction": "vertical",
+            "gap": 0,
+            "children": [
+              {
+                "name": "Search row",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "height": 56,
+                "padding": [
+                  0,
+                  16
+                ],
+                "children": [
+                  {
+                    "name": "search icon (lucide search)",
+                    "type": "icon",
+                    "width": 20,
+                    "height": 20
+                  },
+                  {
+                    "name": "button",
+                    "type": "input",
+                    "height": 40,
+                    "grow": true
+                  },
+                  {
+                    "name": "esc",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Results (scroll inside the palette; grouped by type, all matches shown)",
+                "direction": "vertical",
+                "gap": 12,
+                "padding": 12,
+                "children": [
+                  {
+                    "name": "Group: Components",
+                    "direction": "vertical",
+                    "gap": 0,
+                    "children": [
+                      {
+                        "name": "Components",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "Result: Button",
+                        "type": "card",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Button (selected)",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Component",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: Icon Button",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Icon Button",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Component",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Group: Variants",
+                    "direction": "vertical",
+                    "gap": 0,
+                    "children": [
+                      {
+                        "name": "Variants",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "Result: Button / Primary",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Button / Primary",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Variant",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: Button / Secondary",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Button / Secondary",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Variant",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: Icon Button / Primary",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Icon Button / Primary",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Variant",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: Icon Button / Secondary",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Icon Button / Secondary",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Variant",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: Icon Button / Ghost",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "Icon Button / Ghost",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Variant",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Group: Tokens",
+                    "direction": "vertical",
+                    "gap": 0,
+                    "children": [
+                      {
+                        "name": "Tokens",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "Result: component.button.primaryBackground",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "component.button.primaryBackground",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Token",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: component.button.primaryText",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "component.button.primaryText",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Token",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: component.button.secondaryBackground",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "component.button.secondaryBackground",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Token",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: component.button.secondaryText",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "component.button.secondaryText",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Token",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Result: component.button.secondaryBorder",
+                        "direction": "horizontal",
+                        "justify": "space-between",
+                        "align": "center",
+                        "height": 40,
+                        "padding": [
+                          0,
+                          12
+                        ],
+                        "children": [
+                          {
+                            "name": "component.button.secondaryBorder",
+                            "type": "text",
+                            "height": 24
+                          },
+                          {
+                            "name": "Token",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "... all other matches continue in the scrolling list",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Group: Terms (Glossary)",
+                    "direction": "vertical",
+                    "gap": 0,
+                    "children": [
+                      {
+                        "name": "Terms (Glossary)",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      },
+                      {
+                        "name": "no match for 'button'",
+                        "type": "text",
+                        "height": 16,
+                        "variant": "caption"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Divider 2",
+                "type": "divider"
+              },
+              {
+                "name": "Footer hints",
+                "direction": "horizontal",
+                "gap": 24,
+                "height": 40,
+                "align": "center",
+                "padding": [
+                  0,
+                  16
+                ],
+                "children": [
+                  {
+                    "name": "up / down  move",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "enter  open",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "esc  close",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
