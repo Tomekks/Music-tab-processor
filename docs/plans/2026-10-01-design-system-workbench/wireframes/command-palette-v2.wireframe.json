@@ -20,13 +20,13 @@
         ],
         "children": [
           {
-            "name": "State 1: opened, nothing typed",
+            "name": "State 1: opened, nothing typed (empty if nothing is unsaved)",
             "width": 600,
             "direction": "vertical",
             "gap": 8,
             "children": [
               {
-                "name": "State 1: opened, nothing typed",
+                "name": "State 1: opened, nothing typed (empty if nothing is unsaved)",
                 "type": "text",
                 "height": 16,
                 "variant": "caption"
@@ -239,136 +239,6 @@
                                   },
                                   {
                                     "name": "edited",
-                                    "type": "text",
-                                    "height": 16,
-                                    "variant": "caption"
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "name": "Group: Recent",
-                        "direction": "vertical",
-                        "gap": 0,
-                        "children": [
-                          {
-                            "name": "Recent",
-                            "type": "text",
-                            "height": 16,
-                            "variant": "caption"
-                          },
-                          {
-                            "name": "Result: Button / Primary",
-                            "direction": "horizontal",
-                            "gap": 12,
-                            "align": "center",
-                            "padding": [
-                              8,
-                              12
-                            ],
-                            "children": [
-                              {
-                                "name": "Label block",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "grow": true,
-                                "children": [
-                                  {
-                                    "name": "Button / Primary",
-                                    "type": "text",
-                                    "height": 24
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "Meta",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "align": "flex-end",
-                                "children": [
-                                  {
-                                    "name": "Variant",
-                                    "type": "text",
-                                    "height": 16,
-                                    "variant": "caption"
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "name": "Result: Foundations",
-                            "direction": "horizontal",
-                            "gap": 12,
-                            "align": "center",
-                            "padding": [
-                              8,
-                              12
-                            ],
-                            "children": [
-                              {
-                                "name": "Label block",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "grow": true,
-                                "children": [
-                                  {
-                                    "name": "Foundations",
-                                    "type": "text",
-                                    "height": 24
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "Meta",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "align": "flex-end",
-                                "children": [
-                                  {
-                                    "name": "Page",
-                                    "type": "text",
-                                    "height": 16,
-                                    "variant": "caption"
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "name": "Result: Slider",
-                            "direction": "horizontal",
-                            "gap": 12,
-                            "align": "center",
-                            "padding": [
-                              8,
-                              12
-                            ],
-                            "children": [
-                              {
-                                "name": "Label block",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "grow": true,
-                                "children": [
-                                  {
-                                    "name": "Slider",
-                                    "type": "text",
-                                    "height": 24
-                                  }
-                                ]
-                              },
-                              {
-                                "name": "Meta",
-                                "direction": "vertical",
-                                "gap": 2,
-                                "align": "flex-end",
-                                "children": [
-                                  {
-                                    "name": "Component",
                                     "type": "text",
                                     "height": 16,
                                     "variant": "caption"

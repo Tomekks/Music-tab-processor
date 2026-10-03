@@ -29,12 +29,11 @@ def palette(title, query, groups, hints=True):
             {"name": "Divider 2", "type": "divider"},
             {"name": "Footer hints", "direction": "horizontal", "gap": 24, "height": 40, "align": "center", "padding": [0, 16],
              "children": [t("up / down  move", "caption", 16), t("enter  open", "caption", 16), t("esc  close", "caption", 16)]}]}]}
-empty = palette("State 1: opened, nothing typed", "Search components, variants, tokens, terms...", [
+empty = palette("State 1: opened, nothing typed (empty if nothing is unsaved)", "Search components, variants, tokens, terms...", [
     group("Unsaved changes (3) - jump back to what you were editing", [
         row("semantic.color.accent", "Token", True, "#4A90D9", "edited", "was #AE97F7  now #4A90D9"),
         row("semantic.state.hoverOpacity", "Token", False, None, "edited", "was 8%  now 10%"),
-        row("component.button.paddingX", "Token", False, None, "edited", "was 16px  now 20px")]),
-    group("Recent", [row("Button / Primary", "Variant"), row("Foundations", "Page"), row("Slider", "Component")])])
+        row("component.button.paddingX", "Token", False, None, "edited", "was 16px  now 20px")])])
 typed = palette("State 2: typing \"dividers\" (matches a description, not a name)", "dividers", [
     group("Tokens", [
         row("semantic.color.border", "Token", True, "#E6DFD8", "From Main", "Default border color for inputs, cards, and [dividers]")]),
