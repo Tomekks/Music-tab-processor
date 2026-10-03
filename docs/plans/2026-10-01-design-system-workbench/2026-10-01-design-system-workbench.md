@@ -49,6 +49,10 @@ Before each slice's spec: a short research pass on raw primary sources (no summa
 
 **Review gate:** after slices 1 and 2, run `/grill-with-docs` on that log to decide whether and how this becomes part of the workflow (`docs/rules/process.md`, which stays untouched until then and until 3 real tasks have run after the lean-process gate). Goal: higher quality, fewer bugs, well engineered but not overengineered.
 
+### Prior-art log
+
+- **Slice 1 (2026-10-03):** searched Storybook pseudo-states addon (raw README) and Framer property controls. Found: the forced-state technique (class-copy of `:hover`/`:active` rules), adapted not installed. Nothing found for a standalone token editor previewing real React components. Spike PASSED: overrides in an iframe, forced Hover/Pressed, regenerated CSS reaches the page. Saved: guessing at the preview mechanism, plus two bugs found before any build (rule order, transition lag). Findings that change slice 1: primary Button hover/pressed mix from `--color-accent` not the component token; `buildActiveBrand()` only rebuilds the active brand. Details: `research/workbench-slice1-spike/NOTES.md`.
+
 ## Deferred (not in this plan's first pass)
 
 Brands as a top-level section (the switcher stays), per-state color tables, composed-screen previews, per-component changelog, resizable panels, hover definitions on terms, contrast badges, quick-control knobs.
