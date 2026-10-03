@@ -1,6 +1,6 @@
 # Design system workbench (editor IA redesign)
 
-**Status (2026-10-01):** Information architecture and structure wireframe agreed. No code written, no spec yet. Next: baseline screenshots, the remaining wireframes, then specs per slice (see "Next session").
+**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: redraw the Foundations wireframe from real tokens (fix the vertical-divider render), then a spec for slice 1.
 
 **Context:** `CONTEXT.md` (glossary: this session added Token, Foundation, Component, Variant, State, Override, Mode) · `docs/decisions/0010-brand-management-architecture.md` · current editor: `app/app/design-system/editor/` · wireframes: `wireframes/workbench-structure-v10.wireframe.html` (final structure; v1 is the starting point).
 
@@ -22,6 +22,26 @@ Redesign the `/design-system` editor as a daily **workbench** for one user: pick
 - **Rollout:** replace `/design-system` in place, after baseline screenshots and a Nielsen heuristics pass on today's editor.
 - **Variants:** styles of one Component (primary, secondary, ghost); "iterations" means Variants.
 - **Reset features:** reset a single Token to its default, and a "Reset to default" button for all of a Component's Tokens (placed in the inspector header). Both act on the staged edit, so Discard undoes them. What "default" means is still open (question 9).
+
+## Decisions (2026-10-03 grill)
+
+Framework and architecture: `docs/decisions/0011-design-system-workbench-framework.md`.
+
+- **Build:** a new standalone SvelteKit app on a new route/folder beside the old editor; the old editor stays until the owner decides the new one is better. Reuses the `.mjs` package layer.
+- **Wireframes:** show only real components (Button, Color Field, Icon Button, Segmented Control, Slider) and Foundations generated from `tokens.json`. The earlier Foundations v1 draft invented content and renders broken (vertical dividers need the patched template, see Notes); redraw it from the real tokens.
+- **Controls:** Framer-style (docs read 2026-10-03): one control spec per token (type, min, max, step, unit, hidden-when, description). Number input primary, slider secondary and only for bounded values; native color picker plus hex field (no token uses alpha); weight as a dropdown; the Override toggle is the one boolean. Space and radius stay single inputs.
+- **Descriptions:** stored in each token's `$description` in the Main brand's `tokens.json` (16 of 86 have one today), shared by child brands, editable in the inspector. A separate generated, read-only "Used by" list (like `token-usage.test.mjs`).
+- **Typography:** show the current font with its editable attributes (family, weight, size, description). A full font picker and wiring saved fonts into the real app come later.
+- **Kept from the old editor:** staged edits with Save/Discard, brand create/duplicate/delete, child inheritance with Override and Revert, seed-color brand creation, single-token reset. Not in v1: reset-all, set-as-default, batch-write, the exception-vs-brand scope. The "Not deployed" status: decide later. A contrast checker was never in the old UI; deferred.
+- **Experiments** (global components in progress, approved for all brands later): after the MVP.
+
+## Slices (user story each)
+
+1. Change a color and see it: pick a color on a real component, see it in the preview, save, see it in localhost. (Shell, preview route, color picker, staged Save/Discard, `default` brand only; save path built test-first.)
+2. Understand and tune any token: read what it is for and where it is used, edit with the right control, in light or dark. (Foundations page, all control types, descriptions, Used by, Mode toggle.)
+3. Typography: see and change the current fonts and their attributes.
+4. Brands: create from seed colors, override dark values, undo any override (ADR for the dark-override data model).
+5. Find things: Cmd+K search; the Glossary as its own small task.
 
 ## Deferred (not in this plan's first pass)
 
