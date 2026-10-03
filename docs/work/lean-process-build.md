@@ -2,7 +2,7 @@
 
 Status: active
 Branch: master
-Next: cleanup finished 2026-10-03 (worktree removed, merged branches deleted, main folder on master). Nothing is open for the lean process itself. Next real work: the trial, 3 real tasks via delegate.sh (one Quick, one Full with a Delete list); wait for real work, do not invent tasks. Open PRs #54-#58 are dependabot, not ours (#54 is a real break: close it or bump react with react-dom). Local master has 2 unpushed docs commits (this file); they ride along with the next PR (master needs a PR).
+Next: nothing is open for the lean process. Next real work is the trial: 3 real tasks via delegate.sh (one Quick, one Full with a Delete list); wait for real work, do not invent tasks. Local master is 4 commits ahead of origin (all docs or command edits: task file x3, `.claude/commands` x1); master is protected, so they go out in a PR together with the next real change (owner asked for no separate PR). Open PRs #54-#58 are dependabot, not ours (#54 is a real break: react-dom 19.3.0 needs a newer react than the pinned 19.2.8; close it or bump both). No worktrees, no local-only leftovers.
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
@@ -18,7 +18,9 @@ Next: cleanup finished 2026-10-03 (worktree removed, merged branches deleted, ma
 - Builder = `opencode-go/muse-spark-1.3-contributor`; fallback `opencode-go/deepseek-v4.1-flash`, only after asking the owner. Never `-free` ids (one free-model canary run on 2026-10-02 touched only a fake file).
 - Builder shell is an allow-list (read-only git, tests, the two scripts); Claude reviews the diff; builder cannot delete, push or go online.
 - Build a script only after a real failure or a step done twice. Mechanical before reasoning. Pipeline checks only when pipeline files change.
-- Delegation pays off across many tasks, not on tiny ones; Level 0 changes need no brief.
+- Delegation pays off across many tasks, not on tiny ones; Level 0 changes need no brief. Do not delegate wireframes or overview pages (no mechanical check); do delegate building an approved wireframe as UI code.
+- Plans stay in `docs/plans/` and live tasks in flat `docs/work/`; no regrouping by project (56 files reference those paths). Add a `docs/plans/README.md` index only if finding a plan becomes a real problem.
+- `/start` `/next` ask which task when several are active; `/wrap` sets `Status: done` on finished tasks and checks PR CI (added 2026-10-03 after real failures).
 - `scripts/new-worktree.sh` branches from `master` (the lean process is on master now, no `--base` needed).
 
 ## Later (not before the trial)
