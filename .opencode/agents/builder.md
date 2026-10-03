@@ -53,6 +53,9 @@ permission:
     "npm --prefix app run lint": allow
     "npm --prefix app run typecheck": allow
     "npm --prefix app run verify": allow
+    "npm --prefix tools/Control_Centre run test": allow
+    "npm --prefix tools/Control_Centre run check": allow
+    "npm --prefix tools/Control_Centre run verify": allow
     "node --test *": allow
     "bash scripts/verify-task.sh": allow
     "bash scripts/finish.sh": allow
