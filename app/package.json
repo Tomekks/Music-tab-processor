@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 127.0.0.1",
     "stage": "next build && next start -p 3001",
     "tokens:build": "node packages/design-system/src/build-tokens.mjs",
     "predev": "npm run tokens:build",
