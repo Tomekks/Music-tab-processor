@@ -48,8 +48,12 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
    `contracts/`, anything outside the worktree), tested once by hand. Logs go to `docs/work/runs/` (gitignored), not mktemp.
 4. Drop: opencode reviewer (Claude reviews the diff), `test-agents.sh`, `oc-health.sh` (60 s no-output kill covers it),
    the ~40-rule permission matrix, scorecard-from-stats.
-5. Muse: primary builder; on exit 125/126 `delegate.sh` retries once, then falls back to deepseek and says so in the
-   report. Never `-free`. Owner never has to run anything.
+5. Muse: primary builder; on exit 125/126 `delegate.sh` retries once, then STOPS and prints "Muse down, recommend
+   `opencode-go/deepseek-v4.1-flash`, switch?". Claude asks the owner; on yes, re-run with `BUILDER_MODEL`. No silent
+   switch. Never `-free`.
+5b. Logs (owner: no bloat): raw log in `docs/work/runs/<task>.log`, last 200 lines, colour codes stripped, overwritten
+   per run, newest 10 kept. Claude reads only delegate.sh's ~10-line summary and the task file `## Report`; the raw
+   log only on failure, via `tail -40`. Full history is already in opencode's own database.
 6. Claude-side budget: two failed builder runs for non-provider reasons -> stop and report, no more plumbing debugging.
 7. One real small task in the existing `int-test` worktree (reuse, then remove with owner OK).
 8. Decision gate: record pass/fail + reason here. Two non-provider failures -> drop opencode, use a Haiku subagent.
