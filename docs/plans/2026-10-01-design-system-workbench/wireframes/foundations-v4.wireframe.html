@@ -563,7 +563,7 @@
 
 <script>
 const WIREFRAME_DATA = {
-  "name": "Design System Workbench - Foundations v3 (real tokens)",
+  "name": "Design System Workbench - Foundations v4 (real tokens)",
   "viewport": {
     "width": 1440,
     "height": 900
@@ -1722,18 +1722,53 @@ const WIREFRAME_DATA = {
               {
                 "name": "Used by section",
                 "direction": "vertical",
-                "gap": 8,
+                "gap": 4,
                 "children": [
                   {
-                    "name": "Used by (generated, read-only)",
-                    "type": "text",
-                    "height": 24
+                    "name": "Used by header row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Used by (4)  - expandable, generated",
+                        "type": "text",
+                        "height": 24
+                      },
+                      {
+                        "name": "chevron (expand / collapse)",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
                   },
                   {
-                    "name": "Button primary, Slider fill, Segmented Control selected, ...",
-                    "type": "text",
-                    "height": 32,
-                    "variant": "caption"
+                    "name": "Expanded list: each row opens that Component page with the Variant selected",
+                    "direction": "vertical",
+                    "gap": 0,
+                    "children": [
+                      {
+                        "name": "Button / Primary - background",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Button / Primary - hover mix (code, not a token)",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Slider - fill",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Segmented Control / Selected - background",
+                        "type": "link",
+                        "height": 32
+                      }
+                    ]
                   }
                 ]
               }
