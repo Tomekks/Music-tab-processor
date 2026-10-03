@@ -17,5 +17,15 @@ if git status --porcelain | grep -q '^.. pipeline/'; then
   echo "$OUT" | tail -n 8
 fi
 
+# The task's deliverables must exist: every `Modify only` path is present on disk.
+BRANCH="$(git branch --show-current)"
+TASK="$(grep -lx "Branch:[[:space:]]*$BRANCH" docs/work/*.md 2>/dev/null | head -1)"
+if [ -n "$TASK" ]; then
+  # shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
+  for p in $(awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#/ {exit} f' "$TASK" | grep -oE '`[^`]+`' | tr -d '`'); do
+    [ -e "$p" ] || { echo "verify-task: MISSING deliverable: $p (listed under Modify only in $TASK)"; FAIL=1; }
+  done
+fi
+
 [ "$FAIL" -eq 0 ] && echo "verify-task: PASS" || echo "verify-task: FAIL"
 exit "$FAIL"
