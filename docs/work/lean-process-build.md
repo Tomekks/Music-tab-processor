@@ -2,15 +2,15 @@
 
 Status: active
 Branch: master
-Next: PR #59 is merged (master d3b48d5). PR #60 (stage durations) is retargeted to master and waits for its CI: owner says "merge #60" when green. Then, each with owner OK: remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`, delete the merged branches (`lean-process`, `feat/cc-stage-durations`, `docs/wrap-after-lean-merge`, local and remote), and in the main folder `git checkout master && git pull`. Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). If the e2e check flakes on a PR, re-run it (see Watch-outs).
+Next: all three PRs are merged to master (#59 d3b48d5, #60 41f0909, #61 8bbc002). Cleanup is waiting for the owner's yes (list was shown, not yet approved): (1) `git cherry-pick` the latest local commit on `lean-process` ("docs(work): wrap", this file only) onto master FIRST, deleting `lean-process` before that loses it; (2) remove the worktree `../guitar_tab_processor-feat-cc-stage-durations`; (3) delete the merged branches `lean-process`, `feat/cc-stage-durations`, `docs/wrap-after-lean-merge` (local and remote); (4) in the main folder `git checkout master && git pull`. Open PRs #54-#58 are dependabot, not ours (#54 is a real break). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
 ## Current state (2026-10-03)
-- **Built and committed:** rules + caps (`check-rules.sh`), `/start` `/next` `/wrap`, `scripts/delegate.sh` (pre-flight, builder via `oc-run`, `check-scope`, `verify-task`, `finish`, ~10-line summary, scorecard row), quick and full templates, `--critique` cold read, `new-worktree.sh [--quick]` (installs app + Control Centre, tokens, hides `.venv`), approved deletions via the brief's `Delete:` list.
+- **On master (merged 2026-10-03):** rules + caps (`check-rules.sh`), `/start` `/next` `/wrap`, `scripts/delegate.sh` (pre-flight, builder via `oc-run`, `check-scope`, `verify-task`, `finish`, ~10-line summary, scorecard row), quick and full templates, `--critique` cold read, `new-worktree.sh [--quick]` (installs app + Control Centre, tokens, hides `.venv`), approved deletions via the brief's `Delete:` list.
 - **Removed:** opencode reviewer, `run-reviewer.sh`, `oc-health.sh`, `test-agents.sh`, Superpowers plugin (owner uninstalled). Six skills turned off in gitignored `.claude/settings.local.json`.
 - **Old workflow docs:** 11 files carry a SUPERSEDED banner; nothing moved or deleted (a move would break links in ~10 kept files). `critique-prompt.md` left as is.
-- **Proven with a real model, once:** Control Center stage durations (`stageDurations`, PR #60): Muse, first try, verify 162/162, ~594k tokens, $0.01. Claude's review caught 2 untested rules (fixed, `8e0d845`).
+- **Proven with a real model, once:** Control Center stage durations (`stageDurations`, merged in #60): Muse, first try, verify 162/162, ~594k tokens, $0.01. Claude's review caught 2 untested rules (fixed, `8e0d845`).
 - **Not yet proven with a real model:** Delete list, `--critique`, Quick template, break-and-restore rule, retry and deepseek fallback, a cheap model drafting the brief (Claude wrote it so far).
 - **Process is frozen** until 3 more real tasks run; only a real failure reopens it (`docs/rules/process.md`, "Changing the process").
 
@@ -28,6 +28,7 @@ Next: PR #59 is merged (master d3b48d5). PR #60 (stage durations) is retargeted 
 
 ## Watch-outs
 - The pre-redaction backups (tags, refs/original, old objects) were deleted 2026-10-03. Never `git push --tags` or `--all`.
+- A PR retargeted to master gets no CI (the workflow listens only to opened, pushed and reopened): close and reopen the PR to start it.
 - `e2e-design-system` is flaky in CI, not caused by our PRs: master commit 750ee0e passed on 2026-10-01 and failed on a re-run 2026-10-02; different tests fail on different runs (staged-save #10 on PR #59, deploy-status #4 on PR #58). Dependabot PR #54 (react-dom 19.3.0) is a real break: `npm ci` ERESOLVE, react is pinned at 19.2.8; it needs react bumped together. #54 and #58 are not ours.
 - `~/.config/opencode/opencode.json` contains a Figma client secret (exposed once in chat); rotate it if sensitive.
 - opencode CLI is 2.0.20; the desktop app is 1.18.x and shares the database.
