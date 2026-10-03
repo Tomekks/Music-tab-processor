@@ -43,6 +43,12 @@ Framework and architecture: `docs/decisions/0011-design-system-workbench-framewo
 4. Brands: create from seed colors, override dark values, undo any override (ADR for the dark-override data model).
 5. Find things: Cmd+K search; the Glossary as its own small task.
 
+## Trial rule: prior-art check per slice (2026-10-03)
+
+Before each slice's spec: a short research pass on raw primary sources (no summaries) for existing solutions. The spec gets one line: "found X, adapt it" or "nothing found: owner decides". A library that fits is used; hand-written code needs a stated reason. A throwaway code spike (in `research/`) only where the slice rests on an unverified technical assumption (slice 1: preview window, forced hover states, save path from outside Next). Keep a short log under each slice: what was searched, what was found, what it saved, any miss.
+
+**Review gate:** after slices 1 and 2, run `/grill-with-docs` on that log to decide whether and how this becomes part of the workflow (`docs/rules/process.md`, which stays untouched until then and until 3 real tasks have run after the lean-process gate). Goal: higher quality, fewer bugs, well engineered but not overengineered.
+
 ## Deferred (not in this plan's first pass)
 
 Brands as a top-level section (the switcher stays), per-state color tables, composed-screen previews, per-component changelog, resizable panels, hover definitions on terms, contrast badges, quick-control knobs.
