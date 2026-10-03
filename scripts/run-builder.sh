@@ -37,15 +37,22 @@ for area in app pipeline tools/Control_Centre; do
   if printf '%s\n' "${PATHARGS[@]}" | grep -q "^$area/"; then EXTRA="$EXTRA $area/AGENTS.md"; fi
 done
 
-export OPENCODE_DISABLE_CLAUDE_CODE=1 OPENCODE_DISABLE_AUTOUPDATE=1 OPENCODE_DISABLE_LSP_DOWNLOAD=1
-export TASK_FILE="$TASK"
-LOGDIR="$(mktemp -d)"; LOG="$LOGDIR/builder.log"
+mkdir -p docs/work/runs; LOG="${LOG_FILE:-docs/work/runs/$(basename "$TASK" .md).log}"
 PROMPT="Build the task in $TASK. Read docs/rules/executor.md first, then the task file${EXTRA:+, then these area rules:$EXTRA}. Follow them exactly."
 
 echo "run-builder: $MODEL on $TASK (timeout ${TIMEOUT}s, log $LOG)"
-bash scripts/oc-run.sh "$LOG" "$TIMEOUT" -- --agent builder -m "$MODEL" \
+# env -i: the builder never sees tokens or secrets from this shell, only what opencode needs to run.
+env -i HOME="$HOME" PATH="$PATH" USER="${USER:-}" TERM=dumb LANG="${LANG:-en_US.UTF-8}" TASK_FILE="$TASK" \
+  OPENCODE_DISABLE_CLAUDE_CODE=1 OPENCODE_DISABLE_AUTOUPDATE=1 OPENCODE_DISABLE_LSP_DOWNLOAD=1 \
+  FIRST_OUTPUT_TIMEOUT="${FIRST_OUTPUT_TIMEOUT:-60}" STALL_TIMEOUT="${STALL_TIMEOUT:-180}" \
+  bash scripts/oc-run.sh "$LOG" "$TIMEOUT" -- --agent builder -m "$MODEL" \
   --title "build: $(basename "$TASK" .md)" "$PROMPT"
 RC=$?
+
+# Keep the log small: strip colour codes, last 200 lines, newest 10 logs.
+sed -E 's/\x1b\[[0-9;]*[A-Za-z]//g' "$LOG" | tail -n 200 > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+# shellcheck disable=SC2012
+ls -t docs/work/runs/*.log 2>/dev/null | tail -n +11 | while IFS= read -r old; do rm -f "$old"; done
 
 # 5. What happened, from facts not from the model's own summary.
 case "$RC" in

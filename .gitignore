@@ -74,3 +74,6 @@ research/00_spike/fretboard/
 # generates from it. Same copyright reasoning as research/00_spike/ above --
 # never published, regenerable from the original file.
 pipeline_runs/
+
+# Builder run logs (capped, newest 10): scripts/run-builder.sh
+docs/work/runs/

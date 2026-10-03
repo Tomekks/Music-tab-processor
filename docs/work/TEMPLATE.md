@@ -15,6 +15,9 @@ Written against: <<commit hash>>
 **Do NOT touch:**
 - `contracts/`, config, secrets, anything not listed above
 
+**Delete (approved with this brief):** (optional; the builder cannot delete, finish.sh removes exactly these)
+- `<<path, or remove this whole block>>`
+
 ## Size
 Files touched: <<N>>. Expected diff: <<~lines>>. New tests: <<N, max about 10>>.
 

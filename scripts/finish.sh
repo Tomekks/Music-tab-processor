@@ -9,6 +9,11 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 
 bash "$HERE/check-scope.sh" "$TASK" || { echo "finish: stopped, nothing staged or committed"; exit 1; }
 
+# Deletions the owner approved with the brief: only these, only here (the builder has no rm).
+# shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
+awk 'tolower($0) ~ /^\*\*delete/ {f=1; next} f && tolower($0) ~ /^#|^\*\*/ {exit} f' "$TASK" | grep -oE '`[^`]+`' | tr -d '`' \
+  | while IFS= read -r d; do [ -n "$d" ] && [ -e "$d" ] && git rm -q -r -- "$d"; done
+
 # shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
 PATHS="$(awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#/ {exit} f' "$TASK" \
   | grep -oE '`[^`]+`' | tr -d '`')"

@@ -39,6 +39,8 @@ permission:
     "*node_modules/*": deny
     "*.next/*": deny
     ".git/*": deny
+  # Shell is a short ALLOW list (everything else denied: no push, internet, rm, installs). Tests it runs are
+  # still code, so scripts/check-scope.sh and a clean worktree are the real backstop, not this list.
   shell:
     "*": deny
     "git status*": allow
@@ -47,6 +49,11 @@ permission:
     "git *--output*": deny
     "git diff *--no-index*": deny
     "lsof -i *": allow
+    "npm --prefix app run test": allow
+    "npm --prefix app run lint": allow
+    "npm --prefix app run typecheck": allow
+    "npm --prefix app run verify": allow
+    "node --test *": allow
     "bash scripts/verify-task.sh": allow
     "bash scripts/finish.sh": allow
 ---

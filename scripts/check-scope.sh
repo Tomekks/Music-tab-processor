@@ -3,6 +3,7 @@
 # "Changed" = everything differing from the task's "Written against" commit: committed, staged, unstaged
 # and untracked-but-not-ignored files. Run in the builder's worktree. Mechanical, no model.
 # Usage: scripts/check-scope.sh <task-file>
+# Paths under an optional `**Delete (approved with this brief):**` list are allowed too (finish.sh removes them).
 # Modify-only entries are the `backticked` paths between "Modify only" and "Do NOT touch"; an entry
 # ending in / allows everything under that folder.
 set -uo pipefail
@@ -18,7 +19,9 @@ git rev-parse --verify --quiet "$BASE^{commit}" >/dev/null || { echo "check-scop
 ALLOWED="$(awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#/ {exit} f' "$TASK" \
   | grep -oE '`[^`]+`' | tr -d '`')"
 [ -n "$ALLOWED" ] || { echo "check-scope: no paths under 'Modify only' in $TASK"; exit 1; }
-ALLOWED="$(printf '%s\n%s\n' "$ALLOWED" "$TASK")"
+# shellcheck disable=SC2016
+DELETES="$(awk 'tolower($0) ~ /^\*\*delete/ {f=1; next} f && tolower($0) ~ /^#|^\*\*/ {exit} f' "$TASK" | grep -oE '`[^`]+`' | tr -d '`')"
+ALLOWED="$(printf '%s\n%s\n%s\n' "$ALLOWED" "$DELETES" "$TASK")"
 
 CHANGED="$( { git diff --no-renames --name-only "$BASE"; git ls-files --others --exclude-standard; } | sort -u)"
 
