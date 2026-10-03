@@ -22,9 +22,11 @@ x_icon = {"name": "x icon (lucide x) - dismiss", "type": "icon", "width": 20, "h
 states = [
  bar("1. Nothing changed: status slot empty, no Save or Discard", [t("", None, 24, name=" ")], []),
  bar("2. Unsaved edits: click the count to open the changes list", [t("3 unsaved changes  v", None, 24)], [link("Discard"), btn("Save")]),
- bar("3. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)", [t("Saved 3 tokens 14:02", None, 24)], []),
- bar("4. Save failed: stays until dismissed or a retry works; edits stay staged", [t("Couldn't save accent, hoverOpacity: tokens.json is read-only", None, 24), x_icon], [link("Discard"), btn("Retry save")]),
- bar("5. File changed on disk since you opened it: Save stops, nothing is overwritten", [t("tokens.json changed outside the workbench", None, 24)], [link("Review changes"), btn("Reload")]),
+ bar("3. Saving: Save is disabled so a second click cannot start a second write", [t("Saving...", None, 24)], [link("Discard (disabled)"), btn("Saving...")]),
+ bar("4. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)", [t("Saved 3 tokens 14:02", None, 24)], []),
+ bar("5. Discarded: shown for 5 s with Undo, then fades like state 4", [t("Discarded 3 changes", None, 24), link("Undo")], []),
+ bar("6. Save failed: nothing was written (saves are all or nothing, then re-read to confirm); stays until dismissed or a retry works; edits stay staged", [t("Couldn't save: tokens.json is read-only. Nothing was written.", None, 24), x_icon], [link("Discard"), btn("Retry save")]),
+ bar("7. File changed on disk since you opened it: Save stops, nothing is overwritten", [t("tokens.json changed outside the workbench", None, 24)], [link("Review changes"), btn("Reload")]),
 ]
 
 def change_row(name, was, now, kind, color=False):
@@ -54,6 +56,6 @@ leave = {"name": "Leaving with unsaved edits", "direction": "vertical", "gap": 6
     t("Moving between pages keeps edits staged. Closing or reloading the tab shows the browser's own 'Leave site?' warning when something is unsaved.", "caption", 16)]}
 
 d = {"name": "Design System Workbench - Unsaved, saved and error states v1", "viewport": {"width": 1440, "height": 1300},
-     "root": {"name": "Page", "direction": "vertical", "gap": 24, "padding": 32, "children": [t("Top bar status slot, five states", "heading", 32)] + states + [
+     "root": {"name": "Page", "direction": "vertical", "gap": 24, "padding": 32, "children": [t("Top bar status slot, seven states", "heading", 32)] + states + [
          t("Changes list", "heading", 32), popover, marker, leave]}}
 json.dump(d, open(os.path.join(here, "save-states-v1.wireframe.json"), "w"), indent=2)

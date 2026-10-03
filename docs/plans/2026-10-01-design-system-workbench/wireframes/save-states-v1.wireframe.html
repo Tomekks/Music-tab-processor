@@ -575,7 +575,7 @@ const WIREFRAME_DATA = {
     "padding": 32,
     "children": [
       {
-        "name": "Top bar status slot, five states",
+        "name": "Top bar status slot, seven states",
         "type": "text",
         "height": 32,
         "variant": "heading"
@@ -707,12 +707,80 @@ const WIREFRAME_DATA = {
         ]
       },
       {
-        "name": "State: 3. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
+        "name": "State: 3. Saving: Save is disabled so a second click cannot start a second write",
         "direction": "vertical",
         "gap": 6,
         "children": [
           {
-            "name": "3. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
+            "name": "3. Saving: Save is disabled so a second click cannot start a second write",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "Saving...",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Discard (disabled)",
+                "type": "link",
+                "height": 40
+              },
+              {
+                "name": "Saving...",
+                "type": "button",
+                "height": 40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 4. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "4. Just saved: shown for 5 s, then fades to state 1 (or state 2 if other edits remain)",
             "type": "text",
             "height": 16,
             "variant": "caption"
@@ -765,12 +833,12 @@ const WIREFRAME_DATA = {
         ]
       },
       {
-        "name": "State: 4. Save failed: stays until dismissed or a retry works; edits stay staged",
+        "name": "State: 5. Discarded: shown for 5 s with Undo, then fades like state 4",
         "direction": "vertical",
         "gap": 6,
         "children": [
           {
-            "name": "4. Save failed: stays until dismissed or a retry works; edits stay staged",
+            "name": "5. Discarded: shown for 5 s with Undo, then fades like state 4",
             "type": "text",
             "height": 16,
             "variant": "caption"
@@ -812,7 +880,70 @@ const WIREFRAME_DATA = {
                 "align": "center",
                 "children": [
                   {
-                    "name": "Couldn't save accent, hoverOpacity: tokens.json is read-only",
+                    "name": "Discarded 3 changes",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Undo",
+                    "type": "link",
+                    "height": 40
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "State: 6. Save failed: nothing was written (saves are all or nothing, then re-read to confirm); stays until dismissed or a retry works; edits stay staged",
+        "direction": "vertical",
+        "gap": 6,
+        "children": [
+          {
+            "name": "6. Save failed: nothing was written (saves are all or nothing, then re-read to confirm); stays until dismissed or a retry works; edits stay staged",
+            "type": "text",
+            "height": 16,
+            "variant": "caption"
+          },
+          {
+            "name": "Top bar strip",
+            "direction": "horizontal",
+            "height": 56,
+            "padding": [
+              0,
+              16
+            ],
+            "gap": 16,
+            "align": "center",
+            "type": "card",
+            "children": [
+              {
+                "name": "Design System - brand: default (switcher)",
+                "type": "input",
+                "height": 40,
+                "width": 320
+              },
+              {
+                "name": "Mode toggle",
+                "type": "icon",
+                "width": 40,
+                "height": 40
+              },
+              {
+                "name": "Spacer",
+                "grow": true,
+                "direction": "vertical",
+                "children": []
+              },
+              {
+                "name": "Status slot",
+                "direction": "horizontal",
+                "gap": 12,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "Couldn't save: tokens.json is read-only. Nothing was written.",
                     "type": "text",
                     "height": 24
                   },
@@ -839,12 +970,12 @@ const WIREFRAME_DATA = {
         ]
       },
       {
-        "name": "State: 5. File changed on disk since you opened it: Save stops, nothing is overwritten",
+        "name": "State: 7. File changed on disk since you opened it: Save stops, nothing is overwritten",
         "direction": "vertical",
         "gap": 6,
         "children": [
           {
-            "name": "5. File changed on disk since you opened it: Save stops, nothing is overwritten",
+            "name": "7. File changed on disk since you opened it: Save stops, nothing is overwritten",
             "type": "text",
             "height": 16,
             "variant": "caption"
