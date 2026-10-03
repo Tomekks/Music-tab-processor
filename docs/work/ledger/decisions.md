@@ -42,3 +42,6 @@ evidence, one hypothesis, regression test, stop after two failures); worktree ru
 ## Plan additions
 `/next`, `/wrap`, `scripts/check-brief.sh`, `scripts/new-worktree.sh`, `scripts/check-rules.sh`,
 `scripts/restore-old-docs.sh`, `scripts/verify-pipeline.sh`; old docs move to `docs/_old/` with `MAP.md`.
+
+## 2026-10-02 sizes
+New tests per task: about 10 max. Caps: AGENTS.md <= 80 lines, each rules file <= 70.

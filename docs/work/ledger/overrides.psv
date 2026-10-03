@@ -5,3 +5,4 @@ R122|KEEP|EXECUTOR|-|N|Builder must commit and show git status after commit; pas
 R149|KEEP|EXECUTOR|-|N|Spec drift check: record base commit, compare quoted code before editing (Claude correction)
 R228|KEEP|PROCESS|-|N|Root-cause-first debugging and worktree rules are restated in the new design, not replaced (Claude correction)
 R220|SUPERSEDED|-|-|N|One process for the whole repo; per-area routing no longer needed (Claude correction)
+R091|DROP|-|-|N|Drift-audit shortcut; drift log and checks are removed (Claude correction)

@@ -88,7 +88,7 @@ R087|DROP|-|-|N|Single historical check entry, not rule
 R088|DROP|-|-|N|Historical merge observation, not a rule
 R089|SUPERSEDED|-|-|N|Finished work deleted, git history is record
 R090|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
-R091|KEEP|PROCESS|-|N|Triage rule focuses audits when time-limited
+R091|DROP|-|-|N|Drift-audit shortcut; drift log and checks are removed (Claude correction)
 R092|SUPERSEDED|-|-|N|New sessions read AGENTS plus task file
 R093|SUPERSEDED|-|-|N|Active task file replaces pending-actions file
 R094|KEEP|PROCESS|-|N|Prevents over-reading, opens depth on demand
