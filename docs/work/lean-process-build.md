@@ -1,5 +1,9 @@
 # Task: build the lean process (branch `lean-process`)
 
+Status: active
+Branch: lean-process
+Next: P3 step B (new AGENTS.md and area files) is in progress in another session; then C, D, E, F (/start, /next, /wrap), G, H, I.
+
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
 
