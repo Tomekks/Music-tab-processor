@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: owner runs the Superpowers uninstall (I) and decides P3b option (banners vs full move); then 3 more real tasks via delegate.sh (process frozen); settle feat/cc-stage-durations (unpushed).
+Next: owner decides P3b (banners vs full move); then 3 more real tasks via delegate.sh (process frozen); settle feat/cc-stage-durations (unpushed).
 
 **Goal:** replace the heavy old workflow with the lean one described in `docs/PROCESS.html` (open it in a
 browser). Safety nets: tag `pre-lean`, tarballs in `~/Backups/`, old docs stay in place until step P3b.
@@ -62,6 +62,7 @@ Principle: check facts after the work (scope, verify, deliverable exists), not p
 7c. After the gate (owner approved): quick template + check-brief support + new-worktree --quick; delegate.sh --critique; executor break-and-restore rule; delegate prints a scorecard row (finish.sh can't: scorecard is outside the task's scope); CC `verify` runs `tokens` first; removed run-reviewer, test-agents, oc-health, reviewer agent. Then freeze (see process.md).
 7d. F done (e34d1ea): /next and /wrap are prompt-only commands. PROCESS.html brought up to date (2026-10-03). G, I, P3b wait for owner yes (config / uninstall / moving docs).
 7e. G done 2026-10-03 (owner yes): skillOverrides off for design, brand, slides, ui-styling, design-system, find-skills (in gitignored .claude/settings.local.json; takes effect next session). I: kept files are clean of `superpowers`; owner runs `claude plugin uninstall superpowers@superpowers-marketplace`. P3b finding: every old doc is still referenced by kept files (GUIDE.md, BACKLOG.md, pipeline/VERIFY.md, app/STATUS.md, .githooks/pre-commit, README.md), so a move breaks ~10 files; recommended banners on superseded docs instead, move/delete decided after the trial (P4).
+7f. I done 2026-10-03: owner ran the uninstall (superpowers 6.3.0, user scope, confirmed gone from `claude plugin list`).
 8a. Deletions (owner agreed 2026-10-03): builder cannot delete. Brief has an optional `**Delete (approved with this brief):**` list; owner approves it at the brief; finish.sh `git rm`s exactly those; check-scope allows them. Builder shell is an ALLOW-list (stricter than the deny-list first agreed; owner said approve, will critique after).
 8b. Owner agreed 2026-10-03: looser builder shell with short deny list; Claude reviews the diff (no opencode reviewer). Flow is drawn in `docs/PROCESS.html` ("Claude hands a task to opencode"); owner reviews it before delegate.sh is written.
 9. Deferred until the gate passes: F (/next, /wrap), G (skill pruning), I (Superpowers removal), P3b, loose ends.
