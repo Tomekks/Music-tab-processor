@@ -2,7 +2,7 @@
 
 Status: active
 Branch: lean-process
-Next: merge PR #59 once its CI finishes (was running on c9d516d at 2026-10-03; owner asked to merge). Then retarget PR #60 (feat/cc-stage-durations, stacked on lean-process) to master and merge it, then remove the worktree `../guitar_tab_processor-feat-cc-stage-durations` (owner OK). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). This file has one unpushed edit.
+Next: PR #59 is not merged yet. Its CI on c9d516d: `verify` passed, `e2e-design-system` FAILED once (test staged-save #10 read the old token value right after a revert; 37 passed, 1 failed). The same check passed on the two earlier commits and c9d516d changed only docs, so it looks like a timing flake in an app test, not our change: re-run the failed job (`gh run rerun --failed`, run id 37147295336, owner OK), then merge #59 when green (owner asked to merge). If it fails again, that test needs a look before merging. Then retarget PR #60 (feat/cc-stage-durations, stacked on lean-process) to master and merge it, then remove the worktree `../guitar_tab_processor-feat-cc-stage-durations` (owner OK). Then the trial: 3 more real tasks via delegate.sh (one Quick, one Full with a Delete list). This file has one unpushed edit (pushing restarts CI, so push after the merge decision).
 
 **Goal (done):** replace the heavy old workflow with the lean one. Picture of how a task moves today: `docs/WORKFLOW.html`. Old-vs-new and build progress: `docs/PROCESS.html`. Rules: `AGENTS.md` and `docs/rules/`. Open the HTML files in a browser.
 
@@ -28,6 +28,7 @@ Next: merge PR #59 once its CI finishes (was running on c9d516d at 2026-10-03; o
 
 ## Watch-outs
 - The pre-redaction backups (tags, refs/original, old objects) were deleted 2026-10-03. Never `git push --tags` or `--all`.
+- Flaky test to look at later: `app/e2e/design-system/staged-save.spec.ts:334` ("All-variables edits still auto-commit") failed once in CI on a docs-only commit; reads the tokens file right after the revert response.
 - `~/.config/opencode/opencode.json` contains a Figma client secret (exposed once in chat); rotate it if sensitive.
 - opencode CLI is 2.0.20; the desktop app is 1.18.x and shares the database.
 - The working directory can drift mid-session: run `pwd` before writing absolute paths.
