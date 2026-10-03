@@ -11,8 +11,12 @@ def val(v):
     if v.startswith("{semantic.color."): return tok["semantic"]["color"][v[len("{semantic.color."):-1]]["$value"]
     return v
 def hexv(v):
-    v = val(v) if isinstance(v, dict) else v
-    if v.startswith("{semantic.color."): v = val(tok["semantic"]["color"][v[len("{semantic.color."):-1]])
+    v = v["$value"] if isinstance(v, dict) else v
+    while v.startswith("{"):
+        path = v[1:-1].split(".")
+        node = tok
+        for part in path: node = node[part]
+        v = node["$value"]
     return v.upper() if v.startswith("#") else v
 dark = {k: hexv(v) for k, v in tok["dark"]["semantic"]["color"].items()}
 
@@ -24,6 +28,9 @@ def help_icon(tip): return {"name": "? help icon (lucide circle-help) - hover: "
 def head(title, tip, variant="heading", h=32):
     return {"name": "Heading row: " + title, "direction": "horizontal", "gap": 8, "align": "center",
             "children": [t(title, variant=variant, h=h), help_icon(tip)]}
+def info_icon(desc):
+    tip = ("hover: " + desc) if desc else "empty: no description yet, click to add one"
+    return {"name": "info icon (lucide info) - " + tip, "type": "icon", "width": 20, "height": 20}
 def toggle(on): return {"name": "on" if on else "off", "type": "input", "width": 72, "height": 28}
 
 def row(name, value, desc, kind, child=None, selected=False):
@@ -32,8 +39,12 @@ def row(name, value, desc, kind, child=None, selected=False):
     if kind == "color":
         ch += [{"name": "swatch " + value, "type": "icon", "width": 32, "height": 32}, t(value, "caption", 16, width=64)]
     else:
-        ch += [{"name": value, "type": "input", "height": 32, "width": 96}]
-    ch.append(t(desc if desc else "(no description yet)", "caption", 16, grow=True))
+        w = 200 if kind == "font" else 96
+        ch += [{"name": value, "type": "input", "height": 32, "width": w}]
+        if kind == "pct":
+            ch += [{"name": "17% of window", "type": "input", "height": 32, "width": 120}]
+    ch.append(info_icon(desc))
+    ch.append({"name": " ", "grow": True, "height": 1})
     if child:
         if child == "overridden": ch.append({"name": "Revert", "type": "link", "height": 24, "width": 50})
         else: ch.append({"name": " ", "width": 50, "height": 1})
@@ -59,8 +70,8 @@ def sections(child=None, mode="light", overrides=()):
     add("Radius", "semantic.radius", [row(k, v["$value"], v.get("$description", "")[:88], "num", st("radius." + k)) for k, v in tok["semantic"]["radius"].items()])
     add("Space", "semantic.space: seven steps.", [row(k, v["$value"], "Space step " + k, "num", st("space." + k)) for k, v in tok["semantic"]["space"].items()])
     add("Typography", "semantic.typography: the two font families. Text styles come in slice 3.",
-        [row(k, v["$value"].replace("var(--font-geist-", "Geist ").replace(")", "").replace("sans", "Sans").replace("mono", "Mono"), v.get("$description", "")[:88], "num", st("typography." + k)) for k, v in tok["semantic"]["typography"].items()])
-    add("Layout", "semantic.layout", [row(k, v["$value"], v.get("$description", "")[:88], "num", st("layout." + k)) for k, v in tok["semantic"]["layout"].items()])
+        [row(k, v["$value"].replace("var(--font-geist-", "Geist ").replace(")", "").replace("sans", "Sans").replace("mono", "Mono"), v.get("$description", "")[:88], "font", st("typography." + k)) for k, v in tok["semantic"]["typography"].items()])
+    add("Layout", "semantic.layout", [row(k, v["$value"], v.get("$description", "")[:88], "pct", st("layout." + k)) for k, v in tok["semantic"]["layout"].items()])
     return S[:-1]
 
 def shell(name, brand, mode, child, inspector, overrides=()):
@@ -99,10 +110,13 @@ used = {"name": "Used by section", "direction": "vertical", "gap": 4, "children"
         {"name": n, "type": "link", "height": 32} for n in ["Button / Primary - background", "Button / Primary - hover mix (code, not a token)", "Slider - fill", "Segmented Control / Selected - background"]]}]}
 desc = lambda s: {"name": "Description section", "direction": "vertical", "gap": 8, "children": [t(s), {"name": tok["semantic"]["color"]["accent"]["$description"][:140], "type": "input", "height": 96}]}
 hdr = lambda right: {"name": "Inspector Header", "direction": "vertical", "gap": 4, "children": [
-    {"name": "Title Row", "direction": "horizontal", "justify": "space-between", "align": "center", "children": [t("accent", "heading", 32), {"name": right, "type": "link", "height": 24}]},
+    {"name": "Title Row", "direction": "horizontal", "justify": "space-between", "align": "center", "children": [
+        {"name": "Title with info", "direction": "horizontal", "gap": 8, "align": "center", "children": [t("accent", "heading", 32),
+            {"name": "info icon (lucide info) - hover shows the description, click opens it to edit", "type": "icon", "width": 20, "height": 20}]},
+        {"name": right, "type": "link", "height": 24}]},
     t("Foundations / Color / semantic.color.accent", "caption", 16)]}
 
-main_insp = [hdr("Reset to default"), {"name": "Header Divider", "type": "divider"}, desc("What it is for (editable)"),
+main_insp = [hdr("Reset to default"), {"name": "Header Divider", "type": "divider"},
              {"name": "Value section", "direction": "vertical", "gap": 12, "children": [t("Value"), pickrow("Light", hexv(tok["semantic"]["color"]["accent"])), pickrow("Dark", dark.get("accent", hexv(tok["semantic"]["color"]["accent"])))]},
              {"name": "Section Divider", "type": "divider"}, used]
 def val_block(label, hv, note, from_main):
@@ -110,7 +124,7 @@ def val_block(label, hv, note, from_main):
         {"name": label + " header", "direction": "horizontal", "justify": "space-between", "align": "center", "children": [t(label), {"name": "From Main: " + ("on" if from_main else "off"), "type": "input", "height": 28, "width": 120}]},
         {"name": label + " value row", "direction": "horizontal", "gap": 8, "align": "center", "children": [{"name": hv, "type": "input", "height": 40, "grow": True}, {"name": " ", "type": "input", "width": 40, "height": 40}]},
         t(note, "caption", 16)]}
-child_insp = [hdr("Revert to Main"), {"name": "Header Divider", "type": "divider"}, desc("What it is for (shared with Main)"),
+child_insp = [hdr("Revert to Main"), {"name": "Header Divider", "type": "divider"},
               {"name": "Values", "direction": "vertical", "gap": 16, "children": [
                   val_block("Light", "#4A90D9", "Own value. Main: #AE97F7", False),
                   val_block("Dark (editing now)", "#7C5CE0", "Own value. Turn From Main on to inherit without losing it.", False)]},
