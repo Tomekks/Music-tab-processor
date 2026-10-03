@@ -1,5 +1,7 @@
 # The development process, end to end
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 What actually happens, in order, from "I want a UI/functionality change" to it being live — every tool, skill, and gate that fires, and whether it's real today or still in the plan. Read this to check the facts before approving a visual version.
 
 **Note (2026-09-20):** for `app/` work, `docs/WEB_APP_WORKFLOW.md` is the governing doc — this file's app/ rows are background. Pipeline process is Superpowers-driven per `AGENTS.md`.

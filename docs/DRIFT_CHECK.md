@@ -1,5 +1,7 @@
 # Drift check
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 A short, bounded procedure for catching drift — code, docs, or scope quietly diverging from what was actually decided — before it compounds. Not a rubber stamp: skip it when there's nothing to check, do it properly when there is.
 
 **Restructured 2026-09-10:** tiered by cost, and split by domain (app vs. pipeline), matching the `contracts/` boundary those two sides already respect. The previous version ran everything, every time, including one genuinely expensive step regardless of whether it was needed. That step still exists — it's just no longer the default.

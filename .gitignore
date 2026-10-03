@@ -30,7 +30,8 @@ case study prmpting.md
 
 # OpenCode CLI's local tool config/agents (self-contained, not part of this repo's
 # app or pipeline) -- local-only.
-/.opencode/
+/.opencode/*
+!/.opencode/agents/
 
 # Personal skill definitions for various AI tools -- local-only, not this project's code.
 /Skills/
@@ -73,3 +74,6 @@ research/00_spike/fretboard/
 # generates from it. Same copyright reasoning as research/00_spike/ above --
 # never published, regenerable from the original file.
 pipeline_runs/
+
+# Builder run logs (capped, newest 10): scripts/run-builder.sh
+docs/work/runs/

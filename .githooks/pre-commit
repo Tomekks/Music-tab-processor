@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Blocks a commit that stages something secret-shaped, or that breaks
-# TypeScript. Enable once per clone (not committed automatically, on purpose --
+# Blocks a commit that stages something secret-shaped, or whose staged app/
+# changes fail `npm run verify` (typecheck, lint, unit tests -- the same gate
+# for every tool, human or model). Enable once per clone (not committed automatically, on purpose --
 # see docs/DEV_WORKFLOW_GUIDE.md):
 #   git config core.hooksPath .githooks
 set -euo pipefail
@@ -26,9 +27,29 @@ if echo "$STAGED_DIFF" | grep -Ei "$PATTERN" > /dev/null 2>&1; then
   exit 1
 fi
 
+VPOUT="$(mktemp)"
+
 if [ -f app/package.json ] && git diff --cached --name-only | grep -q '^app/'; then
-  echo "pre-commit: typecheck (app/)..."
-  (cd app && npm run typecheck --silent)
+  echo "pre-commit: verify (app/)..."
+  VOUT="$(mktemp)"
+  if ! (cd app && npm run verify --silent) >"$VOUT" 2>&1; then
+    cat "$VOUT"
+    rm -f "$VOUT"
+    echo ""
+    echo "BLOCKED: 'npm run verify' failed for the staged app/ changes. Fix it, then commit again."
+    exit 1
+  fi
+  tail -n 4 "$VOUT"
+  rm -f "$VOUT"
 fi
+
+if ! bash scripts/verify-pipeline.sh >"$VPOUT" 2>&1; then
+  cat "$VPOUT"; rm -f "$VPOUT"
+  echo ""
+  echo "BLOCKED: pipeline checks failed for the staged changes. Fix it, then commit again."
+  exit 1
+fi
+grep -q '^PIPELINE VERIFY' "$VPOUT" && tail -n 3 "$VPOUT"
+rm -f "$VPOUT"
 
 echo "pre-commit: OK"

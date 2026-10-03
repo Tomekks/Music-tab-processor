@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How we build: old vs new</title>
+<style>
+  :root {
+    --bg:#f6f6f4; --card:#fff; --ink:#1d1d1b; --mute:#6b6b66; --line:#d9d9d3;
+    --same:#5b7da6; --new:#2f8f5b; --changed:#c58a1a; --risk:#c0392b; --gone:#8a8a85;
+    --same-bg:#eaf0f7; --new-bg:#e6f4ec; --changed-bg:#fbf2de; --risk-bg:#fbe9e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161615; --card:#222220; --ink:#ecece8; --mute:#a3a39d; --line:#3a3a36;
+      --same-bg:#1e2a38; --new-bg:#17291f; --changed-bg:#33290f; --risk-bg:#3a1f1b; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; }
+  h2 { font-size:20px; margin:40px 0 8px; }
+  p.sub { color:var(--mute); margin:0 0 16px; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+  .chip { display:inline-block; padding:2px 10px; border-radius:99px; font-size:13px; border:1px solid var(--line); }
+  .chip.same { background:var(--same-bg); border-color:var(--same); }
+  .chip.new { background:var(--new-bg); border-color:var(--new); }
+  .chip.changed { background:var(--changed-bg); border-color:var(--changed); }
+  .chip.risk { background:var(--risk-bg); border-color:var(--risk); }
+  .chip.gone { border-style:dashed; color:var(--gone); }
+  .grid { display:grid; grid-template-columns:120px 1fr 1fr; gap:8px; align-items:stretch; }
+  .head { font-weight:700; padding:8px 4px; position:sticky; top:0; background:var(--bg); z-index:1; }
+  .stage { font-weight:600; padding:10px 4px; color:var(--mute); }
+  .cell { background:var(--card); border:1px solid var(--line); border-left-width:5px; border-radius:8px; padding:10px 12px; }
+  .cell.same { border-left-color:var(--same); }
+  .cell.new { border-left-color:var(--new); }
+  .cell.changed { border-left-color:var(--changed); }
+  .cell.risk { background:var(--risk-bg); border-color:var(--risk); border-left-color:var(--risk); }
+  .cell.gone { border-style:dashed; color:var(--gone); }
+  .who { font-size:12px; color:var(--mute); margin-top:6px; }
+  .tag { font-size:11px; padding:1px 7px; border-radius:99px; margin-left:6px; vertical-align:middle; }
+  .tag.built { background:var(--new); color:#fff; }
+  .tag.planned { border:1px solid var(--mute); color:var(--mute); }
+  .tag.warn { background:var(--risk); color:#fff; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin:8px 0; }
+  .panel.risk { border-color:var(--risk); background:var(--risk-bg); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  th, td { text-align:left; padding:8px 12px; border-bottom:1px solid var(--line); vertical-align:top; font-size:15px; }
+  th { background:var(--bg); }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  pre { margin:0; font:13px/1.5 ui-monospace,Menlo,monospace; white-space:pre-wrap; }
+  ol.steps li { margin:6px 0; }
+  @media (max-width:760px) {
+    .grid { grid-template-columns:1fr; }
+    .head { display:none; }
+    .stage { padding-top:16px; }
+    .cols { grid-template-columns:1fr; }
+    .cell[data-side]::before { content:attr(data-side); display:block; font-size:12px; color:var(--mute); margin-bottom:4px; }
+  }
+
+  .flow { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px; }
+  .st { flex:1 1 135px; min-width:125px; background:var(--card); border:2px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px; }
+  .st b { display:block; }
+  .st small { color:var(--mute); }
+  .st.planned { border-style:dashed; }
+  .st.risk { background:var(--risk-bg); border-color:var(--risk); }
+  .lane { display:inline-block; font-size:11px; padding:0 8px; border-radius:99px; color:#fff; margin-bottom:4px; }
+  .l-you{background:#7a5bb0}.l-claude{background:#b8701f}.l-builder{background:#2f8f5b}.l-reviewer{background:#2a7ba0}.l-script{background:#6b6b66}
+  .bar { height:24px; border-radius:4px; background:var(--same); color:#fff; font-size:13px; padding:0 8px; line-height:24px; margin:5px 0; white-space:nowrap; overflow:hidden; }
+  .bar.new { background:var(--new); }
+  .meter { display:inline-block; height:10px; background:var(--new); border-radius:3px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<main>
+  <h1>How we build: old vs new</h1>
+  <p class="sub">Reference page for this project. Open it in a browser; agents do not load it by default. Updated 2026-10-03, after the first real task through <code>delegate.sh</code>. Dashed or "planned" items are not built or not yet proven.</p>
+
+  <div class="legend">
+    <span class="chip same">Same as old</span>
+    <span class="chip changed">Changed</span>
+    <span class="chip new">New</span>
+    <span class="chip risk">⚠ Risky: not yet proven</span>
+  </div>
+  <p class="sub"><b>Built</b> = exists and tested. <b>Planned</b> = agreed in the design, not built yet.</p>
+
+  <h2>At a glance: one task, start to finish</h2>
+  <p class="sub">Solid border = built or in force. Dashed = planned. Red = risky until proven. The colored tag shows who acts.</p>
+  <div class="legend">
+    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse spark</span><span class="lane l-script">Script</span>
+  </div>
+  <div class="flow">
+    <div class="st"><span class="lane l-you">You</span><b>1. Idea</b><small>what hurts, what you want</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>2. Grill + research</b><small>questions, outside ideas</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>3. Wireframe + plan</b><small>slices with user stories</small></div>
+    <div class="st"><span class="lane l-script">Rule</span><b>4. Size it</b><small>one-sentence test + risk triggers</small></div>
+    <div class="st planned"><span class="lane l-builder">Builder</span><b>5. Brief</b><small>"what changes for you": you approve it</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>6. Review</b><small>level 0, 1 or 2: Claude reads the report and the diff, spot-checks one claim, no re-runs</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>7. Build</b><small>Claude runs delegate.sh; own worktree, test first, then breaks each rule once to prove a test fails</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>8. Check</b><small>verify footer: counts, time, what did not run</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>9. Report</b><small>4 core lines + extras; delegate.sh prints the scorecard row</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>10. You test</b><small>checklist written up front</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>11. Ship</b><small>commit; push / deploy only on your yes</small></div>
+  </div>
+
+  <h2>At a glance: Claude hands a task to opencode (simplified plan, 2026-10-03)</h2>
+  <p class="sub">Claude runs one command, <code>scripts/delegate.sh &lt;task&gt;</code>. You never copy or paste between models: results come back through the task file and a short printed summary. You decide at the two <b>You</b> steps and at any model switch. Proven once with a real model on a real task (2026-10-03). Dashed = not built yet.</p>
+  <div class="legend">
+    <span class="lane l-you">You</span><span class="lane l-claude">Claude</span><span class="lane l-builder">Builder: muse (opencode)</span><span class="lane l-script">Script</span>
+  </div>
+  <div class="flow">
+    <div class="st"><span class="lane l-claude">Claude</span><b>1. Write the task file</b><small>what changes, allowed files, checks</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>2. Approve the brief</b><small>the "What changes for you" block. Quick template (1-3 files of plain logic) or full template (any risk trigger, UI/audio, 4+ files)</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>2b. Cold read (optional)</b><small><code>delegate.sh --critique</code>: builds nothing, writes at most 5 questions or "clear"; one round, Claude amends</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>3. Pre-flight</b><small>brief complete, right branch, files unchanged since written, never master, never a free model</small></div>
+    <div class="st"><span class="lane l-builder">Builder</span><b>4. Build</b><small>own worktree; shell allow-list only (git read, tests, 2 scripts; no push, internet, rm); secrets stripped from its environment; test first; writes <code>## Report</code></small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>5. Watchdog</b><small>kills a dead run: no output 60 s, stalled 180 s. Log kept (last 200 lines)</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>6. Facts check</b><small>only allowed files changed? checks pass? every promised file exists?</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>7. Checkpoint commit</b><small>one commit, made by the script, not the model. Files on the brief's <b>Delete:</b> list (approved at step 2) are removed here; the builder cannot delete</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>8. ~10-line summary</b><small>pass/fail, plain reason if failed, diff stat, log path</small></div>
+    <div class="st"><span class="lane l-claude">Claude</span><b>9. Review the diff</b><small>reads the summary, the Report and the diff; raw log only on failure (<code>tail -40</code>)</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>10. Test + ship</b><small>your checklist; push / deploy only on your yes</small></div>
+  </div>
+  <div class="cols">
+    <div class="panel risk">
+      <b>If Muse is down (step 4 or 5)</b>
+      <ol class="steps">
+        <li>Script retries Muse <b>once</b>.</li>
+        <li>Still down: script <b>stops</b> and prints "Muse down, recommend deepseek-v4.1-flash, switch?".</li>
+        <li>Claude asks <b>you</b>. On yes it re-runs with the other model; the report names which model built it.</li>
+        <li>Never a <code>-free</code> model, never a silent switch.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <b>Guard rails on Claude's side</b>
+      <ol class="steps">
+        <li>Two failed builder runs that are <b>not</b> a provider outage: stop and report. No more plumbing debugging.</li>
+        <li>Decision gate after one real task: if it fails twice for non-provider reasons, drop opencode and use a Claude Haiku subagent.</li>
+        <li>The only record that matters is the task file; the raw log is a fallback.</li>
+      </ol>
+    </div>
+  </div>
+  <p class="sub"><b>Why the checks sit after the build, not before:</b> a script looking at what actually changed cannot be fooled by a model's own summary, and it is cheap. Long lists of "you may not do X" rules are fragile and cost more to maintain. Removed from the old design: the opencode reviewer, the roughly 40-rule permission list, the permission test script, the separate health-check script.</p>
+
+  <h2>At a glance: one session</h2>
+  <div class="flow">
+    <div class="st"><span class="lane l-you">You</span><b>/start</b><small>built, tested</small></div>
+    <div class="st"><span class="lane l-script">Script</span><b>start.sh</b><small>branch, active task, Next, warnings</small></div>
+    <div class="st"><span class="lane l-claude">Agent</span><b>Reads task file</b><small>AGENTS.md already loaded</small></div>
+    <div class="st"><span class="lane l-claude">Agent</span><b>Works one job</b><small>decisions go in the task file as one line</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>/wrap</b><small>ticks done items, adds chat decisions, rewrites Next, commits the task file only</small></div>
+    <div class="st"><span class="lane l-you">You</span><b>/next</b><small>any time: which step you are on and what you do now</small></div>
+    <div class="st"><span class="lane l-script">Git</span><b>Checkpoint commit</b><small>verify runs automatically</small></div>
+  </div>
+
+  <h2>At a glance: what a session start costs</h2>
+  <p class="sub">Approximate tokens, from file sizes divided by 4. Fixed costs (tool and skill lists, memory index) are not included in either bar.</p>
+  <div class="bar" style="width:100%">Old: START_HERE + 8 docs + walk test: about 11,400</div>
+  <div class="bar new" style="width:24%;min-width:230px">New: AGENTS.md ~1,200 + task file ~1,000</div>
+
+  <h2>At a glance: where the rules live now</h2>
+  <table>
+    <tr><th>File</th><th>Lines</th><th>Cap</th><th>Holds</th><th>Status</th></tr>
+    <tr><td><code>AGENTS.md</code></td><td>66</td><td>80</td><td>Map, ask-first list, engineering posture, honesty, session, testing and debugging, worktrees</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/process.md</code></td><td>70</td><td>70</td><td>The flow, sizing, quick vs full brief, review levels, reports, loops, rules for changing the process</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/verify.md</code></td><td>50</td><td>70</td><td>What the checker covers and doesn't, limits, testing budget</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/executor.md</code></td><td>49</td><td>70</td><td>Everything a cheap builder needs on a cold start</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>docs/rules/models.md</code></td><td>31</td><td>70</td><td>Which model does what, never the free tier, switch only after asking the owner</td><td><span class="tag built">built</span></td></tr>
+    <tr><td>area files: <code>app/</code>, <code>pipeline/</code>, <code>tools/Control_Centre/</code></td><td>22 / 11 / 9</td><td>-</td><td>Gotchas and verify commands per area</td><td><span class="tag built">built</span></td></tr>
+  </table>
+  <p class="sub"><b>Safety check:</b> from the old docs, 242 rule lines were sorted (160 keep, 20 merge, 26 replaced, 36 drop), and 296 incident lines gave 33 lessons. <code>check-rules.sh</code> confirms every kept rule is claimed by a new file: 179 to cover, 155 claimed, 24 exempt, OK. Limits agreed: about 10 new tests per task, verify in about 60 s, 2 failed attempts then stop.</p>
+
+  <h2>1. Side by side, step by step</h2>
+  <div class="grid" id="compare" aria-label="Old versus new process comparison"></div>
+  <noscript><p>This page needs JavaScript to draw the comparison.</p></noscript>
+
+  <h2>2. What could go wrong, and the safety net</h2>
+  <div class="panel risk"><b>⚠ Cheap model writes weaker briefs than Claude.</b><br>Net: you approve the "what changes for you" box, a review level checks it, and the first two tasks are an experiment with a scorecard.</div>
+  <div class="panel risk"><b>⚠ A useful old rule gets lost in the move.</b><br>Net: every rule line goes in a ledger first; a script checks the new files still contain it; old docs stay in place during a trial; a <code>pre-lean</code> snapshot and backup archives exist.</div>
+  <div class="panel risk"><b>⚠ The shorter report hides a problem.</b><br>Net: it keeps "decisions the spec didn't settle" and "not run" lines, and the checker prints raw counts.</div>
+  <div class="panel risk"><b>⚠ A fresh cheap model ignores or never sees a rule.</b><br>Net: a short executor file, few absolute rules in <code>AGENTS.md</code>, and "stop and ask" written into the task file.</div>
+  <div class="panel risk"><b>⚠ A cheap-model review (Level 1) misses something.</b><br>Net: risky work (data, deletes, contracts, deploys) always gets Claude at Level 2.</div>
+  <div class="panel risk"><b>⚠ Extra setup friction</b> (separate code copies need their own setup, ports and env files).<br>Net: one small setup script, planned.</div>
+
+  <h2>3. Review levels (keep review cheap)</h2>
+  <table>
+    <tr><th>Level</th><th>When</th><th>Who</th><th>Questions</th></tr>
+    <tr><td>0</td><td>Change describable in one sentence, nothing risky</td><td>nobody</td><td>none</td></tr>
+    <tr><td>1</td><td>Normal task (default)</td><td>a different cheap model</td><td>Does it serve the story? Simplest version? Can a check pass while it's broken? Max 5 bullets.</td></tr>
+    <tr><td>2</td><td>Risk trigger or a big plan</td><td>Claude</td><td>All 8 questions, once. Stops with "too vague" if it needs more than about 8 files.</td></tr>
+  </table>
+
+  <h2>4. Reports by kind of task</h2>
+  <p class="sub">Every report has the same four lines: commit, change summary, checker output, "decisions the spec didn't settle".</p>
+  <table>
+    <tr><th>Kind</th><th>Adds</th></tr>
+    <tr><td>Small fix (copy, style)</td><td>nothing</td></tr>
+    <tr><td>Feature</td><td>one line per acceptance check, plus your checklist</td></tr>
+    <tr><td>Bug fix</td><td>root cause with evidence, plus the test that failed before</td></tr>
+    <tr><td>Layout / UI</td><td>Playwright layout checks (measurements for overflow and overlap, plus pixel comparison against a baseline you approved), plus your checklist. No model looks at images.</td></tr>
+    <tr><td>Risky (data, deletes, contracts)</td><td>the exact lines that guard it, plus a risk-to-test map</td></tr>
+  </table>
+  <p class="sub">After every task: one scorecard line (passed first try? fix rounds? did your own test fail?).</p>
+
+  <h2>5. Where things live</h2>
+  <div class="cols">
+    <div class="panel"><b>Old (about 119 docs)</b><pre>AGENTS.md  CLAUDE.md  START_HERE.md
+docs/
+  GUIDE, ARCHITECTURE, DECISIONS ...
+  DRIFT_LOG, DRIFT_LOG_archive
+  SESSION_HANDOFF, PENDING_ACTIONS
+  web-app-workflow/ (5 files)
+  plans/ (81 files, 13 plans)
+  __PLANS/ (status pages)
+archive/</pre></div>
+    <div class="panel"><b>New (partly built)</b><pre>AGENTS.md   short map + hard rules       [built]
+CONTEXT.md  glossary only
+docs/
+  rules/     process, verify, executor, models   [built]
+  decisions/ big choices and why
+  reference/ architecture, audio research
+  work/      active task files [started], scorecard, missed.md [planned]
+(finished work: deleted; git is the record)</pre></div>
+  </div>
+
+  <h2>6. Commands and scripts</h2>
+  <p class="sub"><b>You type</b> = you run it. <b>Automatic</b> = it runs by itself at the right moment.</p>
+  <table>
+    <tr><th>Command</th><th>What it does, in plain words</th><th>How</th><th>Status</th></tr>
+    <tr><td><code>npm run verify</code></td><td>The checker. Runs the app's tests and prints what ran and what did not.</td><td>You type, or automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>npm run verify:full</code></td><td>Same, plus building the app. Used by the online checker (CI).</td><td>You type</td><td><span class="tag built">exists</span></td></tr>
+    <tr><td><code>npm run coverage</code></td><td>Shows which code the unit tests actually touch. A report only.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>npm run test:e2e</code></td><td>Runs the browser tests (Playwright).</td><td>You type</td><td><span class="tag built">exists</span></td></tr>
+    <tr><td>Save-time check</td><td>Blocks saving a change (git commit) if the checker fails. Works for any tool.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td>"Done" check</td><td>Stops Claude from saying "done" while the app code fails the checker.</td><td>Automatic (Claude only)</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>/start</code></td><td>Welcomes a fresh agent: runs the script, loads the task file, reports in 2 lines. Stops on any warning.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/start.sh</code></td><td>Prints branch, active task, its <code>Next:</code>, stray changes, stale-file and cold-start warnings.</td><td>Automatic (via /start)</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/verify-pipeline.sh</code></td><td>Runs the pipeline's tests, only when pipeline files are staged.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>/next</code></td><td>Tells you which step you are on and exactly what you need to do, in 3–5 plain lines.</td><td>You type</td><td><span class="tag built">built</span> e34d1ea</td></tr>
+    <tr><td><code>/wrap</code></td><td>Ticks the task checklist and saves a checkpoint, so the next session can pick up.</td><td>You type</td><td><span class="tag built">built</span> e34d1ea</td></tr>
+    <tr><td><code>scripts/delegate.sh &lt;task&gt;</code></td><td>The one command Claude runs to hand a task to the builder: pre-flight, build, watchdog, facts check, commit, short summary. Stops and asks before switching models. <code>--critique</code> = cold read of the brief only. Prints a ready scorecard row.</td><td>Claude runs it</td><td><span class="tag built">built</span> cf87300, tested with a fake model (outage, no commit, out of scope, success)</td></tr>
+    <tr><td><code>scripts/verify-task.sh</code></td><td>The builder's "run the checks" step. Now also fails if a promised file is missing.</td><td>Automatic</td><td><span class="tag built">built</span> 73809b4</td></tr>
+    <tr><td><code>scripts/check-brief.sh</code></td><td>Checks a brief has every required part for its template (quick or full). Checks form, not content.</td><td>Automatic</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/new-worktree.sh</code></td><td>Sets up a separate code copy for a new feature: install (app and Control Centre), design tokens, safety hooks. <code>--quick</code> starts from the short task form.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/check-rules.sh</code></td><td>Confirms every rule marked "keep" in the ledger still exists in the new files.</td><td>You type</td><td><span class="tag built">built</span></td></tr>
+    <tr><td><code>scripts/restore-old-docs.sh</code></td><td>Puts the old docs back where they were, using the map in <code>docs/_old/MAP.md</code>.</td><td>You type</td><td><span class="tag planned">planned P3</span></td></tr>
+    <tr><td><code>git grep -i "word" pre-lean -- docs AGENTS.md</code></td><td>Searches the old rules for a word, to find where something used to be said.</td><td>You type, or ask Claude</td><td><span class="tag built">works now</span></td></tr>
+    <tr><td><code>/grill-with-docs</code>, <code>/wireframe</code>, <code>/code-review</code></td><td>Your kept skills: the questioning session, layout sketches, and a fresh-eyes code review.</td><td>You type</td><td><span class="tag built">exists</span></td></tr>
+  </table>
+
+  <h2>7. Rules everyone follows</h2>
+  <div class="panel">
+    <b>Prefer the simple solution</b> (does it need to exist → reuse → built-in → one line → only then new code).
+    <b>Use a script before reasoning</b> where one can answer (search, count, check).
+    <b>Say plainly what was not checked.</b>
+    <b>Change only what the task needs.</b>
+    <b>You say yes</b> before push, deploy or delete. <b>Limits:</b> about 10 new tests per task, verify in about 60 s, two failed attempts then stop, rule files stay under their line caps.
+  </div>
+
+  <h2>7b. Changing the process (the freeze)</h2>
+  <div class="panel">
+    <ol class="steps">
+      <li>A critique reports only a concrete failing case or a contradiction, never redesigns.</li>
+      <li>A suggestion says what it adds and what it removes; a net addition needs a failure we actually saw.</li>
+      <li>Scripts only after a failure or a manual step done twice. Off the delegate path, they go.</li>
+      <li>After a passing gate, no process changes until 3 more real tasks run. Only a real failure reopens it.</li>
+    </ol>
+  </div>
+
+  <h2>8. If you feel something is missing</h2>
+  <ol class="steps">
+    <li>Tell me a keyword or the situation.</li>
+    <li>I search the old rules (the <code>pre-lean</code> snapshot) with one command and show you where it lived.</li>
+    <li>We decide together; the rule is added back and logged in <code>docs/work/missed.md</code>.</li>
+  </ol>
+
+  <h2>9. Build progress</h2>
+  <table>
+    <tr><th>Phase</th><th>What</th><th>Status</th></tr>
+    <tr><td>P0</td><td>Checker with footer, coverage report, save-time and "done" gates</td><td><span class="tag built">built</span> 7806ccf</td></tr>
+    <tr><td>P1</td><td>This page</td><td><span class="tag built">built</span> kept up to date</td></tr>
+    <tr><td>P2</td><td>Rule ledger and incident table</td><td><span class="tag built">built</span> d3cef64</td></tr>
+    <tr><td>P3 A</td><td>The 4 rule files</td><td><span class="tag built">built</span> 3d8cbf1</td></tr>
+    <tr><td>P3 B</td><td>New <code>AGENTS.md</code>, area files, <code>CLAUDE.md</code> pointer</td><td><span class="tag built">built</span> 20464bf</td></tr>
+    <tr><td>P3 /start</td><td>Session-start command and script</td><td><span class="tag built">built</span> 386847e, fcd63f1</td></tr>
+    <tr><td>P3 C</td><td>Scripts: rule check, pipeline check, worktree setup, brief check; footer time and totals</td><td><span class="tag built">built</span> f575300</td></tr>
+    <tr><td>P3 D</td><td>Task template, scorecard, missed-log</td><td><span class="tag built">built</span> 5850d80</td></tr>
+    <tr><td>P3 E</td><td>Opencode: builder, run-builder.sh, MCP off, saved in git (the opencode reviewer, run-reviewer.sh, oc-health.sh and test-agents.sh were removed 2026-10-03)</td><td><span class="tag built">built</span> 3c5733d, ba9a0b9 (flaky on first use, being simplified)</td></tr>
+    <tr><td>P3 E2</td><td>Simplified hand-off: <code>delegate.sh</code>, shell allow-list, capped logs, approved deletions, ask before model switch</td><td><span class="tag built">built</span> cf87300 (tested with a fake model, not yet with a real one)</td></tr>
+    <tr><td>P3 E2b</td><td>After the first real task: quick template, <code>--critique</code>, break-and-restore rule for the builder, scorecard row in the summary, change-the-process rules, unused scripts removed</td><td><span class="tag built">built</span> (owner approved 2026-10-03)</td></tr>
+    <tr><td>P3 E3</td><td>One real small task through <code>delegate.sh</code>, then the keep-or-drop gate</td><td><span class="tag built">1 of 3+ real tasks done</span> passed; next: a quick task, then a full task with a deletion</td></tr>
+    <tr><td>P3 F</td><td><code>/next</code>, <code>/wrap</code> (prompt-only)</td><td><span class="tag built">built</span> e34d1ea</td></tr>
+    <tr><td>P3 G</td><td>Skill pruning (turn off skills this project never uses)</td><td><span class="tag planned">planned, needs your yes</span></td></tr>
+    <tr><td>P3 H</td><td>Dry run on a real task through <code>delegate.sh</code> (Control Center stage durations)</td><td><span class="tag built">passed 2026-10-03</span></td></tr>
+    <tr><td>P3 I</td><td>Remove Superpowers (you ran the uninstall). Kept files no longer mention it; only the old docs do.</td><td><span class="tag built">done 2026-10-03</span></td></tr>
+    <tr><td>P3b</td><td>Old workflow docs: a "SUPERSEDED" banner on 11 files instead of moving them (a move would break links in about 10 kept files). <code>critique-prompt.md</code> left unmarked because you still use it.</td><td><span class="tag built">done 2026-10-03</span></td></tr>
+    <tr><td>trial</td><td>3 more real tasks (one quick, one full with a Delete list); scorecard decides what stays. Process is frozen until then.</td><td><span class="tag planned">1 of 4 done</span></td></tr>
+    <tr><td>P4, P5</td><td>Delete old docs after a clean trial; Playwright layout experiment</td><td><span class="tag planned">planned</span></td></tr>
+  </table>
+</main>
+
+<script>
+// side: old|new cells use classes same|changed|new|gone, plus risk and status flags
+const ROWS = [
+ ["Rules",
+  {c:"changed", t:"About 10 docs, 226 rule lines", d:"Rules spread over AGENTS.md, workflow files, templates, decisions, plus Superpowers.", w:"Everyone"},
+  {c:"changed", t:"AGENTS.md + 4 rule files", d:"68-line map plus process, verify, executor, models (each 70 lines or fewer). A script checks every kept rule is still covered.", w:"Script", s:"built"}],
+ ["Think",
+  {c:"same", t:"Idea + grilling", d:"You describe it; Claude asks questions until nothing is left.", w:"You + Claude"},
+  {c:"same", t:"Idea + grilling", d:"Unchanged. This is where Claude's tokens go.", w:"You + Claude"}],
+ ["Wireframe",
+  {c:"same", t:"When it applies", d:"Informal.", w:"You + Claude"},
+  {c:"same", t:"When it applies", d:"Same, optional.", w:"You + Claude"}],
+ ["Plan",
+  {c:"changed", t:"Plan + status page", d:"Plan folder, user stories, an HTML status page kept by hand.", w:"Claude"},
+  {c:"changed", t:"Plan + task checklist", d:"Plan and one checklist. No status page.", w:"Claude", s:"planned"}],
+ ["Size the task",
+  {c:"changed", t:"Claude names a tier", d:"Trivial, Bounded or Architectural; heavier if in doubt; you approve any skip.", w:"Claude"},
+  {c:"new", r:1, t:"One-sentence test", d:"If you can describe the change in one sentence and nothing risky is touched, just do it. The brief states how many files and any risk.", w:"Rule + brief", s:"built"}],
+ ["Spec / brief",
+  {c:"changed", t:"Long spec", d:"7 sections and a 143-line template, written by Claude.", w:"Claude"},
+  {c:"new", r:1, t:"Short brief", d:"A cheap model drafts it. It starts with \"what changes for you\", which you approve.", w:"Cheap model + You", s:"planned"}],
+ ["Review",
+  {c:"changed", t:"Second-model critic", d:"Reads the spec for risky work. Claude checks every finding.", w:"2nd model + Claude"},
+  {c:"new", r:1, t:"Levels 0 / 1 / 2", d:"None, a quick cold read (--critique), or Claude reads the report and the diff. Risky work reviews the code change itself.", w:"Cheap model / Claude", s:"built"}],
+ ["Hand-off",
+  {c:"changed", t:"You are the courier", d:"Claude writes the prompt; you copy it over and copy the report back.", w:"You"},
+  {c:"changed", t:"3-line prompt", d:"Questions go in the task file; the builder stops and waits. Claude runs one command, delegate.sh; no relay chain, no copy and paste.", w:"You", s:"built"}],
+ ["Build",
+  {c:"same", t:"Cheap model builds", d:"One local checkpoint commit; stops if the spec is unclear.", w:"Cheap model"},
+  {c:"changed", r:1, t:"Own code copy", d:"Builds in a separate copy (worktree) through one command, delegate.sh. Test first, stops when unsure, no push or internet.", w:"Cheap model", s:"built"}],
+ ["Check",
+  {c:"changed", t:"Self-check + spot-check", d:"The builder checks its own report; Claude spot-checks.", w:"Builder + Claude"},
+  {c:"new", t:"Automatic checker", d:"Prints what ran (with counts) and what did not. Blocks \"done\" and blocks saving a broken change, for any tool.", w:"Script", s:"built"}],
+ ["Report",
+  {c:"changed", t:"11-item report", d:"One fixed format for every task.", w:"Builder"},
+  {c:"changed", r:1, t:"Short report", d:"Four core lines plus extras by task kind, plus one scorecard line.", w:"Builder", s:"built"}],
+ ["You test",
+  {c:"same", t:"Hand checklist", d:"Sound, layout, real songs. Drafted by the builder.", w:"You"},
+  {c:"same", t:"Hand checklist", d:"Same, but written up front, so you can test early. Layout checks planned.", w:"You", s:"planned"}],
+ ["Save and ship",
+  {c:"same", t:"Ask before push / deploy", d:"Local checkpoint is fine; everything else needs your yes.", w:"You"},
+  {c:"same", t:"Ask before push / deploy", d:"Unchanged.", w:"You"}],
+ ["Next session",
+  {c:"changed", t:"Handover prompts", d:"Several prompts to wrap up; boot reads about 10 documents.", w:"You + Claude"},
+  {c:"changed", r:1, t:"/start + task file", d:"<code>/start</code> runs a script and loads the task file only: about 2,200 tokens vs about 11,400. Needs a real fresh-session trial.", w:"Script + agent", s:"built"}]
+];
+const el = document.getElementById("compare");
+const add = (cls, html, attrs="") => { const d=document.createElement("div"); d.className=cls; d.innerHTML=html; if(attrs) d.setAttribute(...attrs.split("=")); el.appendChild(d); return d; };
+add("head",""); add("head","OLD"); add("head","NEW");
+for (const [stage, o, n] of ROWS) {
+  add("stage", stage);
+  for (const [side, x] of [["OLD", o], ["NEW", n]]) {
+    const status = x.s === "built" ? '<span class="tag built">built</span>' : x.s === "planned" ? '<span class="tag planned">planned</span>' : "";
+    const risk = x.r ? '<span class="tag warn">⚠ risky</span>' : "";
+    const d = add("cell " + x.c + (x.r ? " risk" : ""), "<b>" + x.t + "</b>" + risk + status + "<br>" + x.d + '<div class="who">' + x.w + "</div>");
+    d.dataset.side = side;
+  }
+}
+</script>
+</body>
+</html>

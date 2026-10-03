@@ -4,7 +4,7 @@
 
 - [Design System](./CONTEXT.md): the multi-brand token system and its brand-management UI. Physically lives under `app/packages/design-system` today; this file's own location (repo root) is a holdover from before this map existed — left as-is since the design system's code hasn't moved yet either (eventual destination: `tools/`, alongside `tools/backlog-board`).
 - [Planning methodology](./docs/CONTEXT.md): the Backlog → Plan → Task → Spec vocabulary this repo already uses for any nontrivial change, independent of any one tool that visualizes it.
-- [Control Center](./tools/Control_Centre/CONTEXT.md): the local admin app that aggregates native modules and links out to integrated tools. No code exists yet (planning stage, `docs/plans/2026-09-24-control-center/`) — this file is created early, lazily-thin, because the Native module / Integrated tool distinction is load-bearing vocabulary for that plan.
+- [Control Center](./tools/Control_Centre/CONTEXT.md): the local admin app that aggregates native modules and links out to integrated tools. Built and in use (see its `STATUS.md`; plan in `docs/plans/2026-09-24-control-center/`). Its vocabulary file stays thin on purpose: the Native module / Integrated tool distinction is the load-bearing part.
 
 ## Relationships
 

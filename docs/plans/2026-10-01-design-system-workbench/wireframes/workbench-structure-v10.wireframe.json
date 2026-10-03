@@ -1,0 +1,675 @@
+{
+  "name": "Design System Workbench - Structure v10",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [
+          0,
+          16
+        ],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          {
+            "name": "Design System - brand: default (switcher)",
+            "type": "input",
+            "height": 40,
+            "grow": true,
+            "maxWidth": 320
+          },
+          {
+            "name": "Mode toggle (moon / sun icon)",
+            "type": "icon",
+            "width": 40,
+            "height": 40
+          },
+          {
+            "name": "Spacer",
+            "grow": true,
+            "direction": "vertical",
+            "children": []
+          },
+          {
+            "name": "Save Status",
+            "direction": "horizontal",
+            "gap": 16,
+            "align": "center",
+            "children": [
+              {
+                "name": "3 unsaved changes",
+                "type": "text",
+                "height": 24
+              },
+              {
+                "name": "Not deployed",
+                "type": "text",
+                "variant": "caption",
+                "height": 24
+              }
+            ]
+          },
+          {
+            "name": "Discard",
+            "type": "link",
+            "height": 40
+          },
+          {
+            "name": "Save",
+            "type": "button",
+            "height": 40
+          }
+        ]
+      },
+      {
+        "name": "Top Bar Divider",
+        "type": "divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              {
+                "name": "Search (Cmd+K)",
+                "type": "input",
+                "height": 40
+              },
+              {
+                "name": "Top Sections",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Glossary",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Foundations",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              },
+              {
+                "name": "Sidebar Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Components (flat A-Z, all shown, list scrolls)",
+                "direction": "vertical",
+                "gap": 4,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Components",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 24
+                  },
+                  {
+                    "name": "Badge",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Breadcrumbs",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Button (selected)",
+                    "type": "button",
+                    "height": 48
+                  },
+                  {
+                    "name": "Card",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Color Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Divider",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Icon Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Menu",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Panel",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Segmented Control",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Select",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Slider",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Tabs",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Text Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Toast",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Tooltip",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sidebar / Canvas Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Canvas (flexes with screen width)",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Components / Actions / Button",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 16
+                  },
+                  {
+                    "name": "Button",
+                    "type": "text",
+                    "variant": "display",
+                    "height": 48
+                  },
+                  {
+                    "name": "One-line purpose of this component",
+                    "type": "text",
+                    "height": 24
+                  }
+                ]
+              },
+              {
+                "name": "Variants by States",
+                "direction": "vertical",
+                "gap": 16,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Column Labels",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "Variant",
+                        "type": "text",
+                        "variant": "caption",
+                        "width": 96,
+                        "height": 16
+                      },
+                      {
+                        "name": "Default",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "grow": true
+                      },
+                      {
+                        "name": "Hover",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "grow": true
+                      },
+                      {
+                        "name": "Pressed",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "grow": true
+                      },
+                      {
+                        "name": "Disabled",
+                        "type": "text",
+                        "variant": "caption",
+                        "height": 16,
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row: Primary",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Primary",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "Primary Default",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Primary Hover (selected)",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Primary Pressed",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Primary Disabled",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row: Secondary",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Secondary",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "Secondary Default",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Secondary Hover",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Secondary Pressed",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Secondary Disabled",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Row: Ghost",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Ghost",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "Ghost Default",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Ghost Hover",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Ghost Pressed",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      },
+                      {
+                        "name": "Ghost Disabled",
+                        "type": "card",
+                        "grow": true,
+                        "height": 96
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Canvas / Inspector Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Right Inspector (scrolls if tall; collapses below 1200px)",
+            "width": 320,
+            "direction": "vertical",
+            "padding": 24,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Inspector Header",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Title Row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Button",
+                        "type": "text",
+                        "variant": "heading",
+                        "height": 32
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Primary / Hover (selected)",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 16
+                  }
+                ]
+              },
+              {
+                "name": "Header Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Primary variant section",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  {
+                    "name": "Primary variant header",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Primary variant",
+                        "type": "text",
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Background row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Background",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "Color picker",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Text row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Text",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "#141413",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "Color picker",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Section Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Shared by all variants section",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  {
+                    "name": "Shared by all variants header",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Shared by all variants",
+                        "type": "text",
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Padding row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Padding",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "16 X",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "8 Y",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Radius row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Radius",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "8",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "slider --o--",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Font row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Font",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "[T] Geist Sans",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Font size row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Font size",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "14",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": "slider --o--",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Font weight row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Font weight",
+                        "type": "text",
+                        "width": 96,
+                        "height": 24
+                      },
+                      {
+                        "name": "Medium 500  v",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

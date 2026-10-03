@@ -19,6 +19,7 @@
     "prestage": "npm run tokens:build",
     "lint": "eslint",
     "test": "node --test lib/**/*.test.ts",
+    "coverage": "node --test --experimental-test-coverage lib/**/*.test.ts",
     "typecheck": "next typegen && tsc --noEmit",
     "verify": "bash scripts/verify.sh",
     "verify:full": "bash scripts/verify.sh --full",

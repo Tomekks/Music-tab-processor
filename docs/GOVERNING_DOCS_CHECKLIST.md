@@ -1,5 +1,7 @@
 # Governing docs — manual audit checklist
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 Tiered by how essential each is. Tier 1-2 shape every task; Tier 3-6 are reference,
 consulted by topic rather than read cover-to-cover. Written 2026-09-26 as a one-time
 personal audit aid — a snapshot, not a maintained index (that's `docs/GUIDE.md`'s job).

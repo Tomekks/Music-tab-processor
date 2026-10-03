@@ -1,5 +1,7 @@
 # Web App Workflow
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 **This file is an index, not the full workflow** — read this to get oriented and to know which
 topic file to open; the details live in `docs/web-app-workflow/`. **This file must stay an
 index.** New process rules go into the matching topic file (or a new one, following

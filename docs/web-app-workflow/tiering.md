@@ -1,5 +1,7 @@
 # Task tiering (`docs/WEB_APP_WORKFLOW.md` §1–2)
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 Part of the `app/` workflow — see `docs/WEB_APP_WORKFLOW.md` for the index.
 
 ## 1. Classify the task first

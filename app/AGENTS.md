@@ -7,3 +7,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# App rules
+
+- **Design tokens only.** No hardcoded colors, sizes or spacing in app UI; use the design-system tokens.
+- **Verify:** `npm run verify` in `app/` (typecheck, lint, unit tests, design-system tests). Read the footer.
+- **Stage before asking to ship:** `npm run stage` (real build served on :3001), then ask the push/deploy
+  question from the root `AGENTS.md`. Deploy only from the repo root, never from `app/`.
+- A new write path reachable from outside (forms, auth) needs a fresh security review; so does any change
+  to the app's read-only shape (today's clean result is specific to a read-only, no-auth app).
+- Stack versions and generated files: don't trust stale version notes; check `package.json` and lockfile.
+- Four npm-audit findings from `esbuild` via `drizzle-kit` are dev-tool-only; leave them, don't downgrade.

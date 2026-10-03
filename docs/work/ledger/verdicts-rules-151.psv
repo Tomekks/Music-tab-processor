@@ -1,0 +1,50 @@
+R151|KEEP|PROCESS|-|N|Requires explicit edge-case behavior not vague handling
+R152|MERGE|PROCESS|R151|N|Continuation detailing error types and recovery
+R153|KEEP|PROCESS|-|N|Steps ordered to keep code never broken
+R154|KEEP|VERIFY|-|N|Limits Run Expected to greenfield localisation only
+R155|KEEP|VERIFY|-|N|Requires diff-stat matches Modify-only scope
+R156|KEEP|VERIFY|-|N|Rejects unverifiable execution-model criteria
+R157|KEEP|PROCESS|-|N|Mandates explicit STOP conditions without improvisation
+R158|KEEP|VERIFY|-|N|First drift check via git status porcelain
+R159|KEEP|VERIFY|-|N|Second drift check via diff against base
+R160|MERGE|VERIFY|R159|N|Completes diff check with excerpt comparison rule
+R161|MERGE|VERIFY|R158|N|Clarifies untracked files outside scope ignored
+R162|KEEP|PROCESS|-|N|Requires spec-specific risks beyond generic stops
+R163|KEEP|PROCESS|-|N|Stops on verify failure or out-of-scope need
+R164|KEEP|PROCESS|-|N|Tests spec executability by unfamiliar model
+R165|KEEP|VERIFY|-|N|Requires verifications as commands with expected results
+R166|KEEP|PROCESS|-|N|Ensures reviewer understands approval from story alone
+R167|SUPERSEDED|-|-|N|Deleted finished work; git history is record
+R168|SUPERSEDED|-|-|N|Levels 0-2 review and brief-grill split replace
+R169|SUPERSEDED|-|-|N|No status pages; git history is record
+R170|SUPERSEDED|-|-|N|No status pages; git history is record
+R171|SUPERSEDED|-|-|N|No status pages; git history is record
+R172|KEEP|AGENTS|-|N|Never paste raw logs; report pass-fail diff-stat
+R173|MERGE|AGENTS|R172|N|Notes auto-compact; same token discipline idea
+R174|KEEP|DECISION|-|N|Defines goal as recognizable not note-perfect
+R175|KEEP|DECISION|-|N|Keeps heavy pipeline local; serverless unsuitable
+R176|KEEP|SAFETY|-|N|Never expose Mac; keep sides unconnected
+R177|KEEP|SAFETY|-|N|Never store audio stems MIDI for copyright
+R178|KEEP|DECISION|-|N|Keeps auto-deploy off with separate gates
+R179|DROP|-|-|Y|Backlog UI idea not a rule
+R180|DROP|-|-|N|File-scope description not actionable rule
+R181|KEEP|DECISION|-|N|ASCII baseline with opt-in richer layers
+R182|KEEP|DECISION|-|N|Synthesized playback not original for beginners
+R183|KEEP|ENGINEERING|-|N|Enforces boundary type and schema checking
+R184|KEEP|VERIFY|-|N|Requires CI tests linting every commit
+R185|KEEP|ENGINEERING|-|N|Complexity ceilings trigger immediate refactor
+R186|KEEP|ENGINEERING|-|N|Cost fixes concretely not by feel
+R187|KEEP|MODELS|-|N|Must work with any model without conventions
+R188|SUPERSEDED|-|-|N|Superpowers removed; rules restated in AGENTS.md
+R189|KEEP|SAFETY|-|N|Ask before commit push deletion; explain outbound
+R190|KEEP|AGENTS|-|N|Surface assumptions; ask on ambiguous tasks
+R191|KEEP|AGENTS|-|N|Clean only orphans own edit creates
+R192|KEEP|DECISION|-|N|Rejects always-on hooks for token overhead
+R193|KEEP|ENGINEERING|-|N|Minimum code; no unasked abstraction
+R194|KEEP|DECISION|-|N|Always-populated brands with click-to-reset
+R195|KEEP|DECISION|-|N|Never retarget to frozen Duplicate brand
+R196|DROP|-|-|N|Case-study tone note not repo rule
+R197|MERGE|SAFETY|R189|N|Commit ask-policy duplicates safety principles
+R198|KEEP|ENGINEERING|-|N|Defer comment rewrites until fix confirmed
+R199|DROP|-|-|N|Historical progress status not a rule
+R200|KEEP|PROCESS|-|N|Defaults critique block; execution prompt on request

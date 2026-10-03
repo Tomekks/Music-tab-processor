@@ -1,5 +1,7 @@
 # Session checkpoint
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 Point whichever AI you're working with at this file — plain language works:
 *"let's do a session checkpoint."* No special command needed, and nothing here
 depends on Claude Code specifically.

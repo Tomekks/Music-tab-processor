@@ -1,5 +1,7 @@
 # Spec template (`docs/WEB_APP_WORKFLOW.md` §3)
 
+> **SUPERSEDED 2026-10-03.** The current process is `AGENTS.md` and `docs/rules/` (the flow is `docs/rules/process.md`). This file is kept for history until the trial tasks finish. Do not follow it.
+
 Part of the `app/` workflow — see `docs/WEB_APP_WORKFLOW.md` for the index. Covers Bounded and
 Architectural tasks (see `docs/web-app-workflow/tiering.md` for what triggers each tier). Also the
 template for `tools/Control_Centre` specs. The executor is an execution model run via OpenCode;
