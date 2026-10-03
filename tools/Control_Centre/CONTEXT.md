@@ -2,7 +2,7 @@
 
 A single-user, local admin web app that aggregates control over this project's
 key parts — replacing "ask an AI to run a terminal command" with real buttons.
-No code exists yet; this file front-loads the vocabulary settled during
+The app is built (see `STATUS.md`); this file holds the vocabulary settled during
 planning (`docs/plans/2026-09-24-control-center/`) since it's load-bearing for
 every module's design.
 
