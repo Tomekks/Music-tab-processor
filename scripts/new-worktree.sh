@@ -46,7 +46,7 @@ fi
 if [ "$INSTALL" -eq 1 ]; then
   (cd app && npm install --silent) && echo "installed app dependencies"
   if [ -f tools/Control_Centre/package.json ]; then
-    (cd tools/Control_Centre && npm install --silent) && echo "installed Control Centre dependencies"
+    (cd tools/Control_Centre && npm install --silent && npm run tokens --silent) && echo "installed Control Centre dependencies and generated its design tokens"
   fi
 fi
 
