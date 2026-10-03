@@ -37,7 +37,8 @@ task file. Nothing else. Do not invent process.
    (anything you chose that changes behavior, an interface, or something the brief left open, or NONE);
    any spec fact that was wrong; anything noticed but not touched. Mark anything you didn't run as
    `Not run`. A bug-fix report adds the root cause with evidence and the test that failed first.
+3a. Never paste raw logs into the report or chat: pass/fail, counts and the diff stat only.
 4. Draft the owner's checklist if the task needs one (one action and one expected result per item).
    You never perform it.
 
-<!-- covers: R119 R122 R128 R130 R131 R132 R137 R138 R140 R145 R146 R147 R148 R149 R150 R151 R152 R160 R161 R163 R216 R234 -->
+<!-- covers: R119 R122 R128 R130 R131 R132 R137 R138 R140 R145 R146 R147 R148 R149 R150 R151 R152 R160 R161 R163 R216 R234 R172 R173 -->

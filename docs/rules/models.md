@@ -24,4 +24,4 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 - `opencode stats --models --days 0` shows tokens and cost per model; read it before and after a task.
 - The builder works in its own worktree, started with `/exec <task file>`; the reviewer with `/review`.
 
-<!-- covers: R187 -->
+<!-- covers: R187 R206 -->
