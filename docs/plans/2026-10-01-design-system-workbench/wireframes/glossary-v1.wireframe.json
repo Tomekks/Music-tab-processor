@@ -1,0 +1,863 @@
+{
+  "name": "Design System Workbench - Glossary v1 (real terms)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [
+          0,
+          16
+        ],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          {
+            "name": "Design System - brand: default (switcher)",
+            "type": "input",
+            "height": 40,
+            "grow": true,
+            "maxWidth": 320
+          },
+          {
+            "name": "Mode toggle (moon / sun icon)",
+            "type": "icon",
+            "width": 40,
+            "height": 40
+          },
+          {
+            "name": "Spacer",
+            "grow": true,
+            "direction": "vertical",
+            "children": []
+          },
+          {
+            "name": "Save Status",
+            "direction": "horizontal",
+            "gap": 16,
+            "align": "center",
+            "children": [
+              {
+                "name": "3 unsaved changes",
+                "type": "text",
+                "height": 24
+              },
+              {
+                "name": "Not deployed",
+                "type": "text",
+                "variant": "caption",
+                "height": 24
+              }
+            ]
+          },
+          {
+            "name": "Discard",
+            "type": "link",
+            "height": 40
+          },
+          {
+            "name": "Save",
+            "type": "button",
+            "height": 40
+          }
+        ]
+      },
+      {
+        "name": "Top Bar Divider",
+        "type": "divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar (fixed in view; its list scrolls inside this column)",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              {
+                "name": "Search (Cmd+K)",
+                "type": "input",
+                "height": 40
+              },
+              {
+                "name": "Top Sections",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Glossary (selected)",
+                    "type": "button",
+                    "height": 48
+                  },
+                  {
+                    "name": "Foundations",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              },
+              {
+                "name": "Sidebar Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Components (A-Z, scrolls within the sidebar)",
+                "direction": "vertical",
+                "gap": 4,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Components",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 24
+                  },
+                  {
+                    "name": "Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Color Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Icon Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Segmented Control",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Slider",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sidebar / Canvas Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Canvas (sticky header stays; terms scroll inside this column). The inspector column is hidden on this page.",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header (sticky)",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Glossary",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Title row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Glossary",
+                        "type": "text",
+                        "height": 48,
+                        "variant": "display"
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: The words this design system uses. Edit a term with its pencil; saved with Save.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Jump links",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "Brands",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Tokens and structure",
+                        "type": "link",
+                        "height": 24
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Sticky Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Canvas Content (scrolls)",
+                "direction": "vertical",
+                "gap": 24,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Group: Brands",
+                    "direction": "vertical",
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Brands",
+                        "type": "text",
+                        "height": 32,
+                        "variant": "heading"
+                      },
+                      {
+                        "name": "Term: Brand",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Brand",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A full, resolvable set of design-system token values (color, radius, space, typography, etc.) that styles one consuming project or surface. Every brand shares the same token schema \u2014 no brand adds or removes a variable another brand lacks; brands diverge only in values, never in shape.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Theme, skin",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Main brand",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Main brand",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "The one brand that cannot be deleted (implemented today as \"default\"/the root brand). Every other brand's Revert action resets a field against Main's live current value.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Default brand, root brand (both still used in code/specs; Main is the product-facing term)",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Child brand",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Child brand",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Any brand other than Main. Its `tokens.json` stays sparse \u2014 an unedited field is simply absent and resolves live from Main at read time (today's shipped `resolveBrandTree` mechanism, kept as-is). Editing a field creates a real override; Revert deletes it, returning to live inheritance.",
+                            "type": "text",
+                            "height": 72
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: New brand",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "New brand (create action)",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Creates a child brand with zero overrides \u2014 every field inherits Main's live value from creation onward, following any future Main edit automatically until a specific field is touched.",
+                            "type": "text",
+                            "height": 72
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Duplicate brand",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Duplicate brand (create action)",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Creates a child brand with every field explicitly overridden to the chosen source brand's current values, frozen at that instant. Does not follow the source (or Main) afterward for any field that was set at duplication time \u2014 only an explicit edit or Revert changes it from there. Available on any br...",
+                            "type": "text",
+                            "height": 72
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Distribution",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Distribution",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "Always-latest \u2014 every consumer reads the design system's current values on each load, no versioning or pinning. CSS-only output (custom properties); no second export format planned until a real non-CSS consumer exists.",
+                            "type": "text",
+                            "height": 72
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Brands",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Group: Tokens and structure",
+                    "direction": "vertical",
+                    "gap": 12,
+                    "children": [
+                      {
+                        "name": "Tokens and structure",
+                        "type": "text",
+                        "height": 32,
+                        "variant": "heading"
+                      },
+                      {
+                        "name": "Term: Token",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Token",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A single named design value (a color, a length, a font) that a Brand sets.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Variable, field (both still appear in the editor's UI and code)",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Foundation",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Foundation",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A group of cross-cutting Tokens that belong to no single Component: color roles, radius, space, typography, state opacities, focus ring, layout.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Semantic tokens, globals",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Component",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Component",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A reusable interface element of the design system that owns its own group of Tokens (Button, Icon Button, Slider, Segmented Control, Color Field).",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Widget, control",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Variant",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Variant",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  },
+                                  {
+                                    "name": "edited",
+                                    "type": "text",
+                                    "height": 16,
+                                    "variant": "caption"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "Done / Cancel",
+                                "type": "link",
+                                "height": 24
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A named version of a Component chosen by one of its options, such as a Button's primary or secondary look.  [editable text box]",
+                            "type": "input",
+                            "height": 120
+                          },
+                          {
+                            "name": "Avoid: Type, kind, style  [editable]",
+                            "type": "input",
+                            "height": 40
+                          },
+                          {
+                            "name": "Saved with Save, like a token edit. The term name is fixed.",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ],
+                        "type": "card"
+                      },
+                      {
+                        "name": "Term: State",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "State",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A condition a Component can be in that changes its look: hover, pressed, disabled, focused.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Status",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Override",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Override",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "A Child brand's own value for a Token in a given Mode, replacing the value it would inherit from Main. An Override can be switched off, which falls back to Main's value while keeping the stored value, and switched back on to restore it. Revert is different: it removes the Override entirely.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Customization, local value",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Term: Mode",
+                        "direction": "vertical",
+                        "gap": 8,
+                        "padding": 16,
+                        "children": [
+                          {
+                            "name": "Title row",
+                            "direction": "horizontal",
+                            "justify": "space-between",
+                            "align": "center",
+                            "children": [
+                              {
+                                "name": "Term + marker",
+                                "direction": "horizontal",
+                                "gap": 8,
+                                "align": "center",
+                                "children": [
+                                  {
+                                    "name": "Mode",
+                                    "type": "text",
+                                    "height": 32,
+                                    "variant": "heading"
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "pencil icon (lucide pencil) - click to edit",
+                                "type": "icon",
+                                "width": 20,
+                                "height": 20
+                              }
+                            ]
+                          },
+                          {
+                            "name": "The light or dark appearance a Brand is shown in. A Token that differs between Modes has a value for each.",
+                            "type": "text",
+                            "height": 72
+                          },
+                          {
+                            "name": "Avoid: Theme (reserved against Brand), dark theme",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
