@@ -27,12 +27,17 @@ states = [
  bar("5. File changed on disk since you opened it: Save stops, nothing is overwritten", [t("tokens.json changed outside the workbench", None, 24)], [link("Review changes"), btn("Reload")]),
 ]
 
-def change_row(name, was, now, kind):
+def change_row(name, was, now, kind, color=False):
+    def val(label, v):
+        kids = ([{"name": "swatch " + v, "type": "icon", "width": 20, "height": 20}] if color else []) + [t(label + " " + v, "caption", 16)]
+        return {"name": label + " value", "direction": "horizontal", "gap": 6, "align": "center", "width": 150 if color else None, "children": kids}
+    w = val("was", was); n = val("now", now)
+    if not color: w.pop("width"); n.pop("width")
     return {"name": "Change: " + name, "direction": "horizontal", "gap": 12, "align": "center", "height": 40, "children": [
-        t(kind, "caption", 16, width=56), t(name, None, 24, width=240), t("was " + was, "caption", 16, width=120), t("now " + now, "caption", 16, grow=True), link("Discard")]}
+        t(kind, "caption", 16, width=56), t(name, None, 24, width=240), w, n, {"name": " ", "grow": True, "height": 1}, link("Discard")]}
 popover = {"name": "Changes list (opens from 'N unsaved changes'; click a row to jump to it)", "width": 760, "direction": "vertical", "gap": 8, "padding": 16, "type": "card", "children": [
     t("Unsaved changes (4)", "heading", 32),
-    change_row("semantic.color.accent", "#AE97F7", "#4A90D9", "Token"),
+    change_row("semantic.color.accent", "#AE97F7", "#4A90D9", "Token", color=True),
     change_row("semantic.state.hoverOpacity", "8%", "10%", "Token"),
     change_row("component.button.paddingX", "16px", "20px", "Token"),
     change_row("Variant", "A named version of a Component...", "(definition edited)", "Term"),

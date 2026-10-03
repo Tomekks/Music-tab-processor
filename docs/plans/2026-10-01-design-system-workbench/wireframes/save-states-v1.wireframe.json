@@ -383,18 +383,51 @@
                 "width": 240
               },
               {
-                "name": "was #AE97F7",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "width": 120
+                "name": "was value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "width": 150,
+                "children": [
+                  {
+                    "name": "swatch #AE97F7",
+                    "type": "icon",
+                    "width": 20,
+                    "height": 20
+                  },
+                  {
+                    "name": "was #AE97F7",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
               },
               {
-                "name": "now #4A90D9",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "grow": true
+                "name": "now value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "width": 150,
+                "children": [
+                  {
+                    "name": "swatch #4A90D9",
+                    "type": "icon",
+                    "width": 20,
+                    "height": 20
+                  },
+                  {
+                    "name": "now #4A90D9",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": " ",
+                "grow": true,
+                "height": 1
               },
               {
                 "name": "Discard",
@@ -424,18 +457,37 @@
                 "width": 240
               },
               {
-                "name": "was 8%",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "width": 120
+                "name": "was value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "was 8%",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
               },
               {
-                "name": "now 10%",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "grow": true
+                "name": "now value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "now 10%",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": " ",
+                "grow": true,
+                "height": 1
               },
               {
                 "name": "Discard",
@@ -465,18 +517,37 @@
                 "width": 240
               },
               {
-                "name": "was 16px",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "width": 120
+                "name": "was value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "was 16px",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
               },
               {
-                "name": "now 20px",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "grow": true
+                "name": "now value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "now 20px",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": " ",
+                "grow": true,
+                "height": 1
               },
               {
                 "name": "Discard",
@@ -506,18 +577,37 @@
                 "width": 240
               },
               {
-                "name": "was A named version of a Component...",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "width": 120
+                "name": "was value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "was A named version of a Component...",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
               },
               {
-                "name": "now (definition edited)",
-                "type": "text",
-                "height": 16,
-                "variant": "caption",
-                "grow": true
+                "name": "now value",
+                "direction": "horizontal",
+                "gap": 6,
+                "align": "center",
+                "children": [
+                  {
+                    "name": "now (definition edited)",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": " ",
+                "grow": true,
+                "height": 1
               },
               {
                 "name": "Discard",
