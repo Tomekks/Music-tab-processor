@@ -24,6 +24,15 @@ done
 
 if [ "${#ACTIVE[@]}" -eq 0 ]; then
   echo "task:    none active"
+  # Pending plans: a plan with a top "**Status (date):**" line is live; make a task file to start it.
+  PEND=""
+  for p in docs/plans/*/; do
+    pf="$p$(basename "$p").md"
+    [ -f "$pf" ] || continue
+    ST="$(grep -m1 -E '^\*\*Status \(' "$pf" | sed -E 's/^\*\*Status \(([^)]*)\):\*\*[[:space:]]*/\1: /' | cut -c1-110)"
+    [ -z "$ST" ] || PEND="$PEND  $(basename "$p")  [$ST...]\n"
+  done
+  [ -z "$PEND" ] || { echo "pending plans (no task file yet):"; printf "$PEND"; }
   echo "-> No active task. Ask the user what to work on; suggest /grill-with-docs for a new idea."
   exit 0
 fi
