@@ -2,100 +2,30 @@
 
 Status: done
 Branch: feat/ds-workbench-colors
-Next: none for 1e. Built twice (effort test: low `ae792a1` and high `092ba36`), owner picked low 2026-10-04, merged locally into master, NOT pushed (one push after the slice-1 tasks). Follow-up 1e2 (preview fit, forced light, iframe height = content, sidebar 180px, description 12px regular) in a NEW session: `/start`. Leftovers, ask before deleting: worktrees ../guitar_tab_processor-ds-colors-low and -high and the feat/ds-workbench-colors-low and -high branches (high kept as the comparison).
-## Decisions (owner, in chat, 2026-10-04, after looking at the high run in the browser)
-- Found by Claude: the preview's dark mode comes from the web app's own theme hook (`app/hooks/useThemeMode.ts`: seeds `dark`, then switches to the value stored in `localStorage` or the system setting), so the iframe follows the web app's saved theme, not the workbench. The Variant by State table has no width limit (`app/app/workbench-preview/Preview.tsx:63`), so it is wider than the iframe and gets clipped on the right.
-- Owner feedback (to build as a follow-up task 1e2, Level 1, after 1e is merged): (1) the preview content fits the iframe width instead of being clipped; (2) workbench left sidebar 280px becomes 180px; (3) the preview shows the design system's own look (slice 1: light) and does not follow the web app's saved theme; (4) no light-then-dark flash on load; (5) the iframe is taller so the content is not cramped. Claude's reading of 1, 3, 4, 5 is waiting for the owner's yes.
-
-- Merge decision (owner): low. Description text stays, but 12px regular and a narrower column (goes into 1e2). 1e2 is a separate task (file-count rule for reviews).
-
-## Questions
-(none open; the builder first stopped on a stale Written against, fixed by Claude)
-
-## Report
-- `bash scripts/verify-task.sh` → last line `verify-task: PASS` ✓
-- ignores non-color tokens and everything outside semantic → `node --test src/lib/server/colorTokens.test.ts`: 5/5 pass, incl. radius-dimension and component-button-color fixtures excluded ✓
-- resolves references; literals pass through → `{primitive.color.accent}` → `#ae97f7`, `#e6dfd8` unchanged ✓
-- cssVar matches the package naming → `--background` / `--color-accent` / `--focus-ring-color` ✓
-- keeps file order; missing description is `""` → order test passes ✓
-- dangling reference throws naming the reference → message contains `primitive.color.nope` ✓
-- Mutation check: dropping the `$type === "color"` rule fails "ignores non-color tokens…" (radius.base leaks); dropping the `semantic.` rule fails the same test (component.button.x leaks); both restored, 5/5 green.
-- Decisions the spec didn't settle: (1) `cssVarNameForPath` returns `string | null`, so the mapping uses `as string` (null never occurs for semantic colors; no fallback invented). (2) Sidebar active state uses `$derived(page.url.pathname === "/foundations")` in the layout script instead of an inline `{@const}`, matching the Component links' `class:active` + `aria-current` look. (3) Page builds `rows`/`hasTokens` with `$derived` (fixes a `state_referenced_locally` svelte-check warning) and `{#if}/{:else}` renders only prebuilt strings (`{emptyText}`, `{descriptionText}`), per the AGENTS.md `{#if}` rule.
-- Wrong spec facts: none.
-- Noticed but not touched: nothing.
+Next: 1e is merged locally into master (`7f03ef1`), NOT pushed (one push after the slice-1 tasks). Next task is 1e2 (below) in a NEW session in the main folder: `/start`, say "1e2"; it needs `scripts/new-worktree.sh`, a brief (Level 2: touches `app/` and the workbench), `/review` (runs the blind second reviewer), then a low and high builder pair (`scripts/delegate.sh`, `scripts/effort-compare.sh`). Set `Written against` to the latest commit before delegating (delegate.sh now refuses a stale one). Open owner decisions: (1) `docs/rules/models.md` lines 9 and 27 still say the cheap model alone does Level 1 reviews, but `/review` now has Claude answer and a blind DeepSeek second opinion (trial, scorecard "Second opinion"); (2) owner checklist items 2 and 3 below were not confirmed. Leftovers, ask before deleting each: worktrees `../guitar_tab_processor-feat-ds-workbench-colors` (this one), `../guitar_tab_processor-ds-colors-low`, `../guitar_tab_processor-ds-colors-high`; branches `feat/ds-workbench-colors`, `-low`, `-high` (keep high as the comparison); stash `stash@{0}` (1b evidence); old branches `feat/ds-workbench-shell`, `-preview`, `-scaffold`, `-save`; untracked `.claude/skills/`, `app/packages/design-system/brands/byebye/` and `heyhey/` (never decided). Usage at session end: 5h=62% weekly=42% ctx=29%; `measure.sh report`: 15 marks, 3,691s between first and last.
 Written against: a69d684
 
-## What changes for you
-In the workbench (`http://localhost:5174`) the "Foundations" row in the left sidebar becomes a link to a new page `/foundations`. The page shows, top to bottom: a "Preview" window (an iframe of the web app's `/workbench-preview`, so the five real Components) and a "Colors" list with one row per color token of the default brand: a color swatch, the token's name, its CSS variable (for example `--color-accent`), its current value as hex, and its description (or "(no description yet)"). Read-only: nothing can be edited or saved yet (task 1f). The web app must be running on port 3000 for the preview to show; otherwise the window stays empty.
+## What changed for you
+The workbench (`http://localhost:5174`) has a page `/foundations`, linked from the "Foundations" sidebar row: a Preview iframe of the web app's `/workbench-preview` (the five real Components) above a read-only Colors list (16 rows: swatch, name, CSS variable, hex, description or "(no description yet)"). The web app must run on port 3000 for the preview. Nothing can be edited or saved yet (1f).
 
-## Scope
-**Modify only:**
-- `tools/Design_System/src/routes/+layout.svelte`
-- `tools/Design_System/src/routes/foundations/+page.server.ts`
-- `tools/Design_System/src/routes/foundations/+page.svelte`
-- `tools/Design_System/src/lib/server/colorTokens.ts`
-- `tools/Design_System/src/lib/server/colorTokens.test.ts`
+## Done
+- Brief (Level 1) with `/review`: a Claude pass and a blind DeepSeek pass found the same real gap (descriptions are out of scope in the plan, line 108); Claude added reuse of `buildFieldDescriptors`, a `process.cwd()` brand path, and dropped the unused `raw` field. Config change `checkJs: false` in `tools/Design_System/tsconfig.json` approved and committed (`098cb81`).
+- Effort test, same brief, two worktrees: low (`ae792a1`) 88,276 tok, $0.01, 179s; high (`092ba36`) 69,315 tok, $0.01, 205s. Both: verify PASS, scope OK, 5 tests, about the same code (rows in `docs/work/scorecard.md`). Both stopped at `finish.sh` because Claude left `Written against` stale; Claude fixed it and ran `finish.sh`. The high run also hit the known `tool_choice` API crash at the very end.
+- Owner picked low, merged into master with `--no-ff` (`7f03ef1`); `npm run verify` on the merged tree: PASS (typecheck, lint, unit 60/60, design-system 142/142; build and e2e not run); workbench `npm run verify`: 14/14.
+- Side work committed on the same branch: per-run builder tokens from the session export (`measure.sh session`), `scripts/effort-compare.sh`, `scripts/review-second.sh` (blind second reviewer, with tests), one `/review` for both levels (Level 1 = questions 1, 4, 6; Level 2 = all eight), `delegate.sh` scope pre-flight (stops on a stale `Written against`, with test), `/wrap` renames the session.
 
-**Do NOT touch:**
-- `contracts/`, config (including `tsconfig.json`, `vite.config.ts`), secrets, `app/` (including `app/packages/design-system/`), anything not listed above
-
-## Size
-Files touched: 5 (4 new, 1 changed). Expected diff: ~180 lines. New tests: 5.
-
-## Risk
-Triggers: none (read-only; reads the default brand's `tokens.json` on the server through the package's existing `readTokens`; no new network listener; the iframe loads `localhost:3000`, the page the app already serves only in dev). Review level: 1.
-
-## Review
-(Level 1, questions 1, 4, 6; Claude's answers, then compared with the blind DeepSeek run.)
-- Q1: page, iframe, list and sidebar link trace to the 1e plan row (`docs/plans/2026-10-01-design-system-workbench/2026-10-01-design-system-workbench.md:121`); `cssVar` traces to 1f (the preview accepts only `--name` keys, `app/lib/workbenchPreview.ts:3,15`). Not traceable: the description text, since the plan's slice-1 out-of-scope list names "descriptions" (same file, line 108); kept, owner decides (Open).
-- Q4: already minimal after `raw` was cut; cut candidates are the description column and the empty-list text. The reuse path works on the real file: `buildFieldDescriptors(tree, tree)` filtered to semantic colors gives 16 rows, 7 without a description (node run).
-- Q6: a check can pass while broken: `verify-task.sh:37-39` runs svelte-check plus unit tests, and only `listColorTokens` has tests; the loader's `process.cwd()` path, the page and the iframe are covered only by owner checklist items 1-3.
-## Steps
-- [x] Read `app/packages/design-system/src/save-tokens.mjs` (`readTokens(brandDir)` returns `{ tree, version }` and throws a message naming the file), `resolve.mjs` (`resolveValue(tree, value)`), `css-var-naming.mjs` (`cssVarNameForPath(path)`), and the shape of `app/packages/design-system/brands/default/tokens.json` (`semantic.color.*`, each token `{ $value, $type: "color", $description? }`; `$value` is a literal hex or a reference like `{primitive.color.accent}`).
-- [x] Write the tests first in `src/lib/server/colorTokens.test.ts` (style of `src/lib/registry.test.ts`: `node:test`, `node:assert/strict`, import the `.ts` file with its extension), with a small fixture tree of your own, never the real file; the fixture may only use token sections that exist in `SECTIONS` in `field-descriptors.mjs` (for example `semantic.color`, `semantic.radius`, `semantic.focus`, `component.button`), each leaf with `$value` and `$type`. They must fail before the next step.
-- [x] Write `src/lib/server/colorTokens.ts`: `export function listColorTokens(tree)` returning an array of `{ path, cssVar, value, description }`. Do not walk the tree yourself: reuse `buildFieldDescriptors(tree, tree)` from `../../../../../app/packages/design-system/src/field-descriptors.mjs` (five levels up reaches the repo root; passing the same tree twice is fine, `isModified` is not used) and keep the descriptors with `$type === "color"` whose `section` starts with `semantic.` (this includes `semantic.focus.ringColor`; component tokens are not listed). Map each to `path` (its `path`), `cssVar` (`cssVarNameForPath(path)` from `.../css-var-naming.mjs`), `value` (its `value`, already resolved) and `description` (its `description`, already `""` when absent). Errors from `buildFieldDescriptors` (a dangling reference, an unknown token section) pass through unchanged.
-- [x] Write `src/routes/foundations/+page.server.ts`: a `load` that calls `readTokens` on the default brand folder, `resolve(process.cwd(), "../../app/packages/design-system/brands/default")` with `resolve` from `node:path` (not `import.meta.url`: in the production build the file moves into `build/` and the relative path would be wrong; `npm run dev` and `npm start` both run from `tools/Design_System`), then `listColorTokens(tree)`, and returns `{ tokens, previewUrl: "http://localhost:3000/workbench-preview" }`. If anything throws, call SvelteKit's `error(500, <the message>)` so the page shows the message instead of a crash.
-- [x] Write `src/routes/foundations/+page.svelte` (Svelte 5 runes, like `src/routes/components/[slug]/+page.svelte`): an `<h1>Foundations</h1>`; a "Preview" section with `<iframe title="Preview" src={data.previewUrl}>` (full width, 420px high, 1px `#e0e0e0` border); a "Colors" section with one row per token: swatch (24px square, `background: {value}`, 1px `#e0e0e0` border), the `path`, the `cssVar`, the `value`, and the description (or the text `(no description yet)` in `#666666`); if `tokens` is empty show the text `No color tokens found.` Neutral hard-coded tool colors only (see `tools/Design_System/AGENTS.md`); build any text that depends on a condition in the script, not inside an `{#if}` (that file explains why).
-- [x] In `src/routes/+layout.svelte` turn the `Foundations` `<span class="row">` into `<a class="row link" href="/foundations">` with the same active look (`class:active`, `aria-current`) as the Component links, active when `page.url.pathname === "/foundations"`.
-- [x] Run `bash scripts/verify-task.sh`; fix until it passes.
-
-## Acceptance checks
-(The builder can only run `bash scripts/verify-task.sh` and read-only git.)
-- Run: `bash scripts/verify-task.sh` / Expected: last line `verify-task: PASS`.
-- `listColorTokens` includes only `$type: "color"` nodes under `semantic` (a fixture with a `semantic.radius.base` dimension token and a `component.button.x` color token: neither appears) → test "ignores non-color tokens and everything outside semantic".
-- A reference resolves to the final literal (`{primitive.color.accent}` → `#ae97f7`) and a literal passes through unchanged (`#e6dfd8`) → test "resolves references; literals pass through".
-- CSS names come from the package function, including a bare key and a nested group (`semantic.color.background` → `--background`, `semantic.color.accent` → `--color-accent`, `semantic.focus.ringColor` → `--focus-ring-color`) → test "cssVar matches the package naming".
-- Order is file order and a missing `$description` becomes `""` → test "keeps file order; missing description is an empty string".
-- A dangling reference (`{primitive.color.nope}`) makes `listColorTokens` throw an error whose message contains `primitive.color.nope` → test "dangling reference throws and names the reference".
+## Decisions (owner, in chat, 2026-10-04)
+- Pick the low run; the description text stays, shown at 12px regular in a narrower column (in 1e2).
+- Feedback after viewing the high run, to build as follow-up task 1e2 (separate task: 1e's files plus these exceed the "about 8 files" review limit): (1) the iframe is full canvas width between sidebar and inspector and the preview content fits its width; (2) workbench left sidebar 280px becomes 180px; (3) the preview shows the design system's light look and ignores the web app's saved theme; (4) no light-then-dark flash on load; (5) the iframe is exactly as tall as its content, no scroll inside it.
+- Claude's plan for 1e2 (not yet objected to): the preview measures its own height and sends it to the workbench by `postMessage` (accepted only from the preview origin and the iframe's own window); the preview scales its table down when the frame is narrower than it; the preview keeps re-setting the light theme (cause: `app/hooks/useThemeMode.ts` seeds `dark`, then switches to localStorage or the system value, so the iframe followed the web app's saved theme). Files: `app/lib/workbenchPreview.ts` (+ test), `app/app/workbench-preview/Preview.tsx`, `tools/Design_System/src/lib/previewHeight.ts` (+ test), `tools/Design_System/src/routes/foundations/+page.svelte`, `+layout.svelte`.
 
 ## Owner checklist
-- [ ] Start the web app (`cd app && npm run dev`, port 3000) and the workbench (`cd tools/Design_System && npm run dev`, port 5174), open `http://localhost:5174/foundations` → the page shows a Preview window with the five Components and a Colors list with 16 rows (15 `semantic.color.*` plus `focus.ringColor`), each with a swatch matching its hex; the Foundations sidebar row is bold.
-- [ ] Stop the web app (Ctrl+C on port 3000), reload the workbench page → the Colors list still shows; the Preview window is empty (expected: nothing to show).
-- [ ] Click a Component in the sidebar, then Foundations again → both pages load without errors.
-- [ ] Nothing was written: `git status --short` shows no change under `app/packages/design-system/brands/`; stop both servers and `lsof -i :3000 -i :5174` prints nothing.
+- [x] Web app (3000) and workbench (5174) up, `/foundations` shows the Preview with the Components and the Colors list; owner viewed screenshots (high run). Script check on the high run: 16 rows, iframe src `http://localhost:3000/workbench-preview`, 7 rows "(no description yet)".
+- [ ] Stop the web app, reload the workbench page: the list still shows, the Preview is empty. Not confirmed.
+- [ ] Click a Component, then Foundations again, both load without errors. Not confirmed (the dev log only showed harmless "Failed to load source map" warnings for the vendored color library).
+- [x] Nothing written: `git status --short` on master shows no change under `app/packages/design-system/brands/`; `lsof -i :3000 -i :5174` prints nothing.
 
-## Open
-- DONE (owner yes 2026-10-04, commit 098cb81): set `"checkJs": false` in `tools/Design_System/tsconfig.json`. Reason (probed 2026-10-04 in this worktree): importing the package's `.mjs` files from the workbench makes `npm run check` type-check them and report 252 errors; with `checkJs` off the same probe reports 0 errors, and the dev server rendered the real hash and values. It is a config change, so it needs a yes; Claude commits it before the build (the builder may not touch config).
-- Owner decides: the plan's slice-1 out-of-scope list names "descriptions" (plan line 108). This brief shows each token's existing `$description` as read-only text (the wireframe rows have it); say so if it should be cut for 1e.
-- Layout choice made without the owner: the preview sits above the color list on one page. The wireframe `foundations-v5` puts the preview in the canvas; 1f will move the editing controls into the inspector.
-
-- Follow-up task, AFTER 1e (owner yes 2026-10-04): make `/review` the one place for both levels. It reads the task's `Risk` line: Level 1 answers the 3 questions from `docs/rules/process.md` in a few lines under `## Review` (no gate), Level 2 answers all 8 as now (gated by `delegate.sh`). Drops the "fresh reviewer on a different model" idea that no script runs. Touches `.claude/commands` or the skill for `/review`, `docs/rules/process.md`, `docs/rules/review.md`; process change, so state problem, change, how the owner will know, what it adds.
-
-## Questions
-(none open; the builder first stopped on a stale Written against, fixed by Claude)
-
-## Report
-<Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
-per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
-anything noticed but not touched. Mark anything not run as `Not run`.>
-
-### Checkpoint (written by scripts/finish.sh)
-```
- docs/work/feat-ds-workbench-colors.md              | 37 ++++++++----
- .../src/lib/server/colorTokens.test.ts             | 70 ++++++++++++++++++++++
- tools/Design_System/src/lib/server/colorTokens.ts  | 23 +++++++
- tools/Design_System/src/routes/+layout.svelte      | 11 +++-
- .../src/routes/foundations/+page.server.ts         | 14 +++++
- .../src/routes/foundations/+page.svelte            | 48 +++++++++++++++
- 6 files changed, 192 insertions(+), 11 deletions(-)
-```
+## Noticed, not changed
+- `app/hooks/useThemeMode.ts` seeds `dark` on first render, so a light-mode user sees one flash (accepted in that file's own comment); 1e2 only works around it inside the preview page.
+- The vendored `material-color-utilities` files reference `.js.map` files that do not exist, so the workbench dev server prints source-map warnings.
+- Typing a new command into the single terminal tab ends the one running before it; start long-running servers in the background or in a second tab.
