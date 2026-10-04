@@ -1,6 +1,6 @@
 # Design system workbench (editor IA redesign)
 
-**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1b (scaffold `tools/Design_System/`); 1a is done (builder allow-list, run-builder area list, verify-task block, executor line; `verify.md` has no per-area text so it was left alone).
+**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1b (brief written on branch `feat/ds-workbench-scaffold`, waiting for your approval of its "What changes for you"); 1a is done (builder allow-list, run-builder area list, verify-task block, executor line; `verify.md` has no per-area text so it was left alone).
 
 **Context:** `CONTEXT.md` (glossary: this session added Token, Foundation, Component, Variant, State, Override, Mode) · `docs/decisions/0010-brand-management-architecture.md` · current editor: `app/app/design-system/editor/` · wireframes: `wireframes/workbench-structure-v10.wireframe.html` (final structure; v1 is the starting point).
 
@@ -114,7 +114,8 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 | # | Task | Who | Risk | Review |
 |---|---|---|---|---|
 | 1a | Wire a new tool folder into the workflow: `.opencode/agents/builder.md` allow-list, `scripts/run-builder.sh` area list, `scripts/verify-task.sh` block, `executor.md` and `verify.md` lines | Claude (builder may not edit config) | config | owner approves |
-| 1b | Scaffold `tools/Design_System/`: SvelteKit app, scripts `dev build check test verify`, one page with the three-column shell (fixed top bar and sidebars, columns scroll alone), no editing | builder | new dependencies (network) | Level 2 |
+| 1b | Server scaffold and request guard in `tools/Design_System/`: SvelteKit config (port 5174, `127.0.0.1` only), the host and origin guard copied from Control Center with tests, one placeholder page. Dependencies installed by Claude beforehand (the builder has no `npm install`) | builder | security guard | Level 2 |
+| 1b2 | The three-column shell (fixed top bar and sidebars, columns scroll alone), the five real Components in the sidebar, `tools/Design_System/AGENTS.md` | builder | UI | Level 1 |
 | 1c | Preview page in the web app: every Component by Variant and State, forced Hover/Pressed (spike technique rewritten properly), applies token overrides received by `postMessage` only from the workbench origin, returns 404 in production (the app is public) | builder | UI | Level 1 |
 | 1d | Save path in the package layer (`.mjs`, new file, old editor route untouched): all-or-nothing write of `tokens.json` (temp file, rename, re-read to confirm), refuses if the file changed since loaded, then regenerates the CSS; tests first for read-only, changed-on-disk, invalid value, success | builder | writes files | Level 2 |
 | 1e | Workbench shows the preview in an iframe and the list of color tokens (real values from the package layer); read-only | builder | UI | Level 1 |
