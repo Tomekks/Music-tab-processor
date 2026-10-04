@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save
-Next: done — `bash scripts/verify-task.sh` passes; ready for `bash scripts/finish.sh`.
+Next: owner accepts 1d (checklist below); then merge locally (ask first), mark done, and start 1e (workbench shows preview iframe + color token list). Noted, not fixed: a `markNeedsDeploy` failure after a successful write would throw (should be rare, no code defined).
 Written against: f7ad06d
 
 ## What changes for you
@@ -72,7 +72,7 @@ Known gap, accepted: a change landing in the milliseconds between step 4 and the
 
 ## Owner checklist
 - [ ] Open `app/packages/design-system/src/save-tokens.test.mjs`: the nine test names above are there → yes
-- [ ] In the worktree, `git diff 4ff965e --stat` shows only the two new files → yes (nothing in `brands/` changed: tests used a temp copy)
+- [ ] In the worktree, `git diff 4ff965e --stat -- . ':!docs'` shows only the two new files → yes (nothing in `brands/` changed: tests used a temp copy)
 
 ## Questions
 (none open)
@@ -104,3 +104,6 @@ VERIFY: PASS
   not run: e2e (10 specs; npm run test:e2e)
 pre-commit: OK
 ```
+
+## Claude check (after builder)
+Read the code against the Design list: matches. Own mutation checks: hash check off -> 1 test fails; read-only check off -> 1 test fails; `npm test` design-system 142/142. Not covered by any test (builder's own readback-mismatch restore branch): breaking it passes 9/9; accepted, it only guards a rename that read back wrong. `brands/` unchanged (diff above shows only the two new files).
