@@ -61,6 +61,10 @@ Triggers: none (read-only; reads the default brand's `tokens.json` on the server
 
 - Follow-up task, AFTER 1e (owner yes 2026-10-04): make `/review` the one place for both levels. It reads the task's `Risk` line: Level 1 answers the 3 questions from `docs/rules/process.md` in a few lines under `## Review` (no gate), Level 2 answers all 8 as now (gated by `delegate.sh`). Drops the "fresh reviewer on a different model" idea that no script runs. Touches `.claude/commands` or the skill for `/review`, `docs/rules/process.md`, `docs/rules/review.md`; process change, so state problem, change, how the owner will know, what it adds.
 
+## Decisions (owner, in chat, 2026-10-04, after looking at the high run in the browser)
+- Found by Claude: the preview's dark mode comes from the web app's own theme hook (`app/hooks/useThemeMode.ts`: seeds `dark`, then switches to the value stored in `localStorage` or the system setting), so the iframe follows the web app's saved theme, not the workbench. The Variant by State table has no width limit (`app/app/workbench-preview/Preview.tsx:63`), so it is wider than the iframe and gets clipped on the right.
+- Owner feedback (to build as a follow-up task 1e2, Level 1, after 1e is merged): (1) the preview content fits the iframe width instead of being clipped; (2) workbench left sidebar 280px becomes 180px; (3) the preview shows the design system's own look (slice 1: light) and does not follow the web app's saved theme; (4) no light-then-dark flash on load; (5) the iframe is taller so the content is not cramped. Claude's reading of 1, 3, 4, 5 is waiting for the owner's yes.
+
 ## Questions
 (none open)
 
