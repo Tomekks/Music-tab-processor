@@ -64,6 +64,8 @@ Triggers: none (read-only; reads the default brand's `tokens.json` on the server
 - DONE (owner yes 2026-10-04, commit 098cb81): set `"checkJs": false` in `tools/Design_System/tsconfig.json`. Reason (probed 2026-10-04 in this worktree): importing the package's `.mjs` files from the workbench makes `npm run check` type-check them and report 252 errors; with `checkJs` off the same probe reports 0 errors, and the dev server rendered the real hash and values. It is a config change, so it needs a yes; Claude commits it before the build (the builder may not touch config).
 - Layout choice made without the owner: the preview sits above the color list on one page. The wireframe `foundations-v5` puts the preview in the canvas; 1f will move the editing controls into the inspector.
 
+- Follow-up task, AFTER 1e (owner yes 2026-10-04): make `/review` the one place for both levels. It reads the task's `Risk` line: Level 1 answers the 3 questions from `docs/rules/process.md` in a few lines under `## Review` (no gate), Level 2 answers all 8 as now (gated by `delegate.sh`). Drops the "fresh reviewer on a different model" idea that no script runs. Touches `.claude/commands` or the skill for `/review`, `docs/rules/process.md`, `docs/rules/review.md`; process change, so state problem, change, how the owner will know, what it adds.
+
 ## Questions
 (none open)
 
