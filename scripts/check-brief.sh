@@ -25,6 +25,19 @@ awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#
 grep -qE '^[[:space:]]*[-*0-9].*`' <(awk 'tolower($0) ~ /acceptance checks/ {f=1; next} f && /^#/ {exit} f' "$F") \
   || bad "BAD: 'Acceptance checks' has no item with a \`command\`"
 
+# Modify only paths the builder may not edit (.opencode/agents/builder.md "edit:" rules; the LAST matching rule wins).
+ROOT="$(git rev-parse --show-toplevel)"
+RULES="$(awk '/^  edit:/{f=1;next} f && /^  [a-z]+:/{exit} f && /^    "/ {print}' "$ROOT/.opencode/agents/builder.md" | sed -E 's/^    "([^"]*)": *([a-z]+).*/\2 \1/')"
+# shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
+for p in $(awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#/ {exit} f' "$F" | grep -oE '`[^`]+`' | tr -d '`'); do
+  verdict=""; hit=""
+  while read -r v pat; do
+    # shellcheck disable=SC2053  # $pat is a glob on purpose
+    [[ "$p" == $pat ]] && { verdict="$v"; hit="$pat"; }
+  done <<< "$RULES"
+  [ "$verdict" = deny ] && bad "BLOCKED for the builder: $p matches the deny rule '$hit' in .opencode/agents/builder.md (Claude writes it, or move it out of Modify only)"
+done
+
 # Unfilled template placeholders look like <<this>>.
 if grep -q '<<[^>]*>>' "$F"; then bad "UNFILLED placeholders:"; grep -n '<<[^>]*>>' "$F" | head -5; fi
 
