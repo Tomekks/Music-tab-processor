@@ -4,7 +4,7 @@
 #   --critique: the builder reads the brief cold and writes at most 5 questions (or "clear") under ## Questions.
 #               Nothing is built or committed. One round: Claude amends, then runs without the flag.
 # Env:   BUILDER_MODEL (default muse); everything run-builder.sh accepts.
-# Exit:  0 built and checked | 1 built but failed a check | 2 stopped before the model ran | 3 model down
+# Exit:  0 built and checked | 1 built but failed a check | 2 stopped before the model ran (incl. a failing scope pre-flight) | 3 model down
 # A model switch is never automatic: on 3, ask the owner, then re-run with BUILDER_MODEL set.
 set -uo pipefail
 TASK="${1:?usage: scripts/delegate.sh <task-file> [--critique]}"
@@ -14,6 +14,8 @@ FALLBACK="opencode-go/deepseek-v4.1-flash"
 MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
 START="$(git rev-parse HEAD)"
 [ "$CRITIQUE" -eq 1 ] || bash scripts/check-review.sh "$TASK" || exit 2   # Level 2 tasks need their review first
+# A stale "Written against" makes finish.sh refuse after the build (every later commit counts as out of scope): catch it now.
+[ "$CRITIQUE" -eq 1 ] || bash scripts/check-scope.sh "$TASK" >/dev/null 2>&1 || { echo "delegate: scope check fails BEFORE the build: 'Written against' is probably stale (or files are already changed). Set it to $(git rev-parse --short HEAD), commit, re-run. Detail: bash scripts/check-scope.sh $TASK"; exit 2; }
 T0="$(date +%s)"
 bash scripts/measure.sh mark "$TASK" delegate-start >/dev/null 2>&1 || true
 trap 'bash scripts/measure.sh mark "$TASK" delegate-end "exit $?" >/dev/null 2>&1 || true' EXIT

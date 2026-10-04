@@ -13,6 +13,16 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 | Date | Task | Effort | First try? | Fix rounds | Defects found | Tokens / cost / time | Merged? | Note |
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-04 | 1d save path | default (not set; before the test) | yes | 0 | 0 | 87,929 tok, $0.02, 227s | yes | baseline only |
+| 2026-10-04 | 1e Foundations page | low | no, stopped at finish.sh (stale `Written against`, my mistake); work verified, fixed by Claude | 0 builder fixes; 1 Claude fix (brief) | 2 minor: two unneeded `@ts-ignore`; none functional | 88,276 tok, $0.01, 179s | not decided | verify PASS, scope OK, 5 tests, asked a question instead of guessing; aria-hidden swatch, followed the brief's `{#if}` text rule |
+| 2026-10-04 | 1e Foundations page | high | no, same finish.sh stop; then API crash (`tool_choice`) at the very end | 0 builder fixes; same Claude fix | 3 minor: `any` in two callbacks, swatch without aria-hidden, literal text inside `{#if}` | 69,315 tok, $0.01, 205s | not decided | verify PASS, scope OK, 5 tests (longer file); about the same code
+
+## Second opinion (trial from 2026-10-04)
+`/review` runs a cheap blind second reviewer (`scripts/review-second.sh`), Claude answers separately, then compares. After 3-5 rows: keep for Level 2 only, keep for both, or drop. Counts are real catches (checked against the code) except the last column.
+
+| Date | Task | Level | Only the cheap model caught | Only Claude caught | Cheap model's false or noisy claims | Tokens / time |
+|---|---|---|---|---|---|---|
+| 2026-10-04 | 1e brief | 1 (non-blind first run) | 2 (in the first, non-blind run: descriptions out of scope, unused `raw`) | 2 (reuse of `buildFieldDescriptors`, `import.meta.url` path), found in the 8-question pass | 0 | ~48k tok, 48s |
+| 2026-10-04 | 1e brief, blind rerun | 1 | 0 (it reached the same one real finding on its own: descriptions are out of scope) | 0 (my extras were context, not defects: `cssVar` feeds 1f; 7 of 16 rows have no description) | 0 | ~46k tok, 97s |
 
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).
