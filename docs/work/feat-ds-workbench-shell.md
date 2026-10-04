@@ -1,8 +1,8 @@
 # Task: design system workbench, three-column shell (slice 1, task 1b2)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-shell
-Next: STOPPED — finish.sh blocked by prep-commit file in scope check; see ## Questions.
+Next: none. Built (builder run 1; finish.sh needed Written-against moved to the prep commit), spot-checked by Claude, accepted by the owner 2026-10-04 (checklist items 1-4 run by the owner, port freed), merged locally into master, not pushed. Next task: 1c in the plan.
 Written against: 33c7e0d
 
 ## What changes for you
