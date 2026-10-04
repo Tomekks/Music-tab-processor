@@ -7,7 +7,18 @@ export MEASURE_LOG="$T/measure.tsv"
 mkdir -p "$T/bin"
 cat > "$T/bin/opencode" <<'FAKE'
 #!/usr/bin/env bash
-# fake `opencode stats --all --json`: input tokens come from $FAKE_TOK
+# fake `opencode stats --all --json` (input tokens from $FAKE_TOK) and `opencode session list|export`
+if [ "$1" = session ] && [ "$2" = list ]; then
+  printf 'ses_a\tbuild: demo-task\t10/4/2026, 3:00:00 PM\nses_b\tbuild: demo-task\t10/4/2026, 3:00:01 PM\nses_c\tbuild: other\t10/4/2026, 3:00:02 PM\n'; exit 0
+fi
+if [ "$1" = session ] && [ "$2" = export ]; then
+  case "$3" in
+    ses_a) V=low; T=2000000000000; I=100 ;;
+    ses_b) V=high; T=2000000005000; I=200 ;;
+    *) V=default; T=2000000009000; I=999 ;;
+  esac
+  echo "{\"info\":{\"model\":{\"variant\":\"$V\"},\"cost\":0.5,\"tokens\":{\"input\":$I,\"output\":10,\"reasoning\":1,\"cache\":{\"read\":99999,\"write\":2}},\"time\":{\"created\":$T}},\"messages\":[]}"; exit 0
+fi
 cat <<OUT
 {"tokens":{"input":$(cat "$FAKE_TOK" 2>/dev/null || echo 1000),"output":100,"reasoning":10,"cache":{"read":99999,"write":5}},"cost":0.01}
 OUT
@@ -17,6 +28,9 @@ export PATH="$T/bin:$PATH" FAKE_TOK="$T/tok"
 fail=0; ok() { if [ "$1" = "$2" ]; then echo "ok   $3"; else echo "FAIL $3: expected [$2] got [$1]"; fail=1; fi; }
 
 echo 1000 > "$T/tok"
+ok "$(bash scripts/measure.sh session demo-task 2000000000 high)" "213 0.50" "session: picks the run with the asked variant, own tokens only (cache reads excluded)"
+ok "$(bash scripts/measure.sh session demo-task 2000000000 low)" "113 0.50" "session: parallel run with another variant is not mixed in"
+ok "$(bash scripts/measure.sh session demo-task 2000000003 low)" "na na" "session: runs older than the start time are ignored"
 ok "$(bash scripts/measure.sh snapshot)" "1115 0.01" "snapshot = input + output + reasoning + cache write (cache reads excluded), and cost"
 bash scripts/measure.sh mark docs/work/demo-task.md brief-written "note one" >/dev/null
 ok "$(sed -n 2p "$MEASURE_LOG" | cut -f3,4,5,7)" "$(printf 'demo-task\tbrief-written\t1115\tnote one')" "mark appends task, event, tokens, note"

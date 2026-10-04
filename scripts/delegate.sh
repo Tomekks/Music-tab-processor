@@ -14,7 +14,7 @@ FALLBACK="opencode-go/deepseek-v4.1-flash"
 MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
 START="$(git rev-parse HEAD)"
 [ "$CRITIQUE" -eq 1 ] || bash scripts/check-review.sh "$TASK" || exit 2   # Level 2 tasks need their review first
-T0="$(date +%s)"; read -r TOK0 COST0 <<< "$(bash scripts/measure.sh snapshot)"
+T0="$(date +%s)"
 bash scripts/measure.sh mark "$TASK" delegate-start >/dev/null 2>&1 || true
 trap 'bash scripts/measure.sh mark "$TASK" delegate-end "exit $?" >/dev/null 2>&1 || true' EXIT
 LOG="docs/work/runs/$(basename "$TASK" .md).log"
@@ -58,7 +58,9 @@ echo "verify:   $(printf '%s\n' "$VERIFY" | tail -1)"
 git diff --stat "$START" HEAD 2>/dev/null | tail -6
 echo "log:      $LOG   (failures only: tail -40 $LOG)"
 # One ready scorecard row; Claude appends it at merge time (docs/work/scorecard.md lives outside the task's scope).
-read -r TOK1 COST1 <<< "$(bash scripts/measure.sh snapshot)"
-if [ "$TOK0" != na ] && [ "$TOK1" != na ]; then USED="$(( TOK1 - TOK0 )) tok, \$$(awk -v a="$COST1" -v b="$COST0" 'BEGIN{printf "%.2f", a-b}'), $(( $(date +%s) - T0 ))s"; else USED="$(( $(date +%s) - T0 ))s (tokens n/a)"; fi
+# Tokens come from this run's own opencode session (parallel runs share the machine-wide totals, so a snapshot delta would mix them).
+case "$MODEL" in *'#'*) VARIANT="${MODEL#*#}" ;; *) VARIANT=default ;; esac
+read -r TOK1 COST1 <<< "$(bash scripts/measure.sh session "$TASK" "$T0" "$VARIANT")"
+if [ "$TOK1" != na ]; then USED="${TOK1} tok, \$${COST1}, $(( $(date +%s) - T0 ))s"; else USED="$(( $(date +%s) - T0 ))s (tokens n/a)"; fi
 echo "row:      | $(date +%F) | $(sed -n 's/^# Task:[[:space:]]*//p' "$TASK" | head -1) | ${MODEL#opencode-go/} | $([ "$FAIL" -eq 0 ] && echo yes || echo "no: $REASON") |  |  | ${USED} |  |"
 exit "$FAIL"

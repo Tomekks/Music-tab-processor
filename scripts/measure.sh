@@ -23,8 +23,29 @@ except Exception:
     print("na na")' 2>/dev/null || echo "na na"
 }
 
+# One builder run's own "<tokens> <cost>" from its session export (same token sum as snapshot). Safe for parallel
+# runs: picks the newest "build: <task>" session created at or after <since-epoch> with the asked variant (default "default").
+session() {
+  local TITLE="build: $1" SINCE="$2" VARIANT="${3:-default}" OUT="" ID F
+  F="$(mktemp)"   # export to a file: piped, opencode cuts large exports short
+  for ID in $(opencode session list 2>/dev/null | grep -F "$TITLE" | awk '{print $1}'); do
+    opencode session export "$ID" > "$F" 2>/dev/null
+    OUT="$(python3 -c '
+import json, sys
+try:
+    i = json.load(open(sys.argv[3]))["info"]; t = i["tokens"]
+    if i["time"]["created"] >= float(sys.argv[1]) * 1000 and i["model"].get("variant", "default") == sys.argv[2]:
+        print(t["input"] + t["output"] + t["reasoning"] + t["cache"]["write"], "%.2f" % i["cost"])
+except Exception:
+    pass' "$SINCE" "$VARIANT" "$F" 2>/dev/null)"
+    [ -n "$OUT" ] && break
+  done
+  rm -f "$F"; echo "${OUT:-na na}"
+}
+
 case "${1:-}" in
   snapshot) snapshot ;;
+  session) session "$(basename "${2:?usage: measure.sh session <task> <since-epoch> [variant]}" .md)" "${3:?since-epoch}" "${4:-}" ;;
   mark)
     TASK="$(basename "${2:?usage: measure.sh mark <task> <event> [note]}" .md)"; EVENT="${3:?event}"; NOTE="${4:-}"
     [ -f "$LOG" ] || printf 'iso\tepoch\ttask\tevent\topencode_tokens\topencode_cost_usd\tnote\n' > "$LOG"
@@ -48,5 +69,5 @@ case "${1:-}" in
       END { if (n) printf "total: %d marks, %ds between first and last\n", n, last-first; else print "measure: no marks for " task }' "$LOG"
     ;;
   history) python3 "$(dirname "$0")/claude-usage.py" days ${2:+"$2"} ;;
-  *) echo "usage: scripts/measure.sh mark|report|snapshot ..."; exit 2 ;;
+  *) echo "usage: scripts/measure.sh mark|report|snapshot|session ..."; exit 2 ;;
 esac
