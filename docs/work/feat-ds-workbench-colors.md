@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-colors
-Next: create the two effort-test worktrees (#low, #high) from the brief commit and run scripts/delegate.sh in each. checkJs change approved and committed (098cb81).
+Next: both effort-test runs are built and committed (low `ae792a1` in ../guitar_tab_processor-ds-colors-low, high `092ba36` in ../guitar_tab_processor-ds-colors-high; same function, both verify PASS and scope OK). Owner picks one after running the owner checklist, Claude merges that one into master, the other worktree/branch stays until asked. Then 1f.
 Written against: 098cb81
 
 ## What changes for you
