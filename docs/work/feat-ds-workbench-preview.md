@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-preview
 Next: owner approves the "What changes for you" block, then `bash scripts/check-brief.sh docs/work/feat-ds-workbench-preview.md`, then `delegate.sh`.
-Written against: b3e0a1b
+Written against: c666f37
 
 ## What changes for you
 The web app gets a new page at `/workbench-preview` that only exists on your machine in dev (it returns "not found" on the public site). It shows the five real Components (Button, Icon Button, Color Field, Segmented Control, Slider), each Variant in a row and each State (Default, Hover, Pressed, Disabled) in a column, with Hover and Pressed forced on so you can see them without a mouse. The page also accepts color changes sent from the workbench (only from `localhost:5174` / `127.0.0.1:5174`) and shows them live; the workbench does not send any yet (that is task 1e). Nothing else in the app changes.
