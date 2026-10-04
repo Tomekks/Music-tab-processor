@@ -39,8 +39,8 @@ case "${1:-}" in
     EPOCHS="$(awk -F'\t' -v task="$TASK" '$3==task {print $2}' "$LOG" | tr '\n' ' ')"
     # Claude tokens between consecutive marks (empty if fewer than 2 marks or no python)
     CL="$(python3 "$(dirname "$0")/claude-usage.py" windows $EPOCHS 2>/dev/null || true)"
-    awk -F'\t' -v task="$TASK" -v cl="$CL" '
-      BEGIN { split(cl, c, "\n") }
+    CL="$CL" awk -F'\t' -v task="$TASK" '
+      BEGIN { split(ENVIRON["CL"], c, "\n") }
       $3==task { n++; el=(prev_t==""?0:$2-prev_t); dt=($5=="na"||prev_k==""||prev_k=="na")?"":sprintf("%+d tok", $5-prev_k)
         printf "%-16s %5ds  builder %-14s", $4, el, dt; if (n>1 && c[n-1]!="") printf " | claude %s", c[n-1]; printf "  %s\n", $7
         if (first=="") first=$2; last=$2

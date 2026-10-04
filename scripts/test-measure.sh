@@ -44,6 +44,10 @@ python3 scripts/claude-usage.py days | grep -q "3 msgs  out       157" && echo "
 # report shows Claude tokens per interval (marks written with known epochs)
 printf 'iso\tepoch\ttask\tevent\topencode_tokens\topencode_cost_usd\tnote\n2026-10-01T10:00:00\t%s\tdemo\tstart\t100\t0.01\t\n2026-10-01T12:00:00\t%s\tdemo\tend\t200\t0.02\t\n' "${E0%.*}" "${E2%.*}" > "$MEASURE_LOG"
 bash scripts/measure.sh report demo | grep -q "claude .*3 msgs  out       157" && echo "ok   report: claude tokens between marks" || { echo "FAIL report claude column"; bash scripts/measure.sh report demo; fail=1; }
+# three marks = two Claude windows: the report must not choke on the multi-line value (BSD awk -v)
+printf 'iso\tepoch\ttask\tevent\topencode_tokens\topencode_cost_usd\tnote\n2026-10-01T10:00:00\t%s\tdemo3\ta\t1\t0\t\n2026-10-01T10:30:00\t%s\tdemo3\tb\t2\t0\t\n2026-10-01T12:00:00\t%s\tdemo3\tc\t3\t0\t\n' "${E0%.*}" "${E1%.*}" "${E2%.*}" > "$MEASURE_LOG"
+R3="$(bash scripts/measure.sh report demo3 2>&1)"
+printf '%s\n' "$R3" | grep -q "awk:" && { echo "FAIL report with 3 marks: $R3"; fail=1; } || echo "ok   report with 3 marks (two Claude windows) runs clean"
 bash scripts/measure.sh history | grep -q "3 msgs" && echo "ok   history prints per-day line" || { echo "FAIL history"; fail=1; }
 unset CLAUDE_TRANSCRIPTS
 exit $fail
