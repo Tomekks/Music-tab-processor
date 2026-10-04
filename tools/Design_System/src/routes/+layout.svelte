@@ -4,6 +4,8 @@
 	import { COMPONENTS } from "$lib/registry.js";
 
 	let { children }: { children: Snippet } = $props();
+
+	let foundationsActive = $derived(page.url.pathname === "/foundations");
 </script>
 
 <div class="shell">
@@ -14,7 +16,14 @@
 	<div class="body">
 		<nav class="sidebar" aria-label="Components">
 			<span class="row">Glossary</span>
-			<span class="row">Foundations</span>
+			<a
+			class="row link"
+			class:active={foundationsActive}
+			href="/foundations"
+			aria-current={foundationsActive ? "page" : undefined}
+		>
+			Foundations
+		</a>
 			<span class="caption">Components</span>
 			{#each COMPONENTS as entry (entry.slug)}
 				{@const active = page.url.pathname === `/components/${entry.slug}`}
