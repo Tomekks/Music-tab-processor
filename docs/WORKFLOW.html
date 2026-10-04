@@ -72,7 +72,7 @@
     <div class="step"><span class="who w-script">Script</span><b>7. Watchdog</b><small>Kills a dead run: nothing in 60 s, stalled for 180 s. Logs kept short (last 200 lines)</small></div>
     <div class="step"><span class="who w-script">Script</span><b>8. Facts check + save</b><small>Only allowed files changed? Checks pass? Promised files exist? Then one checkpoint commit (and approved deletions)</small></div>
     <div class="step"><span class="who w-script">Script</span><b>9. Short summary</b><small>About 10 lines: pass or fail, plain reason, diff size, log path, a scorecard row with the real tokens, cost and seconds of the run</small></div>
-    <div class="step"><span class="who w-claude">Claude</span><b>10. Review</b><small>Reads the summary, the report and the diff; spot-checks one claim. No re-running the builder's work</small></div>
+    <div class="step"><span class="who w-claude">Claude</span><b>10. Review</b><small>Normal tasks: a cheap reviewer in a fresh session (Level 1). Risk triggers: Claude (Level 2). Claude then reads the summary, report and diff and spot-checks one claim. No re-running the builder's work</small></div>
     <div class="step stop"><span class="who w-you">You</span><b>11. Your check</b><small>The owner checklist from the brief: one action, one expected result each</small></div>
     <div class="step stop"><span class="who w-you">You</span><b>12. Ship</b><small>Push, PR or deploy only on your yes. For the app: preview with <code>npm run stage</code> first, then push / push and deploy / skip</small></div>
   </div>
@@ -121,7 +121,7 @@
   <p class="sub" style="margin-top:10px">The trial is 3 more real tasks, one Quick and one Full with a Delete list. Process changes are frozen until then; only a real failure reopens them.</p>
   <h2>Gaps and open items (checked 2026-10-03)</h2>
   <div class="cols">
-    <div class="panel warn"><b class="t">Rules that disagree or are missing</b><ul><li>Review: <code>process.md</code> has a Level 1 reviewer (different model, fresh session) and Level 2 (Claude); <code>models.md</code> lists a Level 1 reviewer but also says there is no opencode reviewer; this page shows only Claude's review. Needs your decision.</li><li>Slices and the prior-art check live only in the design-system workbench plan, not in <code>process.md</code>. Promote them after slices 1 and 2 (grilling), once 3 more real tasks have run.</li></ul></div>
+    <div class="panel warn"><b class="t">Rules decided or still missing</b><ul><li>Review (decided 2026-10-03): a cheap reviewer (Level 1) for normal tasks, Claude (Level 2) for risk triggers, and Claude always spot-checks the final diff. Judged on logged findings, including false ones.</li><li>Slices and the prior-art check live only in the design-system workbench plan, not in <code>process.md</code>. Promote them after slices 1 and 2 (grilling), once 3 more real tasks have run.</li></ul></div>
     <div class="panel warn"><b class="t">New folders are not covered</b><ul><li>The planned workbench (a new SvelteKit app) has no verify script, and the builder's shell allow-list names only <code>app/</code> and <code>tools/Control_Centre/</code>. Its first task must add both (config: ask first).</li></ul></div>
     <div class="panel"><b class="t">Housekeeping</b><ul><li><code>docs/WORKFLOW-old.html</code> still sits beside this page. Keep or delete is your call; nothing was deleted.</li><li>Builder token totals include any other opencode work done in the same window.</li></ul></div>
   </div>
