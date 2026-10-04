@@ -78,3 +78,5 @@ VERIFY: PASS
   not run: e2e (10 specs; npm run test:e2e)
 pre-commit: OK
 ```
+
+Found by the owner in the browser (2026-10-04): ColorField, SegmentedControl and Slider shared one useState each, so editing one cell moved all four in its row. The brief said handlers are no-ops; the builder deviated and neither the report nor my read-through flagged it. Fixed by Claude: fixed constants and no-op handlers, `useState` removed. Typecheck and lint clean. Not run: a regression test (UI only; the owner checks in the browser).

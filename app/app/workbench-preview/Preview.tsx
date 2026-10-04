@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Play } from "lucide-react";
 import { Button, ColorField, IconButton, SegmentedControl, Slider } from "@guitar-tabs/design-system";
 import { forcedStateSelector, readTokenMessage } from "../../lib/workbenchPreview";
 
 const noop = () => undefined;
+
+// Fixed values: every cell is a snapshot of one State, so no cell may change another.
+const COLOR = "#6d28d9";
+const SEGMENT = "a";
+const SLIDER = 50;
 
 const CELL = "border border-border px-4 py-3 align-middle";
 
@@ -33,10 +38,6 @@ function addForcedStateRules() {
 }
 
 export default function Preview() {
-  const [color, setColor] = useState("#6d28d9");
-  const [segment, setSegment] = useState<"a" | "b">("a");
-  const [sliderValue, setSliderValue] = useState(50);
-
   useEffect(() => {
     addForcedStateRules();
     const style = document.createElement("style");
@@ -206,20 +207,20 @@ export default function Preview() {
               ColorField
             </th>
             <td className={CELL}>
-              <ColorField value={color} onChange={setColor} />
+              <ColorField value={COLOR} onChange={noop} />
             </td>
             <td className={CELL}>
               <div className="force-hover">
-                <ColorField value={color} onChange={setColor} />
+                <ColorField value={COLOR} onChange={noop} />
               </div>
             </td>
             <td className={CELL}>
               <div className="force-active">
-                <ColorField value={color} onChange={setColor} />
+                <ColorField value={COLOR} onChange={noop} />
               </div>
             </td>
             <td className={CELL}>
-              <ColorField value={color} onChange={setColor} disabled />
+              <ColorField value={COLOR} onChange={noop} disabled />
             </td>
           </tr>
           <tr>
@@ -232,8 +233,8 @@ export default function Preview() {
                   { value: "a", label: "A" },
                   { value: "b", label: "B" },
                 ]}
-                value={segment}
-                onChange={setSegment}
+                value={SEGMENT}
+                onChange={noop}
                 ariaLabel="Preview options"
               />
             </td>
@@ -244,8 +245,8 @@ export default function Preview() {
                     { value: "a", label: "A" },
                     { value: "b", label: "B" },
                   ]}
-                  value={segment}
-                  onChange={setSegment}
+                  value={SEGMENT}
+                  onChange={noop}
                   ariaLabel="Preview options"
                 />
               </div>
@@ -257,8 +258,8 @@ export default function Preview() {
                     { value: "a", label: "A" },
                     { value: "b", label: "B" },
                   ]}
-                  value={segment}
-                  onChange={setSegment}
+                  value={SEGMENT}
+                  onChange={noop}
                   ariaLabel="Preview options"
                 />
               </div>
@@ -269,8 +270,8 @@ export default function Preview() {
                   { value: "a", label: "A" },
                   { value: "b", label: "B" },
                 ]}
-                value={segment}
-                onChange={setSegment}
+                value={SEGMENT}
+                onChange={noop}
                 ariaLabel="Preview options"
                 disabled
               />
@@ -281,20 +282,20 @@ export default function Preview() {
               Slider
             </th>
             <td className={CELL}>
-              <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} />
+              <Slider value={SLIDER} onChange={noop} min={0} max={100} step={1} />
             </td>
             <td className={CELL}>
               <div className="force-hover">
-                <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} />
+                <Slider value={SLIDER} onChange={noop} min={0} max={100} step={1} />
               </div>
             </td>
             <td className={CELL}>
               <div className="force-active">
-                <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} />
+                <Slider value={SLIDER} onChange={noop} min={0} max={100} step={1} />
               </div>
             </td>
             <td className={CELL}>
-              <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} disabled />
+              <Slider value={SLIDER} onChange={noop} min={0} max={100} step={1} disabled />
             </td>
           </tr>
         </tbody>
