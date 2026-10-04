@@ -56,6 +56,9 @@ permission:
     "npm --prefix tools/Control_Centre run test": allow
     "npm --prefix tools/Control_Centre run check": allow
     "npm --prefix tools/Control_Centre run verify": allow
+    "npm --prefix tools/Design_System run test": allow
+    "npm --prefix tools/Design_System run check": allow
+    "npm --prefix tools/Design_System run verify": allow
     "node --test *": allow
     "bash scripts/verify-task.sh": allow
     "bash scripts/finish.sh": allow

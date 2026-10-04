@@ -33,8 +33,8 @@ fi
 
 # 4. Area rules the builder would not load on its own (opencode only reads AGENTS.md files above the start folder).
 EXTRA=""
-for area in app pipeline tools/Control_Centre; do
-  if printf '%s\n' "${PATHARGS[@]}" | grep -q "^$area/"; then EXTRA="$EXTRA $area/AGENTS.md"; fi
+for area in app pipeline tools/Control_Centre tools/Design_System; do
+  if printf '%s\n' "${PATHARGS[@]}" | grep -q "^$area/" && [ -f "$area/AGENTS.md" ]; then EXTRA="$EXTRA $area/AGENTS.md"; fi
 done
 
 mkdir -p docs/work/runs; LOG="${LOG_FILE:-docs/work/runs/$(basename "$TASK" .md).log}"

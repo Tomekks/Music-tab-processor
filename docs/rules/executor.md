@@ -31,7 +31,7 @@ task file. Nothing else. Do not invent process.
 - Stop when every acceptance check passes. Don't keep polishing.
 
 ## When you finish
-Your shell is a short allow-list: read-only git, `lsof -i`, `npm --prefix app run test|lint|typecheck|verify`, `npm --prefix tools/Control_Centre run test|check|verify`,
+Your shell is a short allow-list: read-only git, `lsof -i`, `npm --prefix app run test|lint|typecheck|verify`, `npm --prefix tools/Control_Centre run test|check|verify`, `npm --prefix tools/Design_System run test|check|verify`,
 `node --test <file>`, `bash scripts/verify-task.sh` and `bash scripts/finish.sh`. Everything else is denied. You cannot
 delete files: only paths under the brief's `Delete:` list are removed, by `finish.sh`. Any other deletion: write a
 question under `Questions` and STOP.

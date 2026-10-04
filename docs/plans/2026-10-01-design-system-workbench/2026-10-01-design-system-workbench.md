@@ -1,6 +1,6 @@
 # Design system workbench (editor IA redesign)
 
-**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1a (wire the new folder into the workflow, needs your yes), then 1b onward (see "Slice 1 spec").
+**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1b (scaffold `tools/Design_System/`); 1a is done (builder allow-list, run-builder area list, verify-task block, executor line; `verify.md` has no per-area text so it was left alone).
 
 **Context:** `CONTEXT.md` (glossary: this session added Token, Foundation, Component, Variant, State, Override, Mode) · `docs/decisions/0010-brand-management-architecture.md` · current editor: `app/app/design-system/editor/` · wireframes: `wireframes/workbench-structure-v10.wireframe.html` (final structure; v1 is the starting point).
 
