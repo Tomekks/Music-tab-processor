@@ -23,7 +23,7 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 ## Running opencode
 - The wrapper scripts set `OPENCODE_DISABLE_CLAUDE_CODE=1` (no `~/.claude` notes) and the project
   `opencode.json` switches off the GitHub and Figma connections and sets a paid default model.
-- `opencode stats --models --days 365` shows tokens and cost per model (`--days 0` means today only and resets at midnight); `scripts/measure.sh` records it before and after each builder run.
+- `opencode stats --all --json` gives lifetime tokens and cost (the text table caps at 5 models and `--days 0` means today only); `scripts/measure.sh` records it before and after each builder run, and `measure.sh report <task>` adds the Claude tokens per step from the session transcripts.
 - **Reviews:** Claude reviews the diff itself (read the report and the diff, spot-check one claim). There is no
   opencode reviewer.
 - Claude hands a task to the builder with `scripts/delegate.sh <task file>` (in its own worktree). It passes `-m`
