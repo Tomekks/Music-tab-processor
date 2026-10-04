@@ -125,6 +125,20 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 
 **Open:** where the Mode toggle sits until slice 2 (hidden); the picker's look (native fallback if it fights the design); whether 1b may use `node --test` as Control Center does (assumed yes).
 
+## Parked open items (saved 2026-10-03 so they are not forgotten)
+
+Answered from the old list above: 3 (override control: the "From Main" toggle column) and 9 (reset: Main = factory default, child = Revert to Main). Still open from it: 1 (flat A-Z vs categories), 2 (Components overview page), 4 (selected sidebar look), 5 (hover/pressed look), 6 (Ghost only on Icon Button), 7 (home for "Generate from seed colors"), 8 (the "Not deployed" status, decide with the Projects slice).
+
+**Process (owner decisions needed):**
+- The "eight questions" of a Level 2 review are written nowhere in the current rules (only a count in the old `PROCESS.html`). Define the list.
+- Level 1 reviewer: no script launches it yet (`delegate.sh` is for the builder). Needs a small setup task before the first Level 1 review.
+- `master` is 43+ commits ahead of `origin`, unpushed (push, PR and deploy always ask).
+- Untracked and never decided: `.claude/skills/`, `app/packages/design-system/brands/byebye/`, `app/packages/design-system/brands/heyhey/` (commit, ignore or delete?).
+- `docs/WORKFLOW-old.html`: keep or delete.
+- Review gate: after slices 1 and 2, run `/grill-with-docs` on the prior-art and measurement logs to decide whether they join `docs/rules/process.md` (frozen until then and until 3 more real tasks).
+
+**Design assumptions to confirm:** a failed save stays visible until dismissed (does not fade); Reload keeps staged edits on top of the new file; a single glossary term's Save only stages it; the `%` sidebar width may need min/max limits; the picker's look (native fallback if it fights the design); the Button hover/pressed fix (options B safelist, C derived variables) is its own later task; font and typography attributes get specced in slice 3; `node --test` is assumed for the workbench tests.
+
 ## Housekeeping
 
 `tools/Control_Centre/CONTEXT.md` and `CONTEXT-MAP.md` still say "no code exists yet"; fix separately.
