@@ -102,3 +102,16 @@ test("readTokenMessage: non-object data returns null", () => {
   );
   assert.equal(readTokenMessage("http://localhost:5174", { type: "tokens" }), null);
 });
+
+test("forcedStateSelector: an escaped comma inside a class name is not a selector list", () => {
+  // The Tailwind class for the primary Button hover is `.hover\:[…color-mix(in_srgb\,var(--a)\,…)]:hover`.
+  assert.equal(
+    forcedStateSelector(String.raw`.hover\:\[mix\(a\,b\)\]:hover`),
+    String.raw`.force-hover .hover\:\[mix\(a\,b\)\]`,
+  );
+  assert.equal(
+    forcedStateSelector(String.raw`.active\:\[mix\(a\,b\)\]:active`),
+    String.raw`.force-active .active\:\[mix\(a\,b\)\]`,
+  );
+  assert.equal(forcedStateSelector(String.raw`.a\,b:hover, .c:hover`), null);
+});

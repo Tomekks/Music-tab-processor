@@ -21,7 +21,8 @@ export function readTokenMessage(origin: string, data: unknown): Record<string, 
 }
 
 export function forcedStateSelector(selector: string): string | null {
-  if (selector.includes(",")) return null;
+  // A comma only separates selectors when it is not escaped (`\,` is part of a class name).
+  if (/(^|[^\\]),/.test(selector)) return null;
   if (selector.includes(":hover")) {
     return `.force-hover ${selector.split(":hover").join("")}`;
   }

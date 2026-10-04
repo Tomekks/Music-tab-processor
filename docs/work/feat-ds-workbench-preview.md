@@ -80,3 +80,5 @@ pre-commit: OK
 ```
 
 Found by the owner in the browser (2026-10-04): ColorField, SegmentedControl and Slider shared one useState each, so editing one cell moved all four in its row. The brief said handlers are no-ops; the builder deviated and neither the report nor my read-through flagged it. Fixed by Claude: fixed constants and no-op handlers, `useState` removed. Typecheck and lint clean. Not run: a regression test (UI only; the owner checks in the browser).
+
+Second owner-found defect (2026-10-04): forced Hover/Pressed did nothing for primary Button and IconButton. Root cause: `forcedStateSelector` returned null for any selector containing a comma (my brief), but the Tailwind class for the primary hover has escaped commas (`color-mix(in_srgb\,var(...)`). Failing test first (escaped comma), fix: only an unescaped comma means a selector list. Browser check: primary Hover bg now equals a real mouse hover (srgb 0.634 0.551 0.897), Pressed differs (0.610 0.531 0.861). Noticed, not changed: in dev React StrictMode runs the effect twice, so forced rules are inserted twice (harmless, dev only).
