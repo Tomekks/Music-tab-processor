@@ -12,6 +12,10 @@ echo "folder:  $(pwd)"
 echo "branch:  ${BRANCH:-(detached)}"
 [ "$(git config core.hooksPath)" = ".githooks" ] || echo "WARNING: safety hooks are off here (secret scan, verify). Run: git config core.hooksPath .githooks"
 
+# Parked ideas (scripts/park.sh): listed when no task is active, only counted otherwise so they do not hijack the session.
+IDEAS_F="${IDEAS_FILE:-$(cd "$(git rev-parse --git-common-dir)" && pwd)/ideas.md}"
+NIDEAS="$(grep -c '^- ' "$IDEAS_F" 2>/dev/null || true)"; NIDEAS="${NIDEAS:-0}"
+
 # Active task files (top level of docs/work only), optionally filtered by name.
 ACTIVE=()
 for f in "$WORK"/*.md; do
@@ -33,6 +37,7 @@ if [ "${#ACTIVE[@]}" -eq 0 ]; then
     [ -z "$ST" ] || PEND="$PEND  $(basename "$p")  [$ST...]\n"
   done
   [ -z "$PEND" ] || { echo "pending plans (no task file yet):"; printf "$PEND"; }
+  [ "$NIDEAS" -eq 0 ] || { echo "ideas ($NIDEAS parked, newest last; file: $IDEAS_F):"; grep '^- ' "$IDEAS_F" | tail -8 | cut -c1-120 | sed 's/^/  /'; }
   echo "-> No active task. Ask the user what to work on; suggest /grill-with-docs for a new idea."
   exit 0
 fi
@@ -52,6 +57,7 @@ if [ -z "$NEXT" ] || [ -z "$TBRANCH" ]; then
 fi
 echo "task:    $T"
 echo "next:    $NEXT"
+[ "$NIDEAS" -eq 0 ] || echo "ideas:   $NIDEAS parked (cat $IDEAS_F)"
 [ "$TBRANCH" = "$BRANCH" ] || echo "WARNING: task is for branch '$TBRANCH' but you are on '${BRANCH:-detached}'."
 
 # Open questions: anything under '## Questions' other than '(none open)'.
