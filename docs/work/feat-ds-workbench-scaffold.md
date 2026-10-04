@@ -1,8 +1,8 @@
 # Task: design system workbench, server scaffold and request guard (slice 1, task 1b)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-scaffold
-Next: BUILT and checked, waiting for the owner. Builder run 2 passed (`delegate: PASS`, 6/6 guard tests, scope and verify OK; run 1 stopped on a permission denial, see Decisions). Claude spot-checked: `origin.ts` identical to Control Center, live server answers 200 for `127.0.0.1` and `localhost`, 403 for a foreign Host and for a POST without origin, listens on 127.0.0.1 only, then stopped (5174 free). Owner: run the 4 checklist items (all still unticked) and say if the task is accepted; then merge locally (or ask about push) and set Status to done. Worktree: `../guitar_tab_processor-feat-ds-workbench-scaffold` (branch `feat/ds-workbench-scaffold`, not pushed); `git stash list` there holds run 1 output (can be dropped after merge, ask first). Next task: 1b2 (shell; Claude writes `tools/Design_System/AGENTS.md` because the builder cannot edit `*AGENTS.md`). Cost of run 2: 54,980 tokens, $0.01, 146 s; run 1: 34,121 tokens, $0.01, 108 s.
+Next: none. Built (builder run 2 passed), spot-checked by Claude, accepted by the owner 2026-10-04 (owner ran checklist items 1 and 2: page loads, foreign Host gets 403; items 3 and 4 were run by Claude: listens on 127.0.0.1 only, port freed), merged locally into master (`0b1f2c5`), not pushed. Cleanup left, ask first: worktree `../guitar_tab_processor-feat-ds-workbench-scaffold` and its `git stash list` entry (run 1 output). Next task: 1b2 in the plan.
 Written against: 5ae2909
 
 ## What changes for you
@@ -61,10 +61,10 @@ No file or network access in the code, no new dependency, no other routes.
 - Each rule names the test that fails if it is broken: guard rules 1 to 6 in `origin.test.ts` (cases 1 to 6). The port, host binding and 403 response have no unit test; the owner checklist covers them.
 
 ## Owner checklist
-- [ ] `npm --prefix tools/Design_System run dev`, open http://127.0.0.1:5174 → the placeholder page with the heading.
-- [ ] In a second terminal: `curl -s -o /dev/null -w "%{http_code}" -H "Host: evil.example" http://127.0.0.1:5174/` → `403`.
-- [ ] `lsof -nP -iTCP:5174 -sTCP:LISTEN` → shows `127.0.0.1:5174`, not `*:5174`.
-- [ ] Stop the dev server (Ctrl+C) → port 5174 is free again (`lsof -i :5174` prints nothing).
+- [x] `npm --prefix tools/Design_System run dev`, open http://127.0.0.1:5174 → the placeholder page with the heading.
+- [x] In a second terminal: `curl -s -o /dev/null -w "%{http_code}" -H "Host: evil.example" http://127.0.0.1:5174/` → `403`.
+- [x] `lsof -nP -iTCP:5174 -sTCP:LISTEN` → shows `127.0.0.1:5174`, not `*:5174`.
+- [x] Stop the dev server (Ctrl+C) → port 5174 is free again (`lsof -i :5174` prints nothing).
 
 ## Decisions (chat, 2026-10-03)
 - First builder run (2026-10-04) stopped after 7 of 8 files: its permission layer denies `*.config.*`, so `vite.config.ts` was removed from its list and committed by Claude (`5ae2909`). The first run's output is kept in `git stash list`. Process gap: the brief checker does not warn about paths the builder cannot edit (logged in the plan).

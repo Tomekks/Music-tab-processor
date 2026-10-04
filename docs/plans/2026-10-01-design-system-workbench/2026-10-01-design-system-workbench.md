@@ -1,6 +1,6 @@
 # Design system workbench (editor IA redesign)
 
-**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1b (brief written on branch `feat/ds-workbench-scaffold`, waiting for your approval of its "What changes for you"); 1a is done (builder allow-list, run-builder area list, verify-task block, executor line; `verify.md` has no per-area text so it was left alone).
+**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1b is DONE and merged locally (`0b1f2c5`); next is task 1b2 (the three-column shell): start a NEW session in the main folder, run `/start`, then `scripts/new-worktree.sh feat/ds-workbench-shell`, write the brief (Claude writes `tools/Design_System/AGENTS.md` itself, the builder cannot edit `*AGENTS.md`; no `*.config.*` or `package.json` in its list), run `/review` only if Level 2, then `delegate.sh`.md` has no per-area text so it was left alone).
 
 **Context:** `CONTEXT.md` (glossary: this session added Token, Foundation, Component, Variant, State, Override, Mode) · `docs/decisions/0010-brand-management-architecture.md` · current editor: `app/app/design-system/editor/` · wireframes: `wireframes/workbench-structure-v10.wireframe.html` (final structure; v1 is the starting point).
 
