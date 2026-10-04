@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-preview-fit-low
 Next: /review (Level 2), then delegate to builders
-Written against: 120889f
+Written against: d61073d
 
 ## What changes for you
 The workbench `/foundations` Preview iframe spans the full canvas width between the sidebar and the inspector and is exactly as tall as its content, with no scrolling inside it. The preview always shows the light look, scaled down to fit when the frame is narrower, with no light-then-dark flash on load. The left sidebar is narrower (180px), and the Colors description text stays, shown at 12px regular in a narrower column.
