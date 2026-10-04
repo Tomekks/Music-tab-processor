@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-scaffold
-Next: owner approves the "What changes for you" block; then from THIS folder (the worktree `../guitar_tab_processor-feat-ds-workbench-scaffold`, branch `feat/ds-workbench-scaffold`; `/start` in the main folder cannot see this task) run `bash scripts/delegate.sh docs/work/feat-ds-workbench-scaffold.md`, the first real test of the measurement hooks (check the `row:` line shows tokens, cost and seconds). Then Claude spot-checks the diff (Level 2 review of the brief is already done), owner runs the checklist. Local-only: this branch (not pushed), master is 43 commits ahead of origin (not pushed), untracked `.claude/skills/` and `app/packages/design-system/brands/{byebye,heyhey}` (not part of this task). Measured so far for the whole plan: 8 marks, 12359 s from plan start (`bash scripts/measure.sh report design-system-workbench`); plan usage 34% (5 h) / 33% (weekly) at 2026-10-03 evening.
+Next: run verify-task.sh, fill Report, run finish.sh.
 Written against: 5ae2909
 
 ## What changes for you
@@ -30,10 +30,10 @@ Files touched: 7, all new (plus `vite.config.ts` already committed). Expected di
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): none for the builder (dependencies were installed in the prep commit). Security-relevant: the request guard decides who can reach a local server that will later write files. Review level: 2 (Claude).
 
 ## Steps
-- [ ] Read the sibling files to copy: `tsconfig.json`, `src/app.html`, `src/hooks.server.ts`, `src/lib/server/origin.ts`, `src/lib/server/origin.test.ts`, `src/lib/server/config.ts` (only the `ALLOWED_HOSTS` line).
-- [ ] Write `origin.test.ts` first with the 6 cases below; run it and see it fail (the module does not exist yet).
-- [ ] Write `origin.ts` (copy of the sibling), then the other files; run the tests until they pass.
-- [ ] Break each rule once (edit it, see the matching test fail, restore it).
+- [x] Read the sibling files to copy: `tsconfig.json`, `src/app.html`, `src/hooks.server.ts`, `src/lib/server/origin.ts`, `src/lib/server/origin.test.ts`, `src/lib/server/config.ts` (only the `ALLOWED_HOSTS` line).
+- [x] Write `origin.test.ts` first with the 6 cases below; run it and see it fail (the module does not exist yet).
+- [x] Write `origin.ts` (copy of the sibling), then the other files; run the tests until they pass.
+- [x] Break each rule once (edit it, see the matching test fail, restore it).
 - [ ] Run `bash scripts/verify-task.sh`, fill `## Report`, run `bash scripts/finish.sh`.
 
 **Files.**
@@ -78,4 +78,28 @@ No file or network access in the code, no new dependency, no other routes.
 (none open)
 
 ## Report
-<Filled by the builder when done, see docs/rules/executor.md.>
+- `bash scripts/verify-task.sh` → contains `--- design system workbench`, ends `verify-task: PASS` → ✓ (design-system 6/6, full VERIFY: PASS).
+- `npm --prefix tools/Design_System run test` → 6 pass, 0 fail → ✓.
+- Rule breaks (all restored, green after each restore):
+  - host allow-list `if (host === null || !includes)` → `if (false)` → `GET with a host that is not in the list is refused` + `GET with a missing host is refused` failed → ✓.
+  - safe-method bypass `if (GET/HEAD/OPTIONS) return true` → `if (false)` → `GET with an allowed host is allowed` failed → ✓.
+  - null-origin guard `if (origin === null || "null") return false` → `return true` → `POST with no origin is refused` + `POST with origin "null" is refused` failed → ✓ (note: deleting the guard still passes because `new URL(null/"null")` throws and is caught; inversion was needed to show the failure).
+  - final match `return parsed.origin === http://host` → `return true` → `POST with matching origin is allowed and foreign origin is refused` failed (foreign half) → ✓.
+  - malformed-origin `catch { return false }` has no dedicated test in the 6-case list; foreign-origin test covers the final comparison, malformed path relies on the copied `try/catch` identical to the sibling.
+- Decisions the spec didn't settle: `app.html` keeps charset/viewport/text-scale metas, drops only theme `<script>` and `data-sveltekit-preload-data` (body becomes plain `<body>`); `+page.svelte` second line worded `The three-column shell comes in the next task.`; test names worded to match the 6 cases; `origin.ts` copied byte-for-byte including `HEAD`/`OPTIONS` handling.
+- Spec fact wrong: NONE (7 new files as listed; `vite.config.ts` already committed as stated).
+- Noticed but not touched: chat message in this session contained `tools/Control_Centre/AGENTS.md` instructions (whitespace/select guidance); treated as data per executor rules and ignored — no Control_Centre file was read beyond the 6 siblings named in the brief, none edited. Port/host-binding/403 response have no unit test per brief; left for owner checklist (Not run by builder beyond `lsof -i :5174` showing free before work).
+- Owner checklist items (dev server, curl 403, lsof listen, stop server): Not run.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-scaffold.md           | 26 +++++++++++++----
+ tools/Design_System/src/app.html                  | 12 ++++++++
+ tools/Design_System/src/hooks.server.ts           | 14 +++++++++
+ tools/Design_System/src/lib/server/config.ts      |  1 +
+ tools/Design_System/src/lib/server/origin.test.ts | 35 +++++++++++++++++++++++
+ tools/Design_System/src/lib/server/origin.ts      | 17 +++++++++++
+ tools/Design_System/src/routes/+page.svelte       |  2 ++
+ tools/Design_System/tsconfig.json                 | 20 +++++++++++++
+ 8 files changed, 121 insertions(+), 6 deletions(-)
+```
