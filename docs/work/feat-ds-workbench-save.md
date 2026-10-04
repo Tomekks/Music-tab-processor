@@ -1,8 +1,8 @@
 # Task: design system workbench, save path in the package layer (slice 1, task 1d)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-save
-Next: owner accepts 1d (checklist below); then merge locally (ask first), mark done, and start 1e (workbench shows preview iframe + color token list). Noted, not fixed: a `markNeedsDeploy` failure after a successful write would throw (should be rare, no code defined).
+Next: none for 1d. Owner accepted 2026-10-04; merged locally into master, NOT pushed (owner: push after the slice-1 tasks are done). Next task is 1e.
 Written against: f7ad06d
 
 ## What changes for you
