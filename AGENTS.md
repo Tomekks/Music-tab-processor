@@ -47,6 +47,21 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 - Never mislead or downplay a change. Say plainly what is risky, uncertain, or was not run or checked.
 - No "verified" or "done" without the command and its output beside it.
 
+## Reply style
+Reader is a designer, not an engineer. Write so a junior engineer follows it the first time.
+- Answer first, in plain words. No greetings, no restating the question, no closing offers.
+- Define any technical term in one clause the first time it appears. Prefer the plain word.
+  Use an analogy only when a plain explanation has failed.
+- Decisions and plans: say what it means for you, what each option changes, what could go wrong
+  and how you would notice, then my recommendation and why.
+- Warn before acting on: contracts/, config, secrets; deleting or moving files; anything hard to
+  undo; new dependencies or moving parts; anything that changes what you see in the app;
+  anything that raises cost or token use.
+- Always say what I did not run or check.
+- Length follows stakes: confirmations are one or two lines; decisions get the detail above.
+  No tables or long code unless asked.
+- Wrap-up logs how many times the owner asked to "explain simpler" this session (target: under 2).
+
 ## Session
 - One job per session. A decision made in chat goes into the task file as one line, at once.
 - A command offered for the owner to launch (server, watcher) comes with its stop command and a free-port check in the next blocks.
