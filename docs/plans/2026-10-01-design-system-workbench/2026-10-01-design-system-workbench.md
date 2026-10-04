@@ -64,6 +64,16 @@ Before each slice's spec: a short research pass on raw primary sources (no summa
 
 - **Slice 1 (2026-10-03):** searched Storybook pseudo-states addon (raw README) and Framer property controls. Found: the forced-state technique (class-copy of `:hover`/`:active` rules), adapted not installed. Nothing found for a standalone token editor previewing real React components. Spike PASSED: overrides in an iframe, forced Hover/Pressed, regenerated CSS reaches the page. Saved: guessing at the preview mechanism, plus two bugs found before any build (rule order, transition lag). Findings that change slice 1: primary Button hover/pressed mix from `--color-accent` not the component token; `buildActiveBrand()` only rebuilds the active brand. Details: `research/workbench-slice1-spike/NOTES.md`.
 
+## Measurement (time and tokens, to compare with the old process; set 2026-10-03)
+
+**Method, per task and per slice:** (1) Time: a `Time:` line in the task file, with a `date` timestamp appended at each step change (brief written, review done, build done, owner tested, shipped); owner waiting time is noted separately. (2) Claude tokens: read `get_usage` (5-hour and weekly plan percent, plus this session's context tokens) before and after each step Claude does (brief review, spec, spot-check); the plan percent is the scarce resource under the Pro plan. (3) Builder and reviewer tokens/cost: `opencode stats --models --days 0` before and after each builder or reviewer run. (4) One row per task in the table below; the slice total is the sum plus the front half.
+
+**Baseline:** no tokens or cost were recorded for the old process; only git dates exist (Control Center slices 1 to 7 plus fixes, 2026-09-24 to 2026-09-30, about 7 days wall time, roughly 20 commits). So time compares to git history; tokens can only be compared forward (slice to slice) unless the owner has older numbers. The front half of this plan (grill, 5 wireframes, slice 1 spike) is itself a data point.
+
+| Date | Task or phase | Wall time | Claude plan % (5h / weekly) before > after | Claude session tokens | Builder tokens / cost | Notes |
+|---|---|---|---|---|---|---|
+| 2026-10-03 | Front half so far: grill, wireframes 1-5, spike, prior art | not recorded at start | not read at start; at this point 20% / 31% | 332,741 (33% of window, one session) | n/a | first reading; later rows start with a reading before work |
+
 ## Deferred (not in this plan's first pass)
 
 Brands as a top-level section (the switcher stays), per-state color tables, composed-screen previews, per-component changelog, resizable panels, hover definitions on terms, contrast badges, quick-control knobs.
