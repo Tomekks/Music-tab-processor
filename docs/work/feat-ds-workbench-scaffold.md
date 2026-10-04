@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-scaffold
-Next: run verify-task.sh, fill Report, run finish.sh.
+Next: owner runs the checklist (dev server placeholder, curl 403, lsof 127.0.0.1:5174, stop server).
 Written against: 5ae2909
 
 ## What changes for you
@@ -34,7 +34,7 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - [x] Write `origin.test.ts` first with the 6 cases below; run it and see it fail (the module does not exist yet).
 - [x] Write `origin.ts` (copy of the sibling), then the other files; run the tests until they pass.
 - [x] Break each rule once (edit it, see the matching test fail, restore it).
-- [ ] Run `bash scripts/verify-task.sh`, fill `## Report`, run `bash scripts/finish.sh`.
+- [x] Run `bash scripts/verify-task.sh`, fill `## Report`, run `bash scripts/finish.sh`.
 
 **Files.**
 1. `origin.ts`: the same `isRequestAllowed(method, host, origin, allowedHosts)` as Control Centre, copied exactly.
@@ -102,4 +102,10 @@ No file or network access in the code, no new dependency, no other routes.
  tools/Design_System/src/routes/+page.svelte       |  2 ++
  tools/Design_System/tsconfig.json                 | 20 +++++++++++++
  8 files changed, 121 insertions(+), 6 deletions(-)
+```
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-scaffold.md | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 ```
