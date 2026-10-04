@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-scaffold
-Next: owner approves "What changes for you"; then Level 2 review by Claude; then `bash scripts/delegate.sh docs/work/feat-ds-workbench-scaffold.md`.
+Next: owner approves the "What changes for you" block; then from THIS folder (the worktree `../guitar_tab_processor-feat-ds-workbench-scaffold`, branch `feat/ds-workbench-scaffold`; `/start` in the main folder cannot see this task) run `bash scripts/delegate.sh docs/work/feat-ds-workbench-scaffold.md`, the first real test of the measurement hooks (check the `row:` line shows tokens, cost and seconds). Then Claude spot-checks the diff (Level 2 review of the brief is already done), owner runs the checklist. Local-only: this branch (not pushed), master is 43 commits ahead of origin (not pushed), untracked `.claude/skills/` and `app/packages/design-system/brands/{byebye,heyhey}` (not part of this task). Measured so far for the whole plan: 8 marks, 12359 s from plan start (`bash scripts/measure.sh report design-system-workbench`); plan usage 34% (5 h) / 33% (weekly) at 2026-10-03 evening.
 Written against: 2ddf146
 
 ## What changes for you
@@ -66,6 +66,13 @@ No file or network access in the code, no new dependency, no other routes.
 - [ ] In a second terminal: `curl -s -o /dev/null -w "%{http_code}" -H "Host: evil.example" http://127.0.0.1:5174/` → `403`.
 - [ ] `lsof -nP -iTCP:5174 -sTCP:LISTEN` → shows `127.0.0.1:5174`, not `*:5174`.
 - [ ] Stop the dev server (Ctrl+C) → port 5174 is free again (`lsof -i :5174` prints nothing).
+
+## Decisions (chat, 2026-10-03)
+- Task 1b is split: 1b (this one: server scaffold and request guard, 8 files) and 1b2 (the three-column shell, `AGENTS.md`, registry); plan table updated on master.
+- Dependencies were installed by Claude in the prep commit `2ddf146` because the builder has no `npm install`; same versions as Control Center.
+- `scripts/new-worktree.sh` now also installs `tools/Design_System` (commit `001f03a` on master; not on the owner's original list of five files, reversible).
+- Level 2 review was done by Claude, who also wrote the brief, so it is not independent. The "eight questions" of a Level 2 review are not written anywhere in the current rules (only a count in the old `PROCESS.html`).
+- Port 5174, `127.0.0.1` only, guard copied from Control Center; the workbench imports nothing from it.
 
 ## Questions
 (none open)
