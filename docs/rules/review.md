@@ -1,6 +1,6 @@
-# Review (Level 2 questions)
+# Review (Level 1 and 2 questions)
 
-Used when a task's Risk line says `Review level: 2`. Claude answers **all eight, once**, in the task file under
+`/review` reads the task's `Risk` line. Level 1 answers only questions 1, 4 and 6 below (max 5 bullets, no gate). Level 2, used when the Risk line says `Review level: 2`, Claude answers **all eight, once**, in the task file under
 `## Review`: one line per question, each ending in evidence (a `file:line` or a command and its output). "None" counts
 as an answer only with that evidence. More than about 8 files to look at: return "too vague". `/review` loads this
 file; `scripts/delegate.sh` refuses to start the builder until `## Review` holds 8 answers (`scripts/check-review.sh`).
