@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-save
 Next: run `/review` (Level 2: eight answers under `## Review`), owner approves "What changes for you", then `scripts/delegate.sh`.
-Written against: 4ff965e
+Written against: f7ad06d
 
 ## What changes for you
 Nothing visible yet: no screen uses it until tasks 1e and 1f. A new file in the design system package (`save-tokens.mjs`) can read `brands/default/tokens.json` and save a batch of color edits to it safely: all or nothing, refusing if someone changed the file since it was read (git, another session), refusing if the file is read-only, and rebuilding the web app's CSS afterwards. The old editor and its API route are not touched and keep working.
