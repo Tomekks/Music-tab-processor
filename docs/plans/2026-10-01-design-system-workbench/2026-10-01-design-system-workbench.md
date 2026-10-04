@@ -1,6 +1,6 @@
 # Design system workbench (editor IA redesign)
 
-**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: redraw the Foundations wireframe from real tokens (fix the vertical-divider render), then a spec for slice 1.
+**Status (2026-10-03):** Grill done: framework (ADR 0011), controls, descriptions, slices (see "Decisions (2026-10-03 grill)"). No code yet. Next: task 1a (wire the new folder into the workflow, needs your yes), then 1b onward (see "Slice 1 spec").
 
 **Context:** `CONTEXT.md` (glossary: this session added Token, Foundation, Component, Variant, State, Override, Mode) · `docs/decisions/0010-brand-management-architecture.md` · current editor: `app/app/design-system/editor/` · wireframes: `wireframes/workbench-structure-v10.wireframe.html` (final structure; v1 is the starting point).
 
@@ -101,13 +101,32 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 8. Whether the undeployed note stays beside Saved, and the exact Mode toggle position.
 9. What "default" means for the reset features. Today the code has three: factory defaults (`tokens.default.json`, Main brand only), Revert in a child brand (deletes the Override, falls back to Main), and "set as default". Recommended: in Main, reset to factory default; in a child brand, reset to Main's value (Revert). Needs a glossary term to keep "reset", "revert" and "default" distinct, and a place for the control on each row and in the inspector header (not drawn in the wireframe yet).
 
-## Next session
+## Slice 1 spec: change a color and see it
 
-1. **Orient:** read `app/AGENTS.md` first: this Next.js version differs from training data, so read the relevant guide in `app/node_modules/next/dist/docs/` before writing any code.
-2. **Baseline:** run `lsof -i :3000` (stale-server check), start the `app/` dev server, screenshot `/design-system` (light and dark, Main and one child brand), jot a short Nielsen heuristics pass. Both feed the case study.
-3. **Wireframes** (`/wireframe`, same folder): Foundations page; child-brand dark mode with the override control; Cmd+K palette; Glossary; unsaved and save-error states. Resolve the open questions above as they come up.
-4. **Specs, one per slice, each critiqued before execution** (suggested order): child-brand dark overrides data model (touches brand merging and token writes; confirm against `resolveBrandTree` and `token-writes.mjs` first, and write ADR 0012; 0011 is the framework decision) → shell (top bar, three columns, registry, sidebar) → Foundations page → Component page and inspector → Cmd+K palette → Glossary → polish pass.
-5. **Housekeeping:** `tools/Control_Centre/CONTEXT.md` and `CONTEXT-MAP.md` still say "no code exists yet"; fix separately.
+**Story:** I pick a color on a real component, see it change live in the preview, press Save, and see it in the web app on localhost. Prior art and the spike are logged above; the spike code is `research/workbench-slice1-spike/`.
+
+**In scope:** the `default` brand, light values, color tokens only; staged edits with Save and Discard; the save states from `wireframes/save-states-v1` (empty, unsaved, saving, saved, discarded with Undo, failed, changed on disk); the changes list; Cmd+Z; the shell from `wireframes/foundations-v5` showing real Components in the preview window. **Out of scope:** other control types, dark values and the Mode toggle, descriptions, Used by, child brands, Projects, Glossary, Cmd+K, units, the Button hover quirk.
+
+**Folder:** `tools/Design_System/` (SvelteKit, port 5174, `127.0.0.1` only, like Control Center; imports nothing from it). The preview is a page in the web app (`/workbench-preview`) shown in an iframe on port 3000.
+
+**Tasks, in order** (each gets its own task file when its turn comes, written against the commit then, with a review before the build):
+
+| # | Task | Who | Risk | Review |
+|---|---|---|---|---|
+| 1a | Wire a new tool folder into the workflow: `.opencode/agents/builder.md` allow-list, `scripts/run-builder.sh` area list, `scripts/verify-task.sh` block, `executor.md` and `verify.md` lines | Claude (builder may not edit config) | config | owner approves |
+| 1b | Scaffold `tools/Design_System/`: SvelteKit app, scripts `dev build check test verify`, one page with the three-column shell (fixed top bar and sidebars, columns scroll alone), no editing | builder | new dependencies (network) | Level 2 |
+| 1c | Preview page in the web app: every Component by Variant and State, forced Hover/Pressed (spike technique rewritten properly), applies token overrides received by `postMessage` only from the workbench origin, returns 404 in production (the app is public) | builder | UI | Level 1 |
+| 1d | Save path in the package layer (`.mjs`, new file, old editor route untouched): all-or-nothing write of `tokens.json` (temp file, rename, re-read to confirm), refuses if the file changed since loaded, then regenerates the CSS; tests first for read-only, changed-on-disk, invalid value, success | builder | writes files | Level 2 |
+| 1e | Workbench shows the preview in an iframe and the list of color tokens (real values from the package layer); read-only | builder | UI | Level 1 |
+| 1f | Color editing: swatch plus hex field (any CSS color accepted, normalised to hex with `colord`) plus `svelte-awesome-color-picker`, staged edits, live preview, Save/Discard, the save states, changes list, Cmd+Z | builder | UI | Level 1 |
+
+**Slice acceptance (owner checklist, run after 1f):** start the web app and the workbench; change `accent` with the picker, the preview changes live; Save, then the web app on localhost shows the new color and `git diff` shows only `brands/default/tokens.json`; change the file by hand while an edit is staged, then Save stops and names the file; make `tokens.json` read-only, Save says nothing was written and the edit stays staged; Discard then Undo restores it; a revert of the test edit is part of the check.
+
+**Open:** where the Mode toggle sits until slice 2 (hidden); the picker's look (native fallback if it fights the design); whether 1b may use `node --test` as Control Center does (assumed yes).
+
+## Housekeeping
+
+`tools/Control_Centre/CONTEXT.md` and `CONTEXT-MAP.md` still say "no code exists yet"; fix separately.
 
 ## Notes
 
