@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-scaffold
-Next: owner runs the checklist (dev server placeholder, curl 403, lsof 127.0.0.1:5174, stop server).
+Next: BUILT and checked, waiting for the owner. Builder run 2 passed (`delegate: PASS`, 6/6 guard tests, scope and verify OK; run 1 stopped on a permission denial, see Decisions). Claude spot-checked: `origin.ts` identical to Control Center, live server answers 200 for `127.0.0.1` and `localhost`, 403 for a foreign Host and for a POST without origin, listens on 127.0.0.1 only, then stopped (5174 free). Owner: run the 4 checklist items (all still unticked) and say if the task is accepted; then merge locally (or ask about push) and set Status to done. Worktree: `../guitar_tab_processor-feat-ds-workbench-scaffold` (branch `feat/ds-workbench-scaffold`, not pushed); `git stash list` there holds run 1 output (can be dropped after merge, ask first). Next task: 1b2 (shell; Claude writes `tools/Design_System/AGENTS.md` because the builder cannot edit `*AGENTS.md`). Cost of run 2: 54,980 tokens, $0.01, 146 s; run 1: 34,121 tokens, $0.01, 108 s.
 Written against: 5ae2909
 
 ## What changes for you
