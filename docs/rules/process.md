@@ -26,8 +26,8 @@ at a real seam.
    scope question.
 3. **Review.** Level 0 none. Level 1 (default): fresh reviewer session on a different model, three
    questions: serves the story? simplest version? can a check pass while it's broken? Max 5 bullets.
-   Level 2 (risk trigger): Claude, all eight questions once; if it needs more than ~8 files, return
-   "too vague". Reviewers are read-only, cite `file:line`, flag only correctness or requirement gaps,
+   Level 2 (risk trigger): Claude answers every question in `docs/rules/review.md` into the task's
+   `## Review` (`/review`; `delegate.sh` refuses without it); over ~8 files: "too vague". Reviewers are read-only, cite `file:line`, flag only correctness or requirement gaps,
    say "sound" in one line when it is, never invent findings, and don't restate or redesign. Verified
    claims get one line ("all quoted excerpts match"); list only what couldn't be confirmed. Verify a
    review's claims against the code before acting on them; a detailed critique can still be false.

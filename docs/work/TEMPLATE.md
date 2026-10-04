@@ -24,6 +24,9 @@ Files touched: <<N>>. Expected diff: <<~lines>>. New tests: <<N, max about 10>>.
 ## Risk
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<none | list>>. Review level: <<0 | 1 | 2>>.
 
+## Review
+(Level 1: the reviewer's bullets. Level 2: one line per question in docs/rules/review.md, with evidence; delegate.sh refuses the builder without 8 answers.)
+
 ## Steps
 - [ ] <<step, in order, one line each; tick as you go>>
 

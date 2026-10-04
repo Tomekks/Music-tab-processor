@@ -49,6 +49,7 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 
 ## Session
 - One job per session. A decision made in chat goes into the task file as one line, at once.
+- A command offered for the owner to launch (server, watcher) comes with its stop command and a free-port check in the next blocks.
 - Before you stop, update the task file's `Next:` line and checklist. `/start` begins a session.
 
 ## Testing, debugging, done

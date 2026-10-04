@@ -13,6 +13,7 @@ cd "$(git rev-parse --show-toplevel)" || exit 1
 FALLBACK="opencode-go/deepseek-v4.1-flash"
 MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
 START="$(git rev-parse HEAD)"
+[ "$CRITIQUE" -eq 1 ] || bash scripts/check-review.sh "$TASK" || exit 2   # Level 2 tasks need their review first
 T0="$(date +%s)"; read -r TOK0 COST0 <<< "$(bash scripts/measure.sh snapshot)"
 bash scripts/measure.sh mark "$TASK" delegate-start >/dev/null 2>&1 || true
 trap 'bash scripts/measure.sh mark "$TASK" delegate-end "exit $?" >/dev/null 2>&1 || true' EXIT
