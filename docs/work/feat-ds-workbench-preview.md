@@ -2,8 +2,8 @@
 
 Status: active
 Branch: feat/ds-workbench-preview
-Next: owner approves the "What changes for you" block, then `bash scripts/check-brief.sh docs/work/feat-ds-workbench-preview.md`, then `delegate.sh`.
-Written against: c666f37
+Next: run `npm --prefix app run stage` and confirm /workbench-preview is 404 on :3001, then owner checklist (dev server on :3000).
+Written against: 09d2885
 
 ## What changes for you
 The web app gets a new page at `/workbench-preview` that only exists on your machine in dev (it returns "not found" on the public site). It shows the five real Components (Button, Icon Button, Color Field, Segmented Control, Slider), each Variant in a row and each State (Default, Hover, Pressed, Disabled) in a column, with Hover and Pressed forced on so you can see them without a mouse. The page also accepts color changes sent from the workbench (only from `localhost:5174` / `127.0.0.1:5174`) and shows them live; the workbench does not send any yet (that is task 1e). Nothing else in the app changes.
@@ -53,4 +53,28 @@ Level 1: reviewer checks (a) `page.tsx` calls `notFound()` when `NODE_ENV === "p
 (none open)
 
 ## Report
-<Filled by the builder when done.>
+Written by Claude, not the builder: the builder wrote all four files and `verify-task.sh` passed, then its model call failed with "only auto is supported for tool_choice" before it wrote this report or ran finish.sh.
+- `bash scripts/verify-task.sh` → PASS (run by delegate.sh after the builder stopped) → ✓
+- `node --test app/lib/workbenchPreview.test.ts` → 10 pass, 0 fail → ✓
+- Break each rule (Claude, one at a time, restored after): drop the localhost origin, allow `;`/`}` in values, allow 1000-char values, allow keys without `--`, allow comma selector lists → each made 1 test fail → ✓
+- Review (a): `page.tsx` calls `notFound()` in production first → by reading ✓; the real production 404 is checked by `npm run stage` → Not run yet
+- Review (b), (c): listener ignores `null` from `readTokenMessage`, only `setProperty` on keys matching `--[a-z0-9-]+` → by reading ✓
+- Owner checklist: Not run.
+Decisions the spec didn't settle: the table shows Hover/Pressed forced cells for ColorField, SegmentedControl and Slider too (they have few or no hover rules, so those cells may look like Default). Spec facts wrong: none. Noticed, not touched: none.
+
+The pre-commit `npm run verify` first failed inside this worktree (git sets GIT_DIR for hooks; `build-tokens.test.mjs:31` ran `git checkout HEAD -- <abs path>`). Fixed separately in `09d2885` (owner asked for it; test now runs that checkout without GIT_DIR/GIT_INDEX_FILE/GIT_WORK_TREE; red with GIT_DIR before, green after). This commit went through the normal hook, no `--no-verify`.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/app/workbench-preview/Preview.tsx  | 304 +++++++++++++++++++++++++++++++++
+ app/app/workbench-preview/page.tsx     |   9 +
+ app/lib/workbenchPreview.test.ts       | 104 +++++++++++
+ app/lib/workbenchPreview.ts            |  32 ++++
+ docs/work/feat-ds-workbench-preview.md |  18 +-
+ 5 files changed, 464 insertions(+), 3 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 59/59 (4 files)  design-system 133/133 (10 files)  build not run (use --full)  (192 tests, 6s)
+  not run: e2e (10 specs; npm run test:e2e)
+pre-commit: OK
+```
