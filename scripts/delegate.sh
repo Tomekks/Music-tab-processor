@@ -13,6 +13,9 @@ cd "$(git rev-parse --show-toplevel)" || exit 1
 FALLBACK="opencode-go/deepseek-v4.1-flash"
 MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
 START="$(git rev-parse HEAD)"
+T0="$(date +%s)"; read -r TOK0 COST0 <<< "$(bash scripts/measure.sh snapshot)"
+bash scripts/measure.sh mark "$TASK" delegate-start >/dev/null 2>&1 || true
+trap 'bash scripts/measure.sh mark "$TASK" delegate-end "exit $?" >/dev/null 2>&1 || true' EXIT
 LOG="docs/work/runs/$(basename "$TASK" .md).log"
 
 run() { OUT="$(BUILDER_MODEL="$MODEL" BUILDER_MODE="$([ "$CRITIQUE" -eq 1 ] && echo critique)" bash scripts/run-builder.sh "$TASK" 2>&1)"; }
@@ -54,5 +57,7 @@ echo "verify:   $(printf '%s\n' "$VERIFY" | tail -1)"
 git diff --stat "$START" HEAD 2>/dev/null | tail -6
 echo "log:      $LOG   (failures only: tail -40 $LOG)"
 # One ready scorecard row; Claude appends it at merge time (docs/work/scorecard.md lives outside the task's scope).
-echo "row:      | $(date +%F) | $(sed -n 's/^# Task:[[:space:]]*//p' "$TASK" | head -1) | ${MODEL#opencode-go/} | $([ "$FAIL" -eq 0 ] && echo yes || echo "no: $REASON") |  |  | see opencode stats |  |"
+read -r TOK1 COST1 <<< "$(bash scripts/measure.sh snapshot)"
+if [ "$TOK0" != na ] && [ "$TOK1" != na ]; then USED="$(( TOK1 - TOK0 )) tok, \$$(awk -v a="$COST1" -v b="$COST0" 'BEGIN{printf "%.2f", a-b}'), $(( $(date +%s) - T0 ))s"; else USED="$(( $(date +%s) - T0 ))s (tokens n/a)"; fi
+echo "row:      | $(date +%F) | $(sed -n 's/^# Task:[[:space:]]*//p' "$TASK" | head -1) | ${MODEL#opencode-go/} | $([ "$FAIL" -eq 0 ] && echo yes || echo "no: $REASON") |  |  | ${USED} |  |"
 exit "$FAIL"

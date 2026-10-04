@@ -79,3 +79,9 @@ AGE=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
 
 # Approximate size of the one file /start asks the agent to read (AGENTS.md is already loaded).
 echo "boot:    ~$(( $(wc -c < "$T" | tr -d ' ') / 4 )) tokens (task file)"
+
+# Measurement (time and tokens): mark the session start; Claude usage can't be read by a script.
+if [ -z "${START_WORK_DIR:-}" ]; then
+  bash "$(dirname "$0")/measure.sh" mark "$T" session-start >/dev/null 2>&1 || true
+  echo "measure: now log Claude usage: get_usage, then bash scripts/measure.sh mark $(basename "$T" .md) claude \"5h=<n> weekly=<n> ctx=<n>\""
+fi

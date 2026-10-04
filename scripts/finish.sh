@@ -8,6 +8,7 @@ cd "$(git rev-parse --show-toplevel)" || exit 1
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 bash "$HERE/check-scope.sh" "$TASK" || { echo "finish: stopped, nothing staged or committed"; exit 1; }
+bash "$HERE/measure.sh" mark "$TASK" builder-finish >/dev/null 2>&1 || true
 
 # Deletions the owner approved with the brief: only these, only here (the builder has no rm).
 # shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
