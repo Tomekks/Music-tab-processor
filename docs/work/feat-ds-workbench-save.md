@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save
-Next: owner approves the brief (Review answered), then `scripts/delegate.sh`.
+Next: done — `bash scripts/verify-task.sh` passes; ready for `bash scripts/finish.sh`.
 Written against: f7ad06d
 
 ## What changes for you
@@ -51,10 +51,10 @@ Known gap, accepted: a change landing in the milliseconds between step 4 and the
 8. Checked: both Modify paths pass the builder deny list (`check-brief: OK`, which tests them against `.opencode/agents/builder.md` edit rules; `*.mjs` and `src/` are not denied); the builder runs only `verify-task.sh`, which runs `app` verify including `npm test --workspace @guitar-tabs/design-system` (`app/scripts/verify.sh:47`). NOT checked: that `chmod 0o444` blocks `accessSync(W_OK)` in the builder's sandbox if it runs as another user or root; the test would then fail loudly, and the builder must report it under Questions rather than weaken it.
 
 ## Steps
-- [ ] Failing tests first (`save-tokens.test.mjs`), each in a temp copy of `brands/default` (never the real file), `regenerate` injected so tests never write the real CSS
-- [ ] `save-tokens.mjs`: `readTokens`
-- [ ] `save-tokens.mjs`: `saveTokenEdits` per the Design list
-- [ ] `bash scripts/verify-task.sh` passes; commit via `scripts/finish.sh`
+- [x] Failing tests first (`save-tokens.test.mjs`), each in a temp copy of `brands/default` (never the real file), `regenerate` injected so tests never write the real CSS
+- [x] `save-tokens.mjs`: `readTokens`
+- [x] `save-tokens.mjs`: `saveTokenEdits` per the Design list
+- [x] `bash scripts/verify-task.sh` passes; commit via `scripts/finish.sh`
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Put anything else in the owner checklist.)
@@ -78,4 +78,29 @@ Known gap, accepted: a change landing in the milliseconds between step 4 and the
 (none open)
 
 ## Report
-<Filled by the builder when done, see docs/rules/executor.md.>
+- Acceptance: `bash scripts/verify-task.sh` → last line `verify-task: PASS`, `ran:` shows design-system 142/142 → ✓
+- Acceptance: nine named tests exist in `save-tokens.test.mjs` and all pass (142/142 total, 133 before + 9 new) → ✓
+- Mutation checks (rule broken → test that failed, then restored):
+  - validation via `applyBatchWrite` disabled → `saveTokenEdits refuses an invalid value and an unknown path and writes nothing` failed → ✓
+  - `accessSync(W_OK)` not-writable gate removed → `saveTokenEdits refuses a read-only file with not-writable and writes nothing` failed → ✓
+  - `changed-on-disk` hash comparison disabled → `saveTokenEdits refuses when the file changed since it was read, names tokens.json, and does not overwrite` failed → ✓
+  - restore of original bytes on `regenerate()` throw removed → `saveTokenEdits puts the old file back when regenerating fails` failed → ✓
+  - child-brand (`parentBrandDir`) rejection removed → `saveTokenEdits refuses a child brand` failed → ✓
+  - active-brand (`resolveBrandDir`) gate for default `regenerate` removed → `saveTokenEdits refuses an unreadable tokens.json and a brand that is not the active one when regenerate is not injected` failed → ✓
+- Decisions the spec didn't settle: NONE (followed the Design step order exactly; `saved` = distinct `path` count; `markNeedsDeploy` failure propagates since the spec defines no code for it).
+- Spec fact that was wrong: Owner checklist cites `git diff 4ff965e --stat` but `Written against:` is `f7ad06d`.
+- Noticed but not touched: nothing (old editor/route, `token-writes.mjs`, `build-tokens.mjs`, `tools/` untouched).
+- Not run: owner checklist items (only the builder's `verify-task.sh` was run).
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/packages/design-system/src/save-tokens.mjs     | 134 +++++++++++++
+ .../design-system/src/save-tokens.test.mjs         | 219 +++++++++++++++++++++
+ docs/work/feat-ds-workbench-save.md                |  27 ++-
+ 3 files changed, 374 insertions(+), 6 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 60/60 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (202 tests, 7s)
+  not run: e2e (10 specs; npm run test:e2e)
+pre-commit: OK
+```
