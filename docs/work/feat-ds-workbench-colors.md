@@ -1,7 +1,7 @@
 # Task: design system workbench, Foundations page with the preview and the color token list (slice 1, task 1e)
 
 Status: active
-Branch: feat/ds-workbench-colors
+Branch: feat/ds-workbench-colors-low
 Next: create the two effort-test worktrees (#low, #high) from the brief commit and run scripts/delegate.sh in each. checkJs change approved and committed (098cb81).
 Written against: 098cb81
 
