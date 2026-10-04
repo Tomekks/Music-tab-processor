@@ -24,9 +24,9 @@ except Exception:
 }
 
 # One builder run's own "<tokens> <cost>" from its session export (same token sum as snapshot). Safe for parallel
-# runs: picks the newest "build: <task>" session created at or after <since-epoch> with the asked variant (default "default").
+# runs (title prefix "build", or MEASURE_TITLE_PREFIX): picks the newest "build: <task>" session created at or after <since-epoch> with the asked variant (default "default").
 session() {
-  local TITLE="build: $1" SINCE="$2" VARIANT="${3:-default}" OUT="" ID F
+  local TITLE="${MEASURE_TITLE_PREFIX:-build}: $1" SINCE="$2" VARIANT="${3:-default}" OUT="" ID F
   F="$(mktemp)"   # export to a file: piped, opencode cuts large exports short
   for ID in $(opencode session list 2>/dev/null | grep -F "$TITLE" | awk '{print $1}'); do
     opencode session export "$ID" > "$F" 2>/dev/null

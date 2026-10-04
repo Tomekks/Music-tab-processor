@@ -14,5 +14,12 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-04 | 1d save path | default (not set; before the test) | yes | 0 | 0 | 87,929 tok, $0.02, 227s | yes | baseline only |
 
+## Second opinion (trial from 2026-10-04)
+`/review` runs a cheap blind second reviewer (`scripts/review-second.sh`), Claude answers separately, then compares. After 3-5 rows: keep for Level 2 only, keep for both, or drop. Counts are real catches (checked against the code) except the last column.
+
+| Date | Task | Level | Only the cheap model caught | Only Claude caught | Cheap model's false or noisy claims | Tokens / time |
+|---|---|---|---|---|---|---|
+| 2026-10-04 | 1e brief | 1 (blind run not yet compared) | 2 (in the first, non-blind run: descriptions out of scope, unused `raw`) | 2 (reuse of `buildFieldDescriptors`, `import.meta.url` path), found in the 8-question pass | 0 | ~48k tok, 48s |
+
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).
