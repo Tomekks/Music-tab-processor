@@ -24,13 +24,13 @@ at a real seam.
    `Written against: <commit>`. Keep narration short, but never skip: a crash or null path in new logic,
    an existing assertion the change will break, a fixture that can't exercise the code, an unanswered
    scope question.
-3. **Review.** Level 0 none. Level 1 (default): fresh reviewer session on a different model, three
-   questions: serves the story? simplest version? can a check pass while it's broken? Max 5 bullets.
-   Level 2 (risk trigger): Claude answers every question in `docs/rules/review.md` into the task's
-   `## Review` (`/review`; `delegate.sh` refuses without it); over ~8 files: "too vague". Reviewers are read-only, cite `file:line`, flag only correctness or requirement gaps,
-   say "sound" in one line when it is, never invent findings, and don't restate or redesign. Verified
-   claims get one line ("all quoted excerpts match"); list only what couldn't be confirmed. Verify a
-   review's claims against the code before acting on them; a detailed critique can still be false.
+3. **Review.** One command, `/review`, by the task's Risk level. Level 0 none. Level 1 (default): Claude
+   answers questions 1, 4, 6 of `docs/rules/review.md` (serves the story? simplest version? can a check
+   pass while it's broken?) under `## Review`, max 5 bullets, no gate. Level 2 (risk trigger): all eight
+   (`delegate.sh` refuses without them); over ~8 files: "too vague". Reviewers are read-only, cite
+   `file:line`, flag only correctness or requirement gaps, say "sound" in one line when it is, never
+   invent findings, don't restate or redesign. Verified claims get one line; list only what couldn't be
+   confirmed. Verify a review's claims against the code before acting on them; a critique can be false.
 4. **Build** with `scripts/run-builder.sh <task file>` in its own worktree for any Bounded-or-larger
    feature; trivial fixes stay on the current branch (`docs/rules/executor.md`).
 5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`).
