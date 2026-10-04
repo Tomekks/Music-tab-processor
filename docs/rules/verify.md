@@ -11,7 +11,12 @@ silently runs zero tests still exits 0.
 ## Gates (same check for every tool)
 - **Pre-commit** (`.githooks/pre-commit`): secret scan, then `verify` when `app/` files are staged.
   Needs `git config core.hooksPath .githooks` in every clone and worktree.
-- **Stop hook** (Claude Code only): blocks "done" while `app/` changes fail verify.
+- **Stop hook** (Claude Code only, `scripts/stop-verify.sh`): blocks "done" while uncommitted changes in
+  `app/`, `tools/Design_System` or `tools/Control_Centre` fail verify. A folder without `node_modules` is
+  skipped with a note, not blocked. Test: `bash scripts/test-stop-verify.sh`.
+- **Bash guard** (Claude Code only, `scripts/guard-bash.sh`, a `PreToolUse` hook): asks before `git push`,
+  `gh pr`, `vercel`, `git reset --hard` and `rm -rf`; denies `--no-verify`. Words inside quotes or heredocs
+  are ignored. Test: `bash scripts/test-guard-bash.sh`. Takes effect in a new session after the settings change.
 - **CI:** `verify:full` on PRs and master; branch protection requires it.
 - A real credential in a blocked commit means stop and rotate, never `--no-verify`.
 
