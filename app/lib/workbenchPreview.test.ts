@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readTokenMessage, forcedStateSelector } from "./workbenchPreview.ts";
+import { readTokenMessage, forcedStateSelector, previewFitScale } from "./workbenchPreview.ts";
 
 const VARS = { "--color-accent": "#6d28d9" };
 const MESSAGE = { type: "tokens", vars: VARS };
@@ -103,6 +103,19 @@ test("readTokenMessage: non-object data returns null", () => {
   assert.equal(readTokenMessage("http://localhost:5174", { type: "tokens" }), null);
 });
 
+test("previewFitScale: narrower frame scales to frame/content", () => {
+  assert.equal(previewFitScale(400, 800), 0.5);
+});
+
+test("previewFitScale: wider-or-equal frame stays 1", () => {
+  assert.equal(previewFitScale(800, 400), 1);
+  assert.equal(previewFitScale(800, 800), 1);
+});
+
+test("previewFitScale: zero or negative frame width stays 1", () => {
+  assert.equal(previewFitScale(0, 800), 1);
+  assert.equal(previewFitScale(-100, 800), 1);
+});
 test("forcedStateSelector: an escaped comma inside a class name is not a selector list", () => {
   // The Tailwind class for the primary Button hover is `.hover\:[…color-mix(in_srgb\,var(--a)\,…)]:hover`.
   assert.equal(

@@ -18,10 +18,10 @@ The workbench `/foundations` Preview iframe spans the full canvas width between 
 - `tools/Design_System/src/routes/foundations/+page.svelte`
 - `tools/Design_System/src/routes/+layout.svelte`
 
-**Shared message (inline, not a contracts/ change):** the preview (app, port 3000) SENDS `{ type: "preview-height", height: <positive finite px> }` by `postMessage` to its parent window; the workbench (port 5174) receives it via `previewHeight.ts`, which accepts a message only from the preview origin and the iframe's own window.
-
 **Do NOT touch:**
 - `contracts/`, config, secrets, `app/hooks/useThemeMode.ts` (the theme-chase cause lives there; this task only works around it inside the preview page), anything not listed above
+
+**Shared message (inline, not a contracts/ change):** the preview (app, port 3000) SENDS `{ type: "preview-height", height: <positive finite px> }` by `postMessage` to its parent window; the workbench (port 5174) receives it via `previewHeight.ts`, which accepts a message only from the preview origin and the iframe's own window.
 
 **Delete (approved with this brief):** None.
 
@@ -72,3 +72,21 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): tou
 <Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
 per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
 anything noticed but not touched. Mark anything not run as `Not run`.>
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/app/workbench-preview/Preview.tsx              | 58 ++++++++++++++++++++--
+ app/lib/workbenchPreview.test.ts                   | 15 +++++-
+ app/lib/workbenchPreview.ts                        |  7 +++
+ docs/work/feat-ds-workbench-preview-fit-low.md     |  7 ++-
+ tools/Design_System/src/lib/previewHeight.test.ts  | 47 ++++++++++++++++++
+ tools/Design_System/src/lib/previewHeight.ts       | 17 +++++++
+ tools/Design_System/src/routes/+layout.svelte      |  4 +-
+ .../src/routes/foundations/+page.svelte            | 28 ++++++++++-
+ 8 files changed, 172 insertions(+), 11 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 63/63 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (205 tests, 6s)
+  not run: e2e (10 specs; npm run test:e2e)
+pre-commit: OK
+```

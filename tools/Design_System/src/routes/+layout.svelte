@@ -69,7 +69,7 @@
 
 	.body {
 		display: grid;
-		grid-template-columns: 280px 1fr 320px;
+		grid-template-columns: 180px 1fr 320px;
 		min-height: 0;
 	}
 
@@ -81,7 +81,7 @@
 
 	.canvas {
 		overflow-y: auto;
-		padding: 32px;
+		padding: 16px;
 		min-width: 0;
 	}
 
