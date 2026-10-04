@@ -28,8 +28,13 @@ import { collectLeafPaths } from "./token-writes.mjs";
 // soft-deleted to .trash-*, or modified). Uses an absolute path (via
 // resolveBrandDir(), not process.cwd()) since this file's cwd depends on how
 // it was invoked (npm workspace vs. plain `node --test`).
+// Git exports GIT_DIR/GIT_INDEX_FILE/GIT_WORK_TREE to hooks (always set in a worktree); with them
+// set, the absolute path above no longer matches, so run this checkout without them.
+const cleanEnv = { ...process.env };
+for (const name of ["GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE"]) delete cleanEnv[name];
 execSync(`git checkout HEAD -- ${join(dirname(resolveBrandDir()), "demo-child")}`, {
   cwd: dirname(resolveBrandDir()),
+  env: cleanEnv,
 });
 
 // Expected output: captured from the real generateCSS(resolveBrandDir())
