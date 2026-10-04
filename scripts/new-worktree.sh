@@ -54,6 +54,9 @@ if [ "$INSTALL" -eq 1 ]; then
   if [ -f tools/Control_Centre/package.json ]; then
     (cd tools/Control_Centre && npm install --silent && npm run tokens --silent) && echo "installed Control Centre dependencies and generated its design tokens"
   fi
+  if [ -f tools/Design_System/package.json ]; then
+    (cd tools/Design_System && npm install --silent) && echo "installed design system workbench dependencies"
+  fi
 fi
 
 echo ""
