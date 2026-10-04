@@ -19,7 +19,8 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 
 | Date | Task | Level | Only the cheap model caught | Only Claude caught | Cheap model's false or noisy claims | Tokens / time |
 |---|---|---|---|---|---|---|
-| 2026-10-04 | 1e brief | 1 (blind run not yet compared) | 2 (in the first, non-blind run: descriptions out of scope, unused `raw`) | 2 (reuse of `buildFieldDescriptors`, `import.meta.url` path), found in the 8-question pass | 0 | ~48k tok, 48s |
+| 2026-10-04 | 1e brief | 1 (non-blind first run) | 2 (in the first, non-blind run: descriptions out of scope, unused `raw`) | 2 (reuse of `buildFieldDescriptors`, `import.meta.url` path), found in the 8-question pass | 0 | ~48k tok, 48s |
+| 2026-10-04 | 1e brief, blind rerun | 1 | 0 (it reached the same one real finding on its own: descriptions are out of scope) | 0 (my extras were context, not defects: `cssVar` feeds 1f; 7 of 16 rows have no description) | 0 | ~46k tok, 97s |
 
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).
