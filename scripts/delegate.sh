@@ -10,7 +10,7 @@ set -uo pipefail
 TASK="${1:?usage: scripts/delegate.sh <task-file> [--critique]}"
 CRITIQUE=0; [ "${2:-}" = "--critique" ] && CRITIQUE=1
 cd "$(git rev-parse --show-toplevel)" || exit 1
-FALLBACK="opencode-go/deepseek-v4.1-flash#max"
+FALLBACK="opencode-go/deepseek-v4.1-flash#high"
 MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor#high}"
 START="$(git rev-parse HEAD)"
 [ "$CRITIQUE" -eq 1 ] || bash scripts/check-review.sh "$TASK" || exit 2   # Level 2 tasks need their review first
