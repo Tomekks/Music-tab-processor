@@ -1,54 +1,50 @@
+
 # Task: Foundations preview fits the canvas (five owner fixes)
 
 Status: done
 Branch: feat/ds-workbench-preview-fit-low
-Next: 1e2 is merged locally into master (`7611df1`), NOT pushed (one push after the slice-1 tasks). Owner checklist items NOT yet confirmed in a browser (owner looked at both runs and said they seemed the same). Next task: 1f in a NEW session. Leftovers, ask before deleting: worktrees `../guitar_tab_processor-feat-ds-workbench-preview-fit`, `-low`, `-high`; branches `feat/ds-workbench-preview-fit`, `-low`, `-high`; parked idea: Foundations "Layout" section with adjustable layout values.
+Next: 1e2 is merged locally into master (`7611df1`), NOT pushed (one push after the slice-1 tasks). Owner checklist items NOT yet confirmed in a browser (owner looked at both runs and said they seemed the same). Next task: 1f in a NEW session. Leftovers, ask before deleting: worktrees `../guitar_tab_processor-feat-ds-workbench-preview-fit`, `-low`, `-high`; branches `feat/ds-workbench-preview-fit`, `-low`, `-high`; parked idea: Foundations "Layout" section with adjustable layout values. Usage at session end: 5h=5% weekly=44% ctx=162k; `measure.sh report` (task feat-ds-workbench-preview-fit): 5 marks, 3341s between first and last. NOT confirmed: browser checklist.
 Written against: d61073d
 
 ## What changes for you
-The workbench `/foundations` Preview iframe spans the full canvas width between the sidebar and the inspector and is exactly as tall as its content, with no scrolling inside it. The preview always shows the light look, scaled down to fit when the frame is narrower, with no light-then-dark flash on load. The left sidebar is narrower (180px), and the Colors description text stays, shown at 12px regular in a narrower column.
+The workbench `/foundations` Preview iframe spans the full canvas width between the sidebar and the inspector and is exactly as tall as its content, no inner scrolling. It always shows the light look, scaled down to fit when the frame is narrower, no light-then-dark flash on load. The left sidebar is 180px, and the Colors description text stays at 12px regular in a narrower column.
 
 ## Scope
-**Modify only:**
-- `app/lib/workbenchPreview.ts`
-- `app/lib/workbenchPreview.test.ts`
-- `app/app/workbench-preview/Preview.tsx`
-- `tools/Design_System/src/lib/previewHeight.ts` (new)
-- `tools/Design_System/src/lib/previewHeight.test.ts` (new)
-- `tools/Design_System/src/routes/foundations/+page.svelte`
-- `tools/Design_System/src/routes/+layout.svelte`
-
-**Do NOT touch:**
-- `contracts/`, config, secrets, `app/hooks/useThemeMode.ts` (the theme-chase cause lives there; this task only works around it inside the preview page), anything not listed above
-
-**Shared message (inline, not a contracts/ change):** the preview (app, port 3000) SENDS `{ type: "preview-height", height: <positive finite px> }` by `postMessage` to its parent window; the workbench (port 5174) receives it via `previewHeight.ts`, which accepts a message only from the preview origin and the iframe's own window.
-
-**Delete (approved with this brief):** None.
+Modify only: `app/lib/workbenchPreview.ts`, `app/lib/workbenchPreview.test.ts`, `app/app/workbench-preview/Preview.tsx`, `tools/Design_System/src/lib/previewHeight.ts` (new), `tools/Design_System/src/lib/previewHeight.test.ts` (new), `tools/Design_System/src/routes/foundations/+page.svelte`, `tools/Design_System/src/routes/+layout.svelte`.
+Do NOT touch: `contracts/`, config, secrets, `app/hooks/useThemeMode.ts`, anything not listed above.
+Shared message: the preview (port 3000) SENDS `{ type: "preview-height", height: <positive finite px> }` by `postMessage` to its parent; the workbench (port 5174) receives it via `previewHeight.ts`, accepting only the preview origin and the iframe's own window.
+Delete (approved): None.
 
 ## Size
 Files touched: 7. Expected diff: ~120 lines. New tests: ~8.
 
 ## Risk
-Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): touches `app/` (dev-only `/workbench-preview` route; production returns 404). Review level: 2.
+Triggers: touches `app/` (dev-only `/workbench-preview` route; production returns 404). Review level: 2.
 
 ## Review
 (Level 2, Claude's answers; second opinion by a blind cheap model, compared in the scorecard.)
-1. Serves the story: all five fixes plus the 12px description trace to the owner's feedback (`docs/work/feat-ds-workbench-colors.md:19`); nothing extra. One gap: "full canvas width" is unclear, the iframe is already `width: 100%` of the canvas content box (`+page.svelte:24`) and the canvas has 32px padding (`+layout.svelte:80-84`); owner decided 16px padding (Questions).
-2. Touches: the dev-only preview page and the workbench shell grid (`+layout.svelte:72`); breaks nothing else, `Preview.tsx` is used only by `app/app/workbench-preview/page.tsx` (404 in production, `page.tsx:5`).
-3. Reuse: `readTokenMessage`'s origin-allow-list style (`app/lib/workbenchPreview.ts:1,8`) is the pattern for the workbench-side check; nothing to reuse for the scale helper.
-4. Simplest: cut the scale helper and use CSS `zoom` or `max-width` only if a pure helper is not wanted; kept, since a tested rule beats an untested style. Nothing else to cut.
-5. Unspecified, now added to the steps: height after scaling (the scaled height, not the raw one); the first-message fallback (420px); a preview that never answers (stays 420px). Viewport below the table width is covered by the scale rule.
-6. A check can pass while broken: yes. The light lock, the no-flash, the real height and the 180px sidebar have no automated test (`node --test` only covers the two pure helpers: `app/package.json:21`, `tools/Design_System/package.json:12`), so `verify-task: PASS` proves none of them; they are in the Owner checklist.
-7. Irreversible/exposure: nothing deleted, no `contracts/`; the new `postMessage` sends only a number and targets exactly `http://localhost:5174` (never `"*"`); the receiver accepts only the preview origin and the iframe's own window.
-8. Unchecked claim found and fixed: the draft said `Preview.tsx` can pin the light look, but the theme is set by the root layout's `ThemeProvider` (`app/app/layout.tsx:36`, `useThemeMode.ts:24-27`), whose effect runs after the child's, so a one-time set loses. Fix: a `MutationObserver` started in `useLayoutEffect` (see Steps). Builder deny list (`.opencode/agents/builder.md`) does not block `app/` or `tools/Design_System/` paths; `check-brief.sh` passes.
+1. Serves the story: all five fixes plus the 12px description trace to the owner's feedback; nothing extra. Owner decided 16px canvas padding.
+2. Touches the dev-only preview page and the workbench shell grid; breaks nothing else.
+3. Reuse: `readTokenMessage`'s origin-allow-list style is the pattern for the workbench-side check.
+4. Simplest: kept the tested scale helper, since a tested rule beats an untested style; nothing else to cut.
+5. Unspecified, now added: the scaled height, the 420px first-message fallback, and an unanswered preview staying 420px.
+6. A check can pass while broken: yes; the light lock, no-flash, real height and 180px sidebar have no automated test and sit in the owner checklist.
+7. Irreversible/exposure: nothing deleted, no `contracts/`; `postMessage` sends only a number to exactly `http://localhost:5174`.
+8. Unchecked claim found and fixed: the theme is set by the root `ThemeProvider`, so a one-time light set loses; fixed with a `MutationObserver` in `useLayoutEffect`. `check-brief.sh` passes.
+
+## Decisions (owner, in chat, 2026-10-04)
+- Canvas padding becomes 16px (iframe stays 100% of the content box); parked: a Foundations "Layout" section with adjustable design-system layout values.
+- Brief drafted by Muse; the `#high` redraft was usable; Claude's `/review` caught the real defect (root `ThemeProvider` overrides a one-time light set; fixed with a `MutationObserver`); the blind pass caught nothing extra.
+- Low and high builder runs produced the same design; picked low (59k vs 111k tokens, more accurate scaled height). Both ended on the `tool_choice` API crash; Claude ran `finish.sh`.
+- Lesson: backticked text inside the brief's "Modify only" block is read as file paths by `verify-task.sh`/`finish.sh`.
 
 ## Steps
-- [ ] Red then green in `app/`: extend `app/lib/workbenchPreview.test.ts` with fit-scale tests (narrower frame scales to frame/content; wider-or-equal frame stays 1; zero or negative frame width stays 1), watch them fail on `npm test`, then add the scale helper to `app/lib/workbenchPreview.ts` until green
-- [ ] Red then green in the workbench: add `tools/Design_System/src/lib/previewHeight.test.ts` (accepts a numeric height only from the preview origin `http://localhost:3000` and the iframe's own window; rejects any other origin, any other source window, and any non-numeric or non-positive height), watch it fail on `npm test`, then add `tools/Design_System/src/lib/previewHeight.ts` until green
-- [ ] In `app/app/workbench-preview/Preview.tsx`: pin the light look: in `useLayoutEffect` set `document.documentElement.dataset.theme = "light"` and start a `MutationObserver` on that attribute that sets it back to `light` whenever anything else changes it (the root layout's `ThemeProvider` sets the saved/system theme in an effect that runs after this component's: `app/hooks/useThemeMode.ts:24-27`; the observer reverts it before paint, which also removes the flash); never read or write the saved theme, scale the table down to the frame width with the helper, measure the content height after scaling, i.e. raw height times the scale (ResizeObserver) and post `{ type: "preview-height", height }` to `window.parent` with targetOrigin exactly `http://localhost:5174` on change (never `"*"`)
-- [ ] In `tools/Design_System/src/routes/foundations/+page.svelte`: iframe full canvas width with `scrolling="no"`, height driven only by accepted `postMessage` heights (420px, the current height, until the first message), description text kept in a narrower column at 12px regular
-- [ ] In `tools/Design_System/src/routes/+layout.svelte`: left sidebar 280px becomes 180px (`grid-template-columns`, line 72) and the `.canvas` padding 32px becomes 16px (owner decision 2026-10-04; the iframe stays 100% of the canvas content box); nothing else in the shell changes
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Done: extended `app/lib/workbenchPreview.test.ts` with fit-scale tests, then added the scale helper to `app/lib/workbenchPreview.ts` (red then green in `app/`).
+- [x] Done: added `tools/Design_System/src/lib/previewHeight.test.ts`, then `previewHeight.ts` (red then green in the workbench).
+- [x] Done: in `Preview.tsx`, pinned the light look with a `MutationObserver` in `useLayoutEffect`, scaled the table to the frame width, measured the scaled height and posted `preview-height` to `window.parent` with targetOrigin `http://localhost:5174`.
+- [x] Done: in `foundations/+page.svelte`, iframe full canvas width with `scrolling="no"`, height from accepted messages (420px until the first), description text at 12px regular in a narrower column.
+- [x] Done: in `+layout.svelte`, sidebar 280px to 180px and `.canvas` padding 32px to 16px.
+- [x] Done: `bash scripts/verify-task.sh` reached PASS.
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Everything visual is in the owner checklist.)
@@ -69,9 +65,7 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): tou
 (none open) Decided by the owner 2026-10-04: canvas padding becomes 16px. Parked for later, not in this task: make design-system layout values adjustable in a Foundations "Layout" section.
 
 ## Report
-<Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
-per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
-anything noticed but not touched. Mark anything not run as `Not run`.>
+<Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts, anything noticed but not touched. Mark anything not run as `Not run`.>
 
 ### Checkpoint (written by scripts/finish.sh)
 ```
