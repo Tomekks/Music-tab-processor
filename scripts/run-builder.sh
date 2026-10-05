@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Runs the builder model on one task file, with the checks that don't need a model before and after.
 # Usage: scripts/run-builder.sh <task-file>      (run it inside the task's worktree, on its branch)
-# Env:   BUILDER_MODEL (default muse-spark), BUILDER_TIMEOUT seconds total (default 1200); dead runs are cut off early, see scripts/oc-run.sh
+# Env:   BUILDER_MODEL (default muse-spark#high), BUILDER_TIMEOUT seconds total (default 1200); dead runs are cut off early, see scripts/oc-run.sh
 set -uo pipefail
 TASK="${1:?usage: scripts/run-builder.sh <task-file>}"
 cd "$(git rev-parse --show-toplevel)" || exit 1
 [ -f "$TASK" ] || { echo "no such file: $TASK"; exit 1; }
 
-MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
+MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor#high}"
 TIMEOUT="${BUILDER_TIMEOUT:-1200}"
 case "$MODEL" in *free*) echo "refusing free-tier model: $MODEL"; exit 1 ;; esac
 case "$MODEL" in opencode-go/*) ;; *) echo "builder model must be an opencode-go/ id, got: $MODEL"; exit 1 ;; esac
