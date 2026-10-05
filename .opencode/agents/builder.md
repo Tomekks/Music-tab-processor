@@ -3,7 +3,7 @@ description: Builder. Builds one task from its task file; checks and saves work 
 mode: primary
 model: opencode-go/muse-spark-1.3-contributor
 temperature: 0.1
-steps: 60
+steps: 100
 permission:
   # Default deny, then allow what a build needs. ORDER MATTERS: the LAST matching rule wins.
   "*": deny

@@ -12,6 +12,11 @@
             "high": { "reasoningEffort": "high" }
           }
         },
+        "glm-5.3-flash": {
+          "variants": {
+            "high": { "reasoningEffort": "high" }
+          }
+        },
         "deepseek-v4.1-flash": {
           "variants": {
             "high": { "reasoningEffort": "high" },
