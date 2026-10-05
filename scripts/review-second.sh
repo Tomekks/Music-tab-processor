@@ -4,13 +4,13 @@
 # Usage: scripts/review-second.sh <task-file> [--show]
 #   Level 1 task: questions 1, 4, 6 (max 5 bullets). Level 2: all eight. Level 0: nothing to do.
 #   Prints only where the answer was saved (not its content) and whether the run was blind; --show prints the answer.
-# Env:   REVIEW_MODEL (default opencode-go/deepseek-v4.1-flash; paid opencode-go/ ids only, never -free).
+# Env:   REVIEW_MODEL (default opencode-go/deepseek-v4.1-flash#high, backup opencode-go/muse-spark-1.3-contributor#high; paid opencode-go/ ids only, never -free).
 # Exit:  0 saved | 1 not blind or no answer | 2 refused before the model ran | 3 model did not answer
 set -uo pipefail
 TASK="${1:?usage: scripts/review-second.sh <task-file> [--show]}"; SHOW="${2:-}"
 cd "$(git rev-parse --show-toplevel)" || exit 2
 [ -f "$TASK" ] || { echo "review-second: no such task file: $TASK"; exit 2; }
-MODEL="${REVIEW_MODEL:-opencode-go/deepseek-v4.1-flash}"
+MODEL="${REVIEW_MODEL:-opencode-go/deepseek-v4.1-flash#high}"
 case "$MODEL" in opencode-go/*-free|opencode-go/*-free#*) echo "review-second: free-tier model refused: $MODEL"; exit 2 ;; opencode-go/*) ;; *) echo "review-second: model must be an opencode-go/ id, got: $MODEL"; exit 2 ;; esac
 
 LEVEL="$(grep -oE 'Review level:[[:space:]]*[0-9]' "$TASK" | head -1 | grep -oE '[0-9]$')"

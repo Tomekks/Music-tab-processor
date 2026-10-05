@@ -17,7 +17,7 @@ at a real seam.
    before any fix brief.
 2. **Brief.** Claude drafts a task file (trial 2026-10-04, scorecard "Brief critics"): `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of plain logic, `TEMPLATE.md` for any risk
    trigger, UI, audio or 4+ files. Then one blind cold read per critic: `BUILDER_MODEL=<model> delegate.sh
-   <task> --critique` (Muse `#low`, then deepseek-v4.1-flash if needed; 5 questions max; copy `## Questions`
+   <task> --critique` (Muse at its default effort, then deepseek-v4.1-flash at its default effort if needed; 5 questions max; copy `## Questions`
    out between critics). Claude fixes only gaps where the builder would have to guess; takes a CUT: only if nothing breaks without it. First block is
    **"What changes for you"**; the owner approves it. The brief also states files touched (N), risk triggers,
    expected size, acceptance checks (`Run:` / `Expected:`), and the owner's checklist. `scripts/check-brief.sh`

@@ -6,8 +6,8 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 |---|---|---|
 | Grilling, plan, Level 2 review | Claude (Sonnet) | Judgment work only; no line-by-line specs or builds |
 | Brief drafting | Claude (Sonnet) | Trial from 2026-10-04; critics below read it blind |
-| Brief critics, build | `opencode-go/muse-spark-1.3-contributor#high` | Default builder (decided 2026-10-04 after the low/high test); critic uses `#low`; backup `deepseek-v4.1-flash#high` |
-| Level 1 review | `opencode-go/deepseek-v4.1-flash` | Different family from the builder; fresh session; read-only |
+| Brief critics, build | `opencode-go/muse-spark-1.3-contributor#high` | Default builder (decided 2026-10-04 after the low/high test); critics use Muse and then deepseek at default effort (no `#` suffix, owner decision 2026-10-04); backup `deepseek-v4.1-flash#high` |
+| Blind second reviewer (`/review`, Level 1 and 2) | `opencode-go/deepseek-v4.1-flash#high`; backup `opencode-go/muse-spark-1.3-contributor#high` | Owner decision 2026-10-04; different family from the builder; fresh session; read-only. Use the backup with `REVIEW_MODEL=` if deepseek is down |
 | Candidates for bake-off | `qwen3.8-max`, `kimi-k3`, `deepseek-v4-pro` | See below |
 
 ## Rules
