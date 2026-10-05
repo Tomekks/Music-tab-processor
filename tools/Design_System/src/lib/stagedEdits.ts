@@ -27,16 +27,29 @@ export function stageEdit(
   path: string,
   fileValue: string,
   nextHex: string,
+  replace = false,
 ): StagedHistory {
   const current = state.staged[path];
   if (nextHex.toLowerCase() === fileValue.toLowerCase()) {
     if (!current) return state;
+    if (replace) {
+      const staged = { ...state.staged };
+      delete staged[path];
+      return { staged, past: state.past, future: [] };
+    }
     const staged = { ...state.staged };
     delete staged[path];
     return { staged, past: [...state.past, state.staged], future: [] };
   }
-  const was = current ? current.now : fileValue;
+  const was = fileValue;
   if (current && current.now.toLowerCase() === nextHex.toLowerCase()) return state;
+  if (replace && current) {
+    return {
+      staged: { ...state.staged, [path]: { was, now: nextHex } },
+      past: state.past,
+      future: [],
+    };
+  }
   return {
     staged: { ...state.staged, [path]: { was, now: nextHex } },
     past: [...state.past, state.staged],

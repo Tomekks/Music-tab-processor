@@ -17,11 +17,28 @@
 	let drafts: Record<string, string> = $state({});
 	let errors: Record<string, string> = $state({});
 	let pickerFor: string | null = $state(null);
+	let pickerSessionContinued = $state(false);
 	let editingPath: string | null = $state(null);
 
+	function sectionLabel(section: string): string {
+		const short = section.startsWith("semantic.") ? section.slice("semantic.".length) : section;
+		return short.charAt(0).toUpperCase() + short.slice(1);
+	}
+
+	let sections = $derived([...new Set(data.tokens.map((token) => token.section))]);
+	let selectedSection = $state(data.tokens[0]?.section ?? "");
+
+	$effect(() => {
+		if (!selectedSection && sections.length > 0) selectedSection = sections[0];
+	});
+
 	let emptyText = "No color tokens found.";
-	let rows = $derived(data.tokens);
+	let rows = $derived(data.tokens.filter((token) => token.section === selectedSection));
 	let hasTokens = $derived(rows.length > 0);
+
+	$effect(() => {
+		if (pickerFor === null) pickerSessionContinued = false;
+	});
 
 	$effect(() => {
 		if (pickerFor === null) return;
@@ -30,9 +47,13 @@
 			if (!target) return;
 			if (target.closest("[data-picker-popover]") || target.closest("[data-swatch-button]")) return;
 			pickerFor = null;
+			pickerSessionContinued = false;
 		};
 		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === "Escape") pickerFor = null;
+			if (event.key === "Escape") {
+				pickerFor = null;
+				pickerSessionContinued = false;
+			}
 		};
 		window.addEventListener("pointerdown", onPointerDown);
 		window.addEventListener("keydown", onKeyDown);
@@ -68,6 +89,7 @@
 
 	function commit(path: string, fileValue: string) {
 		editingPath = null;
+		pickerSessionContinued = false;
 		const raw = drafts[path] ?? "";
 		const next = normalizeColor(raw);
 		if (next === null) {
@@ -86,9 +108,21 @@
 		const next = normalizeColor(hex);
 		if (next === null) return;
 		delete errors[path];
-		stagedStore.stage(path, fileValue, next);
+		const replace = pickerSessionContinued;
+		stagedStore.stage(path, fileValue, next, replace);
+		pickerSessionContinued = true;
 		drafts[path] = next;
 		sendTokens();
+	}
+
+	function openPicker(path: string) {
+		if (pickerFor === path) {
+			pickerFor = null;
+			pickerSessionContinued = false;
+			return;
+		}
+		pickerFor = path;
+		pickerSessionContinued = false;
 	}
 
 	onMount(() => {
@@ -129,42 +163,42 @@
 
 <section>
 	<h2>Colors</h2>
+	<div role="tablist" aria-label="Color sections" class="tabs">
+		{#each sections as section (section)}
+			<button
+				type="button"
+				role="tab"
+				aria-selected={section === selectedSection}
+				class="tab"
+				onclick={() => {
+					selectedSection = section;
+				}}
+			>
+				{sectionLabel(section)}
+			</button>
+		{/each}
+	</div>
 	{#if hasTokens}
 		<div class="color-list">
 			{#each rows as token (token.path)}
 				{@const display = displayFor(token.path, token.value)}
 				{@const edited = stagedStore.staged[token.path] !== undefined}
+				{@const varName = token.cssVar.startsWith("--") ? token.cssVar.slice(2) : token.cssVar}
+				{@const tip = token.description !== "" ? token.description : "No description yet"}
 				<div class="color-row">
-					<div class="color-identity">
-						<span>{token.path}</span>
-						<code>{token.cssVar}</code>
-						{#if edited}
-							<span aria-label="Edited">●</span>
-						{/if}
-						{#if token.description !== ""}
-							<button type="button" class="info" title={token.description} aria-label={token.description}>
-								<svg
-									width="16"
-									height="16"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									aria-hidden="true"
-								>
-									<circle cx="12" cy="12" r="10"></circle>
-									<path d="M12 16v-4"></path>
-									<path d="M12 8h.01"></path>
-								</svg>
-								<span class="tooltip" aria-hidden="true">{token.description}</span>
-							</button>
-						{/if}
-					</div>
+					<button
+						type="button"
+						data-swatch-button
+						aria-label="Pick a color for {varName}"
+						title="Pick a color for {varName}"
+						onclick={() => {
+							openPicker(token.path);
+						}}
+						style="width: 32px; height: 32px; background: {display}; border: 1px solid #e0e0e0; border-radius: 0; cursor: pointer; padding: 0;"
+					></button>
 					<input
 						class="hex-input"
-						aria-label="Hex value for {token.path}"
+						aria-label="Hex value for {varName}"
 						value={drafts[token.path] ?? display}
 						oninput={(event) => {
 							drafts[token.path] = event.currentTarget.value;
@@ -179,22 +213,39 @@
 							}
 						}}
 					/>
-					<button
-						type="button"
-						data-swatch-button
-						aria-label="Pick a color for {token.path}"
-						title="Pick a color for {token.path}"
-						onclick={() => {
-							pickerFor = pickerFor === token.path ? null : token.path;
-						}}
-						style="width: 32px; height: 32px; background: {display}; border: 1px solid #e0e0e0; border-radius: 0; cursor: pointer; padding: 0;"
-					></button>
+					<div class="color-identity">
+						<code>{varName}</code>
+						{#if edited}
+							<span class="edited">Edited</span>
+						{/if}
+						<button
+							type="button"
+							class={token.description !== "" ? "info" : "info dimmed"}
+							aria-label={tip}
+						>
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<circle cx="12" cy="12" r="10"></circle>
+								<path d="M12 16v-4"></path>
+								<path d="M12 8h.01"></path>
+							</svg>
+							<span class="tooltip" aria-hidden="true">{tip}</span>
+						</button>
+					</div>
 					{#if pickerFor === token.path}
 						<div class="picker-popover" data-picker-popover>
 							<ColorPicker
 								hex={display}
 								isDialog={false}
-								isAlpha={false}
 								onInput={(color) => pick(token.path, token.value, color.hex)}
 							/>
 						</div>
@@ -220,7 +271,7 @@
 	}
 	.color-row {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 110px 32px;
+		grid-template-columns: 32px 110px minmax(0, 1fr);
 		gap: 12px;
 		align-items: center;
 		padding: 16px 0;
@@ -239,6 +290,27 @@
 	.hex-input {
 		width: 110px;
 	}
+	.tabs {
+		display: flex;
+		gap: 8px;
+		margin: 0 0 12px;
+	}
+	.tab {
+		background: none;
+		border: none;
+		padding: 4px 8px;
+		cursor: pointer;
+		color: #444444;
+	}
+	.tab[aria-selected="true"] {
+		font-weight: 600;
+		text-decoration: underline;
+		color: #111111;
+	}
+	.edited {
+		font-size: 12px;
+		color: #666666;
+	}
 	.info {
 		position: relative;
 		display: inline-flex;
@@ -247,6 +319,9 @@
 		background: none;
 		border: none;
 		padding: 0;
+	}
+	.info.dimmed {
+		color: #b0b0b0;
 	}
 	.info svg {
 		width: 16px;

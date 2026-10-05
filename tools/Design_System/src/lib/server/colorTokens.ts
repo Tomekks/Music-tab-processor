@@ -8,12 +8,32 @@ export interface ColorToken {
   cssVar: string;
   value: string;
   description: string;
+  section: string;
   dependents: string[];
 }
 
 export function listColorTokens(tree: object): ColorToken[] {
   const descriptors = buildFieldDescriptors(tree, tree);
   const colorDescriptors = descriptors.filter((descriptor) => descriptor.$type === "color");
+  const directDependents = (path: string) =>
+    colorDescriptors.filter(
+      (other) => other.path !== path && other.rawValue === `{${path}}`
+    );
+  const transitiveDependents = (path: string): string[] => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    const queue = directDependents(path);
+    while (queue.length > 0) {
+      const next = queue.shift()!;
+      if (seen.has(next.path)) continue;
+      seen.add(next.path);
+      result.push(cssVarNameForPath(next.path) as string);
+      for (const follow of directDependents(next.path)) {
+        if (!seen.has(follow.path)) queue.push(follow);
+      }
+    }
+    return result;
+  };
   return descriptors
     .filter((descriptor) => descriptor.$type === "color" && descriptor.section.startsWith("semantic."))
     .map((descriptor) => ({
@@ -21,10 +41,7 @@ export function listColorTokens(tree: object): ColorToken[] {
       cssVar: cssVarNameForPath(descriptor.path) as string,
       value: descriptor.value,
       description: descriptor.description,
-      dependents: colorDescriptors
-        .filter(
-          (other) => other.path !== descriptor.path && other.rawValue === `{${descriptor.path}}`
-        )
-        .map((other) => cssVarNameForPath(other.path) as string),
+      section: descriptor.section,
+      dependents: transitiveDependents(descriptor.path),
     }));
 }

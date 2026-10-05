@@ -13,6 +13,22 @@ test("stagedEdits: stage records path with was/now", () => {
   assert.deepEqual(next.staged["semantic.color.accent"], { was: "#ae97f7", now: "#ff0000" });
 });
 
+test("stagedEdits: was is always the file value, never an earlier staged value", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const two = stageEdit(one, "semantic.color.accent", "#ae97f7", "#00ff00");
+  assert.equal(two.staged["semantic.color.accent"].was, "#ae97f7");
+});
+
+test("stagedEdits: replace=true overwrites without adding a history step", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const pastLength = one.past.length;
+  const two = stageEdit(one, "semantic.color.accent", "#ae97f7", "#00ff00", true);
+  assert.equal(two.staged["semantic.color.accent"].now, "#00ff00");
+  assert.equal(two.staged["semantic.color.accent"].was, "#ae97f7");
+  assert.equal(two.past.length, pastLength);
+  assert.equal(undoEdit(two).staged["semantic.color.accent"]?.now ?? "#ae97f7", "#ae97f7");
+});
+
 test("stagedEdits: staging the same value as the file value clears the entry", () => {
   const staged = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
   const cleared = stageEdit(staged, "semantic.color.accent", "#ae97f7", "#ae97f7");

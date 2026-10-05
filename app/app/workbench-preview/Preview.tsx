@@ -14,6 +14,8 @@ const SLIDER = 50;
 
 const CELL = "border border-border px-4 py-3 align-middle";
 
+const ROW_HEAD = `${CELL} text-left font-normal`;
+
 const WORKBENCH_ORIGIN = "http://localhost:5174";
 
 function addForcedStateRules() {
@@ -109,12 +111,11 @@ export default function Preview() {
 
   return (
     <main ref={mainRef} className="flex flex-col gap-6 px-6 py-6">
-      <h1 className="text-xl font-semibold text-foreground">Workbench preview</h1>
       <div ref={fitRef} className="w-full">
       <table ref={tableRef} className="border-collapse">
         <thead>
           <tr>
-            <th scope="col" className={CELL}>
+            <th scope="col" className={ROW_HEAD}>
               Variant
             </th>
             <th scope="col" className={CELL}>
@@ -133,7 +134,7 @@ export default function Preview() {
         </thead>
         <tbody>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               Button primary
             </th>
             <td className={CELL}>
@@ -162,7 +163,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               Button secondary
             </th>
             <td className={CELL}>
@@ -191,7 +192,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               IconButton primary
             </th>
             <td className={CELL}>
@@ -212,7 +213,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               IconButton secondary
             </th>
             <td className={CELL}>
@@ -233,7 +234,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               IconButton ghost
             </th>
             <td className={CELL}>
@@ -254,7 +255,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               ColorField
             </th>
             <td className={CELL}>
@@ -275,7 +276,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               SegmentedControl
             </th>
             <td className={CELL}>
@@ -329,7 +330,7 @@ export default function Preview() {
             </td>
           </tr>
           <tr>
-            <th scope="row" className={CELL}>
+            <th scope="row" className={ROW_HEAD}>
               Slider
             </th>
             <td className={CELL}>

@@ -93,3 +93,30 @@ test("semantic dependents list component vars that reference them", () => {
   ]);
   assert.deepEqual(byPath["semantic.color.background"].dependents, []);
 });
+
+test("each token carries its descriptor section", () => {
+  const byPath = Object.fromEntries(listColorTokens(tree).map((token) => [token.path, token]));
+  assert.equal(byPath["semantic.color.background"].section, "semantic.color");
+  assert.equal(byPath["semantic.focus.ringColor"].section, "semantic.focus");
+});
+
+test("dependents are transitive with no duplicates or cycles", () => {
+  const chainTree = {
+    semantic: {
+      color: {
+        a: { $value: "#111111", $type: "color" },
+        b: { $value: "{semantic.color.a}", $type: "color" },
+        c: { $value: "{semantic.color.b}", $type: "color" },
+        d: { $value: "{semantic.color.a}", $type: "color" },
+      },
+    },
+  };
+  const byPath = Object.fromEntries(
+    listColorTokens(chainTree).map((token) => [token.path, token])
+  );
+  assert.deepEqual(byPath["semantic.color.a"].dependents, [
+    "--color-b",
+    "--color-d",
+    "--color-c",
+  ]);
+});

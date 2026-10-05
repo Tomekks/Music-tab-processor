@@ -71,3 +71,23 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 <Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
 per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
 anything noticed but not touched. Mark anything not run as `Not run`.>
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/app/workbench-preview/Preview.tsx              |  21 +--
+ docs/work/feat-ds-workbench-color-polish2.md       |   3 +
+ tools/Design_System/src/lib/colorEdit.test.ts      |   6 +
+ tools/Design_System/src/lib/colorEdit.ts           |   2 +-
+ .../src/lib/server/colorTokens.test.ts             |  27 ++++
+ tools/Design_System/src/lib/server/colorTokens.ts  |  27 +++-
+ tools/Design_System/src/lib/staged.svelte.ts       |   4 +-
+ tools/Design_System/src/lib/stagedEdits.test.ts    |  16 ++
+ tools/Design_System/src/lib/stagedEdits.ts         |  15 +-
+ .../src/routes/foundations/+page.svelte            | 161 +++++++++++++++------
+ 10 files changed, 220 insertions(+), 62 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 63/63 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (205 tests, 7s)
+  not run: e2e (10 specs; npm run test:e2e)
+pre-commit: OK
+```

@@ -8,5 +8,5 @@ export function normalizeColor(input: string): string | null {
   if (trimmed === "") return null;
   const parsed = colord(trimmed);
   if (!parsed.isValid()) return null;
-  return parsed.alpha(1).toHex().toLowerCase();
+  return parsed.toHex().toLowerCase();
 }

@@ -15,8 +15,8 @@ export const stagedStore = {
   get canRedo() {
     return history.future.length > 0;
   },
-  stage(path: string, fileValue: string, nextHex: string) {
-    history = stageEdit(history, path, fileValue, nextHex);
+  stage(path: string, fileValue: string, nextHex: string, replace = false) {
+    history = stageEdit(history, path, fileValue, nextHex, replace);
   },
   undo() {
     history = undoEdit(history);
