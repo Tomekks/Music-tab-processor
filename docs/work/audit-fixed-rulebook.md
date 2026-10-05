@@ -2,7 +2,7 @@
 
 Status: active
 Branch: master
-Next: (nothing uncommitted besides this file; no worktree or PR open) owner switches off iOS Simulator in the app settings (no switch reachable from chat), then open a FRESH session and compare get_usage with the baseline in Report (MCP tools 19.8k, total 63.8k at start). Then tick acceptance, commit, set Status done. Optional later: skills batch (loop, schedule, claude-api, setup-claude, consolidate-memory, keybindings-help, plugin-authoring, browser skills; ~1k) and the duplicate grilling skills.
+Next: iOS Simulator switch not found in the app (get_settings has none; ~1k at most), item skipped. Open a FRESH session, run get_usage and compare with the Report baseline (total 63.8k) to record the "after" (Docs and visualize are off). Then tick acceptance, set Status done. No worktree or PR open. Optional later: remaining unused skills, duplicate grilling skills (~5k together at most).
 Written against: 6d48b53
 Template: quick
 
@@ -31,6 +31,8 @@ Fewer tokens loaded on every turn (target: 8-14k less of the ~63k) by turning of
 - 2026-10-04: reply style rules added to AGENTS.md (6d48b53); "Make /wrap cheap" done first (05c8f05) — cheap model compacts task files via scripts/compact-task.sh; builder cannot edit scripts/, so Claude wrote it.
 - 2026-10-04: owner said yes to iOS Simulator, Claude Docs, one Visualize copy. Docs and connector `visualize` switched off (also off for new sessions); iOS Simulator not switchable from chat. Browser, ccd_*, terminal kept.
 - 2026-10-04: explain-usage on a 12-turn session: fixed load ~58k on turn one, instructions ~66% of effective cost (~99k of ~150k). Confirms tool definitions as the lever.
+
+- 2026-10-04: iOS Simulator has no switch in the app settings; skipped as not worth the search.
 
 ## Questions
 (none open)
