@@ -69,7 +69,7 @@ Looks and feel only (specs check behavior); this uses the real file, so the last
 - [ ] Revert: `git checkout app/packages/design-system/brands/default/tokens.json`; `git status` is clean for that file.
 
 ## Questions
-(none open; round 2 deepseek#max critic asked 5, all real and folded in: stale Next line, failed Revert shows Dismiss only, spec asserts the resolved hex, checklist updated, break-each wording.)
+(none open; round 2 deepseek#max critic asked 5, all real and folded in (glm-5.3-flash#high re-read the amended brief: "clear"): stale Next line, failed Revert shows Dismiss only, spec asserts the resolved hex, checklist updated, break-each wording.)
 
 ## Report
 
