@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-ui
-Next: verify-task PASS 2026-10-05; endpoint curl checks are Claude's after the build. Ready for finish.sh.
+Next: merge via PR (ask owner: push?); then 1g-ui (`feat-ds-workbench-save-bar`) merges master and is refreshed.
 Written against: 416882f (master merged, includes 1g0)
 
 Split decided 2026-10-04: 1g is the server side and the staged-edit logic (this file); 1g-ui (`feat-ds-workbench-save-bar.md`) is the top-bar Save/Discard/status UI plus its browser specs. 1g-ui is built after this one.
@@ -73,7 +73,7 @@ None for this task: nothing visible changes. The owner checks for Save and Disca
 - Rule `discardAll` then `undoEdit` restores → broke push onto `past`, test "discardAll empties staged as one undoable step" failed, restored ✓
 - Rule `rebaseOnFile` drops saved entries (case-insensitive) → broke to case-sensitive compare, test "rebaseOnFile drops saved entries and keeps pending ones" failed, restored ✓
 - Rule bad `WORKBENCH_BRAND_DIR` refused → broke relative-path throw to return, test "relative path is refused with a message" failed, restored ✓
-- Claude endpoint curl checks (save 200, stale 409, read-only not-writable, bad body 400, real brand untouched) → Not run (builder cannot start servers; for Claude after build) ✗/Not run
+- Claude endpoint curl checks against a scratchpad copy (2026-10-05): save → 200 `saved:1`; same version again → 409 `changed-on-disk`; read-only file → 500 `not-writable`, file unchanged; empty edits and non-JSON body → 400 `invalid`; `git status` clean, real `tokens.json` untouched; server stopped (port 5174 free), copy deleted ✓
 - Route handler itself has no unit test; 1g-ui browser specs cover it end to end (said plainly per brief) ✗/Not run
 - e2e-revisit NOTE (workbench UI changed, no spec in app/e2e/workbench): expected — browser Save/Discard specs belong to 1g-ui, not this task.
 - Decisions the spec didn't settle: NONE (all messages/shapes follow the brief; `loadedVersion` starts as `null`; `rebaseOnFile` `was` compare is exact-match, `now`-vs-file compare is case-insensitive).
