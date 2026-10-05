@@ -1,7 +1,7 @@
 # Task: Audit the fixed rulebook
 
 Status: active
-Branch: master (no repo edits planned; changes are app/connector settings)
+Branch: master
 Next: (nothing uncommitted besides this file; no worktree or PR open) owner switches off iOS Simulator in the app settings (no switch reachable from chat), then open a FRESH session and compare get_usage with the baseline in Report (MCP tools 19.8k, total 63.8k at start). Then tick acceptance, commit, set Status done. Optional later: skills batch (loop, schedule, claude-api, setup-claude, consolidate-memory, keybindings-help, plugin-authoring, browser skills; ~1k) and the duplicate grilling skills.
 Written against: 6d48b53
 Template: quick

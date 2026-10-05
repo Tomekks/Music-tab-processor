@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Session-start helper (used by /start). Prints the facts a fresh session needs.
 # Read-only, no model. Active task = a docs/work/*.md with a "Status: active" line.
-# Usage: scripts/start.sh [task-name-fragment]
+# Usage: scripts/start.sh [task-name-fragment] [--no-mark]   (--no-mark: read-only, for /next; no measure row, no usage prompt)
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
 WORK="${START_WORK_DIR:-docs/work}"
 WANT="${1:-}"
+NOMARK=0; [ "${2:-}" = "--no-mark" ] && NOMARK=1
 BRANCH="$(git branch --show-current)"
 
 echo "folder:  $(pwd)"
@@ -87,7 +88,7 @@ AGE=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
 echo "boot:    ~$(( $(wc -c < "$T" | tr -d ' ') / 4 )) tokens (task file)"
 
 # Measurement (time and tokens): mark the session start; Claude usage can't be read by a script.
-if [ -z "${START_WORK_DIR:-}" ]; then
+if [ "$NOMARK" -eq 0 ] && { [ -z "${START_WORK_DIR:-}" ] || [ -n "${MEASURE_LOG:-}" ]; }; then
   bash "$(dirname "$0")/measure.sh" mark "$T" session-start >/dev/null 2>&1 || true
   echo "measure: now log Claude usage: get_usage, then bash scripts/measure.sh mark $(basename "$T" .md) claude \"5h=<n> weekly=<n> ctx=<n>\""
 fi

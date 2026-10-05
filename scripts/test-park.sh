@@ -25,4 +25,14 @@ echo "$OUT" | grep -q "ideas:   3 parked" && echo "ok   start shows only a count
 echo "$OUT" | grep -q "first idea" && { echo "FAIL idea text shown during an active task"; fail=1; } || echo "ok   idea text hidden during an active task"
 rm "$IDEAS_FILE"; OUT="$(START_WORK_DIR="$T/empty" bash scripts/start.sh "" 2>&1)"
 echo "$OUT" | grep -q "ideas" && { echo "FAIL ideas line shown with no ideas"; fail=1; } || echo "ok   no ideas line when none are parked"
+
+# --no-mark: /next must not write a session-start row or ask for a usage reading; plain /start still does
+export MEASURE_LOG="$T/m.tsv"; : > "$MEASURE_LOG"
+printf '# Task: t\n\nStatus: active\nBranch: %s\nNext: n\n' "$(git branch --show-current)" > "$T/work/t.md"
+OUT="$(START_WORK_DIR="$T/work" bash scripts/start.sh "" --no-mark 2>&1)"
+ok "$(wc -l < "$MEASURE_LOG" | tr -d ' ')" 0 "--no-mark writes no measure row"
+echo "$OUT" | grep -q "^measure:" && { echo "FAIL --no-mark still prints the measure line"; fail=1; } || echo "ok   --no-mark prints no measure line"
+START_WORK_DIR="$T/work" bash scripts/start.sh "" >/dev/null 2>&1
+ok "$(grep -c session-start "$MEASURE_LOG")" 1 "plain start still marks session-start"
+unset MEASURE_LOG
 [ "$fail" -eq 0 ] && echo "test-park: PASS" || { echo "test-park: FAIL"; exit 1; }

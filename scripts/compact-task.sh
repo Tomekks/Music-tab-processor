@@ -12,6 +12,7 @@ case "$MODEL" in opencode-go/*) ;; *) echo "compact: model must be an opencode-g
 BAK="$(mktemp)"; trap 'rm -f "$BAK"' EXIT; cp "$TASK" "$BAK"
 SAVE="$(git rev-parse --git-dir 2>/dev/null)/compact-last.md"; cp "$TASK" "$SAVE" 2>/dev/null   # undo copy, outside the repo files
 export TASK_FILE="$TASK"
+[ "$(wc -l < "$TASK")" -gt 60 ] || { echo "compact: already $(wc -l < "$TASK" | tr -d ' ') lines (60 or fewer), nothing to do"; exit 0; }
 
 if [ -n "${COMPACT_CMD:-}" ]; then eval "$COMPACT_CMD"; RC=0   # test stub that edits $TASK_FILE in place
 else
@@ -38,5 +39,6 @@ for key in '# Task:' 'Status:' 'Branch:' 'Template:' 'Written against:' 'Next:';
 done
 [ "$(grep '^## ' "$BAK")" = "$(grep '^## ' "$TASK")" ] || bad="$bad; a '## ' heading was added, removed or renamed"
 [ "$(wc -l < "$TASK")" -le "$(wc -l < "$BAK")" ] || bad="$bad; file got longer"
+cmp -s "$BAK" "$TASK" && bad="$bad; model returned the file unchanged"
 if [ -n "$bad" ]; then cp "$BAK" "$TASK"; echo "compact: REFUSED (${bad#; }); original restored"; exit 1; fi
 echo "compact: ok $(wc -l < "$BAK") -> $(wc -l < "$TASK") lines. Read 'git diff $TASK' before committing; 'cp $SAVE $TASK' undoes it."

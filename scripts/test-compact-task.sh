@@ -32,4 +32,12 @@ ok "$?" 0 "fenced answer accepted"; ok "$(grep -c '^```' "$T/t.md")" 0 "fence st
 cp "$T/orig.md" "$T/t.md"
 COMPACT_OUT_CMD=":" bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
 ok "$?" 1 "empty model answer refused"; ok "$(cmp -s "$T/t.md" "$T/orig.md" && echo same)" same "empty answer restores the file"
+
+# short files skip the model; an unchanged answer is refused
+mk 20; cp "$T/t.md" "$T/short.md"
+COMPACT_OUT_CMD='echo MODEL-WAS-CALLED; exit 1' bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
+ok "$?" 0 "short file: model not called, exit 0"; ok "$(cmp -s "$T/t.md" "$T/short.md" && echo same)" same "short file untouched"
+cp "$T/orig.md" "$T/t.md"
+COMPACT_OUT_CMD="cat $T/orig.md" bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
+ok "$?" 1 "unchanged model answer refused"
 exit $fail

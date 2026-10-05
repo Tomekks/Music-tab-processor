@@ -11,7 +11,7 @@ Run `bash scripts/start.sh ""` to find the active task file, then:
 5. Compact the file to about 60 lines with the cheap model: `bash scripts/compact-task.sh docs/work/<task>.md`. On exit 0, read `git diff` of the task file and keep it only if no fact a cold session needs was lost (otherwise `cp .git/compact-last.md docs/work/<task>.md`). On exit 1 or 2 (refused or model down) compact by hand: fold finished steps into one-line Done entries, delete sections that are no longer true or that contradict `Next:`. A cold session must be able to trust every line.
 6. Record usage: read `get_usage` and run `bash scripts/measure.sh mark <task> session-end "5h=<n> weekly=<n> ctx=<n>"`, then `bash scripts/measure.sh report <task>` and put its total line in `Next:` or the Report.
 7. Commit only the task file as a checkpoint (`git add docs/work/<task>.md`, one commit). Do not push.
-8. Rename this chat session with `set_session_title` to `<task id> <short name>: <state>` (for example `1e Foundations page: brief reviewed`; state = done, building, waiting on owner), so the session list shows where each task stands. If the call is refused or fails, say so and continue.
+8. Rename this chat session with `set_session_title` (pass `session_id: "self"`) to `<task id> <short name>: <state>` (for example `1e Foundations page: brief reviewed`; state = done, building, waiting on owner), so the session list shows where each task stands. If the call is refused or fails, say so and continue.
 9. Report in 3 lines: what is done, what is left, what the owner does first next time.
 
 If anything unrelated is uncommitted, name it but do not touch it.
