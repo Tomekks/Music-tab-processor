@@ -3,6 +3,8 @@
 	import { page } from "$app/state";
 	import { COMPONENTS } from "$lib/registry.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
+	import { invalidateAll } from "$app/navigation";
+	import { buildSaveBody, describeSaveFailure, discardedLabel, savedLabel } from "$lib/saveState.js";
 	// @ts-ignore - untyped package helper (checkJs is off by owner decision)
 	import { cssVarNameForPath } from "../../../../app/packages/design-system/src/css-var-naming.mjs";
 
@@ -14,6 +16,97 @@
 		changeCount === 1 ? "1 unsaved change" : `${changeCount} unsaved changes`
 	);
 	let showChanges = $state(false);
+
+	type SaveStatus = { kind: "saved" | "discarded" | "failed" | "changed"; text: string };
+	let status: SaveStatus | null = $state(null);
+	let isSaving = $state(false);
+	let timer: ReturnType<typeof setTimeout> | null = null;
+	let statusText = $derived.by(() => {
+		const current: SaveStatus | null = status;
+		return current === null ? "" : current.text;
+	});
+
+	function clearTimer() {
+		if (timer !== null) {
+			clearTimeout(timer);
+			timer = null;
+		}
+	}
+
+	$effect(() => {
+		if (status?.kind === "discarded" && changeCount > 0) {
+			clearTimer();
+			status = null;
+		}
+	});
+
+	async function save() {
+		if (isSaving || changeCount === 0) return;
+		clearTimer();
+		status = null;
+		isSaving = true;
+		try {
+			const response = await fetch("/api/save", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(buildSaveBody(stagedStore.staged, stagedStore.loadedVersion ?? "")),
+			});
+			let reply: { ok?: boolean; saved?: number; code?: string; error?: string } | null =
+				null;
+			try {
+				reply = await response.json();
+			} catch {
+				reply = null;
+			}
+			if (response.ok && reply?.ok === true) {
+				const count = typeof reply.saved === "number" ? reply.saved : changeCount;
+				await invalidateAll();
+				status = { kind: "saved", text: savedLabel(count, new Date()) };
+				clearTimer();
+				timer = setTimeout(() => {
+					status = null;
+					timer = null;
+				}, 5000);
+			} else {
+				const failure = describeSaveFailure(reply?.code, reply?.error);
+				status = { kind: failure.kind, text: failure.message };
+			}
+		} catch {
+			const failure = describeSaveFailure(undefined, undefined);
+			status = { kind: failure.kind, text: failure.message };
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	function discard() {
+		const count = changeCount;
+		if (count === 0 || isSaving) return;
+		clearTimer();
+		stagedStore.discard();
+		status = { kind: "discarded", text: discardedLabel(count) };
+		timer = setTimeout(() => {
+			status = null;
+			timer = null;
+		}, 5000);
+	}
+
+	function undoDiscarded() {
+		clearTimer();
+		stagedStore.undo();
+		status = null;
+	}
+
+	function dismiss() {
+		clearTimer();
+		status = null;
+	}
+
+	async function reload() {
+		await invalidateAll();
+		clearTimer();
+		status = null;
+	}
 
 	function changeVarName(path: string): string {
 		const cssVar = cssVarNameForPath(path) as string | null;
@@ -49,7 +142,27 @@
 			<button type="button" aria-expanded={showChanges} onclick={() => (showChanges = !showChanges)}>
 				{unsavedLabel}
 			</button>
-			<button disabled>Save</button>
+			{#if isSaving}
+				<button type="button" disabled>Discard</button>
+				<button type="button" disabled>Saving...</button>
+			{:else if status?.kind === "saved"}
+				<span role="status">{statusText}</span>
+			{:else if status?.kind === "discarded"}
+				<span role="status">{statusText}</span>
+				<button type="button" onclick={undoDiscarded}>Undo</button>
+			{:else if status?.kind === "failed"}
+				<span role="status">{statusText}</span>
+				<button type="button" onclick={dismiss}>Dismiss</button>
+				<button type="button" onclick={discard}>Discard</button>
+				<button type="button" onclick={save}>Retry save</button>
+			{:else if status?.kind === "changed"}
+				<span role="status">{statusText}</span>
+				<button type="button" onclick={() => (showChanges = true)}>Review changes</button>
+				<button type="button" onclick={reload}>Reload</button>
+			{:else if changeCount > 0}
+				<button type="button" onclick={discard}>Discard</button>
+				<button type="button" onclick={save}>Save</button>
+			{/if}
 			{#if showChanges}
 				<div class="changes" data-testid="changes-panel">
 					{#if changeCount > 0}

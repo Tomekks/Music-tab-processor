@@ -67,3 +67,22 @@ Looks and feel only (specs check behavior); this uses the real file, so the last
 (none open; Muse critic 2026-10-05 clear; deepseek critic asked 2: what `error` means in `describeSaveFailure`, and what the bar shows after Reload. Both verified real and folded into Steps.)
 
 ## Report
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/helpers.ts                       |  16 +++
+ app/e2e/workbench/save.spec.ts                     | 103 ++++++++++++++++++
+ docs/work/feat-ds-workbench-save-bar.md            |   3 +
+ tools/Design_System/src/lib/saveState.test.ts      |  69 +++++++++++++
+ tools/Design_System/src/lib/saveState.ts           |  55 ++++++++++
+ .../src/lib/server/colorTokens.test.ts             |   6 ++
+ tools/Design_System/src/lib/server/colorTokens.ts  |   2 +
+ tools/Design_System/src/routes/+layout.svelte      | 115 ++++++++++++++++++++-
+ .../src/routes/foundations/+page.svelte            |   7 ++
+ 9 files changed, 375 insertions(+), 1 deletion(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 5s)
+  not run: e2e (12 specs; npm run test:e2e)
+pre-commit: OK
+```

@@ -10,6 +10,7 @@ export interface ColorToken {
   description: string;
   section: string;
   dependents: string[];
+  isAlias: boolean;
 }
 
 export function listColorTokens(tree: object): ColorToken[] {
@@ -43,5 +44,6 @@ export function listColorTokens(tree: object): ColorToken[] {
       description: descriptor.description,
       section: descriptor.section,
       dependents: transitiveDependents(descriptor.path),
+      isAlias: descriptor.isAlias,
     }));
 }

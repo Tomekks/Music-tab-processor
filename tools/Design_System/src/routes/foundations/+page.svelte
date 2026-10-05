@@ -54,6 +54,10 @@
 	});
 
 	$effect(() => {
+		stagedStore.sync(data.tokens, data.version);
+	});
+
+	$effect(() => {
 		if (pickerFor === null) {
 			pickerSessionContinued = false;
 			pickerPos = null;
@@ -273,6 +277,9 @@
 									drafts[token.path] = token.value;
 								}}
 							>Reset</button>
+							{#if token.isAlias}
+								<span>Will unlink from main</span>
+							{/if}
 						{/if}
 						<button
 							type="button"

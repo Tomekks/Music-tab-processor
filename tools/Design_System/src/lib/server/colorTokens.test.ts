@@ -100,6 +100,12 @@ test("each token carries its descriptor section", () => {
   assert.equal(byPath["semantic.focus.ringColor"].section, "semantic.focus");
 });
 
+test("alias tokens report isAlias true and literal tokens report false", () => {
+  const byPath = Object.fromEntries(listColorTokens(tree).map((token) => [token.path, token]));
+  assert.equal(byPath["semantic.color.accent"].isAlias, true);
+  assert.equal(byPath["semantic.color.background"].isAlias, false);
+});
+
 test("dependents are transitive with no duplicates or cycles", () => {
   const chainTree = {
     semantic: {
