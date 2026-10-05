@@ -1,8 +1,8 @@
 # Task: Foundations colors polish 3 (1f4)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-color-polish3
-Next: owner runs the checklist from this worktree (launch block in chat); then ASK before merging feat/ds-workbench-color-polish3 into master (local only). Worktrees polish3-low and polish3-high are leftovers (remove only on owner yes). Then 1g.
+Next: done. Owner checks passed 2026-10-05; merged to master (eb4a357), local only, NOT pushed. Leftover worktrees (remove only on owner yes): polish3-low, polish3-high, polish3, plus the older ds-* ones. Next slice: 1g (Save, Discard, save states).
 Written against: 4bc3889
 Template: quick
 
