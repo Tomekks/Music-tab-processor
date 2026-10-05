@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-ui
-Next: critics (default effort), then builder (Muse #high). Owner approved "What changes for you" 2026-10-05; master (with 1g0) merged in.
+Next: builder (Muse #high). Critic 1 (Muse, default effort) said "clear" 2026-10-05; deepseek critic optional. Owner approved "What changes for you" 2026-10-05; master (with 1g0) merged in.
 Written against: 416882f (master merged, includes 1g0)
 
 Split decided 2026-10-04: 1g is the server side and the staged-edit logic (this file); 1g-ui (`feat-ds-workbench-save-bar.md`) is the top-bar Save/Discard/status UI plus its browser specs. 1g-ui is built after this one.
@@ -66,6 +66,6 @@ Triggers: writes files (via the existing `saveTokenEdits`, which also rewrites t
 None for this task: nothing visible changes. The owner checks for Save and Discard are in 1g-ui.
 
 ## Questions
-(none open)
+(none open; Muse critic 2026-10-05 answered "clear")
 
 ## Report
