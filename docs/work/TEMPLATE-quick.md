@@ -22,6 +22,10 @@ Template: quick
 ## Acceptance checks
 - Run: `bash scripts/verify-task.sh` / Expected: `verify-task: PASS`
 
+## Owner checklist
+Launch (if it needs servers): free-port check, start and stop commands, one per code block. Then human checks only.
+- [ ] <<one action>> → <<one expected result>>
+
 ## Questions
 (none open)
 

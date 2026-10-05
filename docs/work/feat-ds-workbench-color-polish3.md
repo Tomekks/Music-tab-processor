@@ -11,7 +11,8 @@ The color picker opens beside the swatch you clicked and stays fully on screen; 
 
 ## Scope
 **Modify only:**
-- `tools/Design_System/src/lib/pickerPosition.ts` and `pickerPosition.test.ts` (new: the placement helper, one file per pure helper like `previewHeight.ts`)
+- `tools/Design_System/src/lib/pickerPosition.ts` (new: the placement helper; one file per pure helper, like the existing previewHeight)
+- `tools/Design_System/src/lib/pickerPosition.test.ts` (new)
 - `tools/Design_System/src/routes/+layout.svelte`
 - `tools/Design_System/src/routes/foundations/+page.svelte`
 - `app/e2e/workbench/colors.spec.ts` (update the changes-panel spec for the new row text; add one spec for Reset in the list)
