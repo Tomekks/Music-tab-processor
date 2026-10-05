@@ -27,5 +27,12 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 | 2026-10-04 | 1e brief, blind rerun | 1 | 0 (it reached the same one real finding on its own: descriptions are out of scope) | 0 (my extras were context, not defects: `cssVar` feeds 1f; 7 of 16 rows have no description) | 0 | ~46k tok, 97s |
 | 2026-10-04 | 1e2 brief (Muse high draft) | 2 (blind) | 0 | 3 (theme set by the root `ThemeProvider` runs after the child's effect so a one-time light set loses; height must be the scaled height; "full canvas width" vs 32px canvas padding) | 5 (focus ring clipping and empty-list collapse are wrong: the iframe holds the Preview page not the Colors list; 127.0.0.1 cut is irrelevant; "7 not ~8 tests" is nitpicking; cited `useThemeMode.ts:30-31`, which does not exist) | ~79k tok, 106s |
 
+## Brief drafts (trial from 2026-10-04)
+Muse drafts the brief, Claude reviews the diff and fixes what is wrong. Count real defects Claude had to fix (checked against the code).
+
+| Date | Task | Drafter | Defects Claude fixed | What they were | Time |
+|---|---|---|---|---|---|
+| 2026-10-04 | 1f color editing | Muse high | 4 | status text needs `+layout.svelte` and a shared store, neither in Modify-only; staged values lost when the iframe loads late (no resend on `load`); Cmd+Z would hijack text-field undo; existing disabled Save button contradicted "no Save". Also flagged an open question for 1g (semantic tokens are references, not hex) | draft ~4 min; tokens not measured |
+
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).
