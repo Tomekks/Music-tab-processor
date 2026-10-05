@@ -2,8 +2,8 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: run /review (level 1), then critics, then builder
-Written against: 9edd6f8 (master with 1g0 and 1g merged; refreshed 2026-10-05)
+Next: run the builder (delegate.sh), then Claude runs the specs and the owner checklist
+Written against: f07fa35 (master 9edd6f8 merged; review, critics done; Playwright config set up)
 
 ## What changes for you
 The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes your staged color edits to `tokens.json` through the endpoint from 1g, then the page reloads the file; the status slot says "Saved N tokens HH:MM" for 5 seconds and clears. Discard clears the staged edits and says "Discarded N changes" with an **Undo** for 5 seconds. If the file changed on disk since the page loaded, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file and keeps your edits on top). If the file is read-only or the write fails, the message says nothing was written, stays until you press **Dismiss** or a retry works, your edits stay staged, and **Retry save** replaces Save. After this task the browser specs also cover Save, Discard, Undo and both failure states, against a throwaway copy of the brand folder, never the real `tokens.json`.
