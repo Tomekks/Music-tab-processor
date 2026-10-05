@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-color-polish
 Next: Claude reviews this brief, then one builder run at high effort
-Written against: HEAD
+Written against: d8fb6b7
 
 ## What changes for you
 Each color row reads left to right: the 32px swatch, the hex field, the CSS variable name without the leading dashes (for example `color-accent`, easier to match against the web app), then an info icon. The dot after the name becomes a small "Edited" label. The long `semantic.color.…` path is gone from the row, and two tabs, "Color" and "Focus", split the list. Hovering the info icon shows one tooltip (today two appear), and every row has the icon: rows without a description show a dimmed icon saying "No description yet". The picker's opacity field is back (it shows 0 to 1). Pressing Cmd+Z after using the picker returns to the color you had before opening it, in one step, and the "unsaved changes" list always shows the color from the file as "was". The preview loses its "Workbench preview" heading, and its first column (Variant, Button primary and so on) is left-aligned and no longer bold. Editing `accent` also reaches anything that depends on a dependent color.
