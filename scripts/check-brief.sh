@@ -30,6 +30,8 @@ ROOT="$(git rev-parse --show-toplevel)"
 RULES="$(awk '/^  edit:/{f=1;next} f && /^  [a-z]+:/{exit} f && /^    "/ {print}' "$ROOT/.opencode/agents/builder.md" | sed -E 's/^    "([^"]*)": *([a-z]+).*/\2 \1/')"
 # shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
 for p in $(awk 'tolower($0) ~ /modify only/ {f=1; next} f && tolower($0) ~ /do not touch|^#/ {exit} f' "$F" | grep -oE '`[^`]+`' | tr -d '`'); do
+  # A name with no folder is read by verify-task as a file at the repo root. Write the full path, or keep the name out of backticks.
+  [[ "$p" == */* ]] || [ -e "$ROOT/$p" ] || { bad "BAD: '$p' under Modify only is not a full path from the repo root (verify-task would report it missing); write the folder or drop the backticks"; continue; }
   verdict=""; hit=""
   while read -r v pat; do
     # shellcheck disable=SC2053  # $pat is a glob on purpose

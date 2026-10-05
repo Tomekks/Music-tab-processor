@@ -6,6 +6,7 @@
 	import { previewVars } from "$lib/stagedEdits.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
 	import { isPreviewReady, readPreviewHeight } from "$lib/previewHeight.js";
+	import { pickerPosition } from "$lib/pickerPosition.js";
 
 	let { data }: { data: PageData } = $props();
 
@@ -17,8 +18,14 @@
 	let drafts: Record<string, string> = $state({});
 	let errors: Record<string, string> = $state({});
 	let pickerFor: string | null = $state(null);
+	let pickerPos: { left: number; top: number } | null = $state(null);
+	let anchorRect: { x: number; y: number; width: number; height: number } | null = null;
+	let popoverEl: HTMLDivElement | null = $state(null);
 	let pickerSessionContinued = $state(false);
 	let editingPath: string | null = $state(null);
+	let listHeight = $state(0);
+	let maxListHeight = $state(0);
+	let lastTokens = data.tokens;
 
 	function sectionLabel(section: string): string {
 		const short = section.startsWith("semantic.") ? section.slice("semantic.".length) : section;
@@ -37,7 +44,21 @@
 	let hasTokens = $derived(rows.length > 0);
 
 	$effect(() => {
-		if (pickerFor === null) pickerSessionContinued = false;
+		const current = data.tokens;
+		if (current !== lastTokens) {
+			lastTokens = current;
+			maxListHeight = 0;
+		} else if (listHeight > maxListHeight) {
+			maxListHeight = listHeight;
+		}
+	});
+
+	$effect(() => {
+		if (pickerFor === null) {
+			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
+		}
 	});
 
 	$effect(() => {
@@ -48,11 +69,15 @@
 			if (target.closest("[data-picker-popover]") || target.closest("[data-swatch-button]")) return;
 			pickerFor = null;
 			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
 		};
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
 				pickerFor = null;
 				pickerSessionContinued = false;
+				pickerPos = null;
+				anchorRect = null;
 			}
 		};
 		window.addEventListener("pointerdown", onPointerDown);
@@ -93,7 +118,7 @@
 		const raw = drafts[path] ?? "";
 		const next = normalizeColor(raw);
 		if (next === null) {
-			errors[path] = "Invalid color — kept the old value.";
+			errors[path] = "Not a solid color — kept the old value.";
 			drafts[path] = displayFor(path, fileValue);
 			return;
 		}
@@ -115,15 +140,37 @@
 		sendTokens();
 	}
 
-	function openPicker(path: string) {
+	function openPicker(path: string, anchor: HTMLElement | null) {
 		if (pickerFor === path) {
 			pickerFor = null;
 			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
 			return;
+		}
+		if (anchor) {
+			const rect = anchor.getBoundingClientRect();
+			anchorRect = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+			pickerPos = pickerPosition(
+				anchorRect,
+				{ width: 280, height: 360 },
+				{ width: window.innerWidth, height: window.innerHeight },
+			);
 		}
 		pickerFor = path;
 		pickerSessionContinued = false;
 	}
+
+	$effect(() => {
+		if (pickerFor === null || !popoverEl || !anchorRect) return;
+		const width = popoverEl.offsetWidth || 280;
+		const height = popoverEl.offsetHeight || 360;
+		pickerPos = pickerPosition(
+			anchorRect,
+			{ width, height },
+			{ width: window.innerWidth, height: window.innerHeight },
+		);
+	});
 
 	onMount(() => {
 		const onMessage = (event: MessageEvent) => {
@@ -179,7 +226,7 @@
 		{/each}
 	</div>
 	{#if hasTokens}
-		<div class="color-list">
+		<div class="color-list" bind:clientHeight={listHeight} style="min-height: {maxListHeight}px">
 			{#each rows as token (token.path)}
 				{@const display = displayFor(token.path, token.value)}
 				{@const edited = stagedStore.staged[token.path] !== undefined}
@@ -191,8 +238,8 @@
 						data-swatch-button
 						aria-label="Pick a color for {varName}"
 						title="Pick a color for {varName}"
-						onclick={() => {
-							openPicker(token.path);
+						onclick={(event) => {
+							openPicker(token.path, event.currentTarget);
 						}}
 						style="width: 32px; height: 32px; background: {display}; border: 1px solid #e0e0e0; border-radius: 0; cursor: pointer; padding: 0;"
 					></button>
@@ -216,7 +263,16 @@
 					<div class="color-identity">
 						<code>{varName}</code>
 						{#if edited}
-							<span class="edited">Edited</span>
+							<button
+								type="button"
+								class="edited"
+								aria-label="Reset {varName}"
+								onclick={() => {
+									stagedStore.stage(token.path, token.value, token.value);
+									delete errors[token.path];
+									drafts[token.path] = token.value;
+								}}
+							>Reset</button>
 						{/if}
 						<button
 							type="button"
@@ -242,10 +298,18 @@
 						</button>
 					</div>
 					{#if pickerFor === token.path}
-						<div class="picker-popover" data-picker-popover>
+						<div
+							class="picker-popover"
+							data-picker-popover
+							bind:this={popoverEl}
+							style={pickerPos
+								? `position: fixed; left: ${pickerPos.left}px; top: ${pickerPos.top}px;`
+								: "position: fixed;"}
+						>
 							<ColorPicker
 								hex={display}
 								isDialog={false}
+								isAlpha={false}
 								onInput={(color) => pick(token.path, token.value, color.hex)}
 							/>
 						</div>
@@ -310,6 +374,11 @@
 	.edited {
 		font-size: 12px;
 		color: #666666;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 	.info {
 		position: relative;
@@ -348,9 +417,7 @@
 		display: block;
 	}
 	.picker-popover {
-		position: absolute;
-		top: 100%;
-		right: 0;
+		position: fixed;
 		z-index: 20;
 		background: #ffffff;
 		border: 1px solid #e0e0e0;

@@ -2,7 +2,7 @@
 description: Review of the active task's brief by its Risk level - Level 1 answers 3 questions, Level 2 answers all eight (docs/rules/review.md)
 allowed-tools: Bash(bash scripts/start.sh:*), Bash(bash scripts/check-review.sh:*), Bash(bash scripts/measure.sh:*), Bash(bash scripts/review-second.sh:*)
 ---
-Read `docs/rules/review.md` (the questions) and the active task file (`bash scripts/start.sh ""` names it; in a worktree, run it there). Find its `Review level:` in the Risk section.
+Read `docs/rules/review.md` (the questions) and the active task file (`bash scripts/start.sh ""` names it; in a worktree, run it there). Find its `Review level:` in the Risk section (a `Template: quick` task has no Risk section: it is Level 1 by definition).
 
 - Level 0: say there is nothing to review and stop.
 - Level 1: answer only questions 1, 4 and 6, at most 5 bullets total.

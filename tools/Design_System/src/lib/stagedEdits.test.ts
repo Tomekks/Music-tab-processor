@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   createStaged,
+  discardAll,
   previewVars,
+  rebaseOnFile,
   redoEdit,
   stageEdit,
   undoEdit,
@@ -83,4 +85,47 @@ test("stagedEdits: previewVars also overrides dependents with the same value", (
     "--component-icon-button-primary-background": "#ae97f7",
     "--border": "#e6dfd8",
   });
+});
+
+test("stagedEdits: discardAll empties staged as one undoable step", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const discarded = discardAll(one);
+  assert.deepEqual(discarded.staged, {});
+  assert.deepEqual(undoEdit(discarded).staged, one.staged);
+});
+
+test("stagedEdits: discardAll with nothing staged returns the same state", () => {
+  const empty = createStaged();
+  assert.equal(discardAll(empty), empty);
+});
+
+test("stagedEdits: rebaseOnFile drops saved entries and keeps pending ones", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const two = stageEdit(one, "semantic.color.border", "#e6dfd8", "#00ff00");
+  const rebased = rebaseOnFile(two, [
+    { path: "semantic.color.accent", value: "#FF0000" },
+    { path: "semantic.color.border", value: "#e6dfd8" },
+  ]);
+  assert.deepEqual(rebased.staged, {
+    "semantic.color.border": { was: "#e6dfd8", now: "#00ff00" },
+  });
+});
+
+test("stagedEdits: rebaseOnFile moves survivors onto the new file value and clears history", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const rebased = rebaseOnFile(one, [{ path: "semantic.color.accent", value: "#111111" }]);
+  assert.deepEqual(rebased.staged["semantic.color.accent"], { was: "#111111", now: "#ff0000" });
+  assert.deepEqual(rebased.past, []);
+  assert.deepEqual(rebased.future, []);
+});
+
+test("stagedEdits: rebaseOnFile drops entries whose path is gone", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  const rebased = rebaseOnFile(one, [{ path: "semantic.color.border", value: "#e6dfd8" }]);
+  assert.deepEqual(rebased.staged, {});
+});
+
+test("stagedEdits: rebaseOnFile with nothing different returns the same state", () => {
+  const one = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000");
+  assert.equal(rebaseOnFile(one, [{ path: "semantic.color.accent", value: "#ae97f7" }]), one);
 });

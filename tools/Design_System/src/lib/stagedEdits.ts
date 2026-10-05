@@ -77,6 +77,41 @@ export function redoEdit(state: StagedHistory): StagedHistory {
   };
 }
 
+export function discardAll(state: StagedHistory): StagedHistory {
+  if (Object.keys(state.staged).length === 0) return state;
+  return { staged: {}, past: [...state.past, state.staged], future: [] };
+}
+
+export function rebaseOnFile(
+  state: StagedHistory,
+  tokens: { path: string; value: string }[],
+): StagedHistory {
+  const fileByPath = new Map(tokens.map((token) => [token.path, token.value]));
+  const staged: StagedMap = {};
+  let changed = false;
+  for (const [path, entry] of Object.entries(state.staged)) {
+    const fileValue = fileByPath.get(path);
+    if (fileValue === undefined) {
+      changed = true;
+      continue;
+    }
+    if (entry.now.toLowerCase() === fileValue.toLowerCase()) {
+      changed = true;
+      continue;
+    }
+    if (entry.was !== fileValue) {
+      changed = true;
+      staged[path] = { was: fileValue, now: entry.now };
+    } else {
+      staged[path] = entry;
+    }
+  }
+  if (!changed) {
+    return state;
+  }
+  return { staged, past: [], future: [] };
+}
+
 export function previewVars(tokens: PreviewToken[], staged: StagedMap): Record<string, string> {
   const vars: Record<string, string> = {};
   for (const token of tokens) {

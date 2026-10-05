@@ -16,6 +16,8 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 - Any `git push`, PR or deploy, every time. For `app/` ask the three-way question: **Push to git?** /
   **Push to git & deploy?** / **Skip for now?** Deploy is `npx vercel deploy --prod --yes` from the repo
   root, never from `app/`. Never deploy because a push happened, or require a push before a local check.
+- Pushes to GitHub always go through a PR from a branch, never straight to `master` (GitHub blocks it
+  anyway: the `verify` check must pass). Branch name `chore/…`, `feat/…` or `docs/…`.
 - Deleting or moving anything: permission for that specific case, never carried over from an earlier yes.
 - Touching `contracts/`, config or secrets. A `contracts/` change is its own flagged task, never a side effect.
 - Anything that makes this machine reachable from the internet (port, tunnel, inbound access): explain
@@ -49,15 +51,13 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 ## Reply style
 Reader is a designer, not an engineer. Write so a junior engineer follows it the first time.
 - Answer first, in plain words. No greetings, no restating the question, no closing offers.
-- Define any technical term in one clause the first time it appears. Prefer the plain word.
-  Use an analogy only when a plain explanation has failed.
-- Decisions and plans: say what it means for you, what each option changes, what could go wrong
-  and how you would notice, then my recommendation and why.
+- Prefer the plain word; define a term only if the owner hasn't seen it yet. No analogies.
+- Decisions and plans: what it means for you, the main risk and how you would see it, then my pick
+  and why in one clause. Describe options only when there is a real choice.
 - Warn before acting on: contracts/, config, secrets; deleting or moving files; anything hard to
   undo; new dependencies or moving parts; anything that changes what you see in the app;
   anything that raises cost or token use.
-- Length follows stakes: confirmations are one or two lines; decisions get the detail above.
-  No tables or long code unless asked.
+- Confirmations are one or two lines. Extra detail only when asked. No tables or long code unless asked.
 - Wrap-up logs how many times the owner asked to "explain simpler" this session (target: under 2).
 
 ## Session

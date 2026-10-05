@@ -23,8 +23,10 @@ test("colorEdit: empty or whitespace returns null", () => {
   assert.equal(normalizeColor("   "), null);
 });
 
-test("colorEdit: transparency is kept as 8-digit hex; opaque stays 6-digit", () => {
-  assert.equal(normalizeColor("rgba(255, 0, 0, 0.5)"), "#ff000080");
+test("colorEdit: transparent colors are refused, solid ones normalise", () => {
+  assert.equal(normalizeColor("rgba(255, 0, 0, 0.5)"), null);
+  assert.equal(normalizeColor("#ff000080"), null);
+  assert.equal(normalizeColor("rgba(255, 0, 0, 1)"), "#ff0000");
   assert.equal(normalizeColor("#ff0000"), "#ff0000");
   assert.equal(normalizeColor("red"), "#ff0000");
 });

@@ -37,6 +37,8 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<n
 - For UI in an e2e area (`docs/rules/e2e-areas.txt`): name the spec that covers each behavior, or say why none.
 
 ## Owner checklist
+Launch (if it needs servers): free-port check, start and stop commands, one per code block (AGENTS.md Session rule).
+Human checks only; mark a check an e2e spec already covers `(automated)` and leave it out of the owner's list.
 - [ ] <<one action>> → <<one expected result>>
 
 ## Questions
