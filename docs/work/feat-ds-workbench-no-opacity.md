@@ -54,6 +54,6 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - [ ] Type `red` → still stages `#ff0000`.
 
 ## Questions
-(none open)
+(none open; Muse default-effort critic read 2026-10-04: "clear")
 
 ## Report
