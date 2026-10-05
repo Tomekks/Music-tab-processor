@@ -64,6 +64,6 @@ Looks and feel only (specs check behavior); this uses the real file, so the last
 - [ ] Revert: `git checkout app/packages/design-system/brands/default/tokens.json`; `git status` is clean for that file.
 
 ## Questions
-(none open)
+(Muse critic 2026-10-05: clear)
 
 ## Report
