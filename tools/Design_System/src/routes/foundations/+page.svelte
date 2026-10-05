@@ -19,6 +19,9 @@
 	let pickerFor: string | null = $state(null);
 	let pickerSessionContinued = $state(false);
 	let editingPath: string | null = $state(null);
+	let listHeight = $state(0);
+	let maxListHeight = $state(0);
+	let lastTokens = data.tokens;
 
 	function sectionLabel(section: string): string {
 		const short = section.startsWith("semantic.") ? section.slice("semantic.".length) : section;
@@ -35,6 +38,16 @@
 	let emptyText = "No color tokens found.";
 	let rows = $derived(data.tokens.filter((token) => token.section === selectedSection));
 	let hasTokens = $derived(rows.length > 0);
+
+	$effect(() => {
+		const current = data.tokens;
+		if (current !== lastTokens) {
+			lastTokens = current;
+			maxListHeight = 0;
+		} else if (listHeight > maxListHeight) {
+			maxListHeight = listHeight;
+		}
+	});
 
 	$effect(() => {
 		if (pickerFor === null) pickerSessionContinued = false;
@@ -179,7 +192,7 @@
 		{/each}
 	</div>
 	{#if hasTokens}
-		<div class="color-list">
+		<div class="color-list" bind:clientHeight={listHeight} style="min-height: {maxListHeight}px">
 			{#each rows as token (token.path)}
 				{@const display = displayFor(token.path, token.value)}
 				{@const edited = stagedStore.staged[token.path] !== undefined}
@@ -216,7 +229,16 @@
 					<div class="color-identity">
 						<code>{varName}</code>
 						{#if edited}
-							<span class="edited">Edited</span>
+							<button
+								type="button"
+								class="edited"
+								aria-label="Reset {varName}"
+								onclick={() => {
+									stagedStore.stage(token.path, token.value, token.value);
+									delete errors[token.path];
+									drafts[token.path] = token.value;
+								}}
+							>Reset</button>
 						{/if}
 						<button
 							type="button"
@@ -311,6 +333,11 @@
 	.edited {
 		font-size: 12px;
 		color: #666666;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 	.info {
 		position: relative;

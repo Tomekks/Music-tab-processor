@@ -8,12 +8,34 @@ import {
 } from "./helpers";
 
 // Color editing still works: typing a name stages its hex and marks the row.
-test("typing red stages #ff0000 with a change count and Edited mark", async ({ page }) => {
+test("typing red stages #ff0000 with a change count and Reset button", async ({ page }) => {
   await openFoundations(page);
   await stageColor(page, "color-accent", "red");
   await expect(hexField(page, "color-accent")).toHaveValue("#ff0000");
   await expect(page.getByRole("button", { name: "1 unsaved change" })).toBeVisible();
-  await expect(page.getByText("Edited")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toBeVisible();
+});
+
+// Reset restores the file value as one undo step and clears a stale error.
+test("Reset restores the file value and undo brings the edit back", async ({ page }) => {
+  await openFoundations(page);
+  const field = hexField(page, "color-accent");
+  const fileValue = await field.inputValue();
+  await stageColor(page, "color-accent", "red");
+  await expect(field).toHaveValue("#ff0000");
+  await page.getByRole("button", { name: "Reset color-accent" }).click();
+  await expect(field).toHaveValue(fileValue);
+  await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toHaveCount(0);
+  await stageColor(page, "color-accent", "red");
+  await stageColor(page, "color-accent", "nonsense");
+  await expect(page.getByText("Not a solid color — kept the old value.")).toBeVisible();
+  await page.getByRole("button", { name: "Reset color-accent" }).click();
+  await expect(page.getByText("Not a solid color — kept the old value.")).toHaveCount(0);
+  await expect(field).toHaveValue(fileValue);
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect(field).toHaveValue("#ff0000");
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toBeVisible();
 });
 
 // Invalid input is rejected: the old value stays and an error explains why.
@@ -113,6 +135,26 @@ test("Color and Focus tabs switch the list without the word semantic", async ({ 
   await expect(page.getByText("semantic")).toHaveCount(0);
   await tabs.getByRole("tab", { name: "Color" }).click();
   await expect(hexField(page, "color-accent")).toBeVisible();
+});
+
+// Switching tabs keeps the canvas scroll position: the shorter Focus list holds the taller Color height.
+test("switching tabs keeps the canvas scroll position", async ({ page }) => {
+  await openFoundations(page);
+  const canvas = page.locator("main.canvas");
+  const tabs = page.getByRole("tablist", { name: "Color sections" });
+  await canvas.evaluate((node) => (node as HTMLElement).scrollTo(0, 400));
+  await expect.poll(() => canvas.evaluate((node) => (node as HTMLElement).scrollTop)).toBe(400);
+  const topBefore = await tabs.evaluate((node) => node.getBoundingClientRect().top);
+  await tabs.getByRole("tab", { name: "Focus" }).click();
+  await expect(hexField(page, "focus-ring-color")).toBeVisible();
+  const afterFocus = await canvas.evaluate((node) => (node as HTMLElement).scrollTop);
+  expect(Math.abs(afterFocus - 400)).toBeLessThanOrEqual(1);
+  expect(await tabs.evaluate((node) => node.getBoundingClientRect().top)).toBe(topBefore);
+  await tabs.getByRole("tab", { name: "Color" }).click();
+  await expect(hexField(page, "color-accent")).toBeVisible();
+  const afterColor = await canvas.evaluate((node) => (node as HTMLElement).scrollTop);
+  expect(Math.abs(afterColor - 400)).toBeLessThanOrEqual(1);
+  expect(await tabs.evaluate((node) => node.getBoundingClientRect().top)).toBe(topBefore);
 });
 
 // Picker floats: opening it never moves the row below, outside-click and Escape close it.

@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-no-opacity
-Next: build the expansion (Reset button, steady tabs) with Muse #high, then run the browser specs, then owner checklist, then merge to master (ask first), then 1g
+Next: Claude runs browser specs (lsof ports free, then test:e2e:workbench), then owner checklist, then merge to master (ask first)
 Written against: 7fd3ec0
 
 ## What changes for you
@@ -41,9 +41,9 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - [x] Red then green, `colorEdit.test.ts` first: replace the test at line 26 ("transparency is kept as 8-digit hex") with: `normalizeColor("rgba(255, 0, 0, 0.5)")` and `normalizeColor("#ff000080")` return `null`; `normalizeColor("rgba(255, 0, 0, 1)")`, `"#ff0000"` and `"red"` return `"#ff0000"`. Watch it fail, then in `colorEdit.ts` return `null` when the parsed color's alpha is below 1.
 - [x] In `routes/foundations/+page.svelte`: pass `isAlpha={false}` to `ColorPicker` (line ~246) and change the error text at line ~96 to "Not a solid color — kept the old value." (empty or unparseable input uses the same text; it is still an invalid color from the user's side).
 - [x] In `app/e2e/workbench/colors.spec.ts`: update the expected text at line ~26 to the new message; delete the test "alpha 0.5 survives picking a new spot with an 8-digit hex"; in the tests at lines ~52 and ~125 use `page.locator("[data-picker-popover]")` as the "picker is open" marker instead of the alpha spinbutton (the click-by-position logic stays, with the popover as the box); add one test: open the picker on `color-accent` → the popover is visible, it contains at least one `input` or `button` of the picker itself (so an empty wrapper cannot pass), and `getByRole("spinbutton", { name: "alpha channel" })` has count 0; then typing `rgba(255, 0, 0, 0.5)` into the hex field keeps the old value and shows "Not a solid color — kept the old value."
-- [ ] Expansion A, Reset: in `routes/foundations/+page.svelte` replace the `<span class="edited">Edited</span>` (inside `{#if edited}`, ~line 219) with a `<button type="button">` named `Reset {varName}` (visible text "Reset") whose click calls `stagedStore.stage(token.path, token.value, token.value)` (staging the file value removes the entry as ONE history step, so `stagedStore.undo()` brings it back; no change to `stagedEdits.ts`), then deletes `errors[token.path]` (a stale "Not a solid color" message must not outlive Reset) and sets `drafts[token.path]` back to the file value. Do not call `sendTokens()` (the `$effect` at ~line 85 already re-posts on every staged change). Keep the small-label look: the button gets `.edited`'s font-size and color plus `background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline`, because `.edited` alone does not reset the browser's button chrome. In `colors.spec.ts` change the test at line 11 to expect the `Reset` button (not the text "Edited"), and add a test: stage `red`, click `Reset color-accent` → the field shows the file value, the count reads "0 unsaved changes", the button is gone; also stage `red`, then type `nonsense` in the same field and press Enter (error shows), click Reset → the error text is gone; press Cmd+Z (`ControlOrMeta+z`) → the field is `#ff0000` again and the button is back.
-- [ ] Expansion B, steady tabs: root cause (reproduced 2026-10-04 with a Playwright probe at 1280x800): the canvas scrolled to 400 jumps to 9 after clicking Focus because the Color list is 15 rows (`scrollHeight` 1663) and the Focus list is 1 row (`scrollHeight` 753), so the browser clamps the scroll. Fix in `+page.svelte` only: give the tab content (the `{#if hasTokens}` list) a `min-height` equal to the tallest height seen so far across tabs (track it with `bind:clientHeight` on the list and a `$state` max that only grows, reset when `data.tokens` changes); do not change which rows render. Add a spec: scroll `main.canvas` to 400, click the `Focus` tab → `main.canvas` `scrollTop` is still 400 (within 1px) and the tab bar's `getBoundingClientRect().top` is unchanged; click `Color` → same.
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Expansion A, Reset: in `routes/foundations/+page.svelte` replace the `<span class="edited">Edited</span>` (inside `{#if edited}`, ~line 219) with a `<button type="button">` named `Reset {varName}` (visible text "Reset") whose click calls `stagedStore.stage(token.path, token.value, token.value)` (staging the file value removes the entry as ONE history step, so `stagedStore.undo()` brings it back; no change to `stagedEdits.ts`), then deletes `errors[token.path]` (a stale "Not a solid color" message must not outlive Reset) and sets `drafts[token.path]` back to the file value. Do not call `sendTokens()` (the `$effect` at ~line 85 already re-posts on every staged change). Keep the small-label look: the button gets `.edited`'s font-size and color plus `background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline`, because `.edited` alone does not reset the browser's button chrome. In `colors.spec.ts` change the test at line 11 to expect the `Reset` button (not the text "Edited"), and add a test: stage `red`, click `Reset color-accent` → the field shows the file value, the count reads "0 unsaved changes", the button is gone; also stage `red`, then type `nonsense` in the same field and press Enter (error shows), click Reset → the error text is gone; press Cmd+Z (`ControlOrMeta+z`) → the field is `#ff0000` again and the button is back.
+- [x] Expansion B, steady tabs: root cause (reproduced 2026-10-04 with a Playwright probe at 1280x800): the canvas scrolled to 400 jumps to 9 after clicking Focus because the Color list is 15 rows (`scrollHeight` 1663) and the Focus list is 1 row (`scrollHeight` 753), so the browser clamps the scroll. Fix in `+page.svelte` only: give the tab content (the `{#if hasTokens}` list) a `min-height` equal to the tallest height seen so far across tabs (track it with `bind:clientHeight` on the list and a `$state` max that only grows, reset when `data.tokens` changes); do not change which rows render. Add a spec: scroll `main.canvas` to 400, click the `Focus` tab → `main.canvas` `scrollTop` is still 400 (within 1px) and the tab bar's `getBoundingClientRect().top` is unchanged; click `Color` → same.
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Browser specs are run by Claude afterwards.)
@@ -72,6 +72,15 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - Decisions the spec didn't settle: unit test named `transparent colors are refused, solid ones normalise`; browser test named `picker shows no opacity field and typed rgba is refused`; alpha read via `parsed.alpha() < 1`; popover non-empty asserted via `popover.locator("input, button")` count > 0; error text reused for empty/unparseable per brief
 - Spec facts wrong: NONE
 - Noticed but not touched: `verify-task.sh` does not fail if `isAlpha={false}` or the new error text is reverted (only the browser specs cover those); left as-is per scope
+- Expansion 2026-10-05 `bash scripts/verify-task.sh` → PASS (typecheck ✓ lint ✓ unit 65/65 design-system 36/36, 207 tests total) ✓
+- Rule transparent refused / solid normalise → broke `parsed.alpha() < 1` → `colorEdit: transparent colors are refused, solid ones normalise` failed (35 pass/1 fail), restored → 36/36 pass ✓
+- Rule picker has no opacity field + typed transparent refused → breaking `isAlpha={false}` still leaves `verify-task.sh` PASS, so matching check is browser spec `picker shows no opacity field and typed rgba is refused` (Not run by builder)
+- Rule Reset restores file value as one undo step → reverted button to `<span>Edited</span>` still leaves `verify-task.sh` PASS, so matching check is browser spec `Reset restores the file value and undo brings the edit back` (Not run by builder)
+- Rule switching tabs keeps scroll → removed `min-height`/`bind:clientHeight` still leaves `verify-task.sh` PASS, so matching check is browser spec `switching tabs keeps the canvas scroll position` (Not run by builder)
+- Claude after build: `lsof -i :3000 -i :5174` clear then `cd app && npm run test:e2e:workbench` → Not run (builder cannot run browser specs)
+- Decisions the spec didn't settle: Reset uses `aria-label="Reset {varName}"` with visible text `Reset`; `drafts[path]` reset to `token.value`; no `sendTokens()` call (relies on `$effect`); tab max tracked in single `$effect` comparing `data.tokens` identity with `lastTokens`, grown-only via `listHeight > maxListHeight`, applied as inline `min-height`
+- Spec facts wrong: NONE
+- Noticed but not touched: `verify-task.sh` covers no browser specs, so Reset and tab fixes are browser-spec-only (same gap as first build); corner artifact excluded per Questions; left as-is per scope
 
 ### Checkpoint (written by scripts/finish.sh)
 ```
@@ -84,6 +93,19 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 ---
 VERIFY: PASS
   ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 7s)
+  not run: e2e (11 specs; npm run test:e2e)
+pre-commit: OK
+```
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/colors.spec.ts                   | 46 +++++++++++++++++++++-
+ docs/work/feat-ds-workbench-no-opacity.md          | 20 ++++++++--
+ .../src/routes/foundations/+page.svelte            | 31 ++++++++++++++-
+ 3 files changed, 89 insertions(+), 8 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 6s)
   not run: e2e (11 specs; npm run test:e2e)
 pre-commit: OK
 ```
