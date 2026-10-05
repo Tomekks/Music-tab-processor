@@ -1,8 +1,8 @@
 # Task: Foundations preview fits the canvas (five owner fixes)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-preview-fit-low
-Next: /review (Level 2), then delegate to builders
+Next: 1e2 is merged locally into master (`7611df1`), NOT pushed (one push after the slice-1 tasks). Owner checklist items NOT yet confirmed in a browser (owner looked at both runs and said they seemed the same). Next task: 1f in a NEW session. Leftovers, ask before deleting: worktrees `../guitar_tab_processor-feat-ds-workbench-preview-fit`, `-low`, `-high`; branches `feat/ds-workbench-preview-fit`, `-low`, `-high`; parked idea: Foundations "Layout" section with adjustable layout values.
 Written against: d61073d
 
 ## What changes for you

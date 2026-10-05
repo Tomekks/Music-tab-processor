@@ -1,8 +1,8 @@
 # Task: Foundations preview fits the canvas (five owner fixes)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-preview-fit
-Next: /review (Level 2), then delegate to builders
+Next: superseded by `feat-ds-workbench-preview-fit-low.md` (the merged low run); this is the shared brief.
 Written against: 120889f
 
 ## What changes for you
