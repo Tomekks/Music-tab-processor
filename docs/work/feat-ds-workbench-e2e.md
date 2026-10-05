@@ -1,6 +1,6 @@
 # Task: Workbench browser specs (Playwright) for color editing
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-e2e
 Next: run verify-task.sh, fill Report, run finish.sh (specs + 2 testids written; Claude runs specs next)
 Written against: bda5a25
@@ -63,8 +63,8 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 
 ## Report
 - Acceptance 1 `bash scripts/verify-task.sh` → PASS (app VERIFY: PASS 205 tests; workbench 36 tests; e2e-revisit: workbench specs changed with the UI) → ✓
-- Acceptance 2 `cd app && npm run test:e2e:workbench` (Claude runs) → Not run
-- Acceptance 3 Claude breaks each feature, matching test fails → Not run
+- Acceptance 2 (Claude) `cd app && npm run test:e2e:workbench` → first run 6 passed / 4 failed (selector mistakes: two `alpha channel` matches, `Button` matched `Icon Button`, a scroll-dependent position check, and the 127.0.0.1 base URL); after fixes: 10 passed in 8.6s ✓
+- Acceptance 3 (Claude) broke 11 things one at a time and reverted each: dependents, forced-opaque alpha, `was` following staged, no undo grouping, no resend on ready, title attribute back, invalid message, Edited label, the word semantic in the UI, picker `position: static` → the matching test failed every time ✓ (not mutated: Focus tab switching, outside-click and Escape closing)
 - Decisions the spec didn't settle: previewBg IconButton uses first `Play` button (primary Default comes first in Preview.tsx row order, no row scoping); picker color-area clicks use popover bounding-box offsets from the accessible `alpha channel` label (third-party picker area has no accessible name and third-party code cannot take a testid); tooltip testid is one shared `tooltip` per row (row coverage asserted by count vs hex fields); changes panel testid is `changes-panel`; test 8 asserts `semantic` count 0 page-wide (preview iframe content excluded).
 - Wrong spec facts: NONE (labels at +page.svelte:192,201, tab role at :170, tooltip aria-hidden at :241 all matched live code).
 - Noticed but not touched: `+layout.svelte` undo listens for metaKey+z only, so `ControlOrMeta+z` relies on Meta (fine on this Mac; may not fire under Control on Linux CI) — left as specced for Claude's run to confirm.
@@ -83,3 +83,5 @@ VERIFY: PASS
   not run: e2e (11 specs; npm run test:e2e)
 pre-commit: OK
 ```
+
+- Found by the specs: the preview posts height and ready messages only to `http://localhost:5174`, so a workbench opened at `127.0.0.1:5174` (the documented host) never gets them; parked as an idea, specs use `localhost` for now.
