@@ -278,7 +278,7 @@
 								}}
 							>Reset</button>
 							{#if token.isAlias}
-								<span>Will unlink from main</span>
+								<span class="unlink">Will unlink from main</span>
 							{/if}
 						{/if}
 						<button
@@ -386,6 +386,9 @@
 		padding: 0;
 		cursor: pointer;
 		text-decoration: underline;
+	}
+	.unlink {
+		font-size: 12px;
 	}
 	.info {
 		position: relative;

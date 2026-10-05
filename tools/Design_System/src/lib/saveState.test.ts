@@ -4,6 +4,7 @@ import {
   buildSaveBody,
   describeSaveFailure,
   discardedLabel,
+  revertBody,
   savedLabel,
 } from "./saveState.ts";
 
@@ -55,12 +56,40 @@ test("unknown or missing code returns the generic nothing-written failure", () =
   assert.match(missing.message, /Nothing was written\./);
 });
 
-test("savedLabel uses singular/plural with zero-padded 24-hour time", () => {
-  const date = new Date(2026, 9, 5, 14, 5, 0);
-  assert.equal(savedLabel(1, date), "Saved 1 token 14:05");
-  assert.equal(savedLabel(3, date), "Saved 3 tokens 14:05");
-  const morning = new Date(2026, 9, 5, 9, 7, 0);
-  assert.equal(savedLabel(2, morning), "Saved 2 tokens 09:07");
+test("savedLabel counts down from Saved 5 to Saved 1", () => {
+  assert.equal(savedLabel(5), "Saved 5");
+  assert.equal(savedLabel(4), "Saved 4");
+  assert.equal(savedLabel(3), "Saved 3");
+  assert.equal(savedLabel(2), "Saved 2");
+  assert.equal(savedLabel(1), "Saved 1");
+});
+
+test("revertBody maps before entries to path/was edits with the version", () => {
+  const body = revertBody(
+    [{ path: "semantic.color.accent", was: "#ae97f7" }],
+    "version-123",
+  );
+  assert.deepEqual(body, {
+    edits: [{ path: "semantic.color.accent", value: "#ae97f7" }],
+    loadedVersion: "version-123",
+  });
+});
+
+test("revertBody keeps every before entry in order", () => {
+  const body = revertBody(
+    [
+      { path: "semantic.color.accent", was: "#ae97f7" },
+      { path: "semantic.color.background", was: "#e6dfd8" },
+    ],
+    "version-456",
+  );
+  assert.deepEqual(body, {
+    edits: [
+      { path: "semantic.color.accent", value: "#ae97f7" },
+      { path: "semantic.color.background", value: "#e6dfd8" },
+    ],
+    loadedVersion: "version-456",
+  });
 });
 
 test("discardedLabel uses singular/plural", () => {

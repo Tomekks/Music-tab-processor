@@ -4,7 +4,7 @@
 	import { COMPONENTS } from "$lib/registry.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
 	import { invalidateAll } from "$app/navigation";
-	import { buildSaveBody, describeSaveFailure, discardedLabel, savedLabel } from "$lib/saveState.js";
+	import { buildSaveBody, describeSaveFailure, discardedLabel, revertBody, savedLabel } from "$lib/saveState.js";
 	// @ts-ignore - untyped package helper (checkJs is off by owner decision)
 	import { cssVarNameForPath } from "../../../../app/packages/design-system/src/css-var-naming.mjs";
 
@@ -17,10 +17,13 @@
 	);
 	let showChanges = $state(false);
 
-	type SaveStatus = { kind: "saved" | "discarded" | "failed" | "changed"; text: string };
+	type SaveStatus = { kind: "saved" | "discarded" | "failed" | "changed" | "reverted" | "revert-failed"; text: string };
 	let status: SaveStatus | null = $state(null);
 	let isSaving = $state(false);
 	let timer: ReturnType<typeof setTimeout> | null = null;
+	let countdown: ReturnType<typeof setInterval> | null = null;
+	let savedSeconds = $state(5);
+	let savedBefore: { path: string; was: string }[] | null = null;
 	let statusText = $derived.by(() => {
 		const current: SaveStatus | null = status;
 		return current === null ? "" : current.text;
@@ -31,10 +34,14 @@
 			clearTimeout(timer);
 			timer = null;
 		}
+		if (countdown !== null) {
+			clearInterval(countdown);
+			countdown = null;
+		}
 	}
 
 	$effect(() => {
-		if (status?.kind === "discarded" && changeCount > 0) {
+		if ((status?.kind === "discarded" || status?.kind === "saved") && changeCount > 0) {
 			clearTimer();
 			status = null;
 		}
@@ -44,6 +51,10 @@
 		if (isSaving || changeCount === 0) return;
 		clearTimer();
 		status = null;
+		const before = Object.entries(stagedStore.staged).map(([path, entry]) => ({
+			path,
+			was: entry.was,
+		}));
 		isSaving = true;
 		try {
 			const response = await fetch("/api/save", {
@@ -59,14 +70,20 @@
 				reply = null;
 			}
 			if (response.ok && reply?.ok === true) {
-				const count = typeof reply.saved === "number" ? reply.saved : changeCount;
 				await invalidateAll();
-				status = { kind: "saved", text: savedLabel(count, new Date()) };
+				savedBefore = before;
+				savedSeconds = 5;
+				status = { kind: "saved", text: savedLabel(savedSeconds) };
 				clearTimer();
-				timer = setTimeout(() => {
-					status = null;
-					timer = null;
-				}, 5000);
+				countdown = setInterval(() => {
+					savedSeconds -= 1;
+					if (savedSeconds < 1) {
+						clearTimer();
+						status = null;
+					} else {
+						status = { kind: "saved", text: savedLabel(savedSeconds) };
+					}
+				}, 1000);
 			} else {
 				const failure = describeSaveFailure(reply?.code, reply?.error);
 				status = { kind: failure.kind, text: failure.message };
@@ -74,6 +91,44 @@
 		} catch {
 			const failure = describeSaveFailure(undefined, undefined);
 			status = { kind: failure.kind, text: failure.message };
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	async function revert() {
+		if (isSaving || savedBefore === null) return;
+		clearTimer();
+		status = null;
+		isSaving = true;
+		try {
+			const response = await fetch("/api/save", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(revertBody(savedBefore, stagedStore.loadedVersion ?? "")),
+			});
+			let reply: { ok?: boolean; code?: string; error?: string } | null = null;
+			try {
+				reply = await response.json();
+			} catch {
+				reply = null;
+			}
+			if (response.ok && reply?.ok === true) {
+				savedBefore = null;
+				await invalidateAll();
+				status = { kind: "reverted", text: "Reverted" };
+				clearTimer();
+				timer = setTimeout(() => {
+					status = null;
+					timer = null;
+				}, 5000);
+			} else {
+				const failure = describeSaveFailure(reply?.code, reply?.error);
+				status = { kind: "revert-failed", text: failure.message };
+			}
+		} catch {
+			const failure = describeSaveFailure(undefined, undefined);
+			status = { kind: "revert-failed", text: failure.message };
 		} finally {
 			isSaving = false;
 		}
@@ -147,6 +202,12 @@
 				<button type="button" disabled>Saving...</button>
 			{:else if status?.kind === "saved"}
 				<span role="status">{statusText}</span>
+				<button type="button" onclick={revert}>Revert</button>
+			{:else if status?.kind === "reverted"}
+				<span role="status">{statusText}</span>
+			{:else if status?.kind === "revert-failed"}
+				<span role="status">{statusText}</span>
+				<button type="button" onclick={dismiss}>Dismiss</button>
 			{:else if status?.kind === "discarded"}
 				<span role="status">{statusText}</span>
 				<button type="button" onclick={undoDiscarded}>Undo</button>

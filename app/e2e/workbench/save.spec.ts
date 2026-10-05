@@ -27,12 +27,33 @@ test.beforeEach(async ({ page }) => {
 });
 
 // Save writes the staged edit to the throwaway copy and clears the count.
-test("staging accent and Save writes the copy with Saved 1 token", async ({ page }) => {
+test("staging accent and Save writes the copy with a Saved countdown", async ({ page }) => {
   await stageColor(page, "color-accent", "red");
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText(/Saved 1 token/)).toBeVisible();
+  await expect(page.getByText(/Saved [1-5]/)).toBeVisible();
   await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
   expect(readCopy().semantic.color.accent.$value).toBe("#ff0000");
+});
+
+// Revert after Save writes the old resolved hex back as a plain value, not the link.
+test("Revert after Save writes the old hex back and shows Reverted", async ({ page }) => {
+  await stageColor(page, "color-accent", "red");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText(/Saved [1-5]/)).toBeVisible();
+  expect(readCopy().semantic.color.accent.$value).toBe("#ff0000");
+  await page.getByRole("button", { name: "Revert", exact: true }).click();
+  await expect(page.getByText("Reverted")).toBeVisible();
+  expect(readCopy().semantic.color.accent.$value).toBe("#ae97f7");
+});
+
+// The Saved countdown clears by itself after 5 seconds (fake clock, no real wait).
+test("Saved countdown goes away after 5 seconds", async ({ page }) => {
+  await page.clock.install();
+  await stageColor(page, "color-accent", "red");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText(/Saved [1-5]/)).toBeVisible();
+  await page.clock.fastForward(5000);
+  await expect(page.getByText(/Saved [1-5]/)).toHaveCount(0);
 });
 
 // Discard clears the edit and Undo brings it back.
@@ -81,7 +102,7 @@ test("read-only copy says nothing was written and Retry save works", async ({ pa
     chmodSync(copyFile(), 0o644);
   }
   await page.getByRole("button", { name: "Retry save", exact: true }).click();
-  await expect(page.getByText(/Saved 1 token/)).toBeVisible();
+  await expect(page.getByText(/Saved [1-5]/)).toBeVisible();
   await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
 });
 

@@ -38,15 +38,20 @@ export function describeSaveFailure(code: string | undefined, error: string | un
   return { kind: "failed", message: "Nothing was written. Couldn't save your changes." };
 }
 
-function timeLabel(date: Date): string {
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${hours}:${minutes}`;
+export function savedLabel(secondsLeft: number): string {
+  return `Saved ${secondsLeft}`;
 }
 
-export function savedLabel(count: number, date: Date): string {
-  const noun = count === 1 ? "token" : "tokens";
-  return `Saved ${count} ${noun} ${timeLabel(date)}`;
+export interface RevertBeforeInput {
+  path: string;
+  was: string;
+}
+
+export function revertBody(before: RevertBeforeInput[], loadedVersion: string): SaveBody {
+  return {
+    edits: before.map((entry) => ({ path: entry.path, value: entry.was })),
+    loadedVersion,
+  };
 }
 
 export function discardedLabel(count: number): string {
