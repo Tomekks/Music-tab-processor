@@ -44,26 +44,28 @@
 			{#if showChanges}
 				<div class="changes">
 					{#if changeCount > 0}
-						<ul>
+						<div class="change-list">
 							{#each Object.entries(stagedStore.staged) as [path, entry] (path)}
-								<li>
-									<span>{path}</span>
-									<span
-										aria-hidden="true"
-										style="display: inline-block; width: 16px; height: 16px; background: {entry.was}; border: 1px solid #e0e0e0;"
-									></span>
-									<code>{entry.was}</code>
-									<span>→</span>
-									<span
-										aria-hidden="true"
-										style="display: inline-block; width: 16px; height: 16px; background: {entry.now}; border: 1px solid #e0e0e0;"
-									></span>
-									<code>{entry.now}</code>
-								</li>
+								<div class="change-row">
+									<div class="change-path">{path}</div>
+									<div class="change-values">
+										<span
+											aria-hidden="true"
+											style="display: inline-block; width: 16px; height: 16px; background: {entry.was}; border: 1px solid #e0e0e0;"
+										></span>
+										<code>{entry.was}</code>
+										<span>→</span>
+										<span
+											aria-hidden="true"
+											style="display: inline-block; width: 16px; height: 16px; background: {entry.now}; border: 1px solid #e0e0e0;"
+										></span>
+										<code>{entry.now}</code>
+									</div>
+								</div>
 							{/each}
-						</ul>
+						</div>
 					{:else}
-						<p>No unsaved changes.</p>
+						<p class="empty-changes">No unsaved changes.</p>
 					{/if}
 				</div>
 			{/if}
@@ -135,12 +137,44 @@
 		top: 100%;
 		right: 0;
 		z-index: 10;
-		min-width: 320px;
+		min-width: 360px;
 		max-height: 320px;
 		overflow-y: auto;
 		background: #ffffff;
 		border: 1px solid #e0e0e0;
-		padding: 12px 16px;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+		padding: 16px;
+	}
+
+	.change-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.change-row {
+		padding: 12px 0;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.change-list > .change-row:last-child {
+		border-bottom: none;
+	}
+
+	.change-path {
+		font-weight: 700;
+		margin-bottom: 4px;
+	}
+
+	.change-values {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.empty-changes {
+		margin: 0;
+		color: #666666;
 	}
 
 	.body {

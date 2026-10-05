@@ -68,3 +68,28 @@ test("dangling reference throws and names the reference", () => {
   };
   assert.throws(() => listColorTokens(bad), /primitive\.color\.nope/);
 });
+
+test("semantic dependents list component vars that reference them", () => {
+  const refTree = {
+    semantic: {
+      color: {
+        accent: { $value: "#ae97f7", $type: "color" },
+        background: { $value: "#e6dfd8", $type: "color" },
+      },
+    },
+    component: {
+      button: {
+        primaryBackground: { $value: "{semantic.color.accent}", $type: "color" },
+      },
+      iconButton: {
+        primaryBackground: { $value: "{semantic.color.accent}", $type: "color" },
+      },
+    },
+  };
+  const byPath = Object.fromEntries(listColorTokens(refTree).map((token) => [token.path, token]));
+  assert.deepEqual(byPath["semantic.color.accent"].dependents, [
+    "--component-button-primary-background",
+    "--component-icon-button-primary-background",
+  ]);
+  assert.deepEqual(byPath["semantic.color.background"].dependents, []);
+});

@@ -15,6 +15,7 @@ export interface PreviewToken {
   path: string;
   cssVar: string;
   value: string;
+  dependents?: string[];
 }
 
 export function createStaged(): StagedHistory {
@@ -67,7 +68,11 @@ export function previewVars(tokens: PreviewToken[], staged: StagedMap): Record<s
   const vars: Record<string, string> = {};
   for (const token of tokens) {
     const entry = staged[token.path];
-    vars[token.cssVar] = entry ? entry.now : token.value;
+    const resolved = entry ? entry.now : token.value;
+    vars[token.cssVar] = resolved;
+    for (const dependent of token.dependents ?? []) {
+      vars[dependent] = resolved;
+    }
   }
   return vars;
 }

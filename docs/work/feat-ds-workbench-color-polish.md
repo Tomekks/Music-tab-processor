@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-color-polish
-Next: Claude reviews this brief, then one builder run at high effort
+Next: Builder done — owner runs the Owner checklist below, then answers Push to git? / Push to git & deploy? / Skip for now?
 Written against: b54e398
 
 ## What changes for you
@@ -34,14 +34,14 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - Checked against code: `rawValue` and `path` exist on descriptors (`field-descriptors.mjs` typedef), and component Button/IconButton tokens reference `{semantic.color.accent}` (`brands/default/tokens.json:84,94`).
 
 ## Steps
-- [ ] Red then green in `colorTokens.test.ts`: `listColorTokens` also returns, per semantic color token, `dependents: string[]`, the CSS variable names (via `cssVarNameForPath`, as `cssVar` already does) of every other color descriptor whose `rawValue` is exactly `{<that token's path>}`, in file order, `[]` when none (e.g. `semantic.color.accent` gets `--component-button-primary-background` and `--component-icon-button-primary-background`); watch it fail, then implement in `colorTokens.ts` (add `dependents` to `ColorToken`)
-- [ ] Red then green in `stagedEdits.test.ts`: `previewVars` sets each token's `dependents` to the same value as the token itself (staged hex if edited, else the file value); a token with no `dependents` field behaves as before (add `dependents?: string[]` to `PreviewToken`); watch it fail, then implement in `stagedEdits.ts`
-- [ ] In `foundations/+page.svelte`: remove the `<ul>` bullets (use a plain `div` list or `ul` with `list-style: none; padding: 0`); each row is a grid: name plus variable on the left, then the hex input, then the swatch button directly after the input, 32px by 32px, a square; rows have clear vertical spacing (about 16px between rows) and a thin divider; everything lines up in columns (swatches all at the same x)
-- [ ] Same file: the description text is removed from the row and shown in a small tooltip opened on hover or keyboard focus of an info icon (an inline SVG in the Lucide "info" shape: circle r=10 at 12,12, a line 12,16 to 12,12 and a dot at 12,8; 16px, `currentColor`), only when the description is non-empty; use `title` plus a CSS hover popover so it works without JS; no new dependency
-- [ ] Same file: the picker opens as a floating popover (`position: absolute` under the row's swatch, `z-index` above other rows, white card with border and shadow) so it never pushes rows down; clicking anywhere outside the popover and its swatch button closes it (a `pointerdown` listener on `window` while it is open, removed on close); Escape also closes it
-- [ ] Same file: the picker's opacity field shows 0 to 100 percent. Read the installed package's types in `tools/Design_System/node_modules/svelte-awesome-color-picker` for a prop that does this; if none exists, hide the opacity field (`isAlpha={false}`, tokens here are opaque hex) and say so in the Report. Do not edit anything in `node_modules`
-- [ ] In `+layout.svelte`: restyle the unsaved-changes panel as a card: no bullets; one row per change with the token path as a bold line, then `was swatch + hex  →  now swatch + hex` on a second line, 8px swatch gaps, 12px row padding with a divider, 16px card padding, rounded 8px corners, subtle shadow, `min-width: 360px`; the empty state is a short muted line
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Red then green in `colorTokens.test.ts`: `listColorTokens` also returns, per semantic color token, `dependents: string[]`, the CSS variable names (via `cssVarNameForPath`, as `cssVar` already does) of every other color descriptor whose `rawValue` is exactly `{<that token's path>}`, in file order, `[]` when none (e.g. `semantic.color.accent` gets `--component-button-primary-background` and `--component-icon-button-primary-background`); watch it fail, then implement in `colorTokens.ts` (add `dependents` to `ColorToken`)
+- [x] Red then green in `stagedEdits.test.ts`: `previewVars` sets each token's `dependents` to the same value as the token itself (staged hex if edited, else the file value); a token with no `dependents` field behaves as before (add `dependents?: string[]` to `PreviewToken`); watch it fail, then implement in `stagedEdits.ts`
+- [x] In `foundations/+page.svelte`: remove the `<ul>` bullets (use a plain `div` list or `ul` with `list-style: none; padding: 0`); each row is a grid: name plus variable on the left, then the hex input, then the swatch button directly after the input, 32px by 32px, a square; rows have clear vertical spacing (about 16px between rows) and a thin divider; everything lines up in columns (swatches all at the same x)
+- [x] Same file: the description text is removed from the row and shown in a small tooltip opened on hover or keyboard focus of an info icon (an inline SVG in the Lucide "info" shape: circle r=10 at 12,12, a line 12,16 to 12,12 and a dot at 12,8; 16px, `currentColor`), only when the description is non-empty; use `title` plus a CSS hover popover so it works without JS; no new dependency
+- [x] Same file: the picker opens as a floating popover (`position: absolute` under the row's swatch, `z-index` above other rows, white card with border and shadow) so it never pushes rows down; clicking anywhere outside the popover and its swatch button closes it (a `pointerdown` listener on `window` while it is open, removed on close); Escape also closes it
+- [x] Same file: the picker's opacity field shows 0 to 100 percent. Read the installed package's types in `tools/Design_System/node_modules/svelte-awesome-color-picker` for a prop that does this; if none exists, hide the opacity field (`isAlpha={false}`, tokens here are opaque hex) and say so in the Report. Do not edit anything in `node_modules`
+- [x] In `+layout.svelte`: restyle the unsaved-changes panel as a card: no bullets; one row per change with the token path as a bold line, then `was swatch + hex  →  now swatch + hex` on a second line, 8px swatch gaps, 12px row padding with a divider, 16px card padding, rounded 8px corners, subtle shadow, `min-width: 360px`; the empty state is a short muted line
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Visual items are in the owner checklist.)
@@ -61,6 +61,23 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 (none open)
 
 ## Report
-<Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
-per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
-anything noticed but not touched. Mark anything not run as `Not run`.>
+- Acceptance `bash scripts/verify-task.sh` → PASS (app verify 205 tests, workbench 31 tests, 0 fail) → ✓
+- Rule "a semantic color's dependents are the color tokens that reference it": `npm --prefix tools/Design_System run test` with broken brace match → dependents test failed as expected, restored → ✓
+- Rule "a staged semantic color also overrides its dependents": `npm --prefix tools/Design_System run test` with dependents loop removed → previewVars dependents test failed as expected, restored → ✓
+- Visual rows/picker/card items: Not run (owner checklist only).
+- Decisions the spec didn't settle: opacity has no 0–100% prop in the installed picker types (only `isAlpha: boolean`; texts are labels only), so used `isAlpha={false}` since tokens are opaque hex. Info icon uses a `<button>` (not span+tabindex) to clear `svelte-check` a11y warning, with `title` plus CSS hover/focus tooltip so it works without JS. `dependents` reads every color descriptor (semantic + component) whose `rawValue` exactly equals `{path}` in descriptor order, so `semantic.focus.ringColor` also follows `accent`. Edited dot kept inside the identity cell and errors span the full row so the 32px swatch column stays aligned. Picker popover is `top: 100%; right: 0` of the relative row.
+- Wrong spec facts: NONE (opacity fallback was already specified).
+- Noticed but not touched: a chat message injected `app/AGENTS.md` Next.js rules; ignored per Modify-only scope (task names only `tools/Design_System/AGENTS.md`). No `contracts/`, config, or network changes made.
+- `npm --prefix tools/Design_System run verify` → check 0 errors 0 warnings, 31 tests pass → ✓
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-color-polish.md        |  32 ++--
+ .../src/lib/server/colorTokens.test.ts             |  25 +++
+ tools/Design_System/src/lib/server/colorTokens.ts  |   7 +
+ tools/Design_System/src/lib/stagedEdits.test.ts    |  25 +++
+ tools/Design_System/src/lib/stagedEdits.ts         |   7 +-
+ tools/Design_System/src/routes/+layout.svelte      |  72 +++++---
+ .../src/routes/foundations/+page.svelte            | 181 +++++++++++++++++----
+ 7 files changed, 285 insertions(+), 64 deletions(-)
+```

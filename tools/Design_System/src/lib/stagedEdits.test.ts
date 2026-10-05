@@ -43,3 +43,28 @@ test("stagedEdits: previewVars returns the staged hex for edited tokens and the 
     "--border": "#e6dfd8",
   });
 });
+
+test("stagedEdits: previewVars also overrides dependents with the same value", () => {
+  const tokens = [
+    {
+      path: "semantic.color.accent",
+      cssVar: "--color-accent",
+      value: "#ae97f7",
+      dependents: ["--component-button-primary-background", "--component-icon-button-primary-background"],
+    },
+    { path: "semantic.color.border", cssVar: "--border", value: "#e6dfd8" },
+  ];
+  const staged = stageEdit(createStaged(), "semantic.color.accent", "#ae97f7", "#ff0000").staged;
+  assert.deepEqual(previewVars(tokens, staged), {
+    "--color-accent": "#ff0000",
+    "--component-button-primary-background": "#ff0000",
+    "--component-icon-button-primary-background": "#ff0000",
+    "--border": "#e6dfd8",
+  });
+  assert.deepEqual(previewVars(tokens, {}), {
+    "--color-accent": "#ae97f7",
+    "--component-button-primary-background": "#ae97f7",
+    "--component-icon-button-primary-background": "#ae97f7",
+    "--border": "#e6dfd8",
+  });
+});
