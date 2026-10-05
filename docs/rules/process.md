@@ -15,13 +15,13 @@ at a real seam.
    do it, run verify, commit. Risk triggers: deletes data or files, touches `contracts/`, shell or
    network, schema, deploy, secrets. A bug: reproduce it and state the root cause with evidence
    before any fix brief.
-2. **Brief.** A cheap model drafts a task file: `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of
-   plain logic, `TEMPLATE.md` for any risk trigger, UI or audio, or 4+ files. Optional cold read:
-   `delegate.sh <task> --critique` (at most 5 questions or "clear"; one round). First block is
-   **"What changes for you"**; the owner approves that block. The brief also states files touched (N),
-   risk triggers, expected size, acceptance checks (`Run:` command / `Expected:` output), and the
-   owner's checklist. `scripts/check-brief.sh` checks form, not content. Read live files first; record
-   `Written against: <commit>`. Keep narration short, but never skip: a crash or null path in new logic,
+2. **Brief.** Claude drafts a task file (trial 2026-10-04, scorecard "Brief critics"): `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of plain logic, `TEMPLATE.md` for any risk
+   trigger, UI, audio or 4+ files. Then one blind cold read per critic: `BUILDER_MODEL=<model> delegate.sh
+   <task> --critique` (Muse `#low`, then deepseek-v4.1-flash if needed; 5 questions max; copy `## Questions`
+   out between critics). Claude fixes only gaps where the builder would have to guess; takes a CUT: only if nothing breaks without it. First block is
+   **"What changes for you"**; the owner approves it. The brief also states files touched (N), risk triggers,
+   expected size, acceptance checks (`Run:` / `Expected:`), and the owner's checklist. `scripts/check-brief.sh`
+   checks form, not content. Read live files first; record `Written against: <commit>`. Keep narration short, but never skip: a crash or null path in new logic,
    an existing assertion the change will break, a fixture that can't exercise the code, an unanswered
    scope question.
 3. **Review.** One command, `/review`, by the task's Risk level. Level 0 none. Level 1 (default): Claude

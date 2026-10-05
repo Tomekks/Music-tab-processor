@@ -31,3 +31,9 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).
+
+## Brief critics (trial from 2026-10-04)
+Claude drafts the brief; Muse `#low` (then deepseek-v4.1-flash if needed) reads it blind via `delegate.sh --critique`. Compare with the old way (cheap-model draft): bug rounds per task and bugs per round after build. After 3-5 rows: keep, add the second critic permanently, or drop.
+
+| Date | Task | Critic(s) | Gaps only the critic found (real) | Gaps only Claude found | Critic false or noisy claims | Bug rounds after build | Tokens / time |
+|---|---|---|---|---|---|---|---|

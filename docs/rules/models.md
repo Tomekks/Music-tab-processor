@@ -5,7 +5,8 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 | Role | Model | Notes |
 |---|---|---|
 | Grilling, plan, Level 2 review | Claude (Sonnet) | Judgment work only; no line-by-line specs or builds |
-| Brief drafting and build | `opencode-go/muse-spark-1.3-contributor` | Default builder |
+| Brief drafting | Claude (Sonnet) | Trial from 2026-10-04; critics below read it blind |
+| Brief critics, build | `opencode-go/muse-spark-1.3-contributor` | Default builder; critic at `#low`, then deepseek if needed |
 | Level 1 review | `opencode-go/deepseek-v4.1-flash` | Different family from the builder; fresh session; read-only |
 | Candidates for bake-off | `qwen3.8-max`, `kimi-k3`, `deepseek-v4-pro` | See below |
 
