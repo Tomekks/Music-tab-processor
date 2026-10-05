@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Play } from "lucide-react";
 import { Button, ColorField, IconButton, SegmentedControl, Slider } from "@guitar-tabs/design-system";
-import { forcedStateSelector, readTokenMessage } from "../../lib/workbenchPreview";
+import { forcedStateSelector, previewFitScale, readTokenMessage } from "../../lib/workbenchPreview";
 
 const noop = () => undefined;
 
@@ -13,6 +13,8 @@ const SEGMENT = "a";
 const SLIDER = 50;
 
 const CELL = "border border-border px-4 py-3 align-middle";
+
+const WORKBENCH_ORIGIN = "http://localhost:5174";
 
 function addForcedStateRules() {
   const walk = (rules: CSSRuleList, parent: CSSStyleSheet | CSSGroupingRule) => {
@@ -38,6 +40,52 @@ function addForcedStateRules() {
 }
 
 export default function Preview() {
+  const mainRef = useRef<HTMLElement>(null);
+  const fitRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.theme = "light";
+    const observer = new MutationObserver(() => {
+      if (root.dataset.theme !== "light") {
+        root.dataset.theme = "light";
+      }
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const main = mainRef.current;
+    const fit = fitRef.current;
+    const table = tableRef.current;
+    if (!main || !fit || !table) return;
+    let last = 0;
+    const update = () => {
+      const scale = previewFitScale(fit.clientWidth, table.scrollWidth);
+      table.style.transform = scale < 1 ? `scale(${scale})` : "";
+      table.style.transformOrigin = "top left";
+      const height = main.scrollHeight - table.offsetHeight + table.offsetHeight * scale;
+      const px = Math.max(1, Math.ceil(height));
+      if (px !== last) {
+        last = px;
+        window.parent.postMessage({ type: "preview-height", height: px }, WORKBENCH_ORIGIN);
+      }
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(main);
+    observer.observe(table);
+    window.addEventListener("resize", update);
+    update();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
   useEffect(() => {
     addForcedStateRules();
     const style = document.createElement("style");
@@ -58,9 +106,10 @@ export default function Preview() {
   }, []);
 
   return (
-    <main className="flex flex-col gap-6 px-6 py-6">
+    <main ref={mainRef} className="flex flex-col gap-6 px-6 py-6">
       <h1 className="text-xl font-semibold text-foreground">Workbench preview</h1>
-      <table className="border-collapse">
+      <div ref={fitRef} className="w-full">
+      <table ref={tableRef} className="border-collapse">
         <thead>
           <tr>
             <th scope="col" className={CELL}>
@@ -300,6 +349,7 @@ export default function Preview() {
           </tr>
         </tbody>
       </table>
+      </div>
     </main>
   );
 }

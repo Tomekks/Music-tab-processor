@@ -23,6 +23,7 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 |---|---|---|---|---|---|---|
 | 2026-10-04 | 1e brief | 1 (non-blind first run) | 2 (in the first, non-blind run: descriptions out of scope, unused `raw`) | 2 (reuse of `buildFieldDescriptors`, `import.meta.url` path), found in the 8-question pass | 0 | ~48k tok, 48s |
 | 2026-10-04 | 1e brief, blind rerun | 1 | 0 (it reached the same one real finding on its own: descriptions are out of scope) | 0 (my extras were context, not defects: `cssVar` feeds 1f; 7 of 16 rows have no description) | 0 | ~46k tok, 97s |
+| 2026-10-04 | 1e2 brief (Muse high draft) | 2 (blind) | 0 | 3 (theme set by the root `ThemeProvider` runs after the child's effect so a one-time light set loses; height must be the scaled height; "full canvas width" vs 32px canvas padding) | 5 (focus ring clipping and empty-list collapse are wrong: the iframe holds the Preview page not the Colors list; 127.0.0.1 cut is irrelevant; "7 not ~8 tests" is nitpicking; cited `useThemeMode.ts:30-31`, which does not exist) | ~79k tok, 106s |
 
 ## Model switches
 One line each: date, task, from → to, why (`docs/rules/models.md`).

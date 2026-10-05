@@ -20,6 +20,13 @@ export function readTokenMessage(origin: string, data: unknown): Record<string, 
   return { ...(vars as Record<string, string>) };
 }
 
+export function previewFitScale(frameWidth: number, contentWidth: number): number {
+  if (!Number.isFinite(frameWidth) || frameWidth <= 0) return 1;
+  if (!Number.isFinite(contentWidth) || contentWidth <= 0) return 1;
+  if (frameWidth >= contentWidth) return 1;
+  return frameWidth / contentWidth;
+}
+
 export function forcedStateSelector(selector: string): string | null {
   // A comma only separates selectors when it is not escaped (`\,` is part of a class name).
   if (/(^|[^\\]),/.test(selector)) return null;
