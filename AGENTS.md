@@ -42,8 +42,7 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 - Mechanical before reasoning: if grep, a count or a script can answer it, use that, not a model's judgment.
 
 ## Honesty
-- State assumptions and name the alternatives; if something is genuinely unclear, stop and ask. Never
-  guess and proceed.
+- State assumptions and name alternatives; if genuinely unclear, stop and ask. Never guess and proceed.
 - Never mislead or downplay a change. Say plainly what is risky, uncertain, or was not run or checked.
 - No "verified" or "done" without the command and its output beside it.
 
@@ -57,7 +56,6 @@ Reader is a designer, not an engineer. Write so a junior engineer follows it the
 - Warn before acting on: contracts/, config, secrets; deleting or moving files; anything hard to
   undo; new dependencies or moving parts; anything that changes what you see in the app;
   anything that raises cost or token use.
-- Always say what I did not run or check.
 - Length follows stakes: confirmations are one or two lines; decisions get the detail above.
   No tables or long code unless asked.
 - Wrap-up logs how many times the owner asked to "explain simpler" this session (target: under 2).
