@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-no-opacity
 Next: owner approves "What changes for you", then builder, then merge to master before 1g starts
-Written against: 90770b4
+Written against: 6edafa5
 
 ## What changes for you
 The color picker on `/foundations` loses its opacity field. Typing a color that has transparency (for example `rgba(255, 0, 0, 0.5)` or `#ff000080`) is refused like any invalid color: the old value stays and the row says "Not a solid color — kept the old value." Colors typed without transparency (names, short hex, `rgb()`) work as before. Reason: the token file only allows `#rgb` or `#rrggbb`, so a transparent color could be staged but never saved (task 1g adds Save). This removes the opacity feature added in 1f3; supporting opacity properly is a parked idea.
