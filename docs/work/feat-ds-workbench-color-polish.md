@@ -1,8 +1,8 @@
 # Task: Foundations colors polish and component-follow fix (1f2)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-color-polish
-Next: Builder done — owner runs the Owner checklist below, then answers Push to git? / Push to git & deploy? / Skip for now?
+Next: superseded by feat-ds-workbench-color-polish2.md (1f3)
 Written against: b54e398
 
 ## What changes for you
