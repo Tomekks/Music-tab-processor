@@ -30,7 +30,7 @@ lsof -i :3000
 npm --prefix tools/Design_System run dev
 ```
 ```bash
-kill $(lsof -ti :3000)
+kill $(lsof -nP -iTCP:3000 -sTCP:LISTEN -t)
 ```'
 check "launch with lsof and kill passes" 0 "$(run good)"
 

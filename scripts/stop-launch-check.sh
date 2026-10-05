@@ -44,7 +44,7 @@ launch = re.search(
 if launch and not (re.search(r"\blsof\b", code) and re.search(r"\bkill\b", code)):
     sys.stderr.write(
         "BLOCKED: this reply offers a launch command (" + launch.group(0).strip() + ") but its code blocks lack a "
-        "free-port check (lsof -i :PORT) and a stop command (kill ...). AGENTS.md Session rule: put both in the same "
+        "free-port check (lsof -i :PORT) and a stop command (kill $(lsof -nP -iTCP:PORT -sTCP:LISTEN -t), never plain lsof -ti :PORT, which also kills browsers). AGENTS.md Session rule: put both in the same "
         "reply, one command per block, then finish.\n"
     )
     sys.exit(2)
