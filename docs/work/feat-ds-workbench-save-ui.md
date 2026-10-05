@@ -2,15 +2,15 @@
 
 Status: active
 Branch: feat/ds-workbench-save-ui
-Next: owner approves "What changes for you", then critics (default effort), then builder (Muse #high), after 1g0 is merged
-Written against: 77a18a6 (refresh to the commit after merging master, which will hold 1g0)
+Next: critics (default effort), then builder (Muse #high). Owner approved "What changes for you" 2026-10-05; master (with 1g0) merged in.
+Written against: 416882f (master merged, includes 1g0)
 
 Split decided 2026-10-04: 1g is the server side and the staged-edit logic (this file); 1g-ui (`feat-ds-workbench-save-bar.md`) is the top-bar Save/Discard/status UI plus its browser specs. 1g-ui is built after this one.
 
 ## What changes for you
 Nothing you can see yet. The workbench server gets a `POST /api/save` that writes staged color edits to `brands/default/tokens.json` all or nothing (using the 1d save path), and the staged-edit store learns two things the top bar will use in 1g-ui: Discard as one undoable step, and "re-base on the file" after a reload or save (edits equal to the new file value drop out, the others keep going on top). It also gains one safe switch for testing: if the workbench is started with `WORKBENCH_BRAND_DIR=<absolute path>` it reads and saves that folder instead of the real `default` brand and skips rebuilding the web app's CSS. That lets browser specs save against a throwaway copy. Without the variable, behavior is as today.
 
-To know: saving `accent` replaces its link to `primitive.color.accent` with a plain hex in `semantic.color.accent` (owner decision 2026-10-04: keep, parked for slice 2). Opacity is removed first by 1g0 (`feat-ds-workbench-no-opacity.md`), so every staged color is one the token file accepts. **Order: merge 1g0 into master, merge master into this branch, then build 1g** (1g-ui, not this task, edits `foundations/+page.svelte` too).
+To know: saving `accent` replaces its link to `primitive.color.accent` with a plain hex in `semantic.color.accent` (owner decision 2026-10-04, re-confirmed 2026-10-05 after a mix-up: deliberate, a child color edit must never change the primitive it linked to; do not "fix" this by editing the primitive; Reconnect-to-main is parked for slice 2, the "Will unlink from main" label is in 1g-ui). Opacity is removed first by 1g0 (`feat-ds-workbench-no-opacity.md`), so every staged color is one the token file accepts. **Order: merge 1g0 into master, merge master into this branch, then build 1g** (1g-ui, not this task, edits `foundations/+page.svelte` too).
 
 ## Scope
 **Modify only:**
