@@ -17,8 +17,7 @@ at a real seam.
    before any fix brief.
 2. **Brief.** First `git branch --no-merged master` and `git worktree list`: an open branch touching the same files is merged first or named in the brief. Claude drafts a task file (trial 2026-10-04, scorecard "Brief critics"): `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of plain logic, `TEMPLATE.md` for any risk
    trigger, UI, audio or 4+ files. Then one blind cold read per critic: `BUILDER_MODEL=<model> delegate.sh
-   <task> --critique` (Muse at its default effort, then deepseek-v4.1-flash at its default effort; 5 questions max; copy `## Questions`
-   out between critics). If Muse answers "clear" with no questions, still run deepseek: a first read finding nothing is not proof the brief is sound. Claude fixes only gaps where the builder would have to guess; takes a CUT: only if nothing breaks without it. First block is
+   <task> --critique` (`BUILDER_MODEL=opencode-go/deepseek-v4.1-flash#max`, one critic; 5 questions max. Muse is not a critic: it answered "clear" on three briefs where deepseek found real gaps, 2026-10-05). Claude fixes only gaps where the builder would have to guess; takes a CUT: only if nothing breaks without it. First block is
    **"What changes for you"**; the owner approves it. The brief also states files touched (N), risk triggers,
    expected size, acceptance checks (`Run:` / `Expected:`), and the owner's checklist. `scripts/check-brief.sh`
    checks form, not content. Read live files first; record `Written against: <commit>`. Keep narration short, but never skip: a crash or null path in new logic,
@@ -68,3 +67,5 @@ record); the backlog keeps its Archive. Owner-only to-dos live in the task file 
 swapping a tool or library, do fresh research and check `docs/audio-tools/` first. Size caps
 (`AGENTS.md` ≤ 80 lines, each rules file ≤ 70) are enforced by `scripts/check-rules.sh`; that replaces
 the old drift log. If the process misses something the old one caught, log it in `docs/work/missed.md`.
+
+- A builder run that stops early (crash, step limit) is never finished by Claude: no hand-fixing its code, no writing its Report. Claude reads the log, says what is left, and re-runs the builder (raise `steps` in `.opencode/agents/builder.md` first if the log shows the step limit). Claude only runs the checks and reports.
