@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-e2e
 Next: Claude reviews this brief, then one builder run; Claude then runs the specs and breaks each feature to prove they fail
-Written against: d88d596
+Written against: bda5a25
 
 ## What changes for you
 A short browser test suite for the workbench Foundations page. One command (`cd app && npm run test:e2e:workbench`) starts the web app and the workbench, drives the page like a person, and reports which behaviors still work: typing a color, the preview following, returning to the page, one-step picker undo, opacity surviving a color pick, tooltips, tabs, and the picker floating without moving rows. It never writes `tokens.json`. After this, the checks I walked by hand in the browser run on demand, and the repo's task flow reminds us when UI changes without matching specs. It does not judge looks.
