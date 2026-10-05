@@ -8,12 +8,34 @@ import {
 } from "./helpers";
 
 // Color editing still works: typing a name stages its hex and marks the row.
-test("typing red stages #ff0000 with a change count and Edited mark", async ({ page }) => {
+test("typing red stages #ff0000 with a change count and Reset button", async ({ page }) => {
   await openFoundations(page);
   await stageColor(page, "color-accent", "red");
   await expect(hexField(page, "color-accent")).toHaveValue("#ff0000");
   await expect(page.getByRole("button", { name: "1 unsaved change" })).toBeVisible();
-  await expect(page.getByText("Edited")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toBeVisible();
+});
+
+// Reset restores the file value as one undo step and clears a stale error.
+test("Reset restores the file value and undo brings the edit back", async ({ page }) => {
+  await openFoundations(page);
+  const field = hexField(page, "color-accent");
+  const fileValue = await field.inputValue();
+  await stageColor(page, "color-accent", "red");
+  await expect(field).toHaveValue("#ff0000");
+  await page.getByRole("button", { name: "Reset color-accent" }).click();
+  await expect(field).toHaveValue(fileValue);
+  await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toHaveCount(0);
+  await stageColor(page, "color-accent", "red");
+  await stageColor(page, "color-accent", "nonsense");
+  await expect(page.getByText("Not a solid color — kept the old value.")).toBeVisible();
+  await page.getByRole("button", { name: "Reset color-accent" }).click();
+  await expect(page.getByText("Not a solid color — kept the old value.")).toHaveCount(0);
+  await expect(field).toHaveValue(fileValue);
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect(field).toHaveValue("#ff0000");
+  await expect(page.getByRole("button", { name: "Reset color-accent" })).toBeVisible();
 });
 
 // Invalid input is rejected: the old value stays and an error explains why.
@@ -23,7 +45,7 @@ test("typing nonsense keeps the old value with an invalid-color error", async ({
   const before = await field.inputValue();
   await stageColor(page, "color-accent", "nonsense");
   await expect(field).toHaveValue(before);
-  await expect(page.getByText("Invalid color — kept the old value.")).toBeVisible();
+  await expect(page.getByText("Not a solid color — kept the old value.")).toBeVisible();
 });
 
 // Component variables follow: staging accent repaints Button and IconButton previews.
@@ -54,12 +76,10 @@ test("two picker spots undo in one step back to the file value", async ({ page }
   const field = hexField(page, "color-accent");
   const fileValue = await field.inputValue();
   await swatch(page, "color-accent").click();
-  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
+  await expect(page.locator("[data-picker-popover]")).toBeVisible();
   // The third-party color area has no accessible name, so click two spots
   // inside its popover (top region is the color area) by position.
-  const popover = page
-    .getByLabel("alpha channel")
-    .locator("xpath=ancestor::div[@data-picker-popover][1]");
+  const popover = page.locator("[data-picker-popover]");
   const box = await popover.boundingBox();
   if (box === null) throw new Error("picker popover has no bounding box");
   await page.mouse.click(box.x + box.width * 0.3, box.y + 60);
@@ -70,23 +90,19 @@ test("two picker spots undo in one step back to the file value", async ({ page }
   await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
 });
 
-// Opacity survives picking: alpha 0.5 plus a new spot keeps alpha and an 8-digit hex.
-test("alpha 0.5 survives picking a new spot with an 8-digit hex", async ({ page }) => {
+// Picker has no opacity field and typed transparency is refused like an invalid color.
+test("picker shows no opacity field and typed rgba is refused", async ({ page }) => {
   await openFoundations(page);
   await swatch(page, "color-accent").click();
-  const alpha = page.getByRole("spinbutton", { name: "alpha channel" });
-  await expect(alpha).toBeVisible();
-  await alpha.fill("0.5");
-  // The third-party color area has no accessible name, so click a new spot
-  // inside its popover by position (top region is the color area).
-  const popover = page
-    .getByLabel("alpha channel")
-    .locator("xpath=ancestor::div[@data-picker-popover][1]");
-  const box = await popover.boundingBox();
-  if (box === null) throw new Error("picker popover has no bounding box");
-  await page.mouse.click(box.x + box.width * 0.65, box.y + 120);
-  await expect(hexField(page, "color-accent")).toHaveValue(/#[0-9a-f]{8}$/i);
-  await expect(alpha).toHaveValue("0.5");
+  const popover = page.locator("[data-picker-popover]");
+  await expect(popover).toBeVisible();
+  expect(await popover.locator("input, button").count()).toBeGreaterThan(0);
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toHaveCount(0);
+  const field = hexField(page, "color-accent");
+  const before = await field.inputValue();
+  await stageColor(page, "color-accent", "rgba(255, 0, 0, 0.5)");
+  await expect(field).toHaveValue(before);
+  await expect(page.getByText("Not a solid color — kept the old value.")).toBeVisible();
 });
 
 // Help icons explain: hovering shows one tooltip, icons carry no title, rows all have icons.
@@ -121,6 +137,26 @@ test("Color and Focus tabs switch the list without the word semantic", async ({ 
   await expect(hexField(page, "color-accent")).toBeVisible();
 });
 
+// Switching tabs keeps the canvas scroll position: the shorter Focus list holds the taller Color height.
+test("switching tabs keeps the canvas scroll position", async ({ page }) => {
+  await openFoundations(page);
+  const canvas = page.locator("main.canvas");
+  const tabs = page.getByRole("tablist", { name: "Color sections" });
+  await canvas.evaluate((node) => (node as HTMLElement).scrollTo(0, 400));
+  await expect.poll(() => canvas.evaluate((node) => (node as HTMLElement).scrollTop)).toBe(400);
+  const topBefore = await tabs.evaluate((node) => node.getBoundingClientRect().top);
+  await tabs.getByRole("tab", { name: "Focus" }).click();
+  await expect(hexField(page, "focus-ring-color")).toBeVisible();
+  const afterFocus = await canvas.evaluate((node) => (node as HTMLElement).scrollTop);
+  expect(Math.abs(afterFocus - 400)).toBeLessThanOrEqual(1);
+  expect(await tabs.evaluate((node) => node.getBoundingClientRect().top)).toBe(topBefore);
+  await tabs.getByRole("tab", { name: "Color" }).click();
+  await expect(hexField(page, "color-accent")).toBeVisible();
+  const afterColor = await canvas.evaluate((node) => (node as HTMLElement).scrollTop);
+  expect(Math.abs(afterColor - 400)).toBeLessThanOrEqual(1);
+  expect(await tabs.evaluate((node) => node.getBoundingClientRect().top)).toBe(topBefore);
+});
+
 // Picker floats: opening it never moves the row below, outside-click and Escape close it.
 test("opening the picker holds rows still and both dismissals close it", async ({ page }) => {
   await openFoundations(page);
@@ -136,14 +172,14 @@ test("opening the picker holds rows still and both dismissals close it", async (
     ((await below.boundingBox())?.y ?? NaN) - ((await hexField(page, "color-accent").boundingBox())?.y ?? NaN);
   const before = await gap();
   await swatch(page, "color-accent").click();
-  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
+  await expect(page.locator("[data-picker-popover]")).toBeVisible();
   expect(await gap()).toBe(before);
   await page.getByRole("heading", { name: "Foundations" }).click();
-  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toHaveCount(0);
+  await expect(page.locator("[data-picker-popover]")).toHaveCount(0);
   await swatch(page, "color-accent").click();
-  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
+  await expect(page.locator("[data-picker-popover]")).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toHaveCount(0);
+  await expect(page.locator("[data-picker-popover]")).toHaveCount(0);
 });
 
 // Change history stays honest: two edits to one token still show the file value as was.
