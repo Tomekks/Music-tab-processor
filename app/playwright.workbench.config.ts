@@ -1,4 +1,15 @@
+import { cpSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { defineConfig } from "@playwright/test";
+
+// Specs save against a throwaway copy of the brand folder, never the real tokens.json.
+// Workers load this file again and inherit the parent's env, so copy only once.
+if (!process.env.WORKBENCH_BRAND_DIR) {
+  const copy = mkdtempSync(path.join(tmpdir(), "workbench-brand-"));
+  cpSync(path.resolve(__dirname, "packages/design-system/brands/default"), copy, { recursive: true });
+  process.env.WORKBENCH_BRAND_DIR = copy;
+}
 
 // Design System workbench specs (app/e2e/workbench/). Its own config, like
 // playwright.design-system.config.ts, so other runs never boot these servers.
