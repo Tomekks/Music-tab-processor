@@ -54,6 +54,8 @@ test("Saved countdown goes away after 5 seconds", async ({ page }) => {
   await expect(page.getByText(/Saved [1-5]/)).toBeVisible();
   await page.clock.fastForward(5000);
   await expect(page.getByText(/Saved [1-5]/)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Revert", exact: true })).toHaveCount(0);
+  await expect(page.getByText(/Saved/)).toHaveCount(0);
 });
 
 // Discard clears the edit and Undo brings it back.

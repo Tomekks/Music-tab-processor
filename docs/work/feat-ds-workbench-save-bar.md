@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: ROUND 3 (one spec assertion, see the step); then Claude re-runs the specs and break-checks, then the owner checklist.
+Next: run finish.sh (report written, verify PASS).
 Written against: 73ff30c (round 3; code and round 2 committed)
 
 ## What changes for you
@@ -53,8 +53,8 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - [x] ROUND 2, `routes/+layout.svelte`: before Save runs, remember `before = [{ path, was }]` for every staged entry. After a successful Save and `invalidateAll()`, state 4 shows `savedLabel(n)` counting down once a second from 5 to 1 (one `setInterval`, cleared with the other timers), then clears, with a **Revert** button (accessible name exactly "Revert"). Revert POSTs `revertBody(before, stagedStore.loadedVersion)` to `/api/save`, then `invalidateAll()` and shows "Reverted" for 5 seconds with no button; a failed Revert shows the `describeSaveFailure` message with only **Dismiss** (no Retry save, Discard, Review changes or Reload: nothing is staged after a Save, so those would do nothing). Staging a new edit while "Saved" shows clears it, like Discarded. Remove the old "Saved N tokens HH:MM" text and `savedLabel(count, date)` usages.
 - [x] ROUND 2, `foundations/+page.svelte`: "Will unlink from main" gets the same size as the Reset button next to it (reuse Reset's class or copy its font-size, height and padding; no new colors).
 - [x] ROUND 2, `save.spec.ts`: update the Save spec (text is now `Saved` followed by a number, not "Saved 1 token"); add: after Save, "Revert" writes the old RESOLVED hex (`#ae97f7`) into the copy's `semantic.color.accent` as a plain value (not the `{primitive.color.accent}` link, per the decision) and shows "Reverted"; the countdown goes away after 5 seconds (use `page.clock` to move time, not a real 5 s wait).
-- [ ] ROUND 3 (found by Claude's break-check): in `save.spec.ts` test "Saved countdown goes away after 5 seconds", the last assertion only checks `/Saved [1-5]/` is gone, so a countdown that never clears (status turns to "Saved 0", Revert stays) still passes. After `fastForward(5000)` also assert the "Revert" button has count 0 and no text matching `/Saved/` remains. Change nothing else.
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] ROUND 3 (found by Claude's break-check): in `save.spec.ts` test "Saved countdown goes away after 5 seconds", the last assertion only checks `/Saved [1-5]/` is gone, so a countdown that never clears (status turns to "Saved 0", Revert stays) still passes. After `fastForward(5000)` also assert the "Revert" button has count 0 and no text matching `/Saved/` remains. Change nothing else.
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Claude runs the specs.)
@@ -128,6 +128,26 @@ pre-commit: OK
 ---
 VERIFY: PASS
   ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 7s)
+  not run: e2e (12 specs; npm run test:e2e)
+pre-commit: OK
+```
+
+### Builder ROUND 3 (2026-10-05)
+- `bash scripts/verify-task.sh` → verify-task: PASS ✓ (typecheck ✓ lint ✓ unit 65/65 design-system 142/142; e2e not run by verify script)
+- Rule (failure kinds and labels) → `saveState.test.ts` asserts `kind` in every case plus `tokens.json` naming and "Nothing was written." text; covered by verify unit run, source untouched in round 3 ✓
+- Claude e2e + break-each-behavior + real `tokens.json` untouched → Not run (for Claude: `cd app && npm run test:e2e:workbench`)
+- Decisions the spec didn't settle: NONE (kept the existing `/Saved [1-5]/` count-0 assert and added the two asked asserts: Revert button count 0 and `/Saved/` count 0)
+- Spec fact wrong: NONE found
+- Noticed but not touched: uncommitted diff for `save.spec.ts` is 2 insertions only (the two new asserts); committed diff 73ff30c..HEAD for `save.spec.ts` is empty, so no drift.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/save.spec.ts          |  2 ++
+ docs/work/feat-ds-workbench-save-bar.md | 17 ++++++++++++++---
+ 2 files changed, 16 insertions(+), 3 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 5s)
   not run: e2e (12 specs; npm run test:e2e)
 pre-commit: OK
 ```
