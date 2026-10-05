@@ -42,7 +42,7 @@ test("staged color survives leaving for Button and returning to Foundations", as
   await stageColor(page, "color-accent", "red");
   await expect.poll(() => previewBg(page, "button", "Primary")).toBe("rgb(255, 0, 0)");
   const nav = page.getByRole("navigation", { name: "Components" });
-  await nav.getByRole("link", { name: "Button" }).click();
+  await nav.getByRole("link", { name: "Button", exact: true }).click();
   await nav.getByRole("link", { name: "Foundations" }).click();
   await expect(hexField(page, "color-accent")).toHaveValue("#ff0000");
   await expect.poll(() => previewBg(page, "button", "Primary")).toBe("rgb(255, 0, 0)");
@@ -54,7 +54,7 @@ test("two picker spots undo in one step back to the file value", async ({ page }
   const field = hexField(page, "color-accent");
   const fileValue = await field.inputValue();
   await swatch(page, "color-accent").click();
-  await expect(page.getByLabel("alpha channel")).toBeVisible();
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
   // The third-party color area has no accessible name, so click two spots
   // inside its popover (top region is the color area) by position.
   const popover = page
@@ -74,7 +74,7 @@ test("two picker spots undo in one step back to the file value", async ({ page }
 test("alpha 0.5 survives picking a new spot with an 8-digit hex", async ({ page }) => {
   await openFoundations(page);
   await swatch(page, "color-accent").click();
-  const alpha = page.getByLabel("alpha channel");
+  const alpha = page.getByRole("spinbutton", { name: "alpha channel" });
   await expect(alpha).toBeVisible();
   await alpha.fill("0.5");
   // The third-party color area has no accessible name, so click a new spot
@@ -131,17 +131,19 @@ test("opening the picker holds rows still and both dismissals close it", async (
   }
   if (index < 0 || index + 1 >= all.length) throw new Error("no row below color-accent");
   const below = all[index + 1];
-  const before = await below.boundingBox();
+  // Distance between the two rows, not an absolute position: opening the picker may scroll the page.
+  const gap = async () =>
+    ((await below.boundingBox())?.y ?? NaN) - ((await hexField(page, "color-accent").boundingBox())?.y ?? NaN);
+  const before = await gap();
   await swatch(page, "color-accent").click();
-  await expect(page.getByLabel("alpha channel")).toBeVisible();
-  const after = await below.boundingBox();
-  expect(after?.y).toBe(before?.y);
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
+  expect(await gap()).toBe(before);
   await page.getByRole("heading", { name: "Foundations" }).click();
-  await expect(page.getByLabel("alpha channel")).toHaveCount(0);
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toHaveCount(0);
   await swatch(page, "color-accent").click();
-  await expect(page.getByLabel("alpha channel")).toBeVisible();
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByLabel("alpha channel")).toHaveCount(0);
+  await expect(page.getByRole("spinbutton", { name: "alpha channel" })).toHaveCount(0);
 });
 
 // Change history stays honest: two edits to one token still show the file value as was.
