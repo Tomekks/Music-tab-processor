@@ -2,16 +2,74 @@
 	import type { Snippet } from "svelte";
 	import { page } from "$app/state";
 	import { COMPONENTS } from "$lib/registry.js";
+	import { stagedStore } from "$lib/staged.svelte.js";
 
 	let { children }: { children: Snippet } = $props();
 
 	let foundationsActive = $derived(page.url.pathname === "/foundations");
+	let changeCount = $derived(stagedStore.count);
+	let unsavedLabel = $derived(
+		changeCount === 1 ? "1 unsaved change" : `${changeCount} unsaved changes`
+	);
+	let showChanges = $state(false);
+
+	function onKey(event: KeyboardEvent) {
+		if (!event.metaKey || event.key.toLowerCase() !== "z") return;
+		const target = document.activeElement as HTMLElement | null;
+		if (
+			target &&
+			(target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)
+		) {
+			return;
+		}
+		event.preventDefault();
+		if (event.shiftKey) {
+			stagedStore.redo();
+		} else {
+			stagedStore.undo();
+		}
+	}
 </script>
+
+<svelte:window onkeydown={onKey} />
 
 <div class="shell">
 	<header class="topbar">
 		<span class="title">Design System</span>
-		<button disabled>Save</button>
+		<div class="controls">
+			<button type="button" aria-expanded={showChanges} onclick={() => (showChanges = !showChanges)}>
+				{unsavedLabel}
+			</button>
+			<button disabled>Save</button>
+			{#if showChanges}
+				<div class="changes" data-testid="changes-panel">
+					{#if changeCount > 0}
+						<div class="change-list">
+							{#each Object.entries(stagedStore.staged) as [path, entry] (path)}
+								<div class="change-row">
+									<div class="change-path">{path}</div>
+									<div class="change-values">
+										<span
+											aria-hidden="true"
+											style="display: inline-block; width: 16px; height: 16px; background: {entry.was}; border: 1px solid #e0e0e0;"
+										></span>
+										<code>{entry.was}</code>
+										<span>→</span>
+										<span
+											aria-hidden="true"
+											style="display: inline-block; width: 16px; height: 16px; background: {entry.now}; border: 1px solid #e0e0e0;"
+										></span>
+										<code>{entry.now}</code>
+									</div>
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<p class="empty-changes">No unsaved changes.</p>
+					{/if}
+				</div>
+			{/if}
+		</div>
 	</header>
 	<div class="body">
 		<nav class="sidebar" aria-label="Components">
@@ -67,9 +125,61 @@
 		font-weight: 700;
 	}
 
+	.controls {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.changes {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		z-index: 10;
+		min-width: 360px;
+		max-height: 320px;
+		overflow-y: auto;
+		background: #ffffff;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+		padding: 16px;
+	}
+
+	.change-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.change-row {
+		padding: 12px 0;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.change-list > .change-row:last-child {
+		border-bottom: none;
+	}
+
+	.change-path {
+		font-weight: 700;
+		margin-bottom: 4px;
+	}
+
+	.change-values {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.empty-changes {
+		margin: 0;
+		color: #666666;
+	}
+
 	.body {
 		display: grid;
-		grid-template-columns: 180px 1fr 320px;
+		grid-template-columns: 200px 1fr 320px;
 		min-height: 0;
 	}
 

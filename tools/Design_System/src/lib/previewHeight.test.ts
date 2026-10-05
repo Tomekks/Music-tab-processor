@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readPreviewHeight } from "./previewHeight.ts";
+import { isPreviewReady, readPreviewHeight } from "./previewHeight.ts";
 
 const PREVIEW_ORIGIN = "http://localhost:3000";
 const FRAME = { id: "iframe-window" };
@@ -44,4 +44,17 @@ test("readPreviewHeight: non-numeric or non-positive height returns null", () =>
     readPreviewHeight(PREVIEW_ORIGIN, FRAME, FRAME, { type: "other", height: 420 }),
     null,
   );
+});
+
+test("isPreviewReady: preview origin plus the iframe window plus a preview-ready message is true", () => {
+  assert.equal(isPreviewReady(PREVIEW_ORIGIN, FRAME, FRAME, { type: "preview-ready" }), true);
+});
+
+test("isPreviewReady: any other origin, source window or message is false", () => {
+  const ready = { type: "preview-ready" };
+  assert.equal(isPreviewReady("http://evil.example", FRAME, FRAME, ready), false);
+  assert.equal(isPreviewReady(PREVIEW_ORIGIN, { id: "other" }, FRAME, ready), false);
+  assert.equal(isPreviewReady(PREVIEW_ORIGIN, undefined, undefined, ready), false);
+  assert.equal(isPreviewReady(PREVIEW_ORIGIN, FRAME, FRAME, { type: "preview-height", height: 420 }), false);
+  assert.equal(isPreviewReady(PREVIEW_ORIGIN, FRAME, FRAME, null), false);
 });

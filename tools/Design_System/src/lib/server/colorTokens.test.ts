@@ -68,3 +68,55 @@ test("dangling reference throws and names the reference", () => {
   };
   assert.throws(() => listColorTokens(bad), /primitive\.color\.nope/);
 });
+
+test("semantic dependents list component vars that reference them", () => {
+  const refTree = {
+    semantic: {
+      color: {
+        accent: { $value: "#ae97f7", $type: "color" },
+        background: { $value: "#e6dfd8", $type: "color" },
+      },
+    },
+    component: {
+      button: {
+        primaryBackground: { $value: "{semantic.color.accent}", $type: "color" },
+      },
+      iconButton: {
+        primaryBackground: { $value: "{semantic.color.accent}", $type: "color" },
+      },
+    },
+  };
+  const byPath = Object.fromEntries(listColorTokens(refTree).map((token) => [token.path, token]));
+  assert.deepEqual(byPath["semantic.color.accent"].dependents, [
+    "--component-button-primary-background",
+    "--component-icon-button-primary-background",
+  ]);
+  assert.deepEqual(byPath["semantic.color.background"].dependents, []);
+});
+
+test("each token carries its descriptor section", () => {
+  const byPath = Object.fromEntries(listColorTokens(tree).map((token) => [token.path, token]));
+  assert.equal(byPath["semantic.color.background"].section, "semantic.color");
+  assert.equal(byPath["semantic.focus.ringColor"].section, "semantic.focus");
+});
+
+test("dependents are transitive with no duplicates or cycles", () => {
+  const chainTree = {
+    semantic: {
+      color: {
+        a: { $value: "#111111", $type: "color" },
+        b: { $value: "{semantic.color.a}", $type: "color" },
+        c: { $value: "{semantic.color.b}", $type: "color" },
+        d: { $value: "{semantic.color.a}", $type: "color" },
+      },
+    },
+  };
+  const byPath = Object.fromEntries(
+    listColorTokens(chainTree).map((token) => [token.path, token])
+  );
+  assert.deepEqual(byPath["semantic.color.a"].dependents, [
+    "--color-b",
+    "--color-d",
+    "--color-c",
+  ]);
+});

@@ -33,7 +33,7 @@ at a real seam.
    confirmed. Verify a review's claims against the code before acting on them; a critique can be false.
 4. **Build** with `scripts/run-builder.sh <task file>` in its own worktree for any Bounded-or-larger
    feature; trivial fixes stay on the current branch (`docs/rules/executor.md`).
-5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`).
+5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`); UI in an e2e area also runs its specs (`docs/rules/e2e.md`).
 6. **Report.** Every report: commit, `git diff --stat`, verify footer, "decisions the spec didn't
    settle" (or NONE). Extras by kind: feature = one line per acceptance check + owner checklist; bug fix =
    root cause with evidence + the test that failed first; UI = layout checks + checklist; risky =

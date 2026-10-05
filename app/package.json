@@ -24,7 +24,8 @@
     "verify": "bash scripts/verify.sh",
     "verify:full": "bash scripts/verify.sh --full",
     "test:e2e": "playwright test",
-    "test:e2e:design-system": "playwright test --config=playwright.design-system.config.ts"
+    "test:e2e:design-system": "playwright test --config=playwright.design-system.config.ts",
+    "test:e2e:workbench": "playwright test --config=playwright.workbench.config.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",

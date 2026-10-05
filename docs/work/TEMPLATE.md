@@ -34,6 +34,7 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<n
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Put anything else in the owner checklist.)
 - Run: `<<command>>` / Expected: <<exact output or footer line>>
 - For logic: each rule names the test that fails if the rule is broken.
+- For UI in an e2e area (`docs/rules/e2e-areas.txt`): name the spec that covers each behavior, or say why none.
 
 ## Owner checklist
 - [ ] <<one action>> → <<one expected result>>

@@ -1,0 +1,3 @@
+# Browser-test areas. Read by scripts/e2e-revisit.sh (run from scripts/verify-task.sh) and by people.
+# One line per area: name | watched paths (space-separated prefixes) | spec folder | command to run the specs
+workbench | tools/Design_System/src/routes tools/Design_System/src/lib app/app/workbench-preview app/lib/workbenchPreview.ts | app/e2e/workbench | cd app && npm run test:e2e:workbench

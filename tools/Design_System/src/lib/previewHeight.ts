@@ -15,3 +15,15 @@ export function readPreviewHeight(
   if (typeof height !== "number" || !Number.isFinite(height) || height <= 0) return null;
   return height;
 }
+
+export function isPreviewReady(
+  origin: string,
+  source: unknown,
+  iframeWindow: unknown,
+  data: unknown,
+): boolean {
+  if (origin !== PREVIEW_ORIGIN) return false;
+  if (source === null || source === undefined || source !== iframeWindow) return false;
+  if (typeof data !== "object" || data === null || Array.isArray(data)) return false;
+  return (data as Record<string, unknown>)["type"] === "preview-ready";
+}

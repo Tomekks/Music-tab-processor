@@ -45,6 +45,8 @@ test to make it pass without saying so. UI behavior gets a Playwright test, not 
 - A flaky test is fixed or quarantined with a note, never rerun until green.
 - `verify` skips the build because `npm run stage` proves it; CI runs `verify:full`.
 
+Browser-test areas, their specs and when to revisit them: `docs/rules/e2e.md`.
+
 ## Before browser tests
 Check port 3000 is free (`lsof -i :3000`); a stale dev server is silently reused. Stop a manual dev
 server before the `design-system` e2e project. After a long session, check the working directory

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readTokenMessage, forcedStateSelector, previewFitScale } from "./workbenchPreview.ts";
+import { readTokenMessage, forcedStateSelector, previewFitScale, workbenchOrigin } from "./workbenchPreview.ts";
 
 const VARS = { "--color-accent": "#6d28d9" };
 const MESSAGE = { type: "tokens", vars: VARS };
@@ -127,4 +127,15 @@ test("forcedStateSelector: an escaped comma inside a class name is not a selecto
     String.raw`.force-active .active\:\[mix\(a\,b\)\]`,
   );
   assert.equal(forcedStateSelector(String.raw`.a\,b:hover, .c:hover`), null);
+});
+
+test("workbenchOrigin: answers the allowed origin the page was opened from", () => {
+  assert.equal(workbenchOrigin("http://127.0.0.1:5174/foundations"), "http://127.0.0.1:5174");
+  assert.equal(workbenchOrigin("http://localhost:5174/"), "http://localhost:5174");
+});
+
+test("workbenchOrigin: an unknown, empty or malformed referrer falls back to localhost", () => {
+  assert.equal(workbenchOrigin("http://evil.example/foundations"), "http://localhost:5174");
+  assert.equal(workbenchOrigin(""), "http://localhost:5174");
+  assert.equal(workbenchOrigin("not a url"), "http://localhost:5174");
 });
