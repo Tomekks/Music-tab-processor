@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-color-polish3
-Next: builder run (ONE run, muse #high), then Claude runs e2e and mutation checks, then owner checklist. 1g0 merged to master (9f57283); brief reduced to remove Reset-on-row.
+Next: owner runs the checklist from this worktree (launch block in chat); then ASK before merging feat/ds-workbench-color-polish3 into master (local only). Worktrees polish3-low and polish3-high are leftovers (remove only on owner yes). Then 1g.
 Written against: 4bc3889
 Template: quick
 
