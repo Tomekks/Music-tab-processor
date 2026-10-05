@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-no-opacity
-Next: Claude runs browser specs (lsof ports free, then test:e2e:workbench), then owner checklist, then merge to master (ask first)
+Next: owner checks Reset and tab-scroll in the browser (checklist items 4-5), then merge to master (ask first), then 1g. Expansion build 80910 tok 203s; 13 e2e specs pass; each new spec fails when its feature is broken.
 Written against: 7fd3ec0
 
 ## What changes for you
