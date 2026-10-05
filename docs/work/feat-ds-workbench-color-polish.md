@@ -2,7 +2,7 @@
 
 Status: done
 Branch: feat/ds-workbench-color-polish
-Next: superseded by feat-ds-workbench-color-polish2.md (1f3)
+Next: done (1f2 polish, merged in a40854f; see feat-ds-workbench-color-edit-high.md)
 Written against: b54e398
 
 ## What changes for you

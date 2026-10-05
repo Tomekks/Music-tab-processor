@@ -1,8 +1,8 @@
 # Task: Color editing with live preview (1f, no saving)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-color-edit
-Next: Owner approves this brief, then Claude installs the two npm packages and delegates the build
+Next: done (shared brief copy of 1f; see feat-ds-workbench-color-edit-high.md)
 Written against: 0bac429
 
 ## What changes for you

@@ -2,7 +2,7 @@
 
 Status: done
 Branch: feat/ds-workbench-e2e
-Next: run verify-task.sh, fill Report, run finish.sh (specs + 2 testids written; Claude runs specs next)
+Next: done, merged in a40854f; revisit specs per docs/rules/e2e.md
 Written against: bda5a25
 
 ## What changes for you

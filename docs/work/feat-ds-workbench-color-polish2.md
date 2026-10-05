@@ -1,8 +1,8 @@
 # Task: Foundations colors polish 2 (1f3)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-color-polish
-Next: builder run 2 at high effort (the first run stopped on two missing files)
+Next: done (1f3 polish 2, merged in a40854f; see feat-ds-workbench-color-edit-high.md)
 Written against: 9f96682
 
 ## What changes for you
