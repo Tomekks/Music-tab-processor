@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-save-bar
 Next: ROUND 4 (toast, tooltip, their specs; steps marked ROUND 4). Rounds 1-3 are committed and work.
-Written against: 73ff30c (round 3; code and round 2 committed)
+Written against: 2a2ab64 (round 4; rounds 1-3 committed)
 
 ## What changes for you
 The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes your staged color edits to `tokens.json` through the endpoint from 1g, then the page reloads the file; the status slot says "Saved 5" counting down 4, 3, 2, 1 with a **Revert** button (owner change 2026-10-05, replaces the "Saved N tokens HH:MM" label); Revert writes the previous hex values back and says "Reverted" for 5 seconds, and a token that was linked to a primitive stays a plain hex (decided 2026-10-05: no exact-file restore). Discard clears the staged edits and says "Discarded N changes" with an **Undo** for 5 seconds. If the file changed on disk since the page loaded, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file and keeps your edits on top). If the file is read-only or the write fails, the message says nothing was written, stays until you press **Dismiss** or a retry works, your edits stay staged, and **Retry save** replaces Save. After this task the browser specs also cover Save, Discard, Undo and both failure states, against a throwaway copy of the brand folder, never the real `tokens.json`.
