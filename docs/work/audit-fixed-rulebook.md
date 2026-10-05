@@ -2,7 +2,7 @@
 
 Status: active
 Branch: master (no repo edits planned; changes are app/connector settings)
-Next: owner chose to run the parked idea "Make /wrap cheap" BEFORE this audit; do that first. Then here: use the real breakdown below, pick connectors and skills to turn off (one yes per item)
+Next: owner switches off iOS Simulator in the app settings (no switch reachable from chat), then open a FRESH session and compare get_usage with the baseline in Report (MCP tools 19.8k, total 63.8k at start). Then tick acceptance, commit, set Status done. Optional later: skills batch (loop, schedule, claude-api, setup-claude, consolidate-memory, keybindings-help, plugin-authoring, browser skills; ~1k) and the duplicate grilling skills.
 Written against: 6d48b53
 Template: quick
 
@@ -32,7 +32,13 @@ Fewer tokens loaded on every turn (target: 8-14k less of the ~63k) by turning of
 - 2026-10-04: reply style rules added to AGENTS.md (6d48b53) as the first step of cutting verbosity; this audit is the separate follow-up task.
 - 2026-10-04: "Make /wrap cheap" runs before this audit.
 
+- 2026-10-04: "Make /wrap cheap" done first (05c8f05): cheap model compacts task files via scripts/compact-task.sh; builder cannot edit scripts/, so Claude wrote it.
+- 2026-10-04: real tool-call counts (56 sessions) replace the estimates: browser 895 calls, ccd_pr 20, ccd_session_mgmt 14, terminal 11, ccd_session 6, Docs 0, iOS Simulator 0. Findings above that guessed 5-10k from connectors were too high; realistic saving 2-3k.
+- 2026-10-04: owner said yes to: iOS Simulator, Claude Docs, one Visualize copy (my pick). Docs and connector `visualize` switched off (also off for new sessions). iOS Simulator not switchable from chat. Browser, ccd_*, terminal kept. Already off in .claude/settings.local.json: 14 skills, so the skill list (5.3k) is near its floor.
+
 ## Questions
 (none open)
 
 ## Report
+- Before (start of session): total 63.8k; system tools 29.5k, MCP tools 19.8k, skills 5.3k, system prompt 4.9k, memory 3.6k.
+- Usage this session: 7 marks, 2683s span (measure.sh report). After: not measured yet (this session still held the old tool list: MCP tools read 20.2k at wrap). Measure in a fresh session.
