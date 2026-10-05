@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-color-polish
 Next: Claude reviews this brief, then one builder run at high effort
-Written against: b18b8eb
+Written against: b54e398
 
 ## What changes for you
 On `/foundations` the color rows become a clean, evenly spaced list with no bullets: name and variable on the left, the hex field, then a 32px square swatch right after it, aligned to the right side. The description moves behind a small info icon and shows as a tooltip on hover. The color picker floats over the page instead of pushing rows down, shows opacity as 0–100%, and closes when you click outside it. The "unsaved changes" panel becomes a tidy card with no bullets. Editing a semantic color such as `accent` now also changes the components that use it, so the Default Button variant turns red along with Hover and Pressed.
