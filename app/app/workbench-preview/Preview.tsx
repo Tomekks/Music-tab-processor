@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { Play } from "lucide-react";
 import { Button, ColorField, IconButton, SegmentedControl, Slider } from "@guitar-tabs/design-system";
-import { forcedStateSelector, previewFitScale, readTokenMessage } from "../../lib/workbenchPreview";
+import { forcedStateSelector, previewFitScale, readTokenMessage, workbenchOrigin } from "../../lib/workbenchPreview";
 
 const noop = () => undefined;
 
@@ -16,7 +16,7 @@ const CELL = "border border-border px-4 py-3 align-middle";
 
 const ROW_HEAD = `${CELL} text-left font-normal`;
 
-const WORKBENCH_ORIGIN = "http://localhost:5174";
+const WORKBENCH_ORIGIN = workbenchOrigin(typeof document === "undefined" ? "" : document.referrer);
 
 function addForcedStateRules() {
   const walk = (rules: CSSRuleList, parent: CSSStyleSheet | CSSGroupingRule) => {

@@ -84,4 +84,4 @@ VERIFY: PASS
 pre-commit: OK
 ```
 
-- Found by the specs: the preview posts height and ready messages only to `http://localhost:5174`, so a workbench opened at `127.0.0.1:5174` (the documented host) never gets them; parked as an idea, specs use `localhost` for now.
+- Found by the specs, fixed in this branch: the preview posted height and ready messages only to `http://localhost:5174`, so a workbench opened at `127.0.0.1:5174` lost them; it now answers the origin it was opened from (`workbenchOrigin`, unit-tested; spec 11 fails without the fix, passes with it).

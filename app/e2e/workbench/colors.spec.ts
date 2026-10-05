@@ -161,3 +161,15 @@ test("two edits to one token show the file value as was in the changes panel", a
   await expect(panel.getByText("#0000ff", { exact: true })).toBeVisible();
   await expect(panel.getByText("#ff0000", { exact: true })).toHaveCount(0);
 });
+
+// The documented host is 127.0.0.1: the preview must answer the page's own origin, or colors vanish after a page change.
+test("staged color survives a page change when opened at 127.0.0.1", async ({ page }) => {
+  await page.goto("http://127.0.0.1:5174/foundations");
+  await expect(hexField(page, "color-accent")).toBeVisible();
+  await stageColor(page, "color-accent", "red");
+  await expect.poll(() => previewBg(page, "button", "Primary")).toBe("rgb(255, 0, 0)");
+  const nav = page.getByRole("navigation", { name: "Components" });
+  await nav.getByRole("link", { name: "Button", exact: true }).click();
+  await nav.getByRole("link", { name: "Foundations" }).click();
+  await expect.poll(() => previewBg(page, "button", "Primary")).toBe("rgb(255, 0, 0)");
+});

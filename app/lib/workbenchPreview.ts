@@ -1,5 +1,17 @@
 const ALLOWED_ORIGINS = new Set(["http://localhost:5174", "http://127.0.0.1:5174"]);
 
+const DEFAULT_ORIGIN = "http://localhost:5174";
+
+// The origin to post to: the workbench the page was opened from (either allowed host), else localhost.
+export function workbenchOrigin(referrer: string): string {
+  try {
+    const origin = new URL(referrer).origin;
+    return ALLOWED_ORIGINS.has(origin) ? origin : DEFAULT_ORIGIN;
+  } catch {
+    return DEFAULT_ORIGIN;
+  }
+}
+
 const KEY_PATTERN = /^--[a-z0-9-]+$/;
 const BAD_VALUE_PATTERN = /[;{}<\n\r]/;
 const MAX_VALUE_LENGTH = 100;
