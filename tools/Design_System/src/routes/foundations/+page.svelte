@@ -93,7 +93,7 @@
 		const raw = drafts[path] ?? "";
 		const next = normalizeColor(raw);
 		if (next === null) {
-			errors[path] = "Invalid color — kept the old value.";
+			errors[path] = "Not a solid color — kept the old value.";
 			drafts[path] = displayFor(path, fileValue);
 			return;
 		}
@@ -246,6 +246,7 @@
 							<ColorPicker
 								hex={display}
 								isDialog={false}
+								isAlpha={false}
 								onInput={(color) => pick(token.path, token.value, color.hex)}
 							/>
 						</div>

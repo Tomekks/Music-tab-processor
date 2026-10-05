@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-no-opacity
-Next: owner approves "What changes for you", then builder, then merge to master before 1g starts
+Next: builder done (verify-task PASS) → Claude runs e2e workbench specs, then merge to master before 1g
 Written against: 6edafa5
 
 ## What changes for you
@@ -36,10 +36,10 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - Not verified: that the browser specs pass after the change (Claude runs `npm run test:e2e:workbench` after the build; `verify-task.sh` does not run them).
 
 ## Steps
-- [ ] Red then green, `colorEdit.test.ts` first: replace the test at line 26 ("transparency is kept as 8-digit hex") with: `normalizeColor("rgba(255, 0, 0, 0.5)")` and `normalizeColor("#ff000080")` return `null`; `normalizeColor("rgba(255, 0, 0, 1)")`, `"#ff0000"` and `"red"` return `"#ff0000"`. Watch it fail, then in `colorEdit.ts` return `null` when the parsed color's alpha is below 1.
-- [ ] In `routes/foundations/+page.svelte`: pass `isAlpha={false}` to `ColorPicker` (line ~246) and change the error text at line ~96 to "Not a solid color — kept the old value." (empty or unparseable input uses the same text; it is still an invalid color from the user's side).
-- [ ] In `app/e2e/workbench/colors.spec.ts`: update the expected text at line ~26 to the new message; delete the test "alpha 0.5 survives picking a new spot with an 8-digit hex"; in the tests at lines ~52 and ~125 use `page.locator("[data-picker-popover]")` as the "picker is open" marker instead of the alpha spinbutton (the click-by-position logic stays, with the popover as the box); add one test: open the picker on `color-accent` → the popover is visible, it contains at least one `input` or `button` of the picker itself (so an empty wrapper cannot pass), and `getByRole("spinbutton", { name: "alpha channel" })` has count 0; then typing `rgba(255, 0, 0, 0.5)` into the hex field keeps the old value and shows "Not a solid color — kept the old value."
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Red then green, `colorEdit.test.ts` first: replace the test at line 26 ("transparency is kept as 8-digit hex") with: `normalizeColor("rgba(255, 0, 0, 0.5)")` and `normalizeColor("#ff000080")` return `null`; `normalizeColor("rgba(255, 0, 0, 1)")`, `"#ff0000"` and `"red"` return `"#ff0000"`. Watch it fail, then in `colorEdit.ts` return `null` when the parsed color's alpha is below 1.
+- [x] In `routes/foundations/+page.svelte`: pass `isAlpha={false}` to `ColorPicker` (line ~246) and change the error text at line ~96 to "Not a solid color — kept the old value." (empty or unparseable input uses the same text; it is still an invalid color from the user's side).
+- [x] In `app/e2e/workbench/colors.spec.ts`: update the expected text at line ~26 to the new message; delete the test "alpha 0.5 survives picking a new spot with an 8-digit hex"; in the tests at lines ~52 and ~125 use `page.locator("[data-picker-popover]")` as the "picker is open" marker instead of the alpha spinbutton (the click-by-position logic stays, with the popover as the box); add one test: open the picker on `color-accent` → the popover is visible, it contains at least one `input` or `button` of the picker itself (so an empty wrapper cannot pass), and `getByRole("spinbutton", { name: "alpha channel" })` has count 0; then typing `rgba(255, 0, 0, 0.5)` into the hex field keeps the old value and shows "Not a solid color — kept the old value."
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Browser specs are run by Claude afterwards.)
@@ -57,3 +57,25 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 (none open; Muse default-effort critic read 2026-10-04: "clear")
 
 ## Report
+- `bash scripts/verify-task.sh` → PASS (typecheck ✓ lint ✓ unit 65/65 design-system 36/36, 207 tests total) ✓
+- Rule transparent refused / solid normalise → broke `parsed.alpha() < 1` check → `colorEdit: transparent colors are refused, solid ones normalise` failed (35 pass/1 fail), restored → 36/36 pass ✓
+- Rule picker has no opacity field + typed transparent refused → new spec `picker shows no opacity field and typed rgba is refused` added; breaking `isAlpha={false}` or the error text still leaves `verify-task.sh` PASS, so the matching check is the browser spec (Not run by builder) — /Foundations manual check needed by Claude/owner
+- Claude after build: `lsof -i :3000 -i :5174` clear then `cd app && npm run test:e2e:workbench` → Not run (builder cannot run browser specs)
+- Decisions the spec didn't settle: unit test named `transparent colors are refused, solid ones normalise`; browser test named `picker shows no opacity field and typed rgba is refused`; alpha read via `parsed.alpha() < 1`; popover non-empty asserted via `popover.locator("input, button")` count > 0; error text reused for empty/unparseable per brief
+- Spec facts wrong: NONE
+- Noticed but not touched: `verify-task.sh` does not fail if `isAlpha={false}` or the new error text is reverted (only the browser specs cover those); left as-is per scope
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/colors.spec.ts                   | 42 ++++++++++------------
+ docs/work/feat-ds-workbench-no-opacity.md          | 20 ++++++++---
+ tools/Design_System/src/lib/colorEdit.test.ts      |  6 ++--
+ tools/Design_System/src/lib/colorEdit.ts           |  1 +
+ .../src/routes/foundations/+page.svelte            |  3 +-
+ 5 files changed, 40 insertions(+), 32 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 7s)
+  not run: e2e (11 specs; npm run test:e2e)
+pre-commit: OK
+```
