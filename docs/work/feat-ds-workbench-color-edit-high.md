@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-color-edit-high
 Next: builder run (high effort) of the shared brief; compare with the other run
-Written against: 0bac429
+Written against: c18a08c
 
 ## What changes for you
 
