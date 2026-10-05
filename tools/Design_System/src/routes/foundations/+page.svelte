@@ -238,7 +238,7 @@
 								<path d="M12 16v-4"></path>
 								<path d="M12 8h.01"></path>
 							</svg>
-							<span class="tooltip" aria-hidden="true">{tip}</span>
+							<span class="tooltip" aria-hidden="true" data-testid="tooltip">{tip}</span>
 						</button>
 					</div>
 					{#if pickerFor === token.path}

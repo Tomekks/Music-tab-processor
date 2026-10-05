@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-e2e
-Next: Claude reviews this brief, then one builder run; Claude then runs the specs and breaks each feature to prove they fail
+Next: run verify-task.sh, fill Report, run finish.sh (specs + 2 testids written; Claude runs specs next)
 Written against: bda5a25
 
 ## What changes for you
@@ -32,8 +32,8 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - Checked against code: labels `Pick a color for {varName}` and `Hex value for {varName}` exist at `+page.svelte:192,201`; tabs have `role="tab"` (`:170`); the tooltip is `aria-hidden` (`:241`), so it needs a `data-testid`.
 
 ## Steps
-- [ ] `helpers.ts`: `openFoundations(page)` (goto `/foundations`, wait for the Preview iframe and the first hex field); `hexField(page, varName)` and `swatch(page, varName)` using the labels `Hex value for <varName>` and `Pick a color for <varName>` (varName is shown without dashes, for example `color-accent`); `previewFrame(page)` (`page.frameLocator('iframe[title="Preview"]')`); `previewBg(page, role, name)` returning the computed `backgroundColor` of a preview element; `stageColor(page, varName, text)` (triple-click the field, type, press Enter)
-- [ ] `colors.spec.ts`, 10 tests, one behavior each, each starting from a fresh `openFoundations`; no test writes any file, and none depends on another test's state:
+- [x] `helpers.ts`: `openFoundations(page)` (goto `/foundations`, wait for the Preview iframe and the first hex field); `hexField(page, varName)` and `swatch(page, varName)` using the labels `Hex value for <varName>` and `Pick a color for <varName>` (varName is shown without dashes, for example `color-accent`); `previewFrame(page)` (`page.frameLocator('iframe[title="Preview"]')`); `previewBg(page, role, name)` returning the computed `backgroundColor` of a preview element; `stageColor(page, varName, text)` (triple-click the field, type, press Enter)
+- [x] `colors.spec.ts`, 10 tests, one behavior each, each starting from a fresh `openFoundations`; no test writes any file, and none depends on another test's state:
   1. typing `red` into `color-accent` shows `#ff0000`, the top bar says `1 unsaved change`, and an `Edited` label appears on that row
   2. typing `nonsense` keeps the old value and shows `Invalid color — kept the old value.`
   3. staging `color-accent` red turns the preview's primary Button AND primary IconButton backgrounds (Default column) to `rgb(255, 0, 0)` (proves the component variables follow)
@@ -44,8 +44,8 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
   8. the `Color` and `Focus` tabs switch the list (`Focus` shows only `focus-ring-color`); the word `semantic` appears nowhere in the list
   9. opening the picker does not move the row below it (compare its bounding box top before and after); clicking outside and pressing Escape each close it
   10. after two staged edits to the same token, the unsaved-changes panel shows the FILE value as the "was" color, not the first edit
-- [ ] Use only accessible labels, roles and visible text; add a `data-testid` in `+page.svelte` or `+layout.svelte` only when nothing else can find the element (expected: the tooltip, the changes panel). Never select by CSS class
-- [ ] Each test has a one-line comment naming the behavior it protects; no sleeps (use Playwright's auto-waiting and `expect(...).toBeVisible()` / `toHaveValue`)
+- [x] Use only accessible labels, roles and visible text; add a `data-testid` in `+page.svelte` or `+layout.svelte` only when nothing else can find the element (expected: the tooltip, the changes panel). Never select by CSS class
+- [x] Each test has a one-line comment naming the behavior it protects; no sleeps (use Playwright's auto-waiting and `expect(...).toBeVisible()` / `toHaveValue`)
 - [ ] Run `bash scripts/verify-task.sh` until PASS (it cannot run the specs; Claude runs them)
 
 ## Acceptance checks
@@ -62,6 +62,24 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 (none open)
 
 ## Report
-<Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
-per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
-anything noticed but not touched. Mark anything not run as `Not run`.>
+- Acceptance 1 `bash scripts/verify-task.sh` → PASS (app VERIFY: PASS 205 tests; workbench 36 tests; e2e-revisit: workbench specs changed with the UI) → ✓
+- Acceptance 2 `cd app && npm run test:e2e:workbench` (Claude runs) → Not run
+- Acceptance 3 Claude breaks each feature, matching test fails → Not run
+- Decisions the spec didn't settle: previewBg IconButton uses first `Play` button (primary Default comes first in Preview.tsx row order, no row scoping); picker color-area clicks use popover bounding-box offsets from the accessible `alpha channel` label (third-party picker area has no accessible name and third-party code cannot take a testid); tooltip testid is one shared `tooltip` per row (row coverage asserted by count vs hex fields); changes panel testid is `changes-panel`; test 8 asserts `semantic` count 0 page-wide (preview iframe content excluded).
+- Wrong spec facts: NONE (labels at +page.svelte:192,201, tab role at :170, tooltip aria-hidden at :241 all matched live code).
+- Noticed but not touched: `+layout.svelte` undo listens for metaKey+z only, so `ControlOrMeta+z` relies on Meta (fine on this Mac; may not fire under Control on Linux CI) — left as specced for Claude's run to confirm.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/colors.spec.ts                   | 161 +++++++++++++++++++++
+ app/e2e/workbench/helpers.ts                       |  42 ++++++
+ docs/work/feat-ds-workbench-e2e.md                 |  22 ++-
+ tools/Design_System/src/routes/+layout.svelte      |   2 +-
+ .../src/routes/foundations/+page.svelte            |   2 +-
+ 5 files changed, 219 insertions(+), 10 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 63/63 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (205 tests, 7s)
+  not run: e2e (11 specs; npm run test:e2e)
+pre-commit: OK
+```

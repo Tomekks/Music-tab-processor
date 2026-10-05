@@ -42,7 +42,7 @@
 			</button>
 			<button disabled>Save</button>
 			{#if showChanges}
-				<div class="changes">
+				<div class="changes" data-testid="changes-panel">
 					{#if changeCount > 0}
 						<div class="change-list">
 							{#each Object.entries(stagedStore.staged) as [path, entry] (path)}
