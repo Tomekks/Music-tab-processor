@@ -8,7 +8,7 @@ Verified live, end-to-end: `s01_ingest` → `s02_separate` → `s03_transcribe` 
 
 `.venv/bin/pytest pipeline/ -v` passes **13/13**. No known blocker.
 
-A security review is done (2026-09-08, no findings) — re-review if the app's shape changes (auth, forms, write paths, uploads); see `docs/PENDING_ACTIONS.md`.
+A security review is done (2026-09-08, no findings) — re-review if the app's shape changes (auth, forms, write paths, uploads); see `docs/old_workflow_docs/PENDING_ACTIONS.md`.
 
 No single mandated next step — pick from the backlog (`docs/BACKLOG.md`): local processing UI, CI, extending the metronome's playhead beyond Sheet, applying design tokens further, or Phase 0 Checkpoints 4/5.
 
@@ -70,4 +70,4 @@ Visit `http://localhost:3000` — the new song should appear in the list.
 
 (CI — `.github/workflows/ci.yml` — is live, not open anymore; removed from this list.)
 
-For the history behind any of this (relocation, doc restructuring, past incidents), see `docs/DRIFT_LOG.md` — this file only tracks what's true now.
+For the history behind any of this (relocation, doc restructuring, past incidents), see `docs/old_workflow_docs/DRIFT_LOG.md` — this file only tracks what's true now.

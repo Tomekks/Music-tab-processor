@@ -2,7 +2,7 @@
 
 The reasoning behind how this project is built, not just what was chosen. **This file is an index, not the full reasoning** — read this to get oriented and to know which topic file to open; the actual depth lives in `docs/decisions/`. Don't re-litigate anything here without a concrete new reason — these were arrived at deliberately, over several rounds of back-and-forth, not defaults.
 
-**This file must stay an index.** When a new decision is made or an existing one revised, the reasoning goes into the matching file in `docs/decisions/` (or a new one, following `docs/DOCUMENTATION_PRINCIPLES.md`) — not appended here.
+**This file must stay an index.** When a new decision is made or an existing one revised, the reasoning goes into the matching file in `docs/decisions/` (or a new one, following `docs/old_workflow_docs/DOCUMENTATION_PRINCIPLES.md`) — not appended here.
 
 **Each file in `docs/decisions/` carries a sequential number prefix** (stable citable ID, e.g. "see decision 0007") **and a `Status: accepted | superseded by <link>` + date line.** Alternatives considered stay prose, not a forced field — capped at ~500 characters per entry so it stays a reason, not an essay.
 
@@ -26,4 +26,4 @@ The reasoning behind how this project is built, not just what was chosen. **This
 
 **Agent workflow tooling** — the Superpowers Claude Code plugin (installed 2026-09-10, user-wide) is now the process driver for planning, TDD, debugging, code review, and verification, superseding this project's own ad hoc versions of those in `AGENTS.md`; this repo's safety rules and structural specifics (contracts, STATUS.md, the app/ deploy gate) stay untouched and take precedence over any skill. *Open if your task touches: how planning/testing/debugging/review actually happen now, or why `AGENTS.md` points at skill names instead of spelling out process.* → `docs/decisions/0009-agent-workflow-tooling.md`
 
-See also: `docs/AUDIOPROCESSINGTOOLS.md` (the living tool-research catalog, separate from the *decisions* made from it), `app/STATUS.md` (what's actually true right now, not why), and `docs/DOCUMENTATION_PRINCIPLES.md` (the standing rules this whole structure follows).
+See also: `docs/AUDIOPROCESSINGTOOLS.md` (the living tool-research catalog, separate from the *decisions* made from it), `app/STATUS.md` (what's actually true right now, not why), and `docs/old_workflow_docs/DOCUMENTATION_PRINCIPLES.md` (the standing rules this whole structure follows).
