@@ -52,7 +52,10 @@ if [ "${#ACTIVE[@]}" -eq 0 ]; then
     pf="$p$(basename "$p").md"
     [ -f "$pf" ] || continue
     ST="$(grep -m1 -E '^\*\*Status \(' "$pf" | sed -E 's/^\*\*Status \(([^)]*)\):\*\*[[:space:]]*/\1: /' | cut -c1-110)"
-    [ -z "$ST" ] || PEND="$PEND  $(basename "$p")  [$ST...]\n"
+    [ -z "$ST" ] && continue
+    PEND="$PEND  $(basename "$p")  [$ST...]\n"
+    NT="$(grep -m1 -E '^\*\*Next task:\*\*' "$pf" | sed -E 's/^\*\*Next task:\*\*[[:space:]]*//' | cut -c1-160)"
+    [ -z "$NT" ] || PEND="$PEND    next task: $NT\n"
   done
   [ -z "$PEND" ] || { echo "pending plans (no task file yet):"; printf "$PEND"; }
   [ "$NIDEAS" -eq 0 ] || { echo "ideas ($NIDEAS parked, newest last; file: $IDEAS_F):"; grep '^- ' "$IDEAS_F" | tail -8 | cut -c1-120 | sed 's/^/  /'; }
