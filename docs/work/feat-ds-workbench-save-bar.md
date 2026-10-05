@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: RE-RUN of the builder (the first run hit the 60-step limit and crashed after the code was built; committed as 939d8d8, verify and all 20 specs pass). Builder: do not rewrite working code; tick the Steps that are done, run `bash scripts/verify-task.sh`, fill the Report. Then Claude runs the owner checklist.
+Next: Builder re-run done (code kept from 939d8d8, verify-task PASS). Claude: run e2e workbench specs + owner checklist.
 Written against: 08d85d4 (code built in 939d8d8; re-run to finish the Report)
 
 ## What changes for you
@@ -44,12 +44,12 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - Not checked: `invalidateAll()` re-running `load` on a SvelteKit page (brief says this already; the Save spec "count back to nothing" will prove it end to end).
 
 ## Steps
-- [ ] Red then green, `saveState.test.ts` first: `buildSaveBody(staged, loadedVersion)` returns `{ edits: [{ path, value: now }], loadedVersion }`; `describeSaveFailure(code, error)` (`code` and `error` are the `code` and `error` strings of the endpoint's JSON reply, `save/+server.ts:13`; both may be undefined) returns `{ kind, message }`: `changed-on-disk` gives kind `"changed"` with a message naming `tokens.json` and saying nothing was written; `not-writable`, `write-failed` and `invalid` give kind `"failed"` with "Nothing was written." plus the server's text; an unknown or missing code gives the generic "Nothing was written." failure; `savedLabel(count, date)` returns `Saved 1 token 14:05` / `Saved 3 tokens 14:05` (24-hour, zero-padded); `discardedLabel(count)` returns `Discarded 1 change` / `Discarded 3 changes`. Then add `saveState.ts` (pure, no Svelte, no fetch).
-- [ ] Red then green, `colorTokens.test.ts` first: `accent` (alias in the real file) has `isAlias` true; a literal-hex token has `isAlias` false. Then add `isAlias` to `ColorToken`/`listColorTokens`.
-- [ ] `foundations/+page.svelte`: show "Will unlink from main" beside "Edited"/Reset for staged rows with `isAlias`; and an `$effect` calling `stagedStore.sync(data.tokens, data.version)` whenever `data` changes (nothing else in that page changes).
-- [ ] `routes/+layout.svelte`, replacing the disabled Save button, the seven states of `wireframes/save-states-v1`: (1) 0 changes: the existing "0 unsaved changes" count button stays (existing specs `colors.spec.ts:28,90,232` assert it), with no Discard or Save beside it; (2) unsaved: the existing "N unsaved changes" button, **Discard**, **Save**; (3) saving: Save and Discard both disabled (wireframe `save-states-v1` line 200, so the bar does not jump) and Save reads "Saving..."; (4) saved: `savedLabel` for 5 s, then clears; (5) discarded: `discardedLabel` plus **Undo** (`stagedStore.undo()`) for 5 s, cleared early when a new edit is staged; (6) failed: message stays until "Dismiss" or a Save works, **Retry save** replaces Save; (7) changed on disk: message naming `tokens.json`, **Review changes** (opens the existing changes list) and **Reload** (`await invalidateAll()`; `sync` keeps staged edits on top; afterwards the message is gone and the bar shows state 2, or state 1 if no edit is left). Save does `fetch("/api/save", { method: "POST", ... })` with `buildSaveBody` and `stagedStore.loadedVersion`; on `ok` it awaits `invalidateAll()` and then shows state 4 with the count the server returned; any failure (including `fetch` throwing or a non-JSON reply) shows state 6 or 7 from `describeSaveFailure`. Clear any pending timer before starting a new one. Accessible names are exactly "Save", "Discard", "Undo", "Retry save", "Reload", "Review changes", "Dismiss".
-- [ ] `app/e2e/workbench/save.spec.ts` plus a `resetBrandCopy()` helper in `helpers.ts` (copies the real `brands/default/tokens.json` over the file in `process.env.WORKBENCH_BRAND_DIR` before each test; throws if the variable is unset so a spec can never write the real file): stage `accent` and Save → "Saved 1 token", count back to nothing, the copy's `tokens.json` holds the new hex; Discard → "Discarded 1 change", field back to the file value, Undo brings the edit back; change the copy by hand while an edit is staged, Save → message naming `tokens.json`, copy unchanged by Save, Reload keeps the staged edit and the message disappears; make the copy read-only, Save → "Nothing was written", edit stays staged, `chmod` back, Retry save works; a stage while "Discarded" shows clears the Undo; staging `accent` shows "Will unlink from main" beside Reset.
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Red then green, `saveState.test.ts` first: `buildSaveBody(staged, loadedVersion)` returns `{ edits: [{ path, value: now }], loadedVersion }`; `describeSaveFailure(code, error)` (`code` and `error` are the `code` and `error` strings of the endpoint's JSON reply, `save/+server.ts:13`; both may be undefined) returns `{ kind, message }`: `changed-on-disk` gives kind `"changed"` with a message naming `tokens.json` and saying nothing was written; `not-writable`, `write-failed` and `invalid` give kind `"failed"` with "Nothing was written." plus the server's text; an unknown or missing code gives the generic "Nothing was written." failure; `savedLabel(count, date)` returns `Saved 1 token 14:05` / `Saved 3 tokens 14:05` (24-hour, zero-padded); `discardedLabel(count)` returns `Discarded 1 change` / `Discarded 3 changes`. Then add `saveState.ts` (pure, no Svelte, no fetch).
+- [x] Red then green, `colorTokens.test.ts` first: `accent` (alias in the real file) has `isAlias` true; a literal-hex token has `isAlias` false. Then add `isAlias` to `ColorToken`/`listColorTokens`.
+- [x] `foundations/+page.svelte`: show "Will unlink from main" beside "Edited"/Reset for staged rows with `isAlias`; and an `$effect` calling `stagedStore.sync(data.tokens, data.version)` whenever `data` changes (nothing else in that page changes).
+- [x] `routes/+layout.svelte`, replacing the disabled Save button, the seven states of `wireframes/save-states-v1`: (1) 0 changes: the existing "0 unsaved changes" count button stays (existing specs `colors.spec.ts:28,90,232` assert it), with no Discard or Save beside it; (2) unsaved: the existing "N unsaved changes" button, **Discard**, **Save**; (3) saving: Save and Discard both disabled (wireframe `save-states-v1` line 200, so the bar does not jump) and Save reads "Saving..."; (4) saved: `savedLabel` for 5 s, then clears; (5) discarded: `discardedLabel` plus **Undo** (`stagedStore.undo()`) for 5 s, cleared early when a new edit is staged; (6) failed: message stays until "Dismiss" or a Save works, **Retry save** replaces Save; (7) changed on disk: message naming `tokens.json`, **Review changes** (opens the existing changes list) and **Reload** (`await invalidateAll()`; `sync` keeps staged edits on top; afterwards the message is gone and the bar shows state 2, or state 1 if no edit is left). Save does `fetch("/api/save", { method: "POST", ... })` with `buildSaveBody` and `stagedStore.loadedVersion`; on `ok` it awaits `invalidateAll()` and then shows state 4 with the count the server returned; any failure (including `fetch` throwing or a non-JSON reply) shows state 6 or 7 from `describeSaveFailure`. Clear any pending timer before starting a new one. Accessible names are exactly "Save", "Discard", "Undo", "Retry save", "Reload", "Review changes", "Dismiss".
+- [x] `app/e2e/workbench/save.spec.ts` plus a `resetBrandCopy()` helper in `helpers.ts` (copies the real `brands/default/tokens.json` over the file in `process.env.WORKBENCH_BRAND_DIR` before each test; throws if the variable is unset so a spec can never write the real file): stage `accent` and Save → "Saved 1 token", count back to nothing, the copy's `tokens.json` holds the new hex; Discard → "Discarded 1 change", field back to the file value, Undo brings the edit back; change the copy by hand while an edit is staged, Save → message naming `tokens.json`, copy unchanged by Save, Reload keeps the staged edit and the message disappears; make the copy read-only, Save → "Nothing was written", edit stays staged, `chmod` back, Retry save works; a stage while "Discarded" shows clears the Undo; staging `accent` shows "Will unlink from main" beside Reset.
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Claude runs the specs.)
@@ -68,6 +68,14 @@ Looks and feel only (specs check behavior); this uses the real file, so the last
 
 ## Report
 
+### Builder re-run (2026-10-05, code kept from 939d8d8, no source rewrite)
+- `bash scripts/verify-task.sh` → verify-task: PASS ✓
+- Rule (failure kinds and labels) → `saveState.test.ts` asserts `kind` in every case plus `tokens.json` naming and "Nothing was written." text; covered by verify unit run ✓
+- Claude e2e + break-each-behavior + real `tokens.json` untouched → Not run (builder cannot run e2e; for Claude)
+- Decisions the spec didn't settle: NONE (no code changed in this re-run)
+- Spec fact wrong: NONE found in this re-run
+- Noticed but not touched: `git log` shows code commit 939d8d8 sits below docs commits 1844ff7..09219ca; drift check `git diff --stat 08d85d4..HEAD` shows only this task file, so Modify-only files are untouched since the build.
+
 ### Checkpoint (written by scripts/finish.sh)
 ```
  app/e2e/workbench/helpers.ts                       |  16 +++
@@ -85,4 +93,10 @@ VERIFY: PASS
   ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 5s)
   not run: e2e (12 specs; npm run test:e2e)
 pre-commit: OK
+```
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-save-bar.md | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
 ```
