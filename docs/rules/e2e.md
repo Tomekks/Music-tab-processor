@@ -7,8 +7,9 @@ Today: `workbench` (`cd app && npm run test:e2e:workbench`, specs in `app/e2e/wo
 ## Default step
 A task that changes watched UI runs the area's specs and adds or updates specs in the same task. `verify-task.sh`
 prints `e2e-revisit: NOTE ...` when watched UI changed and no spec did; answer it in the Report (specs added, or
-why none). The specs are not in `verify` (they need dev servers). The builder cannot run them: it writes them,
-Claude runs them and breaks each feature on purpose to see its test fail.
+why none). The specs are not in `verify` (they need dev servers). The builder writes the specs and runs them with `bash scripts/run-e2e.sh`
+(port check, run, cleanup, PASS/FAIL line). Claude reads that line and, only on a FAIL, the log. The brief names which
+feature to break on purpose and which spec must go red; the builder does that check and reverts it.
 
 ## Revisit the specs when
 - a label or role the specs find elements by is renamed;

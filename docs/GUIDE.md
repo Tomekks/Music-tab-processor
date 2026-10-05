@@ -4,7 +4,7 @@ If you're an AI agent with no memory of this project, the real entry point is [`
 
 ## The reading policy — read this part first
 
-Several documents in this project are **indexes**, not the full content: `docs/DECISIONS.md`, `app/STATUS.md`, and `docs/AUDIOPROCESSINGTOOLS.md`. Each summarizes its topics in a couple of sentences and tells you exactly which file to open next if your task actually touches that topic. **Read the index in full; open a topic file only when the index tells you to.** This is deliberate, not an accident of growth — see `docs/DOCUMENTATION_PRINCIPLES.md` for the full reasoning and the standing rules that keep it this way.
+Several documents in this project are **indexes**, not the full content: `docs/DECISIONS.md`, `app/STATUS.md`, and `docs/AUDIOPROCESSINGTOOLS.md`. Each summarizes its topics in a couple of sentences and tells you exactly which file to open next if your task actually touches that topic. **Read the index in full; open a topic file only when the index tells you to.** This is deliberate, not an accident of growth — see `docs/old_workflow_docs/DOCUMENTATION_PRINCIPLES.md` for the full reasoning and the standing rules that keep it this way.
 
 Everything else in this project follows **the three homes** principle: *why* something was decided lives in `docs/decisions/`; *what's true right now* lives in `app/status/` or a pipeline stage's own `STATUS.md`; *exactly how something behaves or renders* lives in that component's own `RULES.md`. A single fact has exactly one correct home — if you're about to write down something you already wrote elsewhere, you're probably in the wrong file.
 
@@ -17,7 +17,6 @@ CLAUDE.md                  — points Claude Code specifically at the above
 
 docs/
   GUIDE.md                 — this file: how the docs are organized
-  GOVERNING_DOCS_CHECKLIST.md — a tiered snapshot of every governing doc, for a manual audit; not maintained, may drift
   ARCHITECTURE.md          — what's actually built, how data flows (a diagram)
   BACKLOG.md               — ideas under consideration: dump, triage, prioritize
   DECISIONS.md             — index → docs/decisions/
@@ -28,16 +27,11 @@ docs/
     transcription.md
     tab-generation.md
     ingestion.md
-  DOCUMENTATION_PRINCIPLES.md — the standing rules this map itself follows
-  DRIFT_CHECK.md            — the audit procedure (read in full, a checklist)
-  DRIFT_LOG.md               — history of every audit run (skim the tail)
-  AGENT_TOOLING_LOG.md      — plugins/skills installed into the coding agent (skim the tail)
-  SESSION_HANDOFF.md         — how to pause/switch AI sessions cleanly
-  DEVELOPMENT_PROCESS.md     — the full change process end to end, LIVE vs PLANNED
-  plans/                     — one folder per plan (docs/plans/<slug>/), plan doc + its own
+  old_workflow_docs/         — the previous process docs, kept for history; not current (everything in it predates AGENTS.md's flow)
+  plans/                     — open plans only: one folder per plan (docs/plans/<slug>/), plan doc + its own
                                task specs together; superpowers:writing-plans still writes them
+  plans/done_and_committed/  — finished plans that are committed; history, not current
   plans/specs/                — one-off specs with no parent plan
-  PENDING_ACTIONS.md         — what only a human can actually go do
 
 app/
   STATUS.md                 — index → app/status/

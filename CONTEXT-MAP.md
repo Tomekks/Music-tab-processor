@@ -8,6 +8,6 @@
 
 ## Relationships
 
-- **Planning methodology → Design System**: Design System work is planned and speced using Planning-methodology vocabulary (e.g. `docs/plans/2026-09-23-design-system-brand-management/`), same as any other domain in this repo.
+- **Planning methodology → Design System**: Design System work is planned and speced using Planning-methodology vocabulary (e.g. `docs/plans/done_and_committed/2026-09-23-design-system-brand-management/`), same as any other domain in this repo.
 - **Control Center → Design System**: Design System is an Integrated tool from Control Center's perspective — Control Center links out to its existing UI (`app/app/design-system`), it doesn't rebuild it. Control Center also consumes the Design System's generated CSS output directly for its own visual styling.
 - **Control Center → Planning methodology**: Control Center's own build is itself a Plan (`docs/plans/2026-09-24-control-center/`); its eventual "Oversight" native module is a *visualization* of Planning-methodology concepts (Plan/Task/Spec), not a new domain of its own.

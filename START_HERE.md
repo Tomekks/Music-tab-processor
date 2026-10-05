@@ -13,7 +13,7 @@ If you are an AI model or agent picking up this project with no memory of any pr
 5. `docs/AUDIOPROCESSINGTOOLS.md` — same pattern: an index into `docs/audio-tools/`, so research doesn't restart from zero.
 6. `research/00_spike/RESULTS.md` and each `pipeline/*/STATUS.md` — the actual current state: what's been tried, what works, what's next.
 
-See `docs/GUIDE.md` for the full map of where everything lives, and `docs/DOCUMENTATION_PRINCIPLES.md` for why the docs are shaped this way.
+See `docs/GUIDE.md` for the full map of where everything lives, and `docs/old_workflow_docs/DOCUMENTATION_PRINCIPLES.md` for why the docs are shaped this way.
 
 ## 2. Prove you actually oriented — the walk test
 

@@ -12,6 +12,7 @@ Run `bash scripts/start.sh ""` to find the active task file, then:
 6. Record usage: read `get_usage` and run `bash scripts/measure.sh mark <task> session-end "5h=<n> weekly=<n> ctx=<n>"`, then `bash scripts/measure.sh report <task>` and put its total line in `Next:` or the Report.
 7. Commit only the task file as a checkpoint (`git add docs/work/<task>.md`, one commit). Do not push.
 8. Rename this chat session with `set_session_title` (pass `session_id: "self"`) to `<task id> <short name>: <state>` (for example `1e Foundations page: brief reviewed`; state = done, building, waiting on owner), so the session list shows where each task stands. If the call is refused or fails, say so and continue.
-9. Report in 3 lines: what is done, what is left, what the owner does first next time.
+9. Parked ideas: if `start.sh` printed an `ideas:` line, read that file (path is on the line) and show the owner the numbered ideas. For each, say in a few words whether this task's work finished it (cite the commit or file), or "no evidence". Ask which to remove, and delete only the lines the owner names, one yes per wrap (an idea you think is done is a suggestion, never removed unasked). No `ideas:` line: skip.
+10. Report in 3 lines: what is done, what is left, what the owner does first next time.
 
 If anything unrelated is uncommitted, name it but do not touch it.

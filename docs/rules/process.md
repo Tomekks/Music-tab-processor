@@ -15,9 +15,9 @@ at a real seam.
    do it, run verify, commit. Risk triggers: deletes data or files, touches `contracts/`, shell or
    network, schema, deploy, secrets. A bug: reproduce it and state the root cause with evidence
    before any fix brief.
-2. **Brief.** Claude drafts a task file (trial 2026-10-04, scorecard "Brief critics"): `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of plain logic, `TEMPLATE.md` for any risk
+2. **Brief.** First `git branch --no-merged master` and `git worktree list`: an open branch touching the same files is merged first or named in the brief. Claude drafts a task file (trial 2026-10-04, scorecard "Brief critics"): `TEMPLATE-quick.md` (`new-worktree.sh --quick`) for 1-3 files of plain logic, `TEMPLATE.md` for any risk
    trigger, UI, audio or 4+ files. Then one blind cold read per critic: `BUILDER_MODEL=<model> delegate.sh
-   <task> --critique` (Muse `#low`, then deepseek-v4.1-flash if needed; 5 questions max; copy `## Questions`
+   <task> --critique` (Muse at its default effort, then deepseek-v4.1-flash at its default effort if needed; 5 questions max; copy `## Questions`
    out between critics). Claude fixes only gaps where the builder would have to guess; takes a CUT: only if nothing breaks without it. First block is
    **"What changes for you"**; the owner approves it. The brief also states files touched (N), risk triggers,
    expected size, acceptance checks (`Run:` / `Expected:`), and the owner's checklist. `scripts/check-brief.sh`
@@ -33,12 +33,12 @@ at a real seam.
    confirmed. Verify a review's claims against the code before acting on them; a critique can be false.
 4. **Build** with `scripts/run-builder.sh <task file>` in its own worktree for any Bounded-or-larger
    feature; trivial fixes stay on the current branch (`docs/rules/executor.md`).
-5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`); UI in an e2e area also runs its specs (`docs/rules/e2e.md`).
+5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`); UI in an e2e area also runs `scripts/run-e2e.sh` (`docs/rules/e2e.md`).
 6. **Report.** Every report: commit, `git diff --stat`, verify footer, "decisions the spec didn't
    settle" (or NONE). Extras by kind: feature = one line per acceptance check + owner checklist; bug fix =
    root cause with evidence + the test that failed first; UI = layout checks + checklist; risky =
    `file:line` of each guard + risk→test map. Then one scorecard line.
-7. **Owner tests** the checklist (written up front). A check that writes to disk includes its revert.
+7. **Owner tests** the checklist (written up front): it opens with the launch block (free-port check, start, stop; one command per block), then human checks only; a check a spec covers is marked "automated". A check that writes to disk includes its revert.
 8. **Ship.** A task's own local checkpoint commit: commit and report. Push, PR, deploy: ask. After an
    `app/` change: preview with `npm run stage`, then ask exactly: push to git / push & deploy / skip.
    Deploy from the repo root. CI requires the `verify` check on PRs.

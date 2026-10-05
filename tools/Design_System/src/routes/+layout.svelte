@@ -3,6 +3,8 @@
 	import { page } from "$app/state";
 	import { COMPONENTS } from "$lib/registry.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
+	// @ts-ignore - untyped package helper (checkJs is off by owner decision)
+	import { cssVarNameForPath } from "../../../../app/packages/design-system/src/css-var-naming.mjs";
 
 	let { children }: { children: Snippet } = $props();
 
@@ -12,6 +14,13 @@
 		changeCount === 1 ? "1 unsaved change" : `${changeCount} unsaved changes`
 	);
 	let showChanges = $state(false);
+
+	function changeVarName(path: string): string {
+		const cssVar = cssVarNameForPath(path) as string | null;
+		if (typeof cssVar === "string" && cssVar.startsWith("--")) return cssVar.slice(2);
+		if (typeof cssVar === "string") return cssVar;
+		return path;
+	}
 
 	function onKey(event: KeyboardEvent) {
 		if (!event.metaKey || event.key.toLowerCase() !== "z") return;
@@ -46,21 +55,26 @@
 					{#if changeCount > 0}
 						<div class="change-list">
 							{#each Object.entries(stagedStore.staged) as [path, entry] (path)}
+								{@const varName = changeVarName(path)}
 								<div class="change-row">
-									<div class="change-path">{path}</div>
-									<div class="change-values">
-										<span
-											aria-hidden="true"
-											style="display: inline-block; width: 16px; height: 16px; background: {entry.was}; border: 1px solid #e0e0e0;"
-										></span>
-										<code>{entry.was}</code>
-										<span>→</span>
-										<span
-											aria-hidden="true"
-											style="display: inline-block; width: 16px; height: 16px; background: {entry.now}; border: 1px solid #e0e0e0;"
-										></span>
-										<code>{entry.now}</code>
-									</div>
+									<code>{varName}</code>
+									<span
+										aria-hidden="true"
+										style="display: inline-block; width: 32px; height: 32px; background: {entry.was}; border: 1px solid #e0e0e0;"
+									></span>
+									<code>{entry.was}</code>
+									<span>→</span>
+									<span
+										aria-hidden="true"
+										style="display: inline-block; width: 32px; height: 32px; background: {entry.now}; border: 1px solid #e0e0e0;"
+									></span>
+									<code>{entry.now}</code>
+									<button
+										type="button"
+										class="reset"
+										aria-label="Reset {varName} in changes"
+										onclick={() => stagedStore.stage(path, entry.was, entry.was)}
+									>Reset</button>
 								</div>
 							{/each}
 						</div>
@@ -137,7 +151,8 @@
 		top: 100%;
 		right: 0;
 		z-index: 10;
-		min-width: 360px;
+		width: max-content;
+		max-width: calc(100vw - 32px);
 		max-height: 320px;
 		overflow-y: auto;
 		background: #ffffff;
@@ -153,6 +168,10 @@
 	}
 
 	.change-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		white-space: nowrap;
 		padding: 12px 0;
 		border-bottom: 1px solid #e0e0e0;
 	}
@@ -161,15 +180,14 @@
 		border-bottom: none;
 	}
 
-	.change-path {
-		font-weight: 700;
-		margin-bottom: 4px;
-	}
-
-	.change-values {
-		display: flex;
-		align-items: center;
-		gap: 8px;
+	.reset {
+		font-size: 12px;
+		color: #666666;
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 
 	.empty-changes {

@@ -11,7 +11,8 @@ task() { # <paths...>: a minimal valid brief whose Modify only lists the given p
 expect() { # <label> <want: OK|BLOCKED> <paths...>
   label="$1"; want="$2"; shift 2; task "$@"
   out="$(bash scripts/check-brief.sh "$T/t.md" 2>&1)"
-  if [ "$want" = OK ]; then echo "$out" | grep -q "check-brief: OK" && echo "ok   $label" || { echo "FAIL $label: $out"; fail=1; }
+  if [ "$want" = FULLPATH ]; then echo "$out" | grep -q "not a full path" && echo "ok   $label" || { echo "FAIL $label: $out"; fail=1; }
+  elif [ "$want" = OK ]; then echo "$out" | grep -q "check-brief: OK" && echo "ok   $label" || { echo "FAIL $label: $out"; fail=1; }
   else echo "$out" | grep -q "BLOCKED for the builder" && echo "ok   $label" || { echo "FAIL $label: $out"; fail=1; }; fi
 }
 expect "a normal source file is allowed"            OK      tools/Design_System/src/lib/a.ts
@@ -22,4 +23,7 @@ expect "a script is refused"                        BLOCKED scripts/new.sh
 expect "a rules doc is refused"                     BLOCKED docs/rules/review.md
 expect "a task file under docs/work is allowed (last rule wins)" OK docs/work/some-task.md
 expect "one blocked path among good ones is refused" BLOCKED tools/x/a.ts tools/x/b.config.js
+expect "a bare file name that does not exist at the root is refused (verify-task would call it missing)" FULLPATH tools/x/a.ts previewHeight.ts
+expect "a bare name that exists at the repo root (README.md) is allowed" OK README.md
+expect "a path with spaces is refused" FULLPATH "tools/x/a b.ts"
 exit $fail

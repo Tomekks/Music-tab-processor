@@ -4,7 +4,7 @@
 #   --critique: the builder reads the brief cold and writes at most 5 questions (or "clear") under ## Questions.
 #               Nothing is built or committed. One round: Claude amends, then runs without the flag.
 # Env:   BUILDER_MODEL (default muse); everything run-builder.sh accepts.
-# Exit:  0 built and checked | 1 built but failed a check | 2 stopped before the model ran (incl. a failing scope pre-flight) | 3 model down
+# Exit:  0 built and checked | 1 built but failed a check, or the builder did not finish and auto-finish committed it | 2 stopped before the model ran (incl. a failing scope pre-flight) | 3 model down
 # A model switch is never automatic: on 3, ask the owner, then re-run with BUILDER_MODEL set.
 set -uo pipefail
 TASK="${1:?usage: scripts/delegate.sh <task-file> [--critique]}"
@@ -50,9 +50,23 @@ fi
 
 # Facts, checked here rather than taken from the builder's own report.
 FAIL=0; REASON=""
-if [ "$(git rev-parse HEAD)" = "$START" ]; then FAIL=1; REASON="no commit made (builder did not finish)"; fi
-SCOPE="$(bash scripts/check-scope.sh "$TASK" 2>&1)" || { FAIL=1; REASON="${REASON:+$REASON; }out of scope"; }
-VERIFY="$(bash scripts/verify-task.sh 2>&1)" || { FAIL=1; REASON="${REASON:+$REASON; }verify failed"; }
+NOCOMMIT=0; [ "$(git rev-parse HEAD)" = "$START" ] && NOCOMMIT=1
+SCOPE="$(bash scripts/check-scope.sh "$TASK" 2>&1)"; SOK=$?
+VERIFY="$(bash scripts/verify-task.sh 2>&1)"; VOK=$?
+# The builder edited files but never committed (history: an API crash at the very end, after the code passed). If scope and
+# verify pass and something besides the task file changed, run finish.sh here. The run still counts as "not first try".
+BUILT="$(git status --short | grep -v "^.. ${TASK}$" | grep -c . || true)"
+if [ "$NOCOMMIT" -eq 1 ] && [ "$SOK" -eq 0 ] && [ "$VOK" -eq 0 ] && [ "${BUILT:-0}" -gt 0 ]; then
+  if FIN="$(bash scripts/finish.sh "$TASK" 2>&1)"; then
+    echo "delegate: AUTO-FINISH: the builder did not commit (crash or stop); scope and verify passed, so finish.sh ran. Read the diff and write the Report."
+    NOCOMMIT=0; FAIL=1; REASON="builder did not finish; auto-finish committed it"
+  else
+    echo "delegate: auto-finish tried and failed:"; printf '%s\n' "$FIN" | tail -5
+  fi
+fi
+if [ "$NOCOMMIT" -eq 1 ]; then FAIL=1; REASON="no commit made (builder did not finish)"; fi
+[ "$SOK" -eq 0 ] || { FAIL=1; REASON="${REASON:+$REASON; }out of scope"; }
+[ "$VOK" -eq 0 ] || { FAIL=1; REASON="${REASON:+$REASON; }verify failed"; }
 
 echo "delegate: $([ "$FAIL" -eq 0 ] && echo PASS || echo "FAIL ($REASON)")  model: $MODEL"
 echo "scope:    $(printf '%s\n' "$SCOPE" | head -3 | tr '\n' ' ')"

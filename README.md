@@ -1,28 +1,63 @@
+<!-- AI agents: read START_HERE.md before doing anything else. This README is written for human visitors. -->
+
 # TabbyTab
 
-**If you are an AI model or agent:** read [`START_HERE.md`](START_HERE.md) before doing anything else. It tells you exactly what to read, in what order, and how to prove you actually understood it before touching any code.
+Turns a song into guitar tab, a fretboard view and sheet music.
 
-A personal tool that turns a song recording into a playable, beginner-friendly guitar tab: upload or point at a song, get back a tab you can actually play along to — close enough to the real riff to be satisfying, not a note-perfect transcription. Built by a beginner guitarist who kept running into songs with no tab, or no tab matched to their skill level.
+> AI transcription of guitar audio is still an unsolved problem. I built a full-stack app with an ML audio pipeline around that limitation, turning any song into sheet music I could play along.
 
-**Live at:** [app-six-psi-70.vercel.app](https://app-six-psi-70.vercel.app)
+![TabbyTab web app showing a song as tab, fretboard and sheet music](docs/images/hero.webp)
+
+**[Try the live app](https://tabbytab.mrbenchman.com/)** · **[Read the case study](https://www.mrbenchman.com/tabbytab)**
+
+## What this is
+
+This is a project for me to learn how to build product agentically. I direct AI to do the building, and I keep changing how that works: the rules, the skills, the tools, even the tech stack. Every session is a chance to try something, see what breaks, and fix the process rather than just the code.
+
+The end goal is a tool I actually use. I'm a beginner guitarist who likes melodic rock and jazz, and I wanted to learn my favorite songs without paying for transcriptions or squinting at hand-typed tabs.
+
+So the app is real, but the repo is mostly a record of how I'm learning to work.
 
 ## What it does
 
-- Converts a song recording into three ways to read it: ASCII tab, a fretboard diagram, and standard sheet music notation
-- A metronome synced to the track's tempo, with loop practice for a specific section
-- A flippable fretboard orientation and a cover-art/artist lookup for each song
+- Takes song audio and produces ASCII tab, a fretboard view and sheet music
+- Plays along with a tempo-synced metronome, with a loop for any section
+- Flips the string order if you read tab the other way up
+- Looks up cover art and artist info for each song
 
-Turning a recording into a note-perfect tab is a genuinely unsolved research problem — algorithms still struggle to separate a single instrument's audio out of a full mix, especially guitar in a distorted rock mix. So this project doesn't chase perfect accuracy; it aims for "recognizable enough to play along to."
+The output is approximate. It's recognizable, not accurate, and good enough to play along to. That's a limit of the models, and the app is built around it instead of pretending it isn't there.
+
+## How it's put together
+
+Two halves, split on purpose.
+
+![System architecture: a local Python audio pipeline feeding a Next.js web app](docs/images/architecture.webp)
+
+**Local audio pipeline.** Python, running on my MacBook. It separates the guitar from the rest of the mix, then turns that audio into notes. Heavy processing stays on my machine because it's free there and slow everywhere else.
+
+**Web app.** Next.js and TypeScript, with Drizzle and Turso for storage, Tailwind for styling, and Vercel for hosting. It stores and displays what the pipeline produces.
+
+**Stack:** Next.js, TypeScript, Drizzle ORM, Turso, Tailwind, Vercel, Python, htdemucs, Basic Pitch
 
 ## How it's built
 
-- **Pipeline (local, Python):** audio ingestion → instrument separation (`htdemucs`) → note extraction (Basic Pitch) → tab generation, run on a MacBook, never in the cloud
-- **App:** Next.js + TypeScript, [Turso](https://turso.tech) (libSQL) via Drizzle ORM, deployed on Vercel
+Claude handles planning, reasoning and verification. OpenCode models do the execution. Around that sits a set of rules, pre-commit hooks, Dependabot and CI on GitHub Actions.
 
-## The second purpose
+The docs are part of the experiment. I recently restructured them and cut the word count by 85%, because agents work better with less to read, and so do I.
 
-This is also a public demonstration of directing AI coding agents as a designer, not a professional software engineer — the repo structure and documentation are as much a part of the deliverable as the running app. Claude does the planning and review; execution models do the implementation, under a small set of hard rules (see [`AGENTS.md`](AGENTS.md)) earned from real mistakes along the way, not written in the abstract.
+## Status
 
-Two docs to start with:
-- [`docs/GUIDE.md`](docs/GUIDE.md) — what this project is and how it's organized, in plain language.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how data flows through the system, with a link to the live diagram.
+Work in progress, and the developer experience comes first because it makes everything else faster.
+
+- [x] Web app and audio pipeline, working
+- [ ] Control centre, first iteration
+- [ ] Design system and UI
+- [ ] Rewrite of the web app and audio processing
+
+## What this isn't
+
+A package for other people to install. It runs on my machine with my setup, so there are no install steps and no contribution guide. You're welcome to read the code and the case study, or just try the live app.
+
+## About me
+
+I'm Toms, a product designer. Find me on [LinkedIn](https://www.linkedin.com/in/toms-varpins/) or at [my portfolio](https://www.mrbenchman.com/).

@@ -23,7 +23,7 @@ app/app/_components`), not here.
   deleted; `spotifyArtist`/`spotifyUrl` are plain DB columns
   (`app/db/schema.ts`) read like any other song field. DB artist always wins
   over Spotify's when present. See
-  `docs/plans/2026-09-18-spotify-lookup-at-publish-time/2026-09-18-spotify-lookup-at-publish-time.md`
+  `docs/plans/done_and_committed/2026-09-18-spotify-lookup-at-publish-time/2026-09-18-spotify-lookup-at-publish-time.md`
   for why.
 
 ## Known follow-ups (not yet done)
