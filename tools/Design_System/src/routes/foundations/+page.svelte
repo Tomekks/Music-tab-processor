@@ -5,7 +5,7 @@
 	import { normalizeColor } from "$lib/colorEdit.js";
 	import { previewVars } from "$lib/stagedEdits.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
-	import { readPreviewHeight } from "$lib/previewHeight.js";
+	import { isPreviewReady, readPreviewHeight } from "$lib/previewHeight.js";
 
 	let { data }: { data: PageData } = $props();
 
@@ -80,6 +80,10 @@
 
 	onMount(() => {
 		const onMessage = (event: MessageEvent) => {
+			if (isPreviewReady(event.origin, event.source, frame?.contentWindow, event.data)) {
+				sendTokens();
+				return;
+			}
 			const height = readPreviewHeight(
 				event.origin,
 				event.source,

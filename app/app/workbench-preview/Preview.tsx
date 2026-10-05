@@ -99,6 +99,8 @@ export default function Preview() {
       }
     };
     window.addEventListener("message", onMessage);
+    // Tell the workbench the listener exists, so it re-sends any staged colors (its iframe `load` can fire before this).
+    window.parent.postMessage({ type: "preview-ready" }, WORKBENCH_ORIGIN);
     return () => {
       window.removeEventListener("message", onMessage);
       style.remove();
