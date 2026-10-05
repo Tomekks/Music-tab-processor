@@ -3,7 +3,7 @@
 Status: active
 Branch: feat/ds-workbench-color-polish3
 Next: builder run (ONE run, muse #high), then Claude runs e2e and mutation checks, then owner checklist. 1g0 merged to master (9f57283); brief reduced to remove Reset-on-row.
-Written against: 1776984
+Written against: 4bc3889
 Template: quick
 
 ## What changes for you
