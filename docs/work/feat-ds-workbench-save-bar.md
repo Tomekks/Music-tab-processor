@@ -2,16 +2,20 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: wait for 1g0 and 1g to be merged to master; then merge master here, refresh "Written against", run /review, then critics, then builder
-Written against: 50c9ea2 (DRAFT: refresh after 1g0 and 1g are merged; line numbers below are from before them)
+Next: run /review (level 1), then critics, then builder
+Written against: 9edd6f8 (master with 1g0 and 1g merged; refreshed 2026-10-05)
 
 ## What changes for you
 The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes your staged color edits to `tokens.json` through the endpoint from 1g, then the page reloads the file; the status slot says "Saved N tokens HH:MM" for 5 seconds and clears. Discard clears the staged edits and says "Discarded N changes" with an **Undo** for 5 seconds. If the file changed on disk since the page loaded, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file and keeps your edits on top). If the file is read-only or the write fails, the message says nothing was written, stays until you press **Dismiss** or a retry works, your edits stay staged, and **Retry save** replaces Save. After this task the browser specs also cover Save, Discard, Undo and both failure states, against a throwaway copy of the brand folder, never the real `tokens.json`.
+
+Decision 2026-10-05: on an edited row whose token is linked to a primitive (value like `{primitive.color.x}` in the file), show "Will unlink from main" next to "Edited"/Reset. Saving it replaces the link with its own hex and never changes the primitive (kept deliberately). Decided: `listColorTokens` gains `linkedTo: string | null` (the path inside `{...}` when `descriptor.rawValue` is an alias, else null); the page shows the label when the row is staged and `linkedTo` is set. Reconnect-to-main is parked for slice 2.
 
 ## Scope
 **Setup done by Claude before the build (the builder cannot edit config):** `app/playwright.workbench.config.ts` creates a copy of `brands/default` in the OS temp folder when the config loads, sets `process.env.WORKBENCH_BRAND_DIR` to it (so the workbench server, started by the same config, and the specs both see it), and nothing else changes.
 
 **Modify only:**
+- `tools/Design_System/src/lib/server/colorTokens.ts` 
+- `tools/Design_System/src/lib/server/colorTokens.test.ts`
 - `tools/Design_System/src/lib/saveState.ts`
 - `tools/Design_System/src/lib/saveState.test.ts`
 - `tools/Design_System/src/routes/+layout.svelte`
@@ -26,7 +30,7 @@ The top bar gets a working **Save** button and a **Discard** link beside "N unsa
 **Delete (approved with this brief):** None.
 
 ## Size
-Files touched: 6. Expected diff: ~400 lines. New tests: ~8 unit, ~7 browser.
+Files touched: 8. Expected diff: ~450 lines. New tests: ~8 unit, ~7 browser.
 
 ## Risk
 Triggers: none added by this task (it calls the 1g endpoint; specs write only to the temp copy). Review level: 1.
@@ -36,7 +40,8 @@ Triggers: none added by this task (it calls the 1g endpoint; specs write only to
 
 ## Steps
 - [ ] Red then green, `saveState.test.ts` first: `buildSaveBody(staged, loadedVersion)` returns `{ edits: [{ path, value: now }], loadedVersion }`; `describeSaveFailure(code, error)` returns `{ kind, message }`: `changed-on-disk` gives kind `"changed"` with a message naming `tokens.json` and saying nothing was written; `not-writable`, `write-failed` and `invalid` give kind `"failed"` with "Nothing was written." plus the server's text; an unknown or missing code gives the generic "Nothing was written." failure; `savedLabel(count, date)` returns `Saved 1 token 14:05` / `Saved 3 tokens 14:05` (24-hour, zero-padded); `discardedLabel(count)` returns `Discarded 1 change` / `Discarded 3 changes`. Then add `saveState.ts` (pure, no Svelte, no fetch).
-- [ ] `foundations/+page.svelte`: an `$effect` calling `stagedStore.sync(data.tokens, data.version)` whenever `data` changes (nothing else in that page changes).
+- [ ] Red then green, `colorTokens.test.ts` first: `accent` (alias in the real file) has `linkedTo` `primitive.color.accent`; a literal-hex token has `linkedTo` null. Then add `linkedTo` to `ColorToken`/`listColorTokens`.
+- [ ] `foundations/+page.svelte`: show "Will unlink from main" beside "Edited"/Reset for staged rows with `linkedTo`; and an `$effect` calling `stagedStore.sync(data.tokens, data.version)` whenever `data` changes (nothing else in that page changes).
 - [ ] `routes/+layout.svelte`, replacing the disabled Save button, the seven states of `wireframes/save-states-v1`: (1) 0 changes: nothing; (2) unsaved: the existing "N unsaved changes" button, **Discard**, **Save**; (3) saving: Save disabled and reads "Saving..."; (4) saved: `savedLabel` for 5 s, then clears; (5) discarded: `discardedLabel` plus **Undo** (`stagedStore.undo()`) for 5 s, cleared early when a new edit is staged; (6) failed: message stays until "Dismiss" or a Save works, **Retry save** replaces Save; (7) changed on disk: message naming `tokens.json`, **Review changes** (opens the existing changes list) and **Reload** (`await invalidateAll()`; `sync` keeps staged edits on top). Save does `fetch("/api/save", { method: "POST", ... })` with `buildSaveBody` and `stagedStore.loadedVersion`; on `ok` it awaits `invalidateAll()` and then shows state 4 with the count the server returned; any failure (including `fetch` throwing or a non-JSON reply) shows state 6 or 7 from `describeSaveFailure`. Clear any pending timer before starting a new one. Accessible names are exactly "Save", "Discard", "Undo", "Retry save", "Reload", "Review changes", "Dismiss".
 - [ ] `app/e2e/workbench/save.spec.ts` plus a `resetBrandCopy()` helper in `helpers.ts` (copies the real `brands/default/tokens.json` over the file in `process.env.WORKBENCH_BRAND_DIR` before each test; throws if the variable is unset so a spec can never write the real file): stage `accent` and Save → "Saved 1 token", count back to nothing, the copy's `tokens.json` holds the new hex; Discard → "Discarded 1 change", field back to the file value, Undo brings the edit back; change the copy by hand while an edit is staged, Save → message naming `tokens.json`, copy unchanged by Save, Reload keeps the staged edit; make the copy read-only, Save → "Nothing was written", edit stays staged, `chmod` back, Retry save works; a stage while "Discarded" shows clears the Undo.
 - [ ] Run `bash scripts/verify-task.sh` until PASS
