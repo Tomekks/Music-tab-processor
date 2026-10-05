@@ -40,6 +40,9 @@ if echo "$CHANGED" | grep -q '^tools/Design_System/'; then
   echo "$OUT" | tail -n 8
 fi
 
+# Browser-test reminder: UI an e2e area watches changed without a spec change (a note, never a failure).
+printf '%s\n' "$CHANGED" | bash scripts/e2e-revisit.sh
+
 # The task's deliverables must exist: every `Modify only` path is present on disk.
 if [ -n "$TASK" ]; then
   # shellcheck disable=SC2016  # the backticks are literal: paths are written `like this`
