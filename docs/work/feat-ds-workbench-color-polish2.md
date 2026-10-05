@@ -2,13 +2,8 @@
 
 Status: active
 Branch: feat/ds-workbench-color-polish
-Next: Owner clarifies scope gaps below, then builder resumes
+Next: builder run 2 at high effort (the first run stopped on two missing files)
 Written against: d8fb6b7
-
-## Questions
-- Q1 (blocks picker undo): `pick()` must call `stageEdit` with `replace`, but the store that owns history (`tools/Design_System/src/lib/staged.svelte.ts`, `stage()` → `stageEdit()`) is NOT in `Modify only`, so the flag has no path through. Should `staged.svelte.ts` be added to scope to forward an optional `replace` arg (default `false`)?
-- Q2 (blocks picker alpha): keeping 8-digit hex "through `normalizeColor`" requires changing `tools/Design_System/src/lib/colorEdit.ts` (`normalizeColor` currently does `parsed.alpha(1).toHex()`, forcing opaque), which is NOT in `Modify only`. Should `colorEdit.ts` be added to scope? If not, is a `+page.svelte`-only alpha-append hack acceptable instead?
-- Drift check note: `git status --porcelain` is outside this session's allowed shell (only `bash scripts/verify-task.sh` / `finish.sh` permitted), so the porcelain check was not run; the three quoted excerpts (`stagedEdits.ts:38` was-line, `+page.svelte:197` isAlpha, `Preview.tsx:112` h1) were verified by read and still match. `bash scripts/verify-task.sh` passes on the untouched tree (PASS, 205 app+design-system tests).
 
 ## What changes for you
 Each color row reads left to right: the 32px swatch, the hex field, the CSS variable name without the leading dashes (for example `color-accent`, easier to match against the web app), then an info icon. The dot after the name becomes a small "Edited" label. The long `semantic.color.…` path is gone from the row, and two tabs, "Color" and "Focus", split the list. Hovering the info icon shows one tooltip (today two appear), and every row has the icon: rows without a description show a dimmed icon saying "No description yet". The picker's opacity field is back (it shows 0 to 1). Pressing Cmd+Z after using the picker returns to the color you had before opening it, in one step, and the "unsaved changes" list always shows the color from the file as "was". The preview loses its "Workbench preview" heading, and its first column (Variant, Button primary and so on) is left-aligned and no longer bold. Editing `accent` also reaches anything that depends on a dependent color.
@@ -18,6 +13,9 @@ Each color row reads left to right: the 32px swatch, the hex field, the CSS vari
 - `tools/Design_System/src/lib/server/colorTokens.ts`
 - `tools/Design_System/src/lib/server/colorTokens.test.ts`
 - `tools/Design_System/src/lib/stagedEdits.ts`
+- `tools/Design_System/src/lib/staged.svelte.ts`
+- `tools/Design_System/src/lib/colorEdit.ts`
+- `tools/Design_System/src/lib/colorEdit.test.ts`
 - `tools/Design_System/src/lib/stagedEdits.test.ts`
 - `tools/Design_System/src/routes/foundations/+page.svelte`
 - `app/app/workbench-preview/Preview.tsx`
@@ -27,7 +25,7 @@ Each color row reads left to right: the 32px swatch, the hex field, the CSS vari
 - the generated CSS, Save and Discard, other token types
 
 ## Size
-Files touched: 6. Expected diff: ~200 lines. New tests: ~6.
+Files touched: 9. Expected diff: ~230 lines. New tests: ~8.
 
 ## Risk
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): none. Review level: 1.
@@ -41,6 +39,8 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 ## Steps
 - [ ] Red then green in `colorTokens.test.ts`: (a) each token also has `section` (the descriptor's section, for example `semantic.color`); (b) `dependents` is transitive: if A is referenced by B and B by C (all color descriptors, matched on `rawValue` equal to the braced path), A's dependents include both B's and C's variables, no duplicates, no cycles; implement in `colorTokens.ts`
 - [ ] Red then green in `stagedEdits.test.ts`: (a) `was` is always the file value, never an earlier staged value (stage twice on one path, `was` stays the file value); (b) `stageEdit(state, path, fileValue, hex, replace)`: with `replace = true` and an existing entry for that path it overwrites the entry WITHOUT adding a history step (`past` unchanged), so one undo returns to the value before the first change; with `replace = false` behavior is unchanged except for (a); implement in `stagedEdits.ts`
+- [ ] `staged.svelte.ts`: the store's `stage()` takes an optional `replace` flag and passes it to `stageEdit`
+- [ ] Red then green in `colorEdit.test.ts`: `normalizeColor` keeps transparency: `rgba(255, 0, 0, 0.5)` gives `#ff000080`, a fully opaque color still gives the 6-digit `#rrggbb` (no `ff` suffix), and existing tests stay green; implement in `colorEdit.ts` (today it forces opaque with `alpha(1)`)
 - [ ] In `foundations/+page.svelte`, picker undo: `pick()` calls `stageEdit` with `replace = false` for the first change of a picker session and `replace = true` for the following ones; a session starts when the picker opens for a row and ends when it closes or the hex field commits for that row
 - [ ] Same file, row layout, left to right: swatch button (32px square), hex input, the CSS variable name with the leading `--` removed (display only; code keeps the full name), the info icon; a muted "Edited" label replaces the `●` dot (shown only for edited rows, placed after the variable name, before the info icon); no `semantic.…` path anywhere in the row; error text stays on its own line below the row
 - [ ] Same file, tabs: a tab bar above the list built from the distinct token `section` values in file order, labelled by stripping `semantic.` and capitalizing ("semantic.color" is "Color", "semantic.focus" is "Focus"); the first tab is selected; the list shows only the selected tab's rows; plain buttons with `role="tab"` and `aria-selected`
@@ -64,16 +64,10 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - [ ] Picker opacity field shows; drag the color area after lowering opacity → opacity stays; lowering opacity changes the preview
 - [ ] Preview has no "Workbench preview" heading; the first column is left-aligned and not bold
 
-## Questions (continued)
-See top of file — open questions blocking build.
+## Questions
+(none open)
 
 ## Report
 <Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
 per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
 anything noticed but not touched. Mark anything not run as `Not run`.>
-
-### Checkpoint (written by scripts/finish.sh)
-```
- docs/work/feat-ds-workbench-color-polish2.md | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
-```
