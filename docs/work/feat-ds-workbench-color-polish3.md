@@ -53,3 +53,10 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 (none open)
 
 ## Report
+Built by Muse #high in two runs (first died on a network error mid-run; second reached the code already written, then could not run its checks and stopped). Claude ran the checks and finished it.
+- `bash scripts/verify-task.sh` -> `verify-task: PASS` (unit 39/39 in Design_System) ✓
+- Rule "picker stays in viewport": `pickerPosition.test.ts` (fits, too low, too far right) passes in `verify` ✓. Not run: a mutation of the helper; no browser spec covers placement, only the owner check.
+- `bash scripts/run-e2e.sh` -> `PASS (workbench) 14 passed (13.1s)` ✓ (first real run of the wrapper; no ports left behind)
+- Mutation: Reset click in the changes list set to a no-op -> `FAIL ... 1 failed 13 passed`, failing spec "Reset in the changes list removes only that edit and undo brings it back"; reverted, tree clean ✓
+- Decisions the spec didn't settle: NONE found in the diff (the list Reset reuses `stagedStore.stage(path, was, was)` as briefed).
+- Observed: builder log says `Permission denied: shell` on `git status --porcelain -- <paths>`; the resolved allow-list (`opencode debug agents`) allows `git status*`; cause not found.
