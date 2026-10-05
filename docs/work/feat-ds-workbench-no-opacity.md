@@ -1,9 +1,9 @@
 
 # Task: Workbench solid colors only, Reset button, steady tabs (1g0, expanded)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-no-opacity
-Next: NOT FINISHED. Built and committed (f575d94), 13 e2e pass, verify PASS. Owner still has to tick the 4 checklist items (1g0 picker/rgba/red+Reset, tab scroll) in a browser; Claude starts servers via run_in_terminal (cd into this worktree) and stops them with stop_terminal_tab. Then ASK before merging feat/ds-workbench-no-opacity into master (local only, nothing pushed), then merge master into the two worktrees below. After that: 1g. Open worktrees (invisible to /start elsewhere): ../guitar_tab_processor-feat-ds-workbench-no-opacity (this), ../guitar_tab_processor-feat-ds-workbench-save-ui (1g brief, Level 2, reviewed, Written against 77a18a6: refresh after merge, then critic + builder), ../guitar_tab_processor-feat-ds-workbench-save-bar (1g-ui DRAFT brief, needs refresh + /review + Claude edits playwright.workbench.config.ts for WORKBENCH_BRAND_DIR copy). Old leftover worktrees/branches from earlier tasks and stash@{0} are still around (ask before removing). Untracked, undecided: .claude/skills/, app/packages/design-system/brands/byebye|heyhey.
+Next: done. Owner checks passed 2026-10-05; merged to master (9f57283), local only, NOT pushed. Next slice: 1g (Save, Discard, save states) after polish 3 (1f4).
 Written against: 7fd3ec0
 Usage at session end: 5h=4% weekly=50% ctx=34%; measure total 13 marks, 2986s.
 

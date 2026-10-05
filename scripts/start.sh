@@ -17,6 +17,23 @@ echo "branch:  ${BRANCH:-(detached)}"
 IDEAS_F="${IDEAS_FILE:-$(cd "$(git rev-parse --git-common-dir)" && pwd)/ideas.md}"
 NIDEAS="$(grep -c '^- ' "$IDEAS_F" 2>/dev/null || true)"; NIDEAS="${NIDEAS:-0}"
 
+# Active tasks in OTHER worktrees: a task file lives on its own branch, so the folder you are in does not show them.
+ME="$(pwd)"
+other_active() {
+  local wt f
+  while read -r wt; do
+    [ "$wt" = "$ME" ] && continue
+    for f in "$wt"/docs/work/*.md; do
+      [ -f "$f" ] || continue
+      [[ "${f##*/}" == TEMPLATE* ]] && continue
+      grep -qE '^Status:[[:space:]]*active' "$f" || continue
+      echo "  $f  (next: $(sed -n 's/^Next:[[:space:]]*//p' "$f" | head -1 | cut -c1-90))"
+    done
+  done < <(git worktree list --porcelain | sed -n 's/^worktree //p')
+}
+OTHERS="$(other_active | head -8)"
+[ -z "$OTHERS" ] || { echo "active in other worktrees (invisible here; merge or finish them first, they may overlap):"; echo "$OTHERS"; }
+
 # Active task files (top level of docs/work only), optionally filtered by name.
 ACTIVE=()
 for f in "$WORK"/*.md; do
