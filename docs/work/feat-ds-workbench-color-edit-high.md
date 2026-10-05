@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-color-edit-high
-Next: builder run (high effort) of the shared brief; compare with the other run
+Next: run verify-task.sh, then break-each-rule check, then report + finish
 Written against: c18a08c
 
 ## What changes for you
@@ -22,7 +22,7 @@ On the workbench `/foundations` page each color row gets a square swatch next to
 - `tools/Design_System/src/routes/foundations/+page.svelte`
 - `tools/Design_System/src/routes/+layout.svelte`
 
-**Shared message (inline, not a contracts/ change):** the workbench SENDS `{ type: "tokens", vars: { <cssVar>: <hex> } }` by `postMessage` to the preview iframe with targetOrigin exactly `http://localhost:3000` (never `"*"`); the preview already applies overrides only from the workbench origin (`app/app/workbench-preview/Preview.tsx:89-106`, allow-list in `app/lib/workbenchPreview.ts:1`).
+**Shared message (inline, not a contracts/ change):** the workbench SENDS { type: "tokens", vars: { <cssVar>: <hex> } } by postMessage to the preview iframe with targetOrigin exactly http://localhost:3000 (never "*"); the preview already applies overrides only from the workbench origin (app/app/workbench-preview/Preview.tsx:89-106, allow-list in app/lib/workbenchPreview.ts:1).
 
 **Do NOT touch:**
 - `contracts/`, config, secrets, `package.json`, `docs/*`, anything not listed above
@@ -48,10 +48,10 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 
 ## Steps
 
-- [ ] Red then green: write `tools/Design_System/src/lib/colorEdit.test.ts` first (valid CSS colors normalise to lowercase `#rrggbb`; invalid input returns null and keeps the old value; empty/whitespace returns null), watch it fail on `npm test`, then add `colorEdit.ts` (pure function using `colord`, no Svelte) until green
-- [ ] Red then green: write `tools/Design_System/src/lib/stagedEdits.test.ts` first (stage records path with was/now; staging the same value as the file value clears the entry; undo restores the previous staged value; redo re-applies it; undo or redo with empty history is a no-op; `previewVars(tokens, staged)` returns the staged hex for edited tokens and the file value for the rest), watch it fail, then add `stagedEdits.ts` (pure state functions, no Svelte) until green
-- [ ] In `tools/Design_System/src/routes/foundations/+page.svelte` (today rows render at lines 52-72): each row keeps its swatch and gets a hex input beside it; clicking the swatch opens `svelte-awesome-color-picker`; committing the field (Enter/blur) or picking normalises via `colorEdit.ts`, invalid input keeps the staged value and shows a short message; staged edits live in a small shared store `tools/Design_System/src/lib/staged.svelte.ts` (Svelte runes wrapper around the pure `stagedEdits.ts` functions, keyed by token path, original plus current hex) so the count survives moving to another page; edited rows get a marker dot
-- [ ] In the same page: on every staged change post `{ type: "tokens", vars }` (cssVar per token from `tools/Design_System/src/lib/server/colorTokens.ts:13-22`, staged hex where edited else file value) to the iframe's `contentWindow` with targetOrigin exactly `http://localhost:3000`, and also once on the iframe's `load` event (a message sent before the preview has loaded, or after it reloads, is lost, so staged values must be re-sent); in `+layout.svelte` the top bar shows "N unsaved changes" next to the existing disabled Save button (leave that button as is, 1g wires it); clicking the text opens the before/after list (path, was/now, swatch beside each hex); Cmd+Z undoes and Shift+Cmd+Z redoes staged edits (ignored while a text field has focus, so the browser's own text undo still works there); no Discard control and no save states (1g)
+- [x] Red then green: write `tools/Design_System/src/lib/colorEdit.test.ts` first (valid CSS colors normalise to lowercase `#rrggbb`; invalid input returns null and keeps the old value; empty/whitespace returns null), watch it fail on `npm test`, then add `colorEdit.ts` (pure function using `colord`, no Svelte) until green
+- [x] Red then green: write `tools/Design_System/src/lib/stagedEdits.test.ts` first (stage records path with was/now; staging the same value as the file value clears the entry; undo restores the previous staged value; redo re-applies it; undo or redo with empty history is a no-op; `previewVars(tokens, staged)` returns the staged hex for edited tokens and the file value for the rest), watch it fail, then add `stagedEdits.ts` (pure state functions, no Svelte) until green
+- [x] In `tools/Design_System/src/routes/foundations/+page.svelte` (today rows render at lines 52-72): each row keeps its swatch and gets a hex input beside it; clicking the swatch opens `svelte-awesome-color-picker`; committing the field (Enter/blur) or picking normalises via `colorEdit.ts`, invalid input keeps the staged value and shows a short message; staged edits live in a small shared store `tools/Design_System/src/lib/staged.svelte.ts` (Svelte runes wrapper around the pure `stagedEdits.ts` functions, keyed by token path, original plus current hex) so the count survives moving to another page; edited rows get a marker dot
+- [x] In the same page: on every staged change post `{ type: "tokens", vars }` (cssVar per token from `tools/Design_System/src/lib/server/colorTokens.ts:13-22`, staged hex where edited else file value) to the iframe's `contentWindow` with targetOrigin exactly `http://localhost:3000`, and also once on the iframe's `load` event (a message sent before the preview has loaded, or after it reloads, is lost, so staged values must be re-sent); in `+layout.svelte` the top bar shows "N unsaved changes" next to the existing disabled Save button (leave that button as is, 1g wires it); clicking the text opens the before/after list (path, was/now, swatch beside each hex); Cmd+Z undoes and Shift+Cmd+Z redoes staged edits (ignored while a text field has focus, so the browser's own text undo still works there); no Discard control and no save states (1g)
 - [ ] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
@@ -81,3 +81,16 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 <Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
 per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
 anything noticed but not touched. Mark anything not run as `Not run`.>
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-color-edit-high.md     |  15 +--
+ tools/Design_System/src/lib/colorEdit.test.ts      |  24 +++++
+ tools/Design_System/src/lib/colorEdit.ts           |  12 +++
+ tools/Design_System/src/lib/staged.svelte.ts       |  27 ++++++
+ tools/Design_System/src/lib/stagedEdits.test.ts    |  45 +++++++++
+ tools/Design_System/src/lib/stagedEdits.ts         |  73 ++++++++++++++
+ tools/Design_System/src/routes/+layout.svelte      |  78 ++++++++++++++-
+ .../src/routes/foundations/+page.svelte            | 106 ++++++++++++++++++++-
+ 8 files changed, 368 insertions(+), 12 deletions(-)
+```
