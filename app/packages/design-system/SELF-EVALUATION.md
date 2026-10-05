@@ -4,7 +4,7 @@ A lightweight health check for this specific system — single-maintainer, ~40 l
 components, one consumer app. Enterprise design-system maturity models (NN/g's 6-dimension
 framework, Atomize's 6-axis scorecard) assume multiple consuming teams and executive sponsorship
 that don't apply here; this is a trimmed adaptation, keeping only the axes that mean something at
-this scale. Re-score whenever a task from `docs/plans/2026-09-20-design-system-iteration-2/2026-09-20-design-system-iteration-2.md`
+this scale. Re-score whenever a task from `docs/plans/done_and_committed/2026-09-20-design-system-iteration-2/2026-09-20-design-system-iteration-2.md`
 lands, or at any natural pause point — not on a fixed schedule.
 
 ## Scorecard (0/1/2 per axis)
@@ -26,12 +26,12 @@ low).
 
 Design-system documentation drifts from actual token values the same way status docs drift from
 code (confirmed twice this session, unrelated to the design system: `app/status/song-views.md`
-and `docs/WEB_APP_WORKFLOW.md` both went stale). Every re-score should also ask: **does
+and `docs/old_workflow_docs/WEB_APP_WORKFLOW.md` both went stale). Every re-score should also ask: **does
 `DESIGN.md`'s prose still match `tokens.json`'s actual current values?** — spot-check a few
 described colors/behaviors against the live file, don't assume the doc is still accurate.
 
 ## Anti-patterns to watch for (design-system-specific, not the generic process-bloat lessons
-already captured in `docs/WEB_APP_WORKFLOW.md`)
+already captured in `docs/old_workflow_docs/WEB_APP_WORKFLOW.md`)
 
 - **Token sprawl via careless multi-brand overrides.** Task 5's whole design exists to prevent
   this — a child brand's `tokens.json` must only ever contain the leaves it actually overrides,

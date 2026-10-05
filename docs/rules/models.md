@@ -5,8 +5,9 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 | Role | Model | Notes |
 |---|---|---|
 | Grilling, plan, Level 2 review | Claude (Sonnet) | Judgment work only; no line-by-line specs or builds |
-| Brief drafting and build | `opencode-go/muse-spark-1.3-contributor` | Default builder |
-| Level 1 review | `opencode-go/deepseek-v4.1-flash` | Different family from the builder; fresh session; read-only |
+| Brief drafting | Claude (Sonnet) | Trial from 2026-10-04; critics below read it blind |
+| Brief critics, build | `opencode-go/muse-spark-1.3-contributor#high` | Default builder (decided 2026-10-04 after the low/high test); critics use Muse and then deepseek at default effort (no `#` suffix, owner decision 2026-10-04); backup `deepseek-v4.1-flash#high` |
+| Blind second reviewer (`/review`, Level 1 and 2) | `opencode-go/deepseek-v4.1-flash#high`; backup `opencode-go/muse-spark-1.3-contributor#high` | Owner decision 2026-10-04; different family from the builder; fresh session; read-only. Use the backup with `REVIEW_MODEL=` if deepseek is down |
 | Candidates for bake-off | `qwen3.8-max`, `kimi-k3`, `deepseek-v4-pro` | See below |
 
 ## Rules
@@ -23,9 +24,10 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 ## Running opencode
 - The wrapper scripts set `OPENCODE_DISABLE_CLAUDE_CODE=1` (no `~/.claude` notes) and the project
   `opencode.json` switches off the GitHub and Figma connections and sets a paid default model.
-- `opencode stats --models --days 0` shows tokens and cost per model; read it before and after a task.
-- **Reviews:** Claude reviews the diff itself (read the report and the diff, spot-check one claim). There is no
-  opencode reviewer.
+- `opencode stats --all --json` gives lifetime tokens and cost (the text table caps at 5 models and `--days 0` means today only); `scripts/measure.sh` records it before and after each builder run, and `measure.sh report <task>` adds the Claude tokens per step from the session transcripts.
+- **Reviews (decided 2026-10-03):** Level 1 (default) by the cheap reviewer above, fresh session, read-only. Level 2
+  (risk trigger) by Claude. Claude always spot-checks the final diff and checks a reviewer's claims against the code before
+  acting. Log each review in `scripts/measure.sh` notes (who, findings, false findings) to judge the split on evidence.
 - Claude hands a task to the builder with `scripts/delegate.sh <task file>` (in its own worktree). It passes `-m`
   explicitly: `opencode run` ignores an agent's `model` setting and would use the default, which can be a
   free-tier model. If the builder model is down, delegate.sh stops and Claude asks the owner before any switch.

@@ -1,6 +1,6 @@
 # app/ — the Next.js practice-tab website
 
-**This file is an index, not the full status** — read this to get oriented and to know which topic file to open; the details live in `app/status/`. **This file must stay an index.** New status updates go into the matching file in `app/status/` (or a new one, following `docs/DOCUMENTATION_PRINCIPLES.md`) — not appended here.
+**This file is an index, not the full status** — read this to get oriented and to know which topic file to open; the details live in `app/status/`. **This file must stay an index.** New status updates go into the matching file in `app/status/` (or a new one, following `docs/old_workflow_docs/DOCUMENTATION_PRINCIPLES.md`) — not appended here.
 
 **Status:** the site is a single page at `/` — a song-list sidebar plus a detail pane (Sheet/Fretboard/Ascii tabs, a metronome that stays mounted across all three, a Spotify-backed cover art/artist lookup that degrades gracefully with no credentials configured), styled with the "Claude theme" (see Design system below). Reads live from the Turso database (`s05_publish` writes to it). This replaced an earlier two-page UI (song list at `/`, a separate `/songs/[id]` detail page) on 2026-09-10 — that version is archived at `archive/v0.1-web-ui/` (git tag `v0.1` has its exact final state), and both its old address and a `/songs/[id]` link now redirect to `/` rather than 404ing. Current architecture and locked decisions: `app/status/home-page.md`. See `docs/ARCHITECTURE.md` for how this fits the whole system, `docs/decisions/0002-hosting-and-deployment.md` for why Turso/Drizzle specifically.
 
@@ -12,7 +12,7 @@
 
 **Four separate layers, deliberately not tied to each other:** `npm run dev` (fast local iteration) → `npm run stage` (`next build && next start -p 3001` — a real production build, served locally on port 3001 so it can run alongside `dev`'s 3000; the actual "how does this behave live" check, zero cost, zero GitHub/Vercel involvement) → `git commit`/`push` (versioning — one push per finished change, not per staging check) → `npx vercel deploy --prod --yes` from the repo root (going live — explicit, costs a build, entirely separate from the above). Running a staging check doesn't require a commit first or after; push to GitHub when a change is done, not when you happen to glance at a build.
 
-**Security review: done (2026-09-08), clean.** No findings. Specific to the app's current fully-read-only, no-auth shape — see `docs/PENDING_ACTIONS.md` for the standing reminder to re-review if that ever changes.
+**Security review: done (2026-09-08), clean.** No findings. Specific to the app's current fully-read-only, no-auth shape — see `docs/old_workflow_docs/PENDING_ACTIONS.md` for the standing reminder to re-review if that ever changes.
 
 ## Topic index
 

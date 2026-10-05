@@ -1,0 +1,55 @@
+"use client";
+// THROWAWAY spike (design-system workbench slice 1). Delete this folder when done.
+import { useEffect } from "react";
+import { Button } from "../../packages/design-system/src/components/Button";
+
+// Prior art: storybook-addon-pseudo-states. Copy every :hover/:active rule with a
+// .force-hover/.force-active class selector so a class can force the state.
+function addForcedStateRules() {
+  let added = 0;
+  const walk = (rules: CSSRuleList, parent: CSSGroupingRule | CSSStyleSheet) => {
+    for (const rule of Array.from(rules)) {
+      if (rule instanceof CSSStyleRule && /:(hover|active)/.test(rule.selectorText)) {
+        // Descendant form: the class sits on a wrapper, the rule targets the button inside it.
+        const pseudo = rule.selectorText.includes(":hover") ? "hover" : "active";
+        const forced = `.force-${pseudo} ${rule.selectorText.replace(`:${pseudo}`, "")}`;
+        // Insert right after the original so cascade order (e.g. @supports color-mix override
+        // after its plain fallback) is preserved.
+        parent.insertRule(`${forced}{${rule.style.cssText}}`, Array.from(parent.cssRules).indexOf(rule) + 1);
+        added++;
+      } else if ("cssRules" in rule && (rule as CSSGroupingRule).cssRules?.length) {
+        walk((rule as CSSGroupingRule).cssRules, rule as CSSGroupingRule);
+      }
+    }
+  };
+  for (const sheet of Array.from(document.styleSheets)) {
+    try { walk(sheet.cssRules, sheet); } catch { /* cross-origin sheet */ }
+  }
+  return added;
+}
+
+export default function Spike() {
+  useEffect(() => {
+    (window as unknown as { forcedRules: number }).forcedRules = addForcedStateRules();
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type !== "tokens") return;
+      for (const [k, v] of Object.entries(e.data.vars as Record<string, string>))
+        document.documentElement.style.setProperty(k, v);
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+  const states = ["", "force-hover", "force-active"];
+  return (
+    <div style={{ padding: 24, display: "grid", gap: 16, gridTemplateColumns: "repeat(3, 160px)" }}>
+      {(["primary", "secondary"] as const).flatMap((v) =>
+        states.map((s) => (
+          <div key={v + s} className={s} data-cell={`${v} ${s || "default"}`}>
+            <Button variant={v} onClick={() => {}}>{v} {s || "default"}</Button>
+          </div>
+        )),
+      )}
+      <div data-cell="primary disabled"><Button variant="primary" disabled onClick={() => {}}>primary disabled</Button></div>
+    </div>
+  );
+}

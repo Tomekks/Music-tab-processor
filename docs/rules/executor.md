@@ -31,11 +31,12 @@ task file. Nothing else. Do not invent process.
 - Stop when every acceptance check passes. Don't keep polishing.
 
 ## When you finish
-Your shell is a short allow-list: read-only git, `lsof -i`, `npm --prefix app run test|lint|typecheck|verify`, `npm --prefix tools/Control_Centre run test|check|verify`,
-`node --test <file>`, `bash scripts/verify-task.sh` and `bash scripts/finish.sh`. Everything else is denied. You cannot
+Your shell is a short allow-list: read-only git, `lsof -i`, `npm --prefix app run test|lint|typecheck|verify`, `npm --prefix tools/Control_Centre run test|check|verify`, `npm --prefix tools/Design_System run test|check|verify`,
+`node --test <file>`, `bash scripts/verify-task.sh`, `bash scripts/run-e2e.sh` and `bash scripts/finish.sh`. Everything else is denied. You cannot
 delete files: only paths under the brief's `Delete:` list are removed, by `finish.sh`. Any other deletion: write a
 question under `Questions` and STOP.
 1. Run `bash scripts/verify-task.sh`. If it says FAIL, fix once and run it again; still failing: STOP and report.
+   Task touches watched UI (`docs/rules/e2e-areas.txt`)? Also run `bash scripts/run-e2e.sh` (prints PASS or FAIL; it refuses if a port is taken: say so in the report, don't kill servers). Read its log only on FAIL.
 2. Write the report into the task file's `## Report`: one line per acceptance check
    (command → observed → ✓/✗); **Decisions the spec didn't settle** (anything you chose that changes
    behavior, an interface, or something the brief left open, or NONE); any spec fact that was wrong;

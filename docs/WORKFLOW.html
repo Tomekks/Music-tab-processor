@@ -48,7 +48,7 @@
 <body>
 <main>
   <h1>How we work now</h1>
-  <p class="sub">One page, how a task really moves today. Written 2026-10-03 after the first real task. Not a comparison with the old process (that is <code>PROCESS.html</code>). Lives on branch <code>lean-process</code> until it is merged to master.</p>
+  <p class="sub">One page, how a task really moves today. Written 2026-10-03, brought up to date 2026-10-05 (one builder run, blind second reviewer, browser specs run by a script, launch commands in every checklist). The previous process lives in <code>docs/old_workflow_docs/</code> and is not current.</p>
 
   <h2>Who does what</h2>
   <div class="cols four">
@@ -61,28 +61,37 @@
   <h2>One task, start to finish</h2>
   <p class="sub">Red steps with the "you decide" tag are the only places you are needed. Dashed = optional.</p>
   <div class="steps">
-    <div class="step"><span class="who w-you">You</span> <span class="who w-claude">Claude</span><b>1. Idea, questions, plan</b><small>Grilling session, wireframe for UI, a plan with the tasks in order</small></div>
+    <div class="step"><span class="who w-you">You</span> <span class="who w-claude">Claude</span><b>1. Idea, questions, plan</b><small>Grilling session, wireframes for UI, a plan. Big work is cut into slices, each with a one-sentence user story and its tasks in order</small></div>
+    <div class="step opt"><span class="who w-claude">Claude</span><b>1b. Prior-art check (trial)</b><small>Before each slice is specced: a short look at raw sources for existing solutions. One line in the spec: "found X, adapt it" or "nothing found: you decide". A throwaway spike only for an unproven assumption. Trial on the design-system workbench plan only</small></div>
     <div class="step"><span class="who w-claude">Claude</span><b>2. Size the task</b><small>Pick Level 0, Quick or Full (see below)</small></div>
-    <div class="step stop"><span class="who w-claude">Claude</span><b>3. Write the brief</b><small>A task file. You approve its "What changes for you" block, and any <code>Delete:</code> list in it</small></div>
-    <div class="step opt"><span class="who w-builder">Builder</span><b>3b. Cold read</b><small><code>delegate.sh --critique</code>: builds nothing, writes at most 5 questions or "clear". One round, Claude amends</small></div>
+    <div class="step stop"><span class="who w-claude">Claude</span><b>3. Write the brief</b><small>First check open branches and worktrees that touch the same files (merge them first or name them). Then a task file. You approve its "What changes for you" block, and any <code>Delete:</code> list in it</small></div>
+    <div class="step"><span class="who w-builder">Builder</span><b>3b. Cold read</b><small><code>delegate.sh --critique</code> with Muse, then deepseek if needed, both at default effort: builds nothing, at most 5 questions or "clear". One round, Claude fixes only gaps where the builder would have to guess</small></div>
     <div class="step"><span class="who w-script">Script</span><b>4. Own copy of the project</b><small><code>new-worktree.sh</code>: new branch and folder, installs, no real secrets copied</small></div>
     <div class="step"><span class="who w-script">Script</span><b>5. Pre-flight</b><small>Brief complete, right branch (never master), files unchanged since the brief, no free-tier model</small></div>
-    <div class="step"><span class="who w-builder">Builder</span><b>6. Build</b><small>Tests first, then code, then breaks each rule once to prove a test fails. Shell is a short allow-list; secrets stripped from its environment</small></div>
+    <div class="step"><span class="who w-builder">Builder</span><b>6. Build</b><small>One run, Muse <code>#high</code>. Tests first, then code, then breaks each rule once to prove a test fails. Shell is a short allow-list; secrets stripped from its environment</small></div>
     <div class="step"><span class="who w-script">Script</span><b>7. Watchdog</b><small>Kills a dead run: nothing in 60 s, stalled for 180 s. Logs kept short (last 200 lines)</small></div>
     <div class="step"><span class="who w-script">Script</span><b>8. Facts check + save</b><small>Only allowed files changed? Checks pass? Promised files exist? Then one checkpoint commit (and approved deletions)</small></div>
-    <div class="step"><span class="who w-script">Script</span><b>9. Short summary</b><small>About 10 lines: pass or fail, plain reason, diff size, log path, a scorecard row</small></div>
-    <div class="step"><span class="who w-claude">Claude</span><b>10. Review</b><small>Reads the summary, the report and the diff; spot-checks one claim. No re-running the builder's work</small></div>
-    <div class="step stop"><span class="who w-you">You</span><b>11. Your check</b><small>The owner checklist from the brief: one action, one expected result each</small></div>
-    <div class="step stop"><span class="who w-you">You</span><b>12. Ship</b><small>Push, PR or deploy only on your yes. For the app: push / push and deploy / skip</small></div>
+    <div class="step"><span class="who w-script">Script</span><b>9. Short summary</b><small>About 10 lines: pass or fail, plain reason, diff size, log path, a scorecard row with the real tokens, cost and seconds of the run</small></div>
+    <div class="step"><span class="who w-claude">Claude</span><b>10. Review and browser specs</b><small><code>/review</code>: Claude answers 3 questions (Level 1) or all 8 (Level 2) while a blind deepseek <code>#high</code> answers the same; Claude compares and checks each claim against the code. Watched UI: the builder runs <code>scripts/run-e2e.sh</code> (port check, run, cleanup, PASS/FAIL). Claude reads the summary and spot-checks the diff; no re-running the builder's work</small></div>
+    <div class="step stop"><span class="who w-you">You</span><b>11. Your check</b><small>The owner checklist from the brief. It opens with the launch block (free-port check, start command, stop command), then only the human checks: one action, one expected result each. Checks a browser spec already covers are marked automated</small></div>
+    <div class="step stop"><span class="who w-you">You</span><b>12. Ship</b><small>Push, PR or deploy only on your yes. For the app: preview with <code>npm run stage</code> first, then push / push and deploy / skip</small></div>
   </div>
   <p class="sub" style="margin-top:10px">Steps 5 to 9 are one command that Claude runs: <code>scripts/delegate.sh &lt;task file&gt;</code>. Nothing is copied or pasted between models; results come back through the task file and the summary.</p>
+
+  <h2>Measuring time and tokens (automatic)</h2>
+  <p class="sub">So changes to the process are judged on numbers, not on a feeling. Scripts do it; reading a report costs a few hundred tokens.</p>
+  <div class="cols">
+    <div class="panel ok"><b class="t">What is recorded, and when</b><ul><li>A time stamp and the builder's token total at each step: <code>/start</code> (session start), start and end of <code>delegate.sh</code>, <code>finish.sh</code>, and <code>/wrap</code> (with Claude's plan usage as a note).</li><li>Log: <code>.git/measure.tsv</code>, shared by all worktrees, never shown as a change.</li></ul></div>
+    <div class="panel"><b class="t">Where the numbers come from</b><ul><li>Claude tokens: summed from the session transcripts between two marks, each message counted once (<code>claude-usage.py</code>). History goes back to 2026-09-07, so the old process has a baseline by day.</li><li>Builder tokens and cost: <code>opencode stats --all --json</code>, difference between marks.</li><li>Time: wall clock, including your waiting.</li></ul></div>
+    <div class="panel"><b class="t">Read it</b><ul><li><code>scripts/measure.sh report &lt;task&gt;</code>: seconds, builder tokens and Claude tokens between marks.</li><li><code>scripts/measure.sh history 8</code>: Claude tokens per day.</li><li>Plan or task cost = the difference between its start mark and end mark.</li></ul></div>
+  </div>
 
   <h2>Three sizes of work</h2>
   <table>
     <tr><th>Size</th><th>When</th><th>What you get</th></tr>
     <tr><td><b>Level 0</b></td><td>You can describe the change in one sentence and nothing risky is touched</td><td>No task file, no builder. Just do it, run the check, commit.</td></tr>
     <tr><td><b>Quick</b></td><td>1 to 3 files of plain logic, no risk trigger</td><td>The short form (about 20 lines): one sentence, allowed files, rules, one check. <code>new-worktree.sh --quick</code></td></tr>
-    <tr><td><b>Full</b></td><td>Any risk trigger (deletes, <code>contracts/</code>, shell or network, schema, deploy, secrets), UI or audio, or 4+ files</td><td>The full form with size, risk, steps and your checklist. Cold read recommended.</td></tr>
+    <tr><td><b>Full</b></td><td>Any risk trigger (deletes, <code>contracts/</code>, shell or network, schema, deploy, secrets), UI or audio, or 4+ files</td><td>The full form with size, risk, steps and your checklist. Cold read always.</td></tr>
   </table>
 
   <h2>When something goes wrong</h2>
@@ -97,18 +106,20 @@
     <tr><th>What</th><th>Where</th><th>Who touches it</th></tr>
     <tr><td>The rules (short)</td><td><code>AGENTS.md</code> and <code>docs/rules/</code></td><td>Claude, with your OK</td></tr>
     <tr><td>The task (the only state)</td><td><code>docs/work/&lt;task&gt;.md</code>, from <code>TEMPLATE.md</code> or <code>TEMPLATE-quick.md</code></td><td>Claude writes it, the builder fills the Report</td></tr>
-    <tr><td>Your commands</td><td><code>/start</code>, <code>/next</code>, <code>/wrap</code></td><td>You type</td></tr>
+    <tr><td>Your commands</td><td><code>/start</code>, <code>/next</code>, <code>/wrap</code>, <code>/review</code>, <code>/park</code> (start and wrap also log usage; <code>/start</code> also lists active tasks in other worktrees)</td><td>You type</td></tr>
     <tr><td>The hand-off</td><td><code>scripts/delegate.sh</code> (uses <code>run-builder</code>, <code>oc-run</code>, <code>check-scope</code>, <code>verify-task</code>, <code>finish</code>)</td><td>Claude runs it</td></tr>
     <tr><td>Builder logs</td><td><code>docs/work/runs/</code> (newest 10, short, not in git)</td><td>Read only on a failure</td></tr>
+    <tr><td>Time and token log</td><td><code>.git/measure.tsv</code>, written by <code>scripts/measure.sh</code> (uses <code>claude-usage.py</code>)</td><td>Scripts write it; Claude reads the report</td></tr>
+    <tr><td>Old and finished docs</td><td><code>docs/old_workflow_docs/</code> (previous process), <code>docs/plans/done_and_committed/</code> (finished plans)</td><td>Nobody; history only</td></tr>
     <tr><td>Scorecard</td><td><code>docs/work/scorecard.md</code></td><td>Claude pastes the printed row at merge time</td></tr>
   </table>
 
-  <h2>What is proven and what is not</h2>
+  <h2>Models and open items (2026-10-05)</h2>
   <div class="cols">
-    <div class="panel ok"><b class="t">Proven with a real model, once</b><ul><li>The whole hand-off on a real task (Control Center stage durations): Muse built it first try.</li><li>The scope, verify and promised-file checks.</li><li>Claude's review caught a real weakness in the tests.</li></ul></div>
-    <div class="panel warn"><b class="t">Not yet proven</b><ul><li>A Delete list with a real model.</li><li>The cold read (<code>--critique</code>) and the Quick form on a real task.</li><li>The break-each-rule check by a real model.</li><li>Retry and fallback when Muse is actually down.</li><li>A cheap model drafting the brief (so far Claude wrote it).</li></ul></div>
+    <div class="panel ok"><b class="t">Who runs on what</b><ul><li>Builder and brief critics: Muse (<code>opencode-go/muse-spark-1.3-contributor</code>); builder at <code>#high</code>, one run.</li><li>Blind second reviewer: deepseek-v4.1-flash <code>#high</code>; backup Muse <code>#high</code>.</li><li>Claude: grilling, plan, brief, reviews, spot-check. Never a free-tier model.</li></ul></div>
+    <div class="panel warn"><b class="t">Still on trial</b><ul><li><code>scripts/run-e2e.sh</code> handed to the builder: tested with stubs only, no real builder run yet.</li><li>Brief critics and the blind second reviewer: judged on the scorecard rows, about 3 more real tasks.</li><li>Process changes stay frozen until then; only a real failure reopens them.</li></ul></div>
+    <div class="panel"><b class="t">Housekeeping</b><ul><li>Old task worktrees (<code>../guitar_tab_processor-feat-ds-*</code>) are leftovers; remove them only on your yes, one case at a time.</li><li>Builder token totals include any other opencode work done in the same window.</li></ul></div>
   </div>
-  <p class="sub" style="margin-top:10px">The trial is 3 more real tasks, one Quick and one Full with a Delete list. Process changes are frozen until then; only a real failure reopens them.</p>
 </main>
 </body>
 </html>

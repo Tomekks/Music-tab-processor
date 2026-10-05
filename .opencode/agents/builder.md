@@ -56,9 +56,14 @@ permission:
     "npm --prefix tools/Control_Centre run test": allow
     "npm --prefix tools/Control_Centre run check": allow
     "npm --prefix tools/Control_Centre run verify": allow
+    "npm --prefix tools/Design_System run test": allow
+    "npm --prefix tools/Design_System run check": allow
+    "npm --prefix tools/Design_System run verify": allow
     "node --test *": allow
     "bash scripts/verify-task.sh": allow
     "bash scripts/finish.sh": allow
+    "bash scripts/run-e2e.sh": allow
+    "bash scripts/run-e2e.sh *": allow
 ---
 You build one task. Follow `docs/rules/executor.md` exactly: read it first, then the task file you were
 given (`AGENTS.md` is already loaded). Nothing else unless the task file names it.

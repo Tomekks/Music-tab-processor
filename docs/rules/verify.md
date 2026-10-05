@@ -11,7 +11,12 @@ silently runs zero tests still exits 0.
 ## Gates (same check for every tool)
 - **Pre-commit** (`.githooks/pre-commit`): secret scan, then `verify` when `app/` files are staged.
   Needs `git config core.hooksPath .githooks` in every clone and worktree.
-- **Stop hook** (Claude Code only): blocks "done" while `app/` changes fail verify.
+- **Stop hook** (Claude Code only, `scripts/stop-verify.sh`): blocks "done" while uncommitted changes in
+  `app/`, `tools/Design_System` or `tools/Control_Centre` fail verify. A folder without `node_modules` is
+  skipped with a note, not blocked. Test: `bash scripts/test-stop-verify.sh`.
+- **Bash guard** (Claude Code only, `scripts/guard-bash.sh`, a `PreToolUse` hook): asks before `git push`,
+  `gh pr`, `vercel`, `git reset --hard` and `rm -rf`; denies `--no-verify`. Words inside quotes or heredocs
+  are ignored. Test: `bash scripts/test-guard-bash.sh`. Takes effect in a new session after the settings change.
 - **CI:** `verify:full` on PRs and master; branch protection requires it.
 - A real credential in a blocked commit means stop and rotate, never `--no-verify`.
 
@@ -39,6 +44,8 @@ test to make it pass without saying so. UI behavior gets a Playwright test, not 
 - Browser tests run only when the task changes UI, and a spec run stays under about 5 minutes.
 - A flaky test is fixed or quarantined with a note, never rerun until green.
 - `verify` skips the build because `npm run stage` proves it; CI runs `verify:full`.
+
+Browser-test areas, their specs and when to revisit them: `docs/rules/e2e.md`.
 
 ## Before browser tests
 Check port 3000 is free (`lsof -i :3000`); a stale dev server is silently reused. Stop a manual dev

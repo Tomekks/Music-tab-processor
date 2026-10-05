@@ -9,7 +9,7 @@ Part of `app/status/` — see `app/STATUS.md` for the index. For *why* this exis
 - **Node version pinned** — root `.nvmrc` (26) + `app/package.json`'s `engines.node` (`>=22`, the actual floor for reliable native TS support). Prevents a real, confirmed failure mode: on Node 20, `node --test` on `.ts` files silently runs zero tests instead of erroring — a false "pass."
 - **Pre-commit hook** (`.githooks/pre-commit`) — blocks a commit if the staged diff contains an API-key/token-shaped string, or if `app/`'s typecheck fails. Tested against both a real block (fake secret) and a clean pass. Enabled for this clone via `git config core.hooksPath .githooks` — **per-clone, not committed**, so anyone else working on this repo needs to run that once too.
 
-## Done (2026-09-10, later) — from `docs/plans/2026-09-10-app-quality-gates/2026-09-10-app-quality-gates.md`
+## Done (2026-09-10, later) — from `docs/plans/done_and_committed/2026-09-10-app-quality-gates/2026-09-10-app-quality-gates.md`
 
 - **ESLint complexity/`max-depth` rules** — added to `eslint.config.mjs`, at `warn` not `error` (see finding below).
 - **Dependabot** — `.github/dependabot.yml`, npm, `app/` only, weekly.
@@ -24,13 +24,13 @@ The rule is set to `warn` rather than `error` specifically because of these — 
 
 ## Done (2026-09-10, later still) — CI is live and green
 
-**`.github/workflows/ci.yml`** — runs `npm run verify:full` on every push touching `app/**` or `.nvmrc`. First real run: `34551557759`, green. Getting there took 4 real fixes, all logged in the plan file (`docs/plans/2026-09-10-app-quality-gates/2026-09-10-app-quality-gates.md`) — worth reading once, since the pattern (things built and tested locally, never actually committed) bit twice and is worth watching for elsewhere: `.nvmrc`, `app/scripts/verify.sh`, `app/package.json`'s new scripts, and `.githooks/pre-commit` had all been sitting local-only since earlier in the session, invisible because they worked fine locally regardless of git status.
+**`.github/workflows/ci.yml`** — runs `npm run verify:full` on every push touching `app/**` or `.nvmrc`. First real run: `34551557759`, green. Getting there took 4 real fixes, all logged in the plan file (`docs/plans/done_and_committed/2026-09-10-app-quality-gates/2026-09-10-app-quality-gates.md`) — worth reading once, since the pattern (things built and tested locally, never actually committed) bit twice and is worth watching for elsewhere: `.nvmrc`, `app/scripts/verify.sh`, `app/package.json`'s new scripts, and `.githooks/pre-commit` had all been sitting local-only since earlier in the session, invisible because they worked fine locally regardless of git status.
 
 ## Done (2026-09-10, later still)
 
 - **Playwright smoke test** — `app/e2e/home.spec.ts`, one test (home page loads, no console error). Run via `npm run test:e2e`. Not yet folded into `verify.sh`/CI — a deliberate next step, not an oversight, once there's more than one test.
 - **PostHog exception tracking** — `capture_exceptions: true` added to `PostHogProvider.tsx`. Captures unhandled JS errors only; autocapture and session recording remain off, unchanged.
-- **`DRIFT_CHECK.md`** — restructured into cost tiers, split by domain; see `docs/DRIFT_CHECK.md` directly.
+- **`DRIFT_CHECK.md`** — restructured into cost tiers, split by domain; see `docs/old_workflow_docs/DRIFT_CHECK.md` directly.
 - **Branch protection** — GitHub ruleset `Protect master` (id `22866141`), active, requires the `verify` check and a PR before merging. Confirmed live via `gh api repos/.../rulesets`. **This changed the workflow**: `app/` work now goes through a branch + PR, not a direct push to `master`.
 
 ## Not done yet — what "standard" still needs (ranked)

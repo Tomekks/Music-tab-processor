@@ -3,6 +3,23 @@
   "share": "disabled",
   "snapshot": false,
   "small_model": "opencode-go/deepseek-v4.1-flash",
+  "provider": {
+    "opencode-go": {
+      "models": {
+        "muse-spark-1.3-contributor": {
+          "variants": {
+            "low": { "reasoningEffort": "low" },
+            "high": { "reasoningEffort": "high" }
+          }
+        },
+        "deepseek-v4.1-flash": {
+          "variants": {
+            "high": { "reasoningEffort": "high" }
+          }
+        }
+      }
+    }
+  },
   "mcp": {
     "github": { "type": "remote", "url": "https://api.githubcopilot.com/mcp/", "enabled": false },
     "figma": { "type": "remote", "url": "https://mcp.figma.com/mcp", "enabled": false }

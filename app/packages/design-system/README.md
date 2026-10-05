@@ -2,8 +2,8 @@
 
 The token/component source of truth for `app/`'s UI, and eventually a second project (the
 control panel) and beyond. Full architecture:
-`docs/superpowers/specs/2026-09-19-design-system-design.md`. Build order:
-`docs/plans/2026-09-19-design-system/2026-09-19-design-system.md`.
+`docs/old_workflow_docs/superpowers/specs/2026-09-19-design-system-design.md`. Build order:
+`docs/plans/done_and_committed/2026-09-19-design-system/2026-09-19-design-system.md`.
 
 **Don't hand-edit `tokens.json` and `tokens.default.json` independently.**
 `brands/default/tokens.json` is the live, current values; `tokens.default.json` is the factory

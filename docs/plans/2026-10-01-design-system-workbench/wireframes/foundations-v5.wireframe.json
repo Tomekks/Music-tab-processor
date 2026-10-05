@@ -1,0 +1,1927 @@
+{
+  "name": "Design System Workbench - Foundations v5 (all real tokens)",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "root": {
+    "name": "Page",
+    "direction": "vertical",
+    "children": [
+      {
+        "name": "Top Bar",
+        "direction": "horizontal",
+        "height": 56,
+        "padding": [
+          0,
+          16
+        ],
+        "gap": 16,
+        "align": "center",
+        "children": [
+          {
+            "name": "Design System - brand: default (switcher)",
+            "type": "input",
+            "height": 40,
+            "grow": true,
+            "maxWidth": 320
+          },
+          {
+            "name": "Mode toggle (light active)",
+            "type": "icon",
+            "width": 40,
+            "height": 40
+          },
+          {
+            "name": "Spacer",
+            "grow": true,
+            "direction": "vertical",
+            "children": []
+          },
+          {
+            "name": "Save Status",
+            "direction": "horizontal",
+            "gap": 16,
+            "align": "center",
+            "children": [
+              {
+                "name": "3 unsaved changes",
+                "type": "text",
+                "height": 24
+              },
+              {
+                "name": "Not deployed",
+                "type": "text",
+                "variant": "caption",
+                "height": 24
+              }
+            ]
+          },
+          {
+            "name": "Discard",
+            "type": "link",
+            "height": 40
+          },
+          {
+            "name": "Save",
+            "type": "button",
+            "height": 40
+          }
+        ]
+      },
+      {
+        "name": "Top Bar Divider",
+        "type": "divider"
+      },
+      {
+        "name": "Body",
+        "direction": "horizontal",
+        "grow": true,
+        "children": [
+          {
+            "name": "Left Sidebar (fixed in view; its list scrolls inside this column)",
+            "width": 280,
+            "direction": "vertical",
+            "padding": 16,
+            "gap": 16,
+            "children": [
+              {
+                "name": "Search (Cmd+K)",
+                "type": "input",
+                "height": 40
+              },
+              {
+                "name": "Top Sections",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Glossary",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Foundations (selected)",
+                    "type": "button",
+                    "height": 48
+                  }
+                ]
+              },
+              {
+                "name": "Sidebar Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Components (A-Z, scrolls within the sidebar)",
+                "direction": "vertical",
+                "gap": 4,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Components",
+                    "type": "text",
+                    "variant": "caption",
+                    "height": 24
+                  },
+                  {
+                    "name": "Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Color Field",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Icon Button",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Segmented Control",
+                    "type": "link",
+                    "height": 48
+                  },
+                  {
+                    "name": "Slider",
+                    "type": "link",
+                    "height": 48
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Sidebar / Canvas Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Canvas (sticky header stays; the content below scrolls inside this column)",
+            "grow": true,
+            "direction": "vertical",
+            "padding": 32,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Canvas Header (sticky: crumbs, title, links)",
+                "direction": "vertical",
+                "gap": 8,
+                "children": [
+                  {
+                    "name": "Foundations",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  },
+                  {
+                    "name": "Heading row: Foundations",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Foundations",
+                        "type": "text",
+                        "height": 48,
+                        "variant": "display"
+                      },
+                      {
+                        "name": "? help icon (lucide circle-help) - hover: Shared values every Component reads, generated from the brand tokens.",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Jump links",
+                    "direction": "horizontal",
+                    "gap": 16,
+                    "children": [
+                      {
+                        "name": "Color",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "State",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Focus ring",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Radius",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Space",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Typography",
+                        "type": "link",
+                        "height": 24
+                      },
+                      {
+                        "name": "Layout",
+                        "type": "link",
+                        "height": 24
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Sticky Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Canvas Content (scrolls)",
+                "direction": "vertical",
+                "gap": 24,
+                "grow": true,
+                "children": [
+                  {
+                    "name": "Section: Color",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Color",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Color",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.color: swatch, hex and one-line use. Select a row to edit it in the inspector.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row background",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "background",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #FAF9F5",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#FAF9F5",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Base page background \u2014 the app shell's root color behind everything.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row foreground",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "foreground",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #141413",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#141413",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Default text color across the app \u2014 the most widely used semantic color.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row accent",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "accent (selected)",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #AE97F7",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#AE97F7",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Active tab text/border, selected song row background, focus ring color.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row onAccent",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "onAccent",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #141413",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#141413",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row border",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "border",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #E6DFD8",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#E6DFD8",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Default border color for inputs, cards, and dividers.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row surface",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "surface",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #FFFFFF",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#FFFFFF",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Background for input fields, kbd hints, and other raised/inset UI elements.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row surfaceText",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "surfaceText",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #141413",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#141413",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Text color for content on a surface background \u2014 input labels, captions, muted hints.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row surfaceHover",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "surfaceHover",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #F0EFE9",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#F0EFE9",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row surfaceActive",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "surfaceActive",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #141413",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#141413",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row surfaceActiveText",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "surfaceActiveText",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #FAF9F5",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#FAF9F5",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row playbackActive",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "playbackActive",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #141413",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#141413",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row loopRange",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "loopRange",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #AE97F7",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#AE97F7",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row statusDone",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "statusDone",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #2E7D32",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#2E7D32",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Done status dot in Control Center step rows.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row statusFailed",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "statusFailed",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #C62828",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#C62828",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Failed status dot in Control Center step rows.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row statusError",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "statusError",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #A85600",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#A85600",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Interrupted status dot in Control Center step rows.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Color",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: State",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: State",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "State",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.state: opacities shared by hover, pressed, focus, disabled, muted and loop.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row hoverOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "hoverOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "8%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row focusOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "focusOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "10%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row pressedOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "pressedOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "12%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row disabledOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "disabledOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "50%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row mutedTextOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "mutedTextOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "40%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row mutedTextHoverOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "mutedTextHoverOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "70%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row loopRangeOpacity",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "loopRangeOpacity",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "18%",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider State",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: Focus ring",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Focus ring",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Focus ring",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.focus: one ring style for every interactive Component.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row ringWidth",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "ringWidth",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "2px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row ringOffset",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "ringOffset",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "2px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row ringColor",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "ringColor",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "swatch #AE97F7",
+                            "type": "icon",
+                            "width": 32,
+                            "height": 32
+                          },
+                          {
+                            "name": "#AE97F7",
+                            "type": "text",
+                            "height": 16,
+                            "variant": "caption",
+                            "width": 64
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Focus ring",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: Radius",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Radius",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Radius",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.radius",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row base",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "base",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "8px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Radius",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: Space",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Space",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Space",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.space: seven steps.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 1",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "1",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "4px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 1",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 2",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "2",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "8px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 2",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 3",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "3",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "12px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 3",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 4",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "4",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "16px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 4",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 6",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "6",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "24px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 6",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 8",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "8",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "32px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 8",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row 1_5",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "1_5",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "6px",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover: Space step 1_5",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Space",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: Typography",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Typography",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Typography",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.typography: the two font families. Text styles come in slice 3.",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row sans",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "sans",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "Geist Sans",
+                            "type": "input",
+                            "height": 32,
+                            "width": 200
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row mono",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "mono",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "Geist Mono",
+                            "type": "input",
+                            "height": 32,
+                            "width": 200
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Divider Typography",
+                    "type": "divider"
+                  },
+                  {
+                    "name": "Section: Layout",
+                    "direction": "vertical",
+                    "gap": 8,
+                    "children": [
+                      {
+                        "name": "Heading row: Layout",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "Layout",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "? help icon (lucide circle-help) - hover: semantic.layout",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Row sidebarWidth",
+                        "direction": "horizontal",
+                        "gap": 12,
+                        "align": "center",
+                        "height": 40,
+                        "children": [
+                          {
+                            "name": "sidebarWidth",
+                            "type": "text",
+                            "height": 24,
+                            "width": 190
+                          },
+                          {
+                            "name": "240",
+                            "type": "input",
+                            "height": 32,
+                            "width": 72
+                          },
+                          {
+                            "name": "px  v  (or %)",
+                            "type": "input",
+                            "height": 32,
+                            "width": 96
+                          },
+                          {
+                            "name": "info icon (lucide info) - empty: no description yet, click to add one",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          },
+                          {
+                            "name": " ",
+                            "grow": true,
+                            "height": 1
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Canvas / Inspector Divider",
+            "type": "divider",
+            "direction": "vertical"
+          },
+          {
+            "name": "Right Inspector (fixed in view; scrolls inside this column if tall)",
+            "width": 320,
+            "direction": "vertical",
+            "padding": 24,
+            "gap": 24,
+            "children": [
+              {
+                "name": "Inspector Header",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Title Row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Title with info",
+                        "direction": "horizontal",
+                        "gap": 8,
+                        "align": "center",
+                        "children": [
+                          {
+                            "name": "accent",
+                            "type": "text",
+                            "height": 32,
+                            "variant": "heading"
+                          },
+                          {
+                            "name": "info icon (lucide info) - hover shows the description, click opens it to edit",
+                            "type": "icon",
+                            "width": 20,
+                            "height": 20
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Reset to default",
+                        "type": "link",
+                        "height": 24
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Foundations / Color / semantic.color.accent",
+                    "type": "text",
+                    "height": 16,
+                    "variant": "caption"
+                  }
+                ]
+              },
+              {
+                "name": "Header Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Value section",
+                "direction": "vertical",
+                "gap": 12,
+                "children": [
+                  {
+                    "name": "Value",
+                    "type": "text",
+                    "height": 24
+                  },
+                  {
+                    "name": "Light row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Light",
+                        "type": "text",
+                        "height": 24,
+                        "width": 96
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": " ",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Dark row",
+                    "direction": "horizontal",
+                    "gap": 8,
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Dark",
+                        "type": "text",
+                        "height": 24,
+                        "width": 96
+                      },
+                      {
+                        "name": "#AE97F7",
+                        "type": "input",
+                        "height": 40,
+                        "grow": true
+                      },
+                      {
+                        "name": " ",
+                        "type": "input",
+                        "width": 40,
+                        "height": 40
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Section Divider",
+                "type": "divider"
+              },
+              {
+                "name": "Used by section",
+                "direction": "vertical",
+                "gap": 4,
+                "children": [
+                  {
+                    "name": "Used by header row",
+                    "direction": "horizontal",
+                    "justify": "space-between",
+                    "align": "center",
+                    "children": [
+                      {
+                        "name": "Used by (4)  - expandable, generated",
+                        "type": "text",
+                        "height": 24
+                      },
+                      {
+                        "name": "chevron",
+                        "type": "icon",
+                        "width": 20,
+                        "height": 20
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Expanded list: each row opens that Component page with the Variant selected",
+                    "direction": "vertical",
+                    "children": [
+                      {
+                        "name": "Button / Primary - background",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Button / Primary - hover mix (code, not a token)",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Slider - fill",
+                        "type": "link",
+                        "height": 32
+                      },
+                      {
+                        "name": "Segmented Control / Selected - background",
+                        "type": "link",
+                        "height": 32
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# New isolated copy of the repo for one task: branch + worktree next to the main checkout, with
+# New isolated copy of the repo for one task: branch + worktree in ../worktrees/, with
 # the gitignored files a fresh checkout lacks (.venv link; env files only with --with-env), safety hooks on,
 # and dependencies installed.
 # Usage: scripts/new-worktree.sh <branch-name> [--base <branch>] [--no-install] [--with-env] [--quick]
@@ -21,10 +21,11 @@ done
 SLUG="${NAME//\//-}"   # feat/x -> feat-x for folder and task file names
 cd "$(git rev-parse --show-toplevel)"
 ROOT="$(pwd)"
-DEST="$(cd "$ROOT/.." && pwd)/$(basename "$ROOT")-$SLUG"
+DEST="$(cd "$ROOT/.." && pwd)/worktrees/$(basename "$ROOT")-$SLUG"
 [ ! -e "$DEST" ] || { echo "already exists: $DEST"; exit 1; }
 
 git rev-parse --verify --quiet "$BASE" >/dev/null || { echo "base branch not found: $BASE"; exit 1; }
+mkdir -p "$(dirname "$DEST")"
 git worktree add -b "$NAME" "$DEST" "$BASE"
 cd "$DEST"
 git config core.hooksPath .githooks
@@ -53,6 +54,9 @@ if [ "$INSTALL" -eq 1 ]; then
   (cd app && npm install --silent) && echo "installed app dependencies"
   if [ -f tools/Control_Centre/package.json ]; then
     (cd tools/Control_Centre && npm install --silent && npm run tokens --silent) && echo "installed Control Centre dependencies and generated its design tokens"
+  fi
+  if [ -f tools/Design_System/package.json ]; then
+    (cd tools/Design_System && npm install --silent) && echo "installed design system workbench dependencies"
   fi
 fi
 

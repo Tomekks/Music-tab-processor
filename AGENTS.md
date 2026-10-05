@@ -16,6 +16,8 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 - Any `git push`, PR or deploy, every time. For `app/` ask the three-way question: **Push to git?** /
   **Push to git & deploy?** / **Skip for now?** Deploy is `npx vercel deploy --prod --yes` from the repo
   root, never from `app/`. Never deploy because a push happened, or require a push before a local check.
+- Pushes to GitHub always go through a PR from a branch, never straight to `master` (GitHub blocks it
+  anyway: the `verify` check must pass). Branch name `chore/…`, `feat/…` or `docs/…`.
 - Deleting or moving anything: permission for that specific case, never carried over from an earlier yes.
 - Touching `contracts/`, config or secrets. A `contracts/` change is its own flagged task, never a side effect.
 - Anything that makes this machine reachable from the internet (port, tunnel, inbound access): explain
@@ -42,13 +44,25 @@ Read this file and your task file. Orientation docs (`docs/GUIDE.md`, `docs/ARCH
 - Mechanical before reasoning: if grep, a count or a script can answer it, use that, not a model's judgment.
 
 ## Honesty
-- State assumptions and name the alternatives; if something is genuinely unclear, stop and ask. Never
-  guess and proceed.
+- State assumptions and name alternatives; if genuinely unclear, stop and ask. Never guess and proceed.
 - Never mislead or downplay a change. Say plainly what is risky, uncertain, or was not run or checked.
 - No "verified" or "done" without the command and its output beside it.
 
+## Reply style
+Reader is a designer, not an engineer. Write so a junior engineer follows it the first time.
+- Answer first, in plain words. No greetings, no restating the question, no closing offers.
+- Prefer the plain word; define a term only if the owner hasn't seen it yet. No analogies.
+- Decisions and plans: what it means for you, the main risk and how you would see it, then my pick
+  and why in one clause. Describe options only when there is a real choice.
+- Warn before acting on: contracts/, config, secrets; deleting or moving files; anything hard to
+  undo; new dependencies or moving parts; anything that changes what you see in the app;
+  anything that raises cost or token use.
+- Confirmations are one or two lines. Extra detail only when asked. No tables or long code unless asked.
+- Wrap-up logs how many times the owner asked to "explain simpler" this session (target: under 2).
+
 ## Session
 - One job per session. A decision made in chat goes into the task file as one line, at once.
+- A command offered for the owner to launch (server, watcher) comes with its stop command and a free-port check in the next blocks.
 - Before you stop, update the task file's `Next:` line and checklist. `/start` begins a session.
 
 ## Testing, debugging, done

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Runs the builder model on one task file, with the checks that don't need a model before and after.
 # Usage: scripts/run-builder.sh <task-file>      (run it inside the task's worktree, on its branch)
-# Env:   BUILDER_MODEL (default muse-spark), BUILDER_TIMEOUT seconds total (default 1200); dead runs are cut off early, see scripts/oc-run.sh
+# Env:   BUILDER_MODEL (default muse-spark#high), BUILDER_TIMEOUT seconds total (default 1200); dead runs are cut off early, see scripts/oc-run.sh
 set -uo pipefail
 TASK="${1:?usage: scripts/run-builder.sh <task-file>}"
 cd "$(git rev-parse --show-toplevel)" || exit 1
 [ -f "$TASK" ] || { echo "no such file: $TASK"; exit 1; }
 
-MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor}"
+MODEL="${BUILDER_MODEL:-opencode-go/muse-spark-1.3-contributor#high}"
 TIMEOUT="${BUILDER_TIMEOUT:-1200}"
 case "$MODEL" in *free*) echo "refusing free-tier model: $MODEL"; exit 1 ;; esac
 case "$MODEL" in opencode-go/*) ;; *) echo "builder model must be an opencode-go/ id, got: $MODEL"; exit 1 ;; esac
@@ -33,14 +33,14 @@ fi
 
 # 4. Area rules the builder would not load on its own (opencode only reads AGENTS.md files above the start folder).
 EXTRA=""
-for area in app pipeline tools/Control_Centre; do
-  if printf '%s\n' "${PATHARGS[@]}" | grep -q "^$area/"; then EXTRA="$EXTRA $area/AGENTS.md"; fi
+for area in app pipeline tools/Control_Centre tools/Design_System; do
+  if printf '%s\n' "${PATHARGS[@]}" | grep -q "^$area/" && [ -f "$area/AGENTS.md" ]; then EXTRA="$EXTRA $area/AGENTS.md"; fi
 done
 
 mkdir -p docs/work/runs; LOG="${LOG_FILE:-docs/work/runs/$(basename "$TASK" .md).log}"
 PROMPT="Build the task in $TASK. Read docs/rules/executor.md first, then the task file${EXTRA:+, then these area rules:$EXTRA}. Follow them exactly."
 if [ "${BUILDER_MODE:-}" = critique ]; then
-  PROMPT="Do NOT build anything. Read docs/rules/executor.md and the task file $TASK as if you had to build it cold. Under '## Questions' in the task file write at most 5 lines, only things that are ambiguous, contradictory or missing so you could not build it without guessing (name the exact spot). No suggestions, no redesign, no improvements. If you could build it as written, write exactly: clear. Edit nothing else."
+  PROMPT="Do NOT build anything. Read docs/rules/executor.md and the task file $TASK as if you had to build it cold. Under '## Questions' in the task file write at most 5 lines, only things that are ambiguous, contradictory or missing so you could not build it without guessing (name the exact spot). Also allowed, prefixed CUT: or REUSE:, a thing the brief asks you to build that could be skipped, or that existing code already does (cite file:line). No other suggestions, no redesign, no improvements. If you could build it as written and see nothing to cut or reuse, write exactly: clear. Edit nothing else."
 fi
 
 echo "run-builder: $MODEL on $TASK (timeout ${TIMEOUT}s, log $LOG)"

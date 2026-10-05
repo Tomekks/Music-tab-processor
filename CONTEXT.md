@@ -44,6 +44,14 @@ Always-latest — every consumer reads the design system's current values on
 each load, no versioning or pinning. CSS-only output (custom properties);
 no second export format planned until a real non-CSS consumer exists.
 
+**Project**:
+A consumer that reads exactly one Brand's CSS: today the web app and Control
+Center, later any other site. Which Brand a Project uses is set in the
+workbench under the Brand (planned; today one `active-brand.json` pointer
+serves every consumer).
+_Avoid_: App, site, consumer (all fine in conversation, but Project is the
+product term)
+
 ### Tokens and structure
 
 **Token**:

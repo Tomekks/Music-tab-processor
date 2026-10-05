@@ -14,6 +14,6 @@ only way to preview a token change against real components.
 
 **Current state:** the whole app runs on the generated token stylesheet now (Task 3's cutover),
 not just `SheetDiagram.tsx` — see `app/packages/design-system/README.md` for what the package
-contains and `docs/superpowers/specs/2026-09-19-design-system-design.md` for the full design.
+contains and `docs/old_workflow_docs/superpowers/specs/2026-09-19-design-system-design.md` for the full design.
 
 **Three named theme presets now, not two.** Added 2026-09-11: `patchbay`, a child theme (same "only the keys that differ" structure as `claude`) matching `docs/patch-bay/`'s interactive diagrams exactly — select it here to preview that palette against the app's real mocked components. See `docs/patch-bay/STATUS.md` for the manual-sync convention between the two files.

@@ -24,6 +24,9 @@ Files touched: <<N>>. Expected diff: <<~lines>>. New tests: <<N, max about 10>>.
 ## Risk
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<none | list>>. Review level: <<0 | 1 | 2>>.
 
+## Review
+(Level 1: the reviewer's bullets. Level 2: one line per question in docs/rules/review.md, with evidence; delegate.sh refuses the builder without 8 answers.)
+
 ## Steps
 - [ ] <<step, in order, one line each; tick as you go>>
 
@@ -31,8 +34,11 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): <<n
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Put anything else in the owner checklist.)
 - Run: `<<command>>` / Expected: <<exact output or footer line>>
 - For logic: each rule names the test that fails if the rule is broken.
+- For UI in an e2e area (`docs/rules/e2e-areas.txt`): name the spec that covers each behavior, or say why none.
 
 ## Owner checklist
+Launch (if it needs servers): free-port check, start and stop commands, one per code block (AGENTS.md Session rule).
+Human checks only; mark a check an e2e spec already covers `(automated)` and leave it out of the owner's list.
 - [ ] <<one action>> → <<one expected result>>
 
 ## Questions
