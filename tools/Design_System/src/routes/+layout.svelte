@@ -145,7 +145,7 @@
 
 	.body {
 		display: grid;
-		grid-template-columns: 180px 1fr 320px;
+		grid-template-columns: 200px 1fr 320px;
 		min-height: 0;
 	}
 
