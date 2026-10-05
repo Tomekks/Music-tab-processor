@@ -1,10 +1,14 @@
-import { createStaged, redoEdit, stageEdit, undoEdit } from "./stagedEdits.js";
+import { createStaged, discardAll, rebaseOnFile, redoEdit, stageEdit, undoEdit } from "./stagedEdits.js";
 
 let history = $state(createStaged());
+let loadedVersion = $state<string | null>(null);
 
 export const stagedStore = {
   get staged() {
     return history.staged;
+  },
+  get loadedVersion() {
+    return loadedVersion;
   },
   get count() {
     return Object.keys(history.staged).length;
@@ -23,5 +27,12 @@ export const stagedStore = {
   },
   redo() {
     history = redoEdit(history);
+  },
+  discard() {
+    history = discardAll(history);
+  },
+  sync(tokens: { path: string; value: string }[], version: string) {
+    loadedVersion = version;
+    history = rebaseOnFile(history, tokens);
   },
 };

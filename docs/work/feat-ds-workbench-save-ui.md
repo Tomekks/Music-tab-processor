@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-ui
-Next: builder (Muse #high). Both critics done 2026-10-05, gaps folded in. Owner approved "What changes for you" 2026-10-05; master (with 1g0) merged in.
+Next: verify-task PASS 2026-10-05; endpoint curl checks are Claude's after the build. Ready for finish.sh.
 Written against: 416882f (master merged, includes 1g0)
 
 Split decided 2026-10-04: 1g is the server side and the staged-edit logic (this file); 1g-ui (`feat-ds-workbench-save-bar.md`) is the top-bar Save/Discard/status UI plus its browser specs. 1g-ui is built after this one.
@@ -46,12 +46,12 @@ Triggers: writes files (via the existing `saveTokenEdits`, which also rewrites t
 - Q8 claims not fully verified: `saveTokenEdits` without `regenerate` needs the brand dir to equal the active brand (`active-brand.json` is `default`, checked); `buildActiveBrand` writes `app/app/design-tokens.generated.css` (exists, gitignored, checked). Builder permissions (`.opencode/agents/builder.md:18-36`): no "Modify only" path matches a deny rule (no `*.config.*`, `AGENTS.md`, `package.json`, `docs/*`); `check-brief.sh` enforces it. Not checked: that `invalidateAll()` reloads the page data (used in 1g-ui, not here).
 
 ## Steps
-- [ ] Red then green, `brandDir.test.ts` first: `brandDir()` returns `resolveBrandDirForSlug("default")` (exported by `app/packages/design-system/src/build-tokens.mjs:64`; import it, do not rebuild the path; `// @ts-ignore` like `+page.server.ts:4`) when `WORKBENCH_BRAND_DIR` is unset; returns that variable's value when it is an absolute path to a folder containing `tokens.json`; throws an Error naming `WORKBENCH_BRAND_DIR` and the path when it is relative or has no `tokens.json`; `regenerateFor()` returns `undefined` when the variable is unset and a function that does nothing when it is set. Tests must set and restore `process.env` themselves. Then add `lib/server/brandDir.ts` (reads `process.env` at call time, not import time).
-- [ ] Red then green, `stagedEdits.test.ts` first: `discardAll(state)` empties `staged`, pushes the old map onto `past` and clears `future` (like every new edit; so `undoEdit` restores it; with nothing staged it returns the same state); `rebaseOnFile(state, tokens)` where tokens are `{path, value}`: an entry whose staged hex equals the new file value (case-insensitive) is dropped, a surviving entry gets `was` set to the new file value, an entry whose path is gone is dropped, and when anything changed `past` and `future` are cleared; when nothing differs it returns the very same state object. Then add both to `stagedEdits.ts`.
-- [ ] `staged.svelte.ts`: add `loadedVersion` (get) and `sync(tokens, version)` that stores the version and applies `rebaseOnFile`, plus `discard()` calling `discardAll`. Nothing else changes.
-- [ ] `foundations/+page.server.ts`: use `brandDir()` instead of the inline path, and return `version` from `readTokens` beside `tokens` and `previewUrl`.
-- [ ] `routes/api/save/+server.ts`: `POST` only. Parse the JSON body in try/catch (bad JSON gives 400 `{ ok:false, code:"invalid", error }`); require `edits` to be a non-empty array and `loadedVersion` a string, else 400 the same way; call `saveTokenEdits({ brandDir: brandDir(), loadedVersion, edits, regenerate: regenerateFor() })`; return the result as JSON with status 200 for ok, 409 for `changed-on-disk`, 400 for `invalid`, 500 otherwise. Never take a path or brand from the request. Never throw (wrap in try/catch, 500 with `code:"write-failed"` and the message).
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] Red then green, `brandDir.test.ts` first: `brandDir()` returns `resolveBrandDirForSlug("default")` (exported by `app/packages/design-system/src/build-tokens.mjs:64`; import it, do not rebuild the path; `// @ts-ignore` like `+page.server.ts:4`) when `WORKBENCH_BRAND_DIR` is unset; returns that variable's value when it is an absolute path to a folder containing `tokens.json`; throws an Error naming `WORKBENCH_BRAND_DIR` and the path when it is relative or has no `tokens.json`; `regenerateFor()` returns `undefined` when the variable is unset and a function that does nothing when it is set. Tests must set and restore `process.env` themselves. Then add `lib/server/brandDir.ts` (reads `process.env` at call time, not import time).
+- [x] Red then green, `stagedEdits.test.ts` first: `discardAll(state)` empties `staged`, pushes the old map onto `past` and clears `future` (like every new edit; so `undoEdit` restores it; with nothing staged it returns the same state); `rebaseOnFile(state, tokens)` where tokens are `{path, value}`: an entry whose staged hex equals the new file value (case-insensitive) is dropped, a surviving entry gets `was` set to the new file value, an entry whose path is gone is dropped, and when anything changed `past` and `future` are cleared; when nothing differs it returns the very same state object. Then add both to `stagedEdits.ts`.
+- [x] `staged.svelte.ts`: add `loadedVersion` (get) and `sync(tokens, version)` that stores the version and applies `rebaseOnFile`, plus `discard()` calling `discardAll`. Nothing else changes.
+- [x] `foundations/+page.server.ts`: use `brandDir()` instead of the inline path, and return `version` from `readTokens` beside `tokens` and `previewUrl`.
+- [x] `routes/api/save/+server.ts`: `POST` only. Parse the JSON body in try/catch (bad JSON gives 400 `{ ok:false, code:"invalid", error }`); require `edits` to be a non-empty array and `loadedVersion` a string, else 400 the same way; call `saveTokenEdits({ brandDir: brandDir(), loadedVersion, edits, regenerate: regenerateFor() })`; return the result as JSON with status 200 for ok, 409 for `changed-on-disk`, 400 for `invalid`, 500 otherwise. Never take a path or brand from the request. Never throw (wrap in try/catch, 500 with `code:"write-failed"` and the message).
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. The endpoint check is Claude's, after the build.)
@@ -69,3 +69,26 @@ None for this task: nothing visible changes. The owner checks for Save and Disca
 (none open; Muse critic 2026-10-05 "clear"; deepseek critic 2026-10-05 asked 2: discardAll clearing `future`, and reusing `resolveBrandDirForSlug`. Both verified and folded into Steps.)
 
 ## Report
+- `bash scripts/verify-task.sh` → PASS (app verify + design-system 50/50; e2e not run) ✓
+- Rule `discardAll` then `undoEdit` restores → broke push onto `past`, test "discardAll empties staged as one undoable step" failed, restored ✓
+- Rule `rebaseOnFile` drops saved entries (case-insensitive) → broke to case-sensitive compare, test "rebaseOnFile drops saved entries and keeps pending ones" failed, restored ✓
+- Rule bad `WORKBENCH_BRAND_DIR` refused → broke relative-path throw to return, test "relative path is refused with a message" failed, restored ✓
+- Claude endpoint curl checks (save 200, stale 409, read-only not-writable, bad body 400, real brand untouched) → Not run (builder cannot start servers; for Claude after build) ✗/Not run
+- Route handler itself has no unit test; 1g-ui browser specs cover it end to end (said plainly per brief) ✗/Not run
+- e2e-revisit NOTE (workbench UI changed, no spec in app/e2e/workbench): expected — browser Save/Discard specs belong to 1g-ui, not this task.
+- Decisions the spec didn't settle: NONE (all messages/shapes follow the brief; `loadedVersion` starts as `null`; `rebaseOnFile` `was` compare is exact-match, `now`-vs-file compare is case-insensitive).
+- Spec facts wrong: NONE.
+- Noticed but not touched: NONE.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-save-ui.md             | 27 +++++++---
+ .../Design_System/src/lib/server/brandDir.test.ts  | 62 ++++++++++++++++++++++
+ tools/Design_System/src/lib/server/brandDir.ts     | 22 ++++++++
+ tools/Design_System/src/lib/staged.svelte.ts       | 13 ++++-
+ tools/Design_System/src/lib/stagedEdits.test.ts    | 45 ++++++++++++++++
+ tools/Design_System/src/lib/stagedEdits.ts         | 35 ++++++++++++
+ tools/Design_System/src/routes/api/save/+server.ts | 41 ++++++++++++++
+ .../src/routes/foundations/+page.server.ts         |  6 +--
+ 8 files changed, 240 insertions(+), 11 deletions(-)
+```
