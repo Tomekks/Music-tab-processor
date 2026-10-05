@@ -2,8 +2,13 @@
 
 Status: active
 Branch: feat/ds-workbench-color-polish
-Next: Claude reviews this brief, then one builder run at high effort
+Next: Owner clarifies scope gaps below, then builder resumes
 Written against: d8fb6b7
+
+## Questions
+- Q1 (blocks picker undo): `pick()` must call `stageEdit` with `replace`, but the store that owns history (`tools/Design_System/src/lib/staged.svelte.ts`, `stage()` → `stageEdit()`) is NOT in `Modify only`, so the flag has no path through. Should `staged.svelte.ts` be added to scope to forward an optional `replace` arg (default `false`)?
+- Q2 (blocks picker alpha): keeping 8-digit hex "through `normalizeColor`" requires changing `tools/Design_System/src/lib/colorEdit.ts` (`normalizeColor` currently does `parsed.alpha(1).toHex()`, forcing opaque), which is NOT in `Modify only`. Should `colorEdit.ts` be added to scope? If not, is a `+page.svelte`-only alpha-append hack acceptable instead?
+- Drift check note: `git status --porcelain` is outside this session's allowed shell (only `bash scripts/verify-task.sh` / `finish.sh` permitted), so the porcelain check was not run; the three quoted excerpts (`stagedEdits.ts:38` was-line, `+page.svelte:197` isAlpha, `Preview.tsx:112` h1) were verified by read and still match. `bash scripts/verify-task.sh` passes on the untouched tree (PASS, 205 app+design-system tests).
 
 ## What changes for you
 Each color row reads left to right: the 32px swatch, the hex field, the CSS variable name without the leading dashes (for example `color-accent`, easier to match against the web app), then an info icon. The dot after the name becomes a small "Edited" label. The long `semantic.color.…` path is gone from the row, and two tabs, "Color" and "Focus", split the list. Hovering the info icon shows one tooltip (today two appear), and every row has the icon: rows without a description show a dimmed icon saying "No description yet". The picker's opacity field is back (it shows 0 to 1). Pressing Cmd+Z after using the picker returns to the color you had before opening it, in one step, and the "unsaved changes" list always shows the color from the file as "was". The preview loses its "Workbench preview" heading, and its first column (Variant, Button primary and so on) is left-aligned and no longer bold. Editing `accent` also reaches anything that depends on a dependent color.
@@ -59,10 +64,16 @@ Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): non
 - [ ] Picker opacity field shows; drag the color area after lowering opacity → opacity stays; lowering opacity changes the preview
 - [ ] Preview has no "Workbench preview" heading; the first column is left-aligned and not bold
 
-## Questions
-(none open)
+## Questions (continued)
+See top of file — open questions blocking build.
 
 ## Report
 <Filled by the builder when done, see docs/rules/executor.md: commit, git diff --stat, verify footer, one line
 per acceptance check (command → observed → ✓/✗), Decisions the spec didn't settle (or NONE), wrong spec facts,
 anything noticed but not touched. Mark anything not run as `Not run`.>
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ docs/work/feat-ds-workbench-color-polish2.md | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+```
