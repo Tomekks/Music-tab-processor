@@ -193,9 +193,44 @@ test("two edits to one token show the file value as was in the changes panel", a
   await page.getByRole("button", { name: /unsaved change/ }).click();
   const panel = page.getByTestId("changes-panel");
   await expect(panel).toBeVisible();
-  await expect(panel.getByText(fileValue, { exact: true })).toBeVisible();
-  await expect(panel.getByText("#0000ff", { exact: true })).toBeVisible();
+  await expect(panel.getByText("color-accent", { exact: true })).toBeVisible();
+  await expect(panel.getByText("semantic.color.accent")).toHaveCount(0);
+  const row = panel.locator(".change-row").filter({ hasText: "color-accent" });
+  await expect(row).toHaveCount(1);
+  await expect(row).toContainText(fileValue);
+  await expect(row).toContainText("#0000ff");
+  await expect(row).toContainText("→");
+  await expect(
+    row.getByRole("button", { name: "Reset color-accent in changes" }),
+  ).toBeVisible();
   await expect(panel.getByText("#ff0000", { exact: true })).toHaveCount(0);
+});
+
+// Reset in the changes list removes one edit, keeps the other, and undo brings it back.
+test("Reset in the changes list removes only that edit and undo brings it back", async ({
+  page,
+}) => {
+  await openFoundations(page);
+  const accentField = hexField(page, "color-accent");
+  const borderField = hexField(page, "color-border");
+  const accentFile = await accentField.inputValue();
+  await stageColor(page, "color-accent", "red");
+  await stageColor(page, "color-border", "blue");
+  await page.getByRole("button", { name: /unsaved change/ }).click();
+  const panel = page.getByTestId("changes-panel");
+  await expect(panel).toBeVisible();
+  await panel.getByRole("button", { name: "Reset color-accent in changes" }).click();
+  await expect(accentField).toHaveValue(accentFile);
+  await expect(borderField).toHaveValue("#0000ff");
+  await expect(page.getByRole("button", { name: "1 unsaved change" })).toBeVisible();
+  await expect(panel.getByText("color-accent")).toHaveCount(0);
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect(accentField).toHaveValue("#ff0000");
+  await expect(page.getByRole("button", { name: "2 unsaved changes" })).toBeVisible();
+  await panel.getByRole("button", { name: "Reset color-accent in changes" }).click();
+  await panel.getByRole("button", { name: "Reset color-border in changes" }).click();
+  await expect(page.getByRole("button", { name: "0 unsaved changes" })).toBeVisible();
+  await expect(panel.getByText("No unsaved changes.")).toBeVisible();
 });
 
 // The documented host is 127.0.0.1: the preview must answer the page's own origin, or colors vanish after a page change.
