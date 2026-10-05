@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-no-opacity
-Next: builder done (verify-task PASS) → Claude runs e2e workbench specs, then merge to master before 1g
+Next: owner checklist (3 items), then merge to master (ask first), then 1g; builder run 87752 tok 182s, 11 e2e specs pass, new spec fails when isAlpha is restored
 Written against: 6edafa5
 
 ## What changes for you
