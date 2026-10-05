@@ -21,4 +21,15 @@ ok "$?" 1 "dropped heading refused"; ok "$(cmp -s "$T/t.md" "$T/orig.md" && echo
 cp "$T/orig.md" "$T/t.md"
 COMPACT_CMD=': > "$TASK_FILE"' bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
 ok "$?" 1 "emptied file refused"; ok "$(cmp -s "$T/t.md" "$T/orig.md" && echo same)" same "emptied run restores the file"
+
+# model-answer path: the script writes the model's printed answer into the file
+cp "$T/orig.md" "$T/t.md"; sed '/^line [5-9][0-9]$/d' "$T/orig.md" > "$T/ans.md"
+COMPACT_OUT_CMD="printf '> build · m\n\n'; cat $T/ans.md" bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
+ok "$?" 0 "model answer with header accepted"; ok "$(grep -c '^> build' "$T/t.md")" 0 "header line stripped"
+cp "$T/orig.md" "$T/t.md"
+COMPACT_OUT_CMD="printf '"'```markdown\n'"'; cat $T/ans.md; printf '"'```\n'"'" bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
+ok "$?" 0 "fenced answer accepted"; ok "$(grep -c '^```' "$T/t.md")" 0 "fence stripped"
+cp "$T/orig.md" "$T/t.md"
+COMPACT_OUT_CMD=":" bash scripts/compact-task.sh "$T/t.md" >/dev/null 2>&1
+ok "$?" 1 "empty model answer refused"; ok "$(cmp -s "$T/t.md" "$T/orig.md" && echo same)" same "empty answer restores the file"
 exit $fail
