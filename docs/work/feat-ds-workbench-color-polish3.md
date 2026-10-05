@@ -2,47 +2,42 @@
 
 Status: active
 Branch: feat/ds-workbench-color-polish3
-Next: owner approves the "What changes for you" line, then Level 1 review, then builder run.
+Next: builder run (ONE run, muse #high), then Claude runs e2e and mutation checks, then owner checklist. 1g0 merged to master (9f57283); brief reduced to remove Reset-on-row.
 Written against: 0481a9f
 Template: quick
 
 ## What changes for you
-The color picker opens beside the swatch you clicked and stays fully on screen; the unsaved-changes list looks like the color list and each line reads `background  [swatch] #faf9f5 → [swatch] #a89444  Reset` on one row, in a box that fits its content; every edited color has a Reset (in the list and on its row) that drops just that edit.
+The color picker opens beside the swatch you clicked and stays fully on screen; the unsaved-changes list looks like the color list and each line reads `color-accent  [swatch] #faf9f5 → [swatch] #a89444  Reset` on one row, in a box that fits its content. (The Reset on the color row itself already exists from 1g0; the list gets the same one.)
 
 ## Scope
 **Modify only:**
-- `tools/Design_System/src/lib/stagedEdits.ts`
-- `tools/Design_System/src/lib/stagedEdits.test.ts`
-- `tools/Design_System/src/lib/staged.svelte.ts`
 - `tools/Design_System/src/lib/pickerPosition.ts` and `pickerPosition.test.ts` (new: the placement helper, one file per pure helper like `previewHeight.ts`)
 - `tools/Design_System/src/routes/+layout.svelte`
 - `tools/Design_System/src/routes/foundations/+page.svelte`
-- `app/e2e/workbench/colors.spec.ts` (update the changes-panel spec for the new row text; add one Reset spec)
+- `app/e2e/workbench/colors.spec.ts` (update the changes-panel spec for the new row text; add one spec for Reset in the list)
 
 **Do NOT touch:**
 - `contracts/`, config, secrets, `package.json`, `docs/*`, anything not listed above
-- the generated CSS, Save and Discard (task 1g), other token types, the web app
+- `stagedEdits.ts` and `staged.svelte.ts` (Reset needs no new store code), the generated CSS, Save and Discard (1g), other token types, the web app
 
 ## Risk
 Triggers (deletes, `contracts/`, shell or network, schema, deploy, secrets): none. Review level: 1.
 
 ## Rules
-- `resetEdit(state, path)` removes only that path's entry from `staged`, adds one history step (so Cmd+Z brings the edit back) and clears `future`; unknown path returns the state unchanged. Test fails if other entries are touched or no history step is added.
 - Picker position: on open it is placed to the right of the clicked swatch (8px gap), and its top is clamped so the whole popover stays inside the viewport (flip left if there is no room on the right). One pure helper with a test for: fits as is, too low, too far right.
-- Changes list row, one line: CSS variable name without `--` (same as the color list, not `semantic.color.…`), derived in the layout with `cssVarNameForPath(path)` imported from `app/packages/design-system/src/css-var-naming.mjs` (pure, no imports; the same import `lib/server/colorTokens.ts:4` uses), because the panel only has the staged `path`, old swatch + hex, `→`, new swatch + hex, Reset. Reuse the color list's swatch size and code style; the box width fits its content (no fixed `min-width: 360px`).
-- Reset in the changes list and the Reset on the edited color row call the same store `reset(path)`. When the last edit is reset the label reads "0 unsaved changes" and the list shows "No unsaved changes."
-- Keep accessible names stable: the top-bar button still matches `/unsaved change/`; the panel keeps `data-testid="changes-panel"`.
+- Changes list row, one line: CSS variable name without `--` (same as the color list, not `semantic.color.…`), derived in the layout with `cssVarNameForPath(path)` imported from `app/packages/design-system/src/css-var-naming.mjs` (pure, no imports; the same import `lib/server/colorTokens.ts:4` uses), because the panel only has the staged `path`; old swatch + hex, `→`, new swatch + hex, Reset. Reuse the color list's swatch size and code style; the box width fits its content (no fixed `min-width: 360px`).
+- Reset in the changes list does what the row's Reset (1g0) does: `stagedStore.stage(path, entry.was, entry.was)` (one undo step, Cmd+Z brings the edit back). When the last edit is reset the label reads "0 unsaved changes" and the list shows "No unsaved changes."
+- Keep accessible names stable: the top-bar button still matches `/unsaved change/`; the panel keeps `data-testid="changes-panel"`; the row's `Reset {varName}` button name is unchanged (give the list's button a different name, e.g. `Reset {varName} in changes`).
 
 ## Acceptance checks
 - Run: `bash scripts/verify-task.sh` / Expected: `verify-task: PASS`
-- Rule "Reset touches one entry": the `stagedEdits` test fails if another path is removed or `past` is unchanged.
 - Rule "picker stays in viewport": the helper test fails on the too-low and too-far-right cases.
 
 ## Owner checklist
 - [ ] Click a swatch near the bottom and the right of the window: the picker opens beside it, fully visible
 - [ ] Change two colors: the unsaved list shows one line per color, box fits the content, same look as the color list
-- [ ] Reset on one line removes only that color (preview returns to the file color); the other stays; Cmd+Z brings it back
-- [ ] Edited rows show Reset next to "Edited"; Reset on the last edit gives "0 unsaved changes"
+- [ ] Reset on one list line removes only that color (preview returns to the file color); the other stays; Cmd+Z brings it back
+- [ ] Reset on the last edit gives "0 unsaved changes"
 - [ ] Preview still lists the five Components, States default / hover / pressed / disabled (no change expected)
 
 ## Review
