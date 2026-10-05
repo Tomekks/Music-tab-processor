@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: run finish.sh (report written, verify PASS).
+Next: ROUND 4 (toast, tooltip, their specs; steps marked ROUND 4). Rounds 1-3 are committed and work.
 Written against: 73ff30c (round 3; code and round 2 committed)
 
 ## What changes for you
@@ -21,6 +21,7 @@ Decision 2026-10-05: on an edited row whose token is linked to a primitive (valu
 - `tools/Design_System/src/routes/+layout.svelte`
 - `tools/Design_System/src/routes/foundations/+page.svelte`
 - `app/e2e/workbench/save.spec.ts`
+- `app/e2e/workbench/colors.spec.ts`
 - `app/e2e/workbench/helpers.ts`
 
 **Do NOT touch:**
@@ -30,7 +31,7 @@ Decision 2026-10-05: on an edited row whose token is linked to a primitive (valu
 **Delete (approved with this brief):** None.
 
 ## Size
-Files touched: 8 (same files in round 2). Expected diff: ~450 lines. New tests: ~8 unit, ~7 browser.
+Files touched: 9 (colors.spec.ts added in round 4). Expected diff: ~450 lines. New tests: ~8 unit, ~7 browser.
 
 ## Risk
 Triggers: none added by this task (it calls the 1g endpoint; specs write only to the temp copy). Review level: 1.
@@ -54,7 +55,10 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - [x] ROUND 2, `foundations/+page.svelte`: "Will unlink from main" gets the same size as the Reset button next to it (reuse Reset's class or copy its font-size, height and padding; no new colors).
 - [x] ROUND 2, `save.spec.ts`: update the Save spec (text is now `Saved` followed by a number, not "Saved 1 token"); add: after Save, "Revert" writes the old RESOLVED hex (`#ae97f7`) into the copy's `semantic.color.accent` as a plain value (not the `{primitive.color.accent}` link, per the decision) and shows "Reverted"; the countdown goes away after 5 seconds (use `page.clock` to move time, not a real 5 s wait).
 - [x] ROUND 3 (found by Claude's break-check): in `save.spec.ts` test "Saved countdown goes away after 5 seconds", the last assertion only checks `/Saved [1-5]/` is gone, so a countdown that never clears (status turns to "Saved 0", Revert stays) still passes. After `fastForward(5000)` also assert the "Revert" button has count 0 and no text matching `/Saved/` remains. Change nothing else.
-- [x] Run `bash scripts/verify-task.sh` until PASS
+- [ ] ROUND 4 (owner, 2026-10-05; the toast REPLACES where states 4-7 show their message). `routes/+layout.svelte`: every status message (Saved countdown + Revert, Reverted, Discarded + Undo, failed + Dismiss/Retry save, changed on disk + Review changes/Reload) and its buttons move out of the top bar into one toast: `position: fixed`, top of the page, horizontally centred (`left: 50%; transform: translateX(-50%)`), above everything (`z-index` over the picker popover's 20 and the tooltip's 30), `role="status"`, same texts, same accessible button names, same timers and clearing rules as now. The top bar then never changes except for the existing count button, **Discard** and **Save** (shown while something is staged; Save reads "Saving..." while saving). Retry save: while a failed toast shows, the toast holds the **Retry save** button and the bar's Save is hidden, as the toast now carries the retry.
+- [ ] ROUND 4 (owner, tooltip clipped under the Inspector, seen on the `accent` row): in `foundations/+page.svelte` the `.tooltip` (line ~409) is one unwrapped line centred on the icon inside the scrolling canvas column, so a long description runs past the canvas edge. Make it wrap (`white-space: normal`, `width: max-content`, `max-width: 240px`) and anchor its right edge to the icon (`right: 0; left: auto; transform: none`) so it grows leftwards, away from the Inspector. No new colors, no JS.
+- [ ] ROUND 4 specs in `save.spec.ts` and `colors.spec.ts` (update, do not delete, existing assertions; text and button names are unchanged so most keep passing): (a) after Discard the toast (`getByRole("status")`) is visible, horizontally centred within 4 px of the viewport centre and its top is under 100 px, and the count button's `x` and `y` are the same as just before Discard; (b) hovering the `accent` info icon shows the tooltip fully inside the canvas: its bounding box right edge is at or left of the canvas's right edge (use the element `.canvas`) and its left edge is at or right of the canvas's left edge.
+- [ ] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Claude runs the specs.)
