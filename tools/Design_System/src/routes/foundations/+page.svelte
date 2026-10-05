@@ -6,6 +6,7 @@
 	import { previewVars } from "$lib/stagedEdits.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
 	import { isPreviewReady, readPreviewHeight } from "$lib/previewHeight.js";
+	import { pickerPosition } from "$lib/pickerPosition.js";
 
 	let { data }: { data: PageData } = $props();
 
@@ -17,6 +18,9 @@
 	let drafts: Record<string, string> = $state({});
 	let errors: Record<string, string> = $state({});
 	let pickerFor: string | null = $state(null);
+	let pickerPos: { left: number; top: number } | null = $state(null);
+	let anchorRect: { x: number; y: number; width: number; height: number } | null = null;
+	let popoverEl: HTMLDivElement | null = $state(null);
 	let pickerSessionContinued = $state(false);
 	let editingPath: string | null = $state(null);
 	let listHeight = $state(0);
@@ -50,7 +54,11 @@
 	});
 
 	$effect(() => {
-		if (pickerFor === null) pickerSessionContinued = false;
+		if (pickerFor === null) {
+			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
+		}
 	});
 
 	$effect(() => {
@@ -61,11 +69,15 @@
 			if (target.closest("[data-picker-popover]") || target.closest("[data-swatch-button]")) return;
 			pickerFor = null;
 			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
 		};
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
 				pickerFor = null;
 				pickerSessionContinued = false;
+				pickerPos = null;
+				anchorRect = null;
 			}
 		};
 		window.addEventListener("pointerdown", onPointerDown);
@@ -128,15 +140,37 @@
 		sendTokens();
 	}
 
-	function openPicker(path: string) {
+	function openPicker(path: string, anchor: HTMLElement | null) {
 		if (pickerFor === path) {
 			pickerFor = null;
 			pickerSessionContinued = false;
+			pickerPos = null;
+			anchorRect = null;
 			return;
+		}
+		if (anchor) {
+			const rect = anchor.getBoundingClientRect();
+			anchorRect = { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+			pickerPos = pickerPosition(
+				anchorRect,
+				{ width: 280, height: 360 },
+				{ width: window.innerWidth, height: window.innerHeight },
+			);
 		}
 		pickerFor = path;
 		pickerSessionContinued = false;
 	}
+
+	$effect(() => {
+		if (pickerFor === null || !popoverEl || !anchorRect) return;
+		const width = popoverEl.offsetWidth || 280;
+		const height = popoverEl.offsetHeight || 360;
+		pickerPos = pickerPosition(
+			anchorRect,
+			{ width, height },
+			{ width: window.innerWidth, height: window.innerHeight },
+		);
+	});
 
 	onMount(() => {
 		const onMessage = (event: MessageEvent) => {
@@ -204,8 +238,8 @@
 						data-swatch-button
 						aria-label="Pick a color for {varName}"
 						title="Pick a color for {varName}"
-						onclick={() => {
-							openPicker(token.path);
+						onclick={(event) => {
+							openPicker(token.path, event.currentTarget);
 						}}
 						style="width: 32px; height: 32px; background: {display}; border: 1px solid #e0e0e0; border-radius: 0; cursor: pointer; padding: 0;"
 					></button>
@@ -264,7 +298,14 @@
 						</button>
 					</div>
 					{#if pickerFor === token.path}
-						<div class="picker-popover" data-picker-popover>
+						<div
+							class="picker-popover"
+							data-picker-popover
+							bind:this={popoverEl}
+							style={pickerPos
+								? `position: fixed; left: ${pickerPos.left}px; top: ${pickerPos.top}px;`
+								: "position: fixed;"}
+						>
 							<ColorPicker
 								hex={display}
 								isDialog={false}
@@ -376,9 +417,7 @@
 		display: block;
 	}
 	.picker-popover {
-		position: absolute;
-		top: 100%;
-		right: 0;
+		position: fixed;
 		z-index: 20;
 		background: #ffffff;
 		border: 1px solid #e0e0e0;
