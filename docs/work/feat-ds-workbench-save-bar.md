@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: run `bash scripts/finish.sh`, then Claude runs the specs and the owner checklist.
+Next: ROUND 3 (one spec assertion, see the step); then Claude re-runs the specs and break-checks, then the owner checklist.
 Written against: ca2d462 (round 2; code from 939d8d8 still in place)
 
 ## What changes for you
@@ -53,6 +53,7 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - [x] ROUND 2, `routes/+layout.svelte`: before Save runs, remember `before = [{ path, was }]` for every staged entry. After a successful Save and `invalidateAll()`, state 4 shows `savedLabel(n)` counting down once a second from 5 to 1 (one `setInterval`, cleared with the other timers), then clears, with a **Revert** button (accessible name exactly "Revert"). Revert POSTs `revertBody(before, stagedStore.loadedVersion)` to `/api/save`, then `invalidateAll()` and shows "Reverted" for 5 seconds with no button; a failed Revert shows the `describeSaveFailure` message with only **Dismiss** (no Retry save, Discard, Review changes or Reload: nothing is staged after a Save, so those would do nothing). Staging a new edit while "Saved" shows clears it, like Discarded. Remove the old "Saved N tokens HH:MM" text and `savedLabel(count, date)` usages.
 - [x] ROUND 2, `foundations/+page.svelte`: "Will unlink from main" gets the same size as the Reset button next to it (reuse Reset's class or copy its font-size, height and padding; no new colors).
 - [x] ROUND 2, `save.spec.ts`: update the Save spec (text is now `Saved` followed by a number, not "Saved 1 token"); add: after Save, "Revert" writes the old RESOLVED hex (`#ae97f7`) into the copy's `semantic.color.accent` as a plain value (not the `{primitive.color.accent}` link, per the decision) and shows "Reverted"; the countdown goes away after 5 seconds (use `page.clock` to move time, not a real 5 s wait).
+- [ ] ROUND 3 (found by Claude's break-check): in `save.spec.ts` test "Saved countdown goes away after 5 seconds", the last assertion only checks `/Saved [1-5]/` is gone, so a countdown that never clears (status turns to "Saved 0", Revert stays) still passes. After `fastForward(5000)` also assert the "Revert" button has count 0 and no text matching `/Saved/` remains. Change nothing else.
 - [ ] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
