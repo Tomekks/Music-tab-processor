@@ -1,32 +1,22 @@
+
+→ Read docs/work/feat-ds-workbench-save-bar.md 
 # Task: Workbench save bar and browser specs (1g-ui)
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: ROUND 4 (toast, tooltip, their specs; steps marked ROUND 4). Rounds 1-3 are committed and work.
+Next: (usage at wrap: 5h 19%, weekly 59%, ctx 22%; measure total 26 marks over about 3.2 h) ROUND 4 not built yet (toast for all status messages, tooltip wrap/right-anchor, their specs; steps marked ROUND 4, brief critic-checked and amended, Written against current). Start `bash scripts/delegate.sh docs/work/feat-ds-workbench-save-bar.md` (Muse #high, steps 100) after `lsof -nP -iTCP:3000 -iTCP:5174 -sTCP:LISTEN` is empty; then Claude runs `cd app && npm run test:e2e:workbench`, break-checks (spec (b) must be red on the old tooltip CSS), then owner checklist, then PR (ask owner: push?). Local only: this worktree and branch feat/ds-workbench-save-bar; nothing pushed.
 Written against: d5fb01e (round 4; rounds 1-3 committed)
 
 ## What changes for you
-The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes your staged color edits to `tokens.json` through the endpoint from 1g, then the page reloads the file; the status slot says "Saved 5" counting down 4, 3, 2, 1 with a **Revert** button (owner change 2026-10-05, replaces the "Saved N tokens HH:MM" label); Revert writes the previous hex values back and says "Reverted" for 5 seconds, and a token that was linked to a primitive stays a plain hex (decided 2026-10-05: no exact-file restore). Discard clears the staged edits and says "Discarded N changes" with an **Undo** for 5 seconds. If the file changed on disk since the page loaded, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file and keeps your edits on top). If the file is read-only or the write fails, the message says nothing was written, stays until you press **Dismiss** or a retry works, your edits stay staged, and **Retry save** replaces Save. After this task the browser specs also cover Save, Discard, Undo and both failure states, against a throwaway copy of the brand folder, never the real `tokens.json`.
-
-Decision 2026-10-05: on an edited row whose token is linked to a primitive (value like `{primitive.color.x}` in the file), show "Will unlink from main" next to "Edited"/Reset. Saving it replaces the link with its own hex and never changes the primitive (kept deliberately). Decided: `listColorTokens` gains `isAlias: boolean` (straight from `descriptor.isAlias`, `field-descriptors.mjs:112`; the label is fixed text, the target path is never shown); the page shows the label when the row is staged and `isAlias` is true. Reconnect-to-main is parked for slice 2.
+The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes staged color edits to `tokens.json` through the 1g endpoint, then reloads the file; **Revert** writes the previous hex values back and says "Reverted" for 5 s. Discard clears the staged edits and says "Discarded N changes" with **Undo** for 5 s. If the file changed on disk, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file, keeps your edits on top). If read-only or the write fails, the message says nothing was written until **Dismiss** or a retry works; edits stay staged and **Retry save** replaces Save.
+Decision 2026-10-05: on an edited alias row show "Will unlink from main" next to "Edited"/Reset; saving replaces the link with its own hex and never changes the primitive. `listColorTokens` gains `isAlias: boolean` (`field-descriptors.mjs:112`); reconnect-to-main parked for slice 2.
 
 ## Scope
-**Setup done by Claude before the build (the builder cannot edit config):** `app/playwright.workbench.config.ts` creates a copy of `brands/default` in the OS temp folder when the config loads, sets `process.env.WORKBENCH_BRAND_DIR` to it, only when that variable is not already set because Playwright workers load the config again and inherit the parent's env (so the workbench server, started by the same config, and the specs both see it), and nothing else changes.
+Setup done by Claude before the build (the builder cannot edit config): `app/playwright.workbench.config.ts` copies `brands/default` to the OS temp folder and sets `WORKBENCH_BRAND_DIR`, only when that variable is not already set (workers inherit the parent's env), so the workbench server and specs see the same copy.
 
-**Modify only:**
-- `tools/Design_System/src/lib/server/colorTokens.ts` 
-- `tools/Design_System/src/lib/server/colorTokens.test.ts`
-- `tools/Design_System/src/lib/saveState.ts`
-- `tools/Design_System/src/lib/saveState.test.ts`
-- `tools/Design_System/src/routes/+layout.svelte`
-- `tools/Design_System/src/routes/foundations/+page.svelte`
-- `app/e2e/workbench/save.spec.ts`
-- `app/e2e/workbench/colors.spec.ts`
-- `app/e2e/workbench/helpers.ts`
+**Modify only:** `tools/Design_System/src/lib/server/colorTokens.ts`, `.../colorTokens.test.ts`, `tools/Design_System/src/lib/saveState.ts`, `.../saveState.test.ts`, `tools/Design_System/src/routes/+layout.svelte`, `tools/Design_System/src/routes/foundations/+page.svelte`, `app/e2e/workbench/save.spec.ts`, `app/e2e/workbench/colors.spec.ts`, `app/e2e/workbench/helpers.ts`.
 
-**Do NOT touch:**
-- `contracts/`, config, secrets, `package.json`, `docs/*`, anything not listed above
-- `app/` other than the two e2e files, the package layer, the endpoint and store from 1g (call them, do not change them)
+**Do NOT touch:** `contracts/`, config, secrets, `package.json`, `docs/*`, anything not listed above; `app/` other than the two e2e files, the package layer, the endpoint and store from 1g (call them, do not change them).
 
 **Delete (approved with this brief):** None.
 
@@ -38,120 +28,44 @@ Triggers: none added by this task (it calls the 1g endpoint; specs write only to
 
 ## Review
 Level 1 (questions 1, 4, 6), 2026-10-05.
-- Q1 serves the story: Save, Discard, Undo and the seven states trace to plan row 1g and `wireframes/save-states-v1`. The disabled Save at `routes/+layout.svelte:52` is the only thing being replaced; 1g's `sync`/`discard`/`loadedVersion` exist at `staged.svelte.ts` (merged, `9edd6f8`). "Will unlink from main" traces to the 2026-10-05 owner decision, not the wireframe.
-- Q4 simplest: `foundations/+page.svelte` already has an `$effect` on `data.tokens` (`+page.svelte:46-54`, only resets list height), so the new `sync` effect is a separate small `$effect`, not an edit of it. Cuttable without losing the story: nothing except the "Review changes" button could reuse the existing changes popover (`+layout.svelte:57`); keep it, it is already built.
-- Q6 FIXED in the brief: the planned `playwright.workbench.config.ts` setup ("copy at config load, set `process.env`") would run again in each Playwright worker (workers load the config file), giving specs a different temp copy than the server edits, so Save specs would read the wrong file. Brief now says: only create the copy when `WORKBENCH_BRAND_DIR` is not already set (workers inherit the parent's env).
-- Q6 also: unit tests (`saveState.test.ts`) cannot catch a broken top bar; only the five browser specs do, and the brief already requires breaking each behavior once to watch its spec fail (`docs/rules/e2e.md`). Not covered at all: the "Will unlink" label; it gets a `colorTokens.test.ts` test for `isAlias` but no browser spec (add one line to the Save spec: after staging `accent`, the label shows).
-- Not checked: `invalidateAll()` re-running `load` on a SvelteKit page (brief says this already; the Save spec "count back to nothing" will prove it end to end).
+- Q1 serves the story: Save, Discard, Undo and the seven states trace to plan row 1g and `wireframes/save-states-v1`; the disabled Save at `routes/+layout.svelte:52` is the only thing replaced, and 1g's `sync`/`discard`/`loadedVersion` exist at `staged.svelte.ts` (merged, `9edd6f8`). "Will unlink from main" traces to the 2026-10-05 owner decision.
+- Q4 simplest: the new `sync` effect is a separate small `$effect`, not an edit of the existing `data.tokens` effect (`+page.svelte:46-54`). Nothing cuttable except "Review changes", which reuses the existing changes popover (`+layout.svelte:57`); kept.
+- Q6 FIXED: the temp copy is created only when `WORKBENCH_BRAND_DIR` is unset (workers load the config and inherit the parent's env). Unit tests cannot catch a broken top bar; only the browser specs do, each broken once. "Will unlink" gets a `colorTokens.test.ts` `isAlias` test plus one Save-spec line. Not checked: `invalidateAll()` re-running `load`; the Save spec's "count back to nothing" proves it end to end.
 
 ## Steps
-- [x] Red then green, `saveState.test.ts` first: `buildSaveBody(staged, loadedVersion)` returns `{ edits: [{ path, value: now }], loadedVersion }`; `describeSaveFailure(code, error)` (`code` and `error` are the `code` and `error` strings of the endpoint's JSON reply, `save/+server.ts:13`; both may be undefined) returns `{ kind, message }`: `changed-on-disk` gives kind `"changed"` with a message naming `tokens.json` and saying nothing was written; `not-writable`, `write-failed` and `invalid` give kind `"failed"` with "Nothing was written." plus the server's text; an unknown or missing code gives the generic "Nothing was written." failure; `savedLabel(count, date)` returns `Saved 1 token 14:05` / `Saved 3 tokens 14:05` (24-hour, zero-padded); `discardedLabel(count)` returns `Discarded 1 change` / `Discarded 3 changes`. Then add `saveState.ts` (pure, no Svelte, no fetch).
-- [x] Red then green, `colorTokens.test.ts` first: `accent` (alias in the real file) has `isAlias` true; a literal-hex token has `isAlias` false. Then add `isAlias` to `ColorToken`/`listColorTokens`.
-- [x] `foundations/+page.svelte`: show "Will unlink from main" beside "Edited"/Reset for staged rows with `isAlias`; and an `$effect` calling `stagedStore.sync(data.tokens, data.version)` whenever `data` changes (nothing else in that page changes).
-- [x] `routes/+layout.svelte`, replacing the disabled Save button, the seven states of `wireframes/save-states-v1`: (1) 0 changes: the existing "0 unsaved changes" count button stays (existing specs `colors.spec.ts:28,90,232` assert it), with no Discard or Save beside it; (2) unsaved: the existing "N unsaved changes" button, **Discard**, **Save**; (3) saving: Save and Discard both disabled (wireframe `save-states-v1` line 200, so the bar does not jump) and Save reads "Saving..."; (4) saved: `savedLabel` for 5 s, then clears; (5) discarded: `discardedLabel` plus **Undo** (`stagedStore.undo()`) for 5 s, cleared early when a new edit is staged; (6) failed: message stays until "Dismiss" or a Save works, **Retry save** replaces Save; (7) changed on disk: message naming `tokens.json`, **Review changes** (opens the existing changes list) and **Reload** (`await invalidateAll()`; `sync` keeps staged edits on top; afterwards the message is gone and the bar shows state 2, or state 1 if no edit is left). Save does `fetch("/api/save", { method: "POST", ... })` with `buildSaveBody` and `stagedStore.loadedVersion`; on `ok` it awaits `invalidateAll()` and then shows state 4 with the count the server returned; any failure (including `fetch` throwing or a non-JSON reply) shows state 6 or 7 from `describeSaveFailure`. Clear any pending timer before starting a new one. Accessible names are exactly "Save", "Discard", "Undo", "Retry save", "Reload", "Review changes", "Dismiss".
-- [x] `app/e2e/workbench/save.spec.ts` plus a `resetBrandCopy()` helper in `helpers.ts` (copies the real `brands/default/tokens.json` over the file in `process.env.WORKBENCH_BRAND_DIR` before each test; throws if the variable is unset so a spec can never write the real file): stage `accent` and Save → "Saved 1 token", count back to nothing, the copy's `tokens.json` holds the new hex; Discard → "Discarded 1 change", field back to the file value, Undo brings the edit back; change the copy by hand while an edit is staged, Save → message naming `tokens.json`, copy unchanged by Save, Reload keeps the staged edit and the message disappears; make the copy read-only, Save → "Nothing was written", edit stays staged, `chmod` back, Retry save works; a stage while "Discarded" shows clears the Undo; staging `accent` shows "Will unlink from main" beside Reset.
-- [x] ROUND 2 (owner changes 2026-10-05; supersedes the "(4) saved" wording above). Red then green, `saveState.test.ts` first: replace `savedLabel` with `savedLabel(secondsLeft)` returning `Saved 5` ... `Saved 1`, and add `revertBody(before, loadedVersion)` returning `{ edits: [{ path, value: was }], loadedVersion }` for the `before` list `[{ path, was }]`. Then update `saveState.ts`.
-- [x] ROUND 2, `routes/+layout.svelte`: before Save runs, remember `before = [{ path, was }]` for every staged entry. After a successful Save and `invalidateAll()`, state 4 shows `savedLabel(n)` counting down once a second from 5 to 1 (one `setInterval`, cleared with the other timers), then clears, with a **Revert** button (accessible name exactly "Revert"). Revert POSTs `revertBody(before, stagedStore.loadedVersion)` to `/api/save`, then `invalidateAll()` and shows "Reverted" for 5 seconds with no button; a failed Revert shows the `describeSaveFailure` message with only **Dismiss** (no Retry save, Discard, Review changes or Reload: nothing is staged after a Save, so those would do nothing). Staging a new edit while "Saved" shows clears it, like Discarded. Remove the old "Saved N tokens HH:MM" text and `savedLabel(count, date)` usages.
-- [x] ROUND 2, `foundations/+page.svelte`: "Will unlink from main" gets the same size as the Reset button next to it (reuse Reset's class or copy its font-size, height and padding; no new colors).
-- [x] ROUND 2, `save.spec.ts`: update the Save spec (text is now `Saved` followed by a number, not "Saved 1 token"); add: after Save, "Revert" writes the old RESOLVED hex (`#ae97f7`) into the copy's `semantic.color.accent` as a plain value (not the `{primitive.color.accent}` link, per the decision) and shows "Reverted"; the countdown goes away after 5 seconds (use `page.clock` to move time, not a real 5 s wait).
-- [x] ROUND 3 (found by Claude's break-check): in `save.spec.ts` test "Saved countdown goes away after 5 seconds", the last assertion only checks `/Saved [1-5]/` is gone, so a countdown that never clears (status turns to "Saved 0", Revert stays) still passes. After `fastForward(5000)` also assert the "Revert" button has count 0 and no text matching `/Saved/` remains. Change nothing else.
+- Done (rounds 1-3, committed): `saveState.ts`/`.test.ts` — `buildSaveBody`, `describeSaveFailure`, `discardedLabel`, and round 2's `savedLabel(secondsLeft)` (5→1) + `revertBody(before, loadedVersion)`.
+- Done: `colorTokens.ts`/`.test.ts` — `isAlias` on `ColorToken`/`listColorTokens`.
+- Done: `foundations/+page.svelte` — "Will unlink from main" for staged alias rows (same size as Reset) plus the `$effect` calling `stagedStore.sync(data.tokens, data.version)`.
+- Done: `routes/+layout.svelte` — the seven `wireframes/save-states-v1` states replacing the disabled Save, then round 2's Save countdown with **Revert** (`revertBody`, "Reverted" 5 s, failed Revert shows only **Dismiss**).
+- Done: `save.spec.ts` + `resetBrandCopy()` in `helpers.ts` (writes to the temp copy only, throws if the variable is unset); round 3 added the countdown-clear asserts.
 - [ ] ROUND 4 (owner, 2026-10-05; the toast REPLACES where states 4-7 show their message). `routes/+layout.svelte`: every status message (Saved countdown + Revert, Reverted, Discarded + Undo, failed + Dismiss/Retry save, changed on disk + Review changes/Reload) and its buttons move out of the top bar into one toast: `position: fixed`, top of the page, horizontally centred (`left: 50%; transform: translateX(-50%)`), above everything (`z-index` over the picker popover's 20 and the tooltip's 30), `role="status"`, same texts, same accessible button names, same timers and clearing rules as now. The top bar then never changes except for the existing count button, **Discard** and **Save** (shown while something is staged; Save reads "Saving..." while saving). Retry save: while a failed toast shows, the toast holds the **Retry save** button and the bar's Save is hidden, as the toast now carries the retry.
 - [ ] ROUND 4 (owner, tooltip clipped under the Inspector, seen on the `accent` row): in `foundations/+page.svelte` the `.tooltip` (line ~409) is one unwrapped line centred on the icon inside the scrolling canvas column, so a long description runs past the canvas edge. Make it wrap (`white-space: normal`, `width: max-content`, `max-width: 240px`) and anchor its right edge to the icon (`right: 0; left: auto; transform: none`) so it grows leftwards, away from the Inspector. No new colors, no JS.
-- [ ] ROUND 4 specs in `save.spec.ts` and `colors.spec.ts` (update, do not delete, existing assertions; text and button names are unchanged so most keep passing): (a) after Discard the toast (`getByRole("status")`) is visible, horizontally centred within 4 px of the viewport centre and its top is under 100 px, it is not inside the top bar (the `header` or bar element that holds the count button), and the bar's height and the count button's `y` are the same as just before Discard (`x` and width may change: the label changes and Discard/Save go away); (b) with `page.setViewportSize({ width: 1000, height: 720 })` first (at the default 1280 the old tooltip also fits, so the check could not fail), hovering the `accent` info icon shows the tooltip fully inside the canvas: its bounding box right edge is at or left of the canvas's right edge (use the element `.canvas`) and its left edge is at or right of the canvas's left edge.
+- [ ] ROUND 4 specs in `save.spec.ts` and `colors.spec.ts` (update, do not delete, existing assertions; text and button names are unchanged so most keep passing): (a) after Discard the toast (`getByRole("status")`) is visible, horizontally centred within 4 px of the viewport centre and its top is under 100 px, it is not inside the top bar, and the bar's height and the count button's `y` are the same as just before Discard; (b) with `page.setViewportSize({ width: 1000, height: 720 })` first, hovering the `accent` info icon shows the tooltip fully inside the canvas (`.canvas`).
 - [ ] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Claude runs the specs.)
 - Run: `bash scripts/verify-task.sh` / Expected: `verify-task: PASS`
 - Rule: failure kinds and labels → `saveState.test.ts` fails if a message stops saying nothing was written or stops naming `tokens.json`, or if `changed-on-disk` stops returning kind `"changed"` (assert `kind` in every case).
-- Claude after the build: `lsof -i :3000 -i :5174` clear, then `cd app && npm run test:e2e:workbench` / Expected: all specs pass; Claude breaks each new behavior once (round 1's five, plus Revert and the countdown) to see its spec fail (`docs/rules/e2e.md`); `git status` shows the real `brands/default/tokens.json` untouched.
+- Claude after the build: `lsof -i :3000 -i :5174` clear, then `cd app && npm run test:e2e:workbench` / Expected: all specs pass; Claude breaks each new behavior once (round 1's five, plus Revert and the countdown) to see its spec fail; `git status` shows the real `brands/default/tokens.json` untouched.
 
 ## Owner checklist
 Looks and feel only (specs check behavior); this uses the real file, so the last step reverts it.
-- [ ] On `/foundations` change `accent`, press Save → status reads "Saved" with a countdown 5 to 1 and a Revert button, then clears; `git diff --stat` shows only `app/packages/design-system/brands/default/tokens.json`; the web app on localhost shows the new accent.
+- [ ] On `/foundations` change `accent`, press Save → status reads "Saved" with a countdown 5 to 1 and a Revert button, then clears; `git diff --stat` shows only `app/packages/design-system/brands/default/tokens.json`; the web app shows the new accent.
 - [ ] Press Save then Revert within 5 s → "Reverted"; `git diff` shows `semantic.color.accent` as a plain `#...` value (the link is not restored, expected).
-- [ ] Press Discard on another edit → "Discarded 1 change" and Undo; the layout of the top bar does not jump between states.
+- [ ] Press Discard on another edit → "Discarded 1 change" and Undo; the top bar does not jump between states.
 - [ ] Revert: `git checkout app/packages/design-system/brands/default/tokens.json`; `git status` is clean for that file.
+
+## Decisions (2026-10-05, in chat)
+- Revert writes the old resolved hex back; a token linked to a primitive stays a plain hex (no exact-file restore).
+- All status messages and their buttons live in one fixed top-centre toast (round 4); the bar keeps count, Discard, Save. Count button keeps showing at 0 changes (existing specs assert it).
+- Muse is not a brief critic; deepseek-v4.1-flash#max is, glm-5.3-flash#high the backup (commits 1844ff7, fc2ae68 on chore/sync-local-master). Builder steps raised to 100. Builder cost rounds 1-3: about 285k tokens, $0.04, 9 min.
 
 ## Questions
 (none open; round 4 deepseek#max critic asked 2, both real, folded in: spec (a) asserts bar height and count `y`, not `x`; spec (b) uses a 1000 px viewport so it can fail. Claude confirms spec (b) is red on the old CSS in the break-check.)
 
 ## Report
-
-### Builder ROUND 2 (2026-10-05)
-- `bash scripts/verify-task.sh` → verify-task: PASS ✓ (typecheck ✓ lint ✓ unit 65/65 design-system 142/142; e2e not run by verify script)
-- Rule (failure kinds and labels) → `saveState.test.ts` asserts `kind` in every case plus `tokens.json` naming and "Nothing was written." text; covered by verify unit run ✓
-- Break-each (round 2): `savedLabel` text broken → `savedLabel counts down from Saved 5 to Saved 1` failed ✓ (restored); `revertBody` value mapped to path → both `revertBody` tests failed ✓ (restored)
-- Claude e2e + break-each-behavior + real `tokens.json` untouched → Not run (for Claude: `cd app && npm run test:e2e:workbench`)
-- Decisions the spec didn't settle: Saved countdown uses one `setInterval` only (no parallel timeout; final tick clears when seconds drop below 1, `clearTimer` clears it with the other timers); failed Revert uses a new `revert-failed` status showing only Dismiss; `reverted` clears only via its own 5 s timeout (spec required early-clear only for Saved/Discarded); "Will unlink" copies only Reset's 12 px font-size into `.unlink` (no color, no underline/pointer) instead of reusing the button class; countdown spec installs `page.clock` after page open but before Save; the read-only Retry spec's `Saved 1 token` assert was updated to the new `Saved [1-5]` text as a forced follow-on in the same file.
-- Spec fact wrong: NONE found (resolved `#ae97f7` taken from the brief; the Revert spec will prove it end to end).
-- Noticed but not touched: NONE new (round 1 files `colorTokens.ts`/`helpers.ts` left as committed).
-
-### Builder re-run (2026-10-05, code kept from 939d8d8, no source rewrite)
-- `bash scripts/verify-task.sh` → verify-task: PASS ✓
-- Rule (failure kinds and labels) → `saveState.test.ts` asserts `kind` in every case plus `tokens.json` naming and "Nothing was written." text; covered by verify unit run ✓
-- Claude e2e + break-each-behavior + real `tokens.json` untouched → Not run (builder cannot run e2e; for Claude)
-- Decisions the spec didn't settle: NONE (no code changed in this re-run)
-- Spec fact wrong: NONE found in this re-run
-- Noticed but not touched: `git log` shows code commit 939d8d8 sits below docs commits 1844ff7..09219ca; drift check `git diff --stat 08d85d4..HEAD` shows only this task file, so Modify-only files are untouched since the build.
-
-### Checkpoint (written by scripts/finish.sh)
-```
- app/e2e/workbench/helpers.ts                       |  16 +++
- app/e2e/workbench/save.spec.ts                     | 103 ++++++++++++++++++
- docs/work/feat-ds-workbench-save-bar.md            |   3 +
- tools/Design_System/src/lib/saveState.test.ts      |  69 +++++++++++++
- tools/Design_System/src/lib/saveState.ts           |  55 ++++++++++
- .../src/lib/server/colorTokens.test.ts             |   6 ++
- tools/Design_System/src/lib/server/colorTokens.ts  |   2 +
- tools/Design_System/src/routes/+layout.svelte      | 115 ++++++++++++++++++++-
- .../src/routes/foundations/+page.svelte            |   7 ++
- 9 files changed, 375 insertions(+), 1 deletion(-)
----
-VERIFY: PASS
-  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 5s)
-  not run: e2e (12 specs; npm run test:e2e)
-pre-commit: OK
-```
-
-### Checkpoint (written by scripts/finish.sh)
-```
- docs/work/feat-ds-workbench-save-bar.md | 25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
-```
-
-### Checkpoint (written by scripts/finish.sh)
-```
- app/e2e/workbench/save.spec.ts                     | 27 +++++++-
- docs/work/feat-ds-workbench-save-bar.md            | 22 +++++--
- tools/Design_System/src/lib/saveState.test.ts      | 41 ++++++++++--
- tools/Design_System/src/lib/saveState.ts           | 19 ++++--
- tools/Design_System/src/routes/+layout.svelte      | 75 ++++++++++++++++++++--
- .../src/routes/foundations/+page.svelte            |  5 +-
- 6 files changed, 160 insertions(+), 29 deletions(-)
----
-VERIFY: PASS
-  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 7s)
-  not run: e2e (12 specs; npm run test:e2e)
-pre-commit: OK
-```
-
-### Builder ROUND 3 (2026-10-05)
-- `bash scripts/verify-task.sh` → verify-task: PASS ✓ (typecheck ✓ lint ✓ unit 65/65 design-system 142/142; e2e not run by verify script)
-- Rule (failure kinds and labels) → `saveState.test.ts` asserts `kind` in every case plus `tokens.json` naming and "Nothing was written." text; covered by verify unit run, source untouched in round 3 ✓
-- Claude e2e + break-each-behavior + real `tokens.json` untouched → Not run (for Claude: `cd app && npm run test:e2e:workbench`)
-- Decisions the spec didn't settle: NONE (kept the existing `/Saved [1-5]/` count-0 assert and added the two asked asserts: Revert button count 0 and `/Saved/` count 0)
-- Spec fact wrong: NONE found
-- Noticed but not touched: uncommitted diff for `save.spec.ts` is 2 insertions only (the two new asserts); committed diff 73ff30c..HEAD for `save.spec.ts` is empty, so no drift.
-
-### Checkpoint (written by scripts/finish.sh)
-```
- app/e2e/workbench/save.spec.ts          |  2 ++
- docs/work/feat-ds-workbench-save-bar.md | 17 ++++++++++++++---
- 2 files changed, 16 insertions(+), 3 deletions(-)
----
-VERIFY: PASS
-  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 5s)
-  not run: e2e (12 specs; npm run test:e2e)
-pre-commit: OK
-```
+- Rounds 1-3 built and committed; `bash scripts/verify-task.sh` → PASS each time (typecheck, lint, unit 65/65, design-system 142/142; e2e not run by the script).
+- Checkpoints: round 1 (9 files, +375/-1), round 2 (6 files, +160/-29), round 3 (2 files, +16/-3); all VERIFY: PASS, pre-commit: OK.
+- Break-each round 2: broken `savedLabel` text and `revertBody` value both failed their tests, restored. Spec fact wrong: NONE. Noticed but not touched: none new.
+- Claude e2e after round 3: `npm run test:e2e:workbench` → 22 passed; each new behavior broken once (Save, Discard, Undo-clear, Reload, Retry, unlink label, Revert, countdown) and its spec failed (the countdown spec needed a stronger assert, fixed in round 3); real `tokens.json` untouched (owner's own Save test reverted by owner). Round 4 not yet built.
