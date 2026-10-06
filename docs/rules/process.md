@@ -72,6 +72,6 @@ first if the log shows the limit).
 
 ## Docs hygiene
 Finished task files are deleted (git is the
-record). Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
+record). Owner-only to-dos live in the task file. Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
 comment on line 2 of every script) are enforced by `scripts/check-rules.sh`. Log anything the process
 misses that the old one caught in `docs/work/missed.md`.
