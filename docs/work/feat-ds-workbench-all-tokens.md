@@ -2,8 +2,8 @@
 
 Status: active
 Branch: feat/ds-workbench-all-tokens
-Next: owner approves "What changes for you"; then critic (`delegate.sh --critique`), Level 1 review, builder
-Written against: 454adf7
+Next: run the builder (delegate.sh), then Claude browser specs and break-check, then owner checklist
+Written against: 73c0657
 
 ## What changes for you
 The Foundations page keeps its Preview and Colors exactly as they are. Below Colors it now lists the other groups of design values, each under its own heading: Space, Radius, Typography, State opacities, Focus ring and Layout (20 values today). Each row shows the name, the real value (a linked value shows what it resolves to) and its description, or "No description yet". A short "On this page" row of links at the top jumps to each group, Colors included. Nothing here can be edited or saved yet: that is tasks 2b and 2c.
