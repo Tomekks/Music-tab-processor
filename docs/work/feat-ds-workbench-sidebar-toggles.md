@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-sidebar-toggles
-Next: owner checklist, then PR (ask first)
+Next: owner checklist passed 2026-10-05; PR next (ask first: Push to git?)
 Written against: 60cbbad
 
 ## What changes for you
@@ -49,9 +49,9 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 
 ## Owner checklist
 Launch (Claude gives the free-port check, start and stop blocks when it is time).
-- [ ] Look at the top bar → two icon buttons sit before "unsaved changes"; the left one is the panel icon, the right one the dashed-square pointer icon.
-- [ ] Click each toggle → its sidebar disappears and the canvas grows; click again → it returns; both hidden → canvas fills the window.
-- [ ] Hide a sidebar, stage a color change, Save → nothing else moves or breaks; reload the page → both sidebars are back.
+- [x] Look at the top bar → two icon buttons sit before "unsaved changes"; the left one is the panel icon, the right one the dashed-square pointer icon.
+- [x] Click each toggle → its sidebar disappears and the canvas grows; click again → it returns; both hidden → canvas fills the window.
+- [x] Hide a sidebar, stage a color change, Save → nothing else moves or breaks; reload the page → both sidebars are back.
 
 ## Questions
 clear
