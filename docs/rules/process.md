@@ -9,6 +9,13 @@ the topic (primary sources, raw pages, not summaries) and brings outside suggest
 Plans hold intent and task order; each task's detail lives in its own task file, written once. Big work
 (a new subsystem, or about 5+ tasks): split into slices, each with a one-sentence user story, split only
 at a real seam.
+**Plan critique (from 2026-10-05).** Once a plan is sliced (task table written), and before any task
+brief, one blind cold read of the slice by `opencode-go/deepseek-v4.1-flash#max` (backup `glm-5.3-flash#high`):
+the slice text goes in the prompt (no repo access, text-only answer, no file edits), 6 findings max: task
+order and hidden dependencies, tasks too big for one builder run, missing cases, acceptance checks that
+could pass while broken, anything that could damage data. Claude checks each finding against the code
+(a confident finding can be wrong), folds in the valid ones, and notes in the plan which were taken or
+dropped. The owner approves the revised slice. A slice whose critique found nothing real is recorded as such.
 
 ## Back half (per task)
 1. **Size it.** Can you describe the diff in one sentence, with no risk trigger? Then Level 0: just
