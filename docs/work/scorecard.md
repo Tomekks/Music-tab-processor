@@ -41,6 +41,7 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 
 | Date | Task | Findings | Real | False | Fix rounds it caused | Owner-test bugs it missed | Tokens / time |
 |---|---|---|---|---|---|---|---|
+| 2026-10-06 | planted-flaw trial (off-by-one in `app/lib/stepWindow.ts`, branch `chore/planted-flaw`) | 1 | 1 (caught: flagged `stepWindow.ts:12`, `stepWindow([5])` gives a 5-cell window, fix `lo + WINDOW_CELLS - 1`) | 0 | n/a (planted) | n/a | 17s, tok na |
 
 ## Brief drafts (trial from 2026-10-04)
 Muse drafts the brief, Claude reviews the diff and fixes what is wrong. Count real defects Claude had to fix (checked against the code).
