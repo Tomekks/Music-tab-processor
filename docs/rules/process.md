@@ -37,19 +37,18 @@ The owner approves the revised slice.
    a fixture that can't exercise the code, an unanswered scope question.
 3. **Review.** `/review` by Risk level (`docs/rules/review.md`). Level 0 none. Level 1 (default):
    questions 1, 4, 6 under `## Review`, max 5 bullets, no gate. Level 2 (risk trigger): all eight
-   (`delegate.sh` refuses without them). Verify a review's claims against the code before acting;
-   a critique can be false.
+   (`delegate.sh` refuses without them).
 4. **Build** with `scripts/run-builder.sh <task file>` in its own worktree for any Bounded-or-larger
    feature; trivial fixes stay on the current branch (`docs/rules/executor.md`).
 5. **Check** with `npm run verify` and read the footer (`docs/rules/verify.md`); UI in an e2e area also
    runs `scripts/run-e2e.sh` (`docs/rules/e2e.md`).
+5b. **Code review** (first 5 scorecard rows, then the owner decides): after `verify` passes, `bash scripts/review-code.sh <task file>`; see `docs/rules/review.md`.
 6. **Report** as in `docs/rules/executor.md` step 2, plus: UI = layout checks; risky = `file:line` of each
    guard + risk→test map. Then one scorecard line.
 7. **Owner tests** the checklist (written up front): launch block first (`AGENTS.md` Session rule), then human checks only; a check a spec covers is marked "automated". A check
    that writes to disk includes its revert.
 8. **Ship.** Push, PR, deploy: ask. After an
    `app/` change: preview with `npm run stage`, then the three-way ask in `AGENTS.md`.
-   CI requires the `verify` check on PRs.
 
 ## State
 The active task file in `docs/work/` is the only state; a decision made in chat becomes one line there
@@ -72,7 +71,7 @@ first if the log shows the limit).
   Scripts: only after a failure or a step done twice.
 
 ## Docs hygiene
-Indexes stay indexes; new reasoning goes in the topic file. Finished task files are deleted (git is the
-record). Owner-only to-dos live in the task file. Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
+Finished task files are deleted (git is the
+record). Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
 comment on line 2 of every script) are enforced by `scripts/check-rules.sh`. Log anything the process
 misses that the old one caught in `docs/work/missed.md`.

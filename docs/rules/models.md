@@ -8,6 +8,7 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
 | Brief drafting | Claude (Sonnet) | Trial from 2026-10-04; critics below read it blind |
 | Brief critics, build | `opencode-go/muse-spark-1.3-contributor#high` | Default builder (decided 2026-10-04 after the low/high test); the one brief critic is `opencode-go/deepseek-v4.1-flash#max` (owner decision 2026-10-05; Muse is not a critic, it said "clear" three times where deepseek found gaps); backup critic `opencode-go/glm-5.3-flash#high` (added 2026-10-05, untested); backup builder `deepseek-v4.1-flash#high` |
 | Blind second reviewer (`/review`, Level 1 and 2) | `opencode-go/deepseek-v4.1-flash#high`; backup `opencode-go/muse-spark-1.3-contributor#high` | Owner decision 2026-10-04; different family from the builder; fresh session; read-only. Use the backup with `REVIEW_MODEL=` if deepseek is down |
+| Blind code reviewer (after `verify`, trial) | same model and backup as the second reviewer | Read-only, fresh session, sees the diff and acceptance checks but not the builder log; `scripts/review-code.sh` |
 | Candidates for bake-off | `qwen3.8-max`, `kimi-k3`, `deepseek-v4-pro` | See below |
 
 ## Rules
@@ -26,7 +27,7 @@ Claude Pro allowance is the scarce resource, so Claude does the thinking and ope
   `opencode.json` switches off the GitHub and Figma connections and sets a paid default model.
 - `opencode stats --all --json` gives lifetime tokens and cost (the text table caps at 5 models and `--days 0` means today only); `scripts/measure.sh` records it before and after each builder run, and `measure.sh report <task>` adds the Claude tokens per step from the session transcripts.
 - **Reviews (decided 2026-10-03):** Level 1 (default) by the cheap reviewer above, fresh session, read-only. Level 2
-  (risk trigger) by Claude. Claude always spot-checks the final diff and checks a reviewer's claims against the code before
+  (risk trigger) by Claude. Claude reads the final diff itself before opening a code reviewer's findings, and checks a reviewer's claims against the code before
   acting. Log each review in `scripts/measure.sh` notes (who, findings, false findings) to judge the split on evidence.
 - Claude hands a task to the builder with `scripts/delegate.sh <task file>` (in its own worktree). It passes `-m`
   explicitly: `opencode run` ignores an agent's `model` setting and would use the default, which can be a

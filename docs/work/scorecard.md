@@ -36,6 +36,12 @@ Owner decision: every builder task from now on runs twice in parallel, in two wo
 | 2026-10-05 | 1f4 polish 3 brief | 1 (blind) | 2 (list needs `cssVarNameForPath` since the panel has only `path`; helper had no file in scope) | 1 (e2e is not run by `verify-task.sh`, Cmd+Z-after-Reset is my own add) | 0 (it also named the e2e gap, same as mine) | ~35k tok, 101s |
 | 2026-10-06 | code-review-step brief | 2 (blind, deepseek-v4.1-flash #high) | 1 (acceptance check "empty diff against master" cannot be run on this branch) | 3 (diff base wrong for a multi-task branch; `app/.env.local` readable; uncommitted work not in the diff) | 2 noisy (fold the test into `test-review-second.sh`; refuse an Acceptance body with no `Run:` lines) | ~93s, tok na |
 
+## Code review (trial from 2026-10-06)
+`scripts/review-code.sh` runs a cheap blind reviewer on the diff after `verify`. Keep if it caught 2+ real bugs that `verify` and Claude missed; drop if false findings outnumber real ones; decide after 5 rows.
+
+| Date | Task | Findings | Real | False | Fix rounds it caused | Owner-test bugs it missed | Tokens / time |
+|---|---|---|---|---|---|---|---|
+
 ## Brief drafts (trial from 2026-10-04)
 Muse drafts the brief, Claude reviews the diff and fixes what is wrong. Count real defects Claude had to fix (checked against the code).
 

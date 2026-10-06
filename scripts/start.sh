@@ -45,7 +45,8 @@ for f in "$WORK"/*.md; do
 done
 
 if [ "${#ACTIVE[@]}" -eq 0 ]; then
-  echo "task:    none active"
+  if [ -n "$WANT" ]; then echo "task:    no active task name contains \"$WANT\" (the argument is a file-name fragment, e.g. code-review)"
+  else echo "task:    none active"; fi
   # Pending plans: a plan with a top "**Status (date):**" line is live; make a task file to start it.
   PEND=""
   for p in docs/plans/*/; do
