@@ -128,6 +128,34 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 
 **Open:** where the Mode toggle sits until slice 2 (hidden); the picker's look (native fallback if it fights the design); whether 1b may use `node --test` as Control Center does (assumed yes).
 
+## Slice 2 spec: understand and tune any token (DRAFT 2026-10-05, owner approves)
+
+**Story:** I open Foundations, see every token with what it is for and where it is used, change it with the right control (number, slider, dropdown, color), in light or dark, and Save. **Starting point (checked 2026-10-05):** 86 tokens in `default/tokens.json` (48 color, 22 dimension, 7 percentage, 5 number, 4 font family), 16 with a description; the workbench reads and edits color tokens only, light values only (the 12 `dark.semantic` tokens are untouched).
+
+**Prior art (do before 2a):** one pass on raw sources for a token "Used by" view and number/slider inspector controls; spec gets one line "found X" or "nothing found". Slice 1 already chose `colord` and the slider package.
+
+**Out of scope:** child brands (slice 4), Projects, Glossary, Cmd+K, the sidebar-width `px`/`%` unit switch (own spec, later), the Button hover quirk, hover-to-highlight in the preview.
+
+**Reuse first (checked 2026-10-05, critic finding):** `app/packages/design-system/src/` already has `token-writes.mjs` (value validation, reset, `set-description`), `field-descriptors.mjs` (descriptors with dark values) and `resolve.mjs` (alias resolution) from the old editor. Each task starts by checking them and the 1d save path (`save-tokens.mjs`) before writing new code. Facts: dark values live in `dark.semantic.*` (12 tokens, mirror `semantic.color.*`, may be aliases like `{primitive.color.white}`); weights are `number` tokens named `*FontWeight` (6 `component.text.*` tokens), so the weight dropdown is a control for those tokens, not a type; `token-usage.test.mjs` is a test, not a data source, and the Component page has no Variant in its URL yet (both need building).
+
+**Shared rules for every write task (2b, 2d, 2g, 2h, 2i):** edit only the changed token fields in place; a save with no edits leaves `tokens.json` byte-identical (test); the whole result is re-validated before writing (every value type-checks, every alias resolves) and the write is refused on any failure; clearing a description deletes the key, never writes `""`.
+
+| # | Task | Who | Risk | Review |
+|---|---|---|---|---|
+| 2a | Read every token with type, light and dark value and `$description` (extend the color-only reader); Foundations lists all groups (Color, Space, Radius, Typography, State opacities, Focus ring, Layout) read-only with real values and jump links | builder | UI | Level 1 |
+| 2b | Staged edits, the changes list and the save path handle every type (color, dimension, percentage, number, fontFamily) and alias values; per-type validation with a clear refusal message; tests first per type, plus the byte-identical no-edit save. No new UI | builder | writes files | Level 2 |
+| 2c | One control table (type, min, max, step, unit per token, derived from the real file, owner approves the table) and the inspector controls: number input with optional slider, font dropdown, weight dropdown for the `*FontWeight` tokens; a token with no control entry shows read-only | builder | UI | Level 1 |
+| 2d | Mode toggle (light/dark), display only: preview and Foundations show the chosen Mode, remembered across reloads; nothing editable in dark yet. Check: a named computed CSS value in the preview iframe changes | builder | UI | Level 1 |
+| 2e | Dark editing: in dark Mode only tokens that have a `dark.semantic` value are editable (the rest are read-only with a note); staged, saved to the `dark.*` path; alias dark values stay aliases unless edited | builder | writes files | Level 2 |
+| 2f | Descriptions: info icon on rows and in the inspector title, hover shows, click edits, staged and saved to `$description`; empty shows "(no description yet)" | builder | writes files | Level 1 |
+| 2g | "Used by" data: a real module (not the test) that returns, for a token, the Component + Variant rows from the alias graph and the "code" rows from the scan; unit tests incl. a token with no usages | builder | logic | Level 1 |
+| 2h | "Used by" list in the inspector (expandable, empty state) and click-through: the Component page reads a Variant from its URL and selects it | builder | UI | Level 1 |
+| 2i | Reset one token to its factory entry (`tokens.default.json`, value and description for the active Mode) as a staged edit; disabled with a message when the token is not in the defaults; "Will unlink from main" state. "Reconnect to main" only if it fits cleanly, else stays parked | builder | writes files | Level 2 |
+
+**Slice acceptance (owner checklist, after 2i):** on Foundations, change a space value with the number field and a radius with the slider, the preview follows; switch to dark, edit a dark color, Save, the web app in dark mode shows it and `git diff` shows only `brands/default/tokens.json`; add a description to a token with none, Save, it shows after reload; open "Used by" on `accent`, click a row, land on that Component with the Variant selected; Reset a token, it returns to the factory value as an unsaved change; revert every test edit.
+
+**Risks to watch:** 2b, 2e and 2i change what gets written to `tokens.json` (the one file the web app reads, and the app is public once deployed), so they are Level 2 and need the 8 questions; 2e touches dark values that child brands (slice 4) will build on, so keep it to Main only and write no new schema. Critic: deepseek-v4.1-flash#max read this plan blind on 2026-10-05; its findings (dark representation, whole-file write guard, control table source, oversized 2d and 2f, reset edge cases) are folded in above after checking each against the code.
+
 ## Parked open items (saved 2026-10-03 so they are not forgotten)
 
 Answered from the old list above: 3 (override control: the "From Main" toggle column) and 9 (reset: Main = factory default, child = Revert to Main). Still open from it: 1 (flat A-Z vs categories), 2 (Components overview page), 4 (selected sidebar look), 5 (hover/pressed look), 6 (Ghost only on Icon Button), 7 (home for "Generate from seed colors"), 8 (the "Not deployed" status, decide with the Projects slice).
