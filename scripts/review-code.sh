@@ -50,7 +50,7 @@ if grep -qE "(Read|cat) .*[/ ]$NAME\.(md|log)" "$LOG"; then
 else
   echo "review-code: blind (the reviewer did not open $TASK or the builder log)."
 fi
-VARIANT=default; case "$MODEL" in *#*) VARIANT="$VARIANT" ;; esac   # measure.sh matches the session's model variant
+VARIANT=default; case "$MODEL" in *#*) VARIANT="${MODEL#*#}" ;; esac   # measure.sh matches the session's model variant
 read -r TOK COST <<< "$(MEASURE_TITLE_PREFIX=code-review bash "$SD/measure.sh" session "$NAME" "$T0" "$VARIANT" 2>/dev/null)"
 echo "review-code: findings by ${MODEL#opencode-go/} saved to $LOG ($(( $(date +%s) - T0 ))s, ${TOK:-na} tok). Write your own bullets first; open the log only after."
 [ "$SHOW" = --show ] && cat "$LOG"
