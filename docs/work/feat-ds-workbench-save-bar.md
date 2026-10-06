@@ -4,7 +4,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: Round 4 built and e2e-checked. Owner runs the checklist (note the toast now carries the status messages), then PR (ask owner: push?). Local only: nothing pushed.
+Next: Owner checklist passed 2026-10-05; PR next (ask owner: push?).
 Written against: 1ad43a3 (round 4; rounds 1-3 committed)
 
 ## What changes for you
@@ -60,10 +60,10 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 
 ## Owner checklist
 Looks and feel only (specs check behavior); this uses the real file, so the last step reverts it.
-- [ ] On `/foundations` change `accent`, press Save → status reads "Saved" with a countdown 5 to 1 and a Revert button, then clears; `git diff --stat` shows only `app/packages/design-system/brands/default/tokens.json`; the web app shows the new accent.
-- [ ] Press Save then Revert within 5 s → "Reverted"; `git diff` shows `semantic.color.accent` as a plain `#...` value (the link is not restored, expected).
-- [ ] Press Discard on another edit → "Discarded 1 change" and Undo; the top bar does not jump between states.
-- [ ] Revert: `git checkout app/packages/design-system/brands/default/tokens.json`; `git status` is clean for that file.
+- [x] On `/foundations` change `accent`, press Save → status reads "Saved" with a countdown 5 to 1 and a Revert button, then clears; `git diff --stat` shows only `app/packages/design-system/brands/default/tokens.json`; the web app shows the new accent.
+- [x] Press Save then Revert within 5 s → "Reverted"; `git diff` shows `semantic.color.accent` as a plain `#...` value (the link is not restored, expected).
+- [x] Press Discard on another edit → "Discarded 1 change" and Undo; the top bar does not jump between states.
+- [x] Revert: `git checkout app/packages/design-system/brands/default/tokens.json`; `git status` is clean for that file.
 
 ## Decisions (2026-10-05, in chat)
 - Revert writes the old resolved hex back; a token linked to a primitive stays a plain hex (no exact-file restore).
