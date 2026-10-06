@@ -5,7 +5,7 @@
 Status: active
 Branch: feat/ds-workbench-save-bar
 Next: (usage at wrap: 5h 19%, weekly 59%, ctx 22%; measure total 26 marks over about 3.2 h) ROUND 4 not built yet (toast for all status messages, tooltip wrap/right-anchor, their specs; steps marked ROUND 4, brief critic-checked and amended, Written against current). Start `bash scripts/delegate.sh docs/work/feat-ds-workbench-save-bar.md` (Muse #high, steps 100) after `lsof -nP -iTCP:3000 -iTCP:5174 -sTCP:LISTEN` is empty; then Claude runs `cd app && npm run test:e2e:workbench`, break-checks (spec (b) must be red on the old tooltip CSS), then owner checklist, then PR (ask owner: push?). Local only: this worktree and branch feat/ds-workbench-save-bar; nothing pushed.
-Written against: d5fb01e (round 4; rounds 1-3 committed)
+Written against: 1ad43a3 (round 4; rounds 1-3 committed)
 
 ## What changes for you
 The top bar gets a working **Save** button and a **Discard** link beside "N unsaved changes". Save writes staged color edits to `tokens.json` through the 1g endpoint, then reloads the file; **Revert** writes the previous hex values back and says "Reverted" for 5 s. Discard clears the staged edits and says "Discarded N changes" with **Undo** for 5 s. If the file changed on disk, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload** (Reload re-reads the file, keeps your edits on top). If read-only or the write fails, the message says nothing was written until **Dismiss** or a retry works; edits stay staged and **Retry save** replaces Save.
