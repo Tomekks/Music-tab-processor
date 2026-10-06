@@ -9,6 +9,12 @@ the topic (primary sources, raw pages, not summaries) and brings outside suggest
 Plans hold intent and task order; each task's detail lives in its own task file, written once. Big work
 (a new subsystem, or about 5+ tasks): split into slices, each with a one-sentence user story, split only
 at a real seam.
+**Spike (from 2026-10-05, every plan).** Before slicing, one quick throwaway spike in `research/<plan>-spike/`
+tests the riskiest technical assumptions the plan rests on (can the tool do X, does the data have the shape
+we think, does the integration point work). Time-boxed to one short session; code is never promoted without
+a rewrite. Output: `NOTES.md` listing each assumption as held / broke / unknown with the evidence, and the
+slices are cut from what held. An assumption that broke or stayed unknown becomes its own early task or a
+named risk. A plan with nothing to test says so in one line, naming the facts checked and where.
 **Plan critique (from 2026-10-05).** Once a plan is sliced (task table written), and before any task
 brief, one blind cold read of the slice by `opencode-go/deepseek-v4.1-flash#max` (backup `glm-5.3-flash#high`):
 the slice text goes in the prompt (no repo access, text-only answer, no file edits), 6 findings max: task
