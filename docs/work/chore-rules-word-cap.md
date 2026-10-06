@@ -41,9 +41,11 @@ Template: quick
 (none open)
 
 ## Report
-Words: `process.md` 1257 -> 899 (cap 900). `bash scripts/check-rules.sh` -> `check-rules: OK`, exit 0. `grep "3 more"` -> no output; `grep clash` -> 1 match (line 68). Header check: 0 scripts lack a line-2 comment today; planted blank-line-2 case detected by the same `sed|grep` test inline (not run through the script itself).
+Words: `process.md` 1257 -> 897 (cap 900). `bash scripts/check-rules.sh` -> `check-rules: OK`, exit 0. `grep "3 more"` -> no output; `grep clash` -> 1 match (line 68). Header check: 0 scripts lack a line-2 comment today; planted blank-line-2 case detected by the same `sed|grep` test inline (not run through the script itself).
 Content cut (not just reworded), for owner review:
 - Duplicated elsewhere: "Before swapping a tool or library..." (AGENTS.md); reviewer rules and "over ~8 files: too vague" (review.md); the report extras (executor.md step 2); "Deploy from the repo root" and the exact three-way wording (AGENTS.md); bug-first sentence (AGENTS.md Debugging).
-- Dropped outright: "stay in one session for closely related work", "Claude designs and reviews... spot-check", "Output stays terse... scripts compute", "Keep narration short", "Owner-only to-dos live in the task file or backlog", "the backlog keeps its Archive", "that replaces the old drift log", the Muse "clear on three briefs" anecdote (still in models.md), "Claude only runs the checks and reports", "A slice whose critique found nothing real is recorded as such", "trial 2026-10-04" and "from 2026-10-05" dates.
+- Dropped outright: "stay in one session for closely related work", "Claude designs and reviews... spot-check", "Output stays terse... scripts compute", "Keep narration short", "that replaces the old drift log", the Muse "clear on three briefs" anecdote (still in models.md), "Claude only runs the checks and reports", "A slice whose critique found nothing real is recorded as such", "trial 2026-10-04" and "from 2026-10-05" dates.
+- Put back at owner request: "Verified claims get one line; list only what couldn't be confirmed" (now in `review.md`), "Owner-only to-dos live in the task file" (`process.md`).
+- Also cut to make room: "Checkpoint commit, then report" (AGENTS.md), "`/next` says which step", wording of the missed.md line.
 - Freeze rule replaced by the clash/bloat check (line 68).
 Decisions the spec didn't settle: NONE.

@@ -47,14 +47,14 @@ The owner approves the revised slice.
    guard + risk→test map. Then one scorecard line.
 7. **Owner tests** the checklist (written up front): launch block first (`AGENTS.md` Session rule), then human checks only; a check a spec covers is marked "automated". A check
    that writes to disk includes its revert.
-8. **Ship.** Checkpoint commit, then report. Push, PR, deploy: ask. After an
+8. **Ship.** Push, PR, deploy: ask. After an
    `app/` change: preview with `npm run stage`, then the three-way ask in `AGENTS.md`.
    CI requires the `verify` check on PRs.
 
 ## State
 The active task file in `docs/work/` is the only state; a decision made in chat becomes one line there
 at once. A new session reads `AGENTS.md` and the task file only (GUIDE, ARCHITECTURE, DECISIONS only
-after a long gap or on request). `/next` says which step. Handoff notes keep decisions and file paths,
+after a long gap or on request). Handoff notes keep decisions and file paths,
 not tool output.
 
 ## Loops
@@ -73,6 +73,6 @@ first if the log shows the limit).
 
 ## Docs hygiene
 Indexes stay indexes; new reasoning goes in the topic file. Finished task files are deleted (git is the
-record). Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
-comment on line 2 of every script) are enforced by `scripts/check-rules.sh`. If the process misses
-something the old one caught, log it in `docs/work/missed.md`.
+record). Owner-only to-dos live in the task file. Size caps (`AGENTS.md` ≤ 80 lines, each rules file ≤ 900 words, a header
+comment on line 2 of every script) are enforced by `scripts/check-rules.sh`. Log anything the process
+misses that the old one caught in `docs/work/missed.md`.
