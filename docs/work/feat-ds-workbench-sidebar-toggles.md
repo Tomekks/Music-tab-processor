@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-sidebar-toggles
-Next: run the builder (delegate.sh), then Claude browser specs and break-check, then owner checklist
+Next: builder done (verify-task PASS); Claude browser specs and break-check, then owner checklist
 Written against: 60cbbad
 
 ## What changes for you
@@ -33,12 +33,12 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - Q6: the unit test catches a wrong column string; only the browser specs catch a missing toggle, a sidebar that stays visible or a canvas that does not grow, so each is broken once after the build. Grid auto-placement with a removed first child is covered by spec (b)/(d).
 
 ## Steps
-- [ ] `layoutColumns.test.ts` first (fails before the code): `bodyColumns(navOpen, inspectorOpen)` returns the CSS `grid-template-columns` string: both open `"200px 1fr 320px"` (today's value), nav closed `"1fr 320px"`, inspector closed `"200px 1fr"`, both closed `"1fr"`.
-- [ ] `layoutColumns.ts`: the function above, nothing else.
-- [ ] `IconButton.svelte`: props `icon` (an `@lucide/svelte` component), `label` (string, used as `aria-label` and `title`), `pressed` (boolean, becomes `aria-pressed`), `onclick`. A 44 × 44 px `<button type="button">`, transparent background, no border, icon 20 px in the page text color, hover background `#f0f0f0`, visible keyboard focus outline, `cursor: pointer`. Plain neutral colors like the rest of the workbench chrome (no design tokens).
-- [ ] `+layout.svelte`: two `$state` booleans `navOpen` and `inspectorOpen`, both `true` at load (no storage). Inside the top bar's `.controls`, before the existing "unsaved changes" button, add two `IconButton`s: `PanelLeft` with label "Navigation" and `pressed={navOpen}`; `SquareDashedMousePointer` with label "Inspector" and `pressed={inspectorOpen}`; each flips its boolean. The `.body` grid uses `bodyColumns(navOpen, inspectorOpen)` as its `grid-template-columns` (inline style); wrap the `<nav class="sidebar">` and `<aside class="inspector">` in `{#if navOpen}` / `{#if inspectorOpen}` so a hidden sidebar is removed, and keep `<main class="canvas">` always. Do not change any other markup, script or style, including the save, discard and toast code.
-- [ ] `sidebars.spec.ts`: browser specs (see Acceptance checks). Use `openFoundations` from `helpers.ts`; do not edit `helpers.ts`.
-- [ ] `bash scripts/verify-task.sh`.
+- [x] `layoutColumns.test.ts` first (fails before the code): `bodyColumns(navOpen, inspectorOpen)` returns the CSS `grid-template-columns` string: both open `"200px 1fr 320px"` (today's value), nav closed `"1fr 320px"`, inspector closed `"200px 1fr"`, both closed `"1fr"`.
+- [x] `layoutColumns.ts`: the function above, nothing else.
+- [x] `IconButton.svelte`: props `icon` (an `@lucide/svelte` component), `label` (string, used as `aria-label` and `title`), `pressed` (boolean, becomes `aria-pressed`), `onclick`. A 44 × 44 px `<button type="button">`, transparent background, no border, icon 20 px in the page text color, hover background `#f0f0f0`, visible keyboard focus outline, `cursor: pointer`. Plain neutral colors like the rest of the workbench chrome (no design tokens).
+- [x] `+layout.svelte`: two `$state` booleans `navOpen` and `inspectorOpen`, both `true` at load (no storage). Inside the top bar's `.controls`, before the existing "unsaved changes" button, add two `IconButton`s: `PanelLeft` with label "Navigation" and `pressed={navOpen}`; `SquareDashedMousePointer` with label "Inspector" and `pressed={inspectorOpen}`; each flips its boolean. The `.body` grid uses `bodyColumns(navOpen, inspectorOpen)` as its `grid-template-columns` (inline style); wrap the `<nav class="sidebar">` and `<aside class="inspector">` in `{#if navOpen}` / `{#if inspectorOpen}` so a hidden sidebar is removed, and keep `<main class="canvas">` always. Do not change any other markup, script or style, including the save, discard and toast code.
+- [x] `sidebars.spec.ts`: browser specs (see Acceptance checks). Use `openFoundations` from `helpers.ts`; do not edit `helpers.ts`.
+- [x] `bash scripts/verify-task.sh`.
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git; Claude runs the browser specs.)
@@ -57,4 +57,32 @@ Launch (Claude gives the free-port check, start and stop blocks when it is time)
 clear
 
 ## Report
-(Filled by the builder.)
+- verify-task: `bash scripts/verify-task.sh` → `verify-task: PASS` (app verify 207 tests + workbench 65 tests) ✓
+- Rule four combos: `npm --prefix tools/Design_System run test` → 65/65 pass with correct strings ✓
+- UI specs (a)–(f) in `sidebars.spec.ts`: Not run (builder allow-list has no browser; Claude runs `cd app && npm run test:e2e:workbench`) — file written, 6 specs covering (a) position/pressed, (b) nav hide/grow/restore, (c) inspector hide/grow/restore, (d) both-closed fill, (e) edits kept, (f) reload restores.
+- Claude after-build (ports clear, workbench e2e incl. existing `save.spec.ts` bar checks, per-spec break-check, real `tokens.json` untouched): Not run.
+- Break-check: test-first red — `layoutColumns.test.ts` failed before `layoutColumns.ts` existed (`ERR_MODULE_NOT_FOUND`) ✓
+- Break-check: both-open `"200px 1fr 320px"` broken → `both open returns today's three-column grid` failed ✓
+- Break-check: nav-closed `"1fr 320px"` broken → `nav closed returns canvas plus inspector` failed ✓
+- Break-check: inspector-closed `"200px 1fr"` broken → `inspector closed returns nav plus canvas` failed ✓
+- Break-check: both-closed `"1fr"` broken → `both closed returns a single canvas column` failed ✓
+- `npm --prefix tools/Design_System run check` → 0 errors, 2 warnings (pre-existing in `foundations/+page.svelte`, untouched) ✓
+- Decisions the spec didn't settle: focus outline rendered as `2px solid #1a1a1a` with `2px` offset (spec said only "visible keyboard focus outline"); inline grid style written as `style="grid-template-columns: {...}"` matching the file's existing interpolation pattern; icon prop typed as Svelte `Component`; 6 browser specs (one per acceptance letter a–f).
+- Spec facts wrong: NONE found.
+- Noticed but not touched: `svelte-check` reports 2 `state_referenced_locally` warnings in `tools/Design_System/src/routes/foundations/+page.svelte` (pre-existing, outside Modify only).
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/sidebars.spec.ts                | 104 ++++++++++++++++++++++
+ docs/work/feat-ds-workbench-sidebar-toggles.md    |  31 +++++--
+ tools/Design_System/src/lib/IconButton.svelte     |  43 +++++++++
+ tools/Design_System/src/lib/layoutColumns.test.ts |  19 ++++
+ tools/Design_System/src/lib/layoutColumns.ts      |   6 ++
+ tools/Design_System/src/routes/+layout.svelte     |  14 ++-
+ 6 files changed, 208 insertions(+), 9 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 6s)
+  not run: e2e (13 specs; npm run test:e2e)
+pre-commit: OK
+```
