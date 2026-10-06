@@ -2,8 +2,8 @@
 
 Status: active
 Branch: feat/ds-workbench-sidebar-toggles
-Next: owner approves "What changes for you"; then critic (`delegate.sh --critique`), Level 1 review, builder
-Written against: ffc4af5
+Next: run the builder (delegate.sh), then Claude browser specs and break-check, then owner checklist
+Written against: 60cbbad
 
 ## What changes for you
 Two small icon buttons appear in the top bar, to the left of the "N unsaved changes", Discard and Save buttons. The first (icon `panel-left`) shows or hides the left Navigation sidebar; the second (icon `square-dashed-mouse-pointer`) shows or hides the right Inspector. When a sidebar is hidden, the middle canvas grows to fill its space; with both hidden the canvas fills the whole window under the top bar. Both sidebars start open on every page load (hiding is not remembered). Staged edits, Save and Discard are not affected.
