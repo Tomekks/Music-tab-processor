@@ -4,7 +4,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: (usage at wrap: 5h 19%, weekly 59%, ctx 22%; measure total 26 marks over about 3.2 h) ROUND 4 not built yet (toast for all status messages, tooltip wrap/right-anchor, their specs; steps marked ROUND 4, brief critic-checked and amended, Written against current). Start `bash scripts/delegate.sh docs/work/feat-ds-workbench-save-bar.md` (Muse #high, steps 100) after `lsof -nP -iTCP:3000 -iTCP:5174 -sTCP:LISTEN` is empty; then Claude runs `cd app && npm run test:e2e:workbench`, break-checks (spec (b) must be red on the old tooltip CSS), then owner checklist, then PR (ask owner: push?). Local only: this worktree and branch feat/ds-workbench-save-bar; nothing pushed.
+Next: ROUND 4 built, verify-task PASS; ready for Claude e2e + break-check then owner checklist then PR (ask owner: push?).
 Written against: 1ad43a3 (round 4; rounds 1-3 committed)
 
 ## What changes for you
@@ -47,10 +47,10 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 - Done: `foundations/+page.svelte` — "Will unlink from main" for staged alias rows (same size as Reset) plus the `$effect` calling `stagedStore.sync(data.tokens, data.version)`.
 - Done: `routes/+layout.svelte` — the seven `wireframes/save-states-v1` states replacing the disabled Save, then round 2's Save countdown with **Revert** (`revertBody`, "Reverted" 5 s, failed Revert shows only **Dismiss**).
 - Done: `save.spec.ts` + `resetBrandCopy()` in `helpers.ts` (writes to the temp copy only, throws if the variable is unset); round 3 added the countdown-clear asserts.
-- [ ] ROUND 4 (owner, 2026-10-05; the toast REPLACES where states 4-7 show their message). `routes/+layout.svelte`: every status message (Saved countdown + Revert, Reverted, Discarded + Undo, failed + Dismiss/Retry save, changed on disk + Review changes/Reload) and its buttons move out of the top bar into one toast: `position: fixed`, top of the page, horizontally centred (`left: 50%; transform: translateX(-50%)`), above everything (`z-index` over the picker popover's 20 and the tooltip's 30), `role="status"`, same texts, same accessible button names, same timers and clearing rules as now. The top bar then never changes except for the existing count button, **Discard** and **Save** (shown while something is staged; Save reads "Saving..." while saving). Retry save: while a failed toast shows, the toast holds the **Retry save** button and the bar's Save is hidden, as the toast now carries the retry.
-- [ ] ROUND 4 (owner, tooltip clipped under the Inspector, seen on the `accent` row): in `foundations/+page.svelte` the `.tooltip` (line ~409) is one unwrapped line centred on the icon inside the scrolling canvas column, so a long description runs past the canvas edge. Make it wrap (`white-space: normal`, `width: max-content`, `max-width: 240px`) and anchor its right edge to the icon (`right: 0; left: auto; transform: none`) so it grows leftwards, away from the Inspector. No new colors, no JS.
-- [ ] ROUND 4 specs in `save.spec.ts` and `colors.spec.ts` (update, do not delete, existing assertions; text and button names are unchanged so most keep passing): (a) after Discard the toast (`getByRole("status")`) is visible, horizontally centred within 4 px of the viewport centre and its top is under 100 px, it is not inside the top bar, and the bar's height and the count button's `y` are the same as just before Discard; (b) with `page.setViewportSize({ width: 1000, height: 720 })` first, hovering the `accent` info icon shows the tooltip fully inside the canvas (`.canvas`).
-- [ ] Run `bash scripts/verify-task.sh` until PASS
+- [x] ROUND 4 (owner, 2026-10-05; the toast REPLACES where states 4-7 show their message). `routes/+layout.svelte`: every status message (Saved countdown + Revert, Reverted, Discarded + Undo, failed + Dismiss/Retry save, changed on disk + Review changes/Reload) and its buttons move out of the top bar into one toast: `position: fixed`, top of the page, horizontally centred (`left: 50%; transform: translateX(-50%)`), above everything (`z-index` over the picker popover's 20 and the tooltip's 30), `role="status"`, same texts, same accessible button names, same timers and clearing rules as now. The top bar then never changes except for the existing count button, **Discard** and **Save** (shown while something is staged; Save reads "Saving..." while saving). Retry save: while a failed toast shows, the toast holds the **Retry save** button and the bar's Save is hidden, as the toast now carries the retry.
+- [x] ROUND 4 (owner, tooltip clipped under the Inspector, seen on the `accent` row): in `foundations/+page.svelte` the `.tooltip` (line ~409) is one unwrapped line centred on the icon inside the scrolling canvas column, so a long description runs past the canvas edge. Make it wrap (`white-space: normal`, `width: max-content`, `max-width: 240px`) and anchor its right edge to the icon (`right: 0; left: auto; transform: none`) so it grows leftwards, away from the Inspector. No new colors, no JS.
+- [x] ROUND 4 specs in `save.spec.ts` and `colors.spec.ts` (update, do not delete, existing assertions; text and button names are unchanged so most keep passing): (a) after Discard the toast (`getByRole("status")`) is visible, horizontally centred within 4 px of the viewport centre and its top is under 100 px, it is not inside the top bar, and the bar's height and the count button's `y` are the same as just before Discard; (b) with `page.setViewportSize({ width: 1000, height: 720 })` first, hovering the `accent` info icon shows the tooltip fully inside the canvas (`.canvas`).
+- [x] Run `bash scripts/verify-task.sh` until PASS
 
 ## Acceptance checks
 (The builder can only run `bash scripts/verify-task.sh` and read-only git. Claude runs the specs.)
@@ -78,3 +78,24 @@ Looks and feel only (specs check behavior); this uses the real file, so the last
 - Checkpoints: round 1 (9 files, +375/-1), round 2 (6 files, +160/-29), round 3 (2 files, +16/-3); all VERIFY: PASS, pre-commit: OK.
 - Break-each round 2: broken `savedLabel` text and `revertBody` value both failed their tests, restored. Spec fact wrong: NONE. Noticed but not touched: none new.
 - Claude e2e after round 3: `npm run test:e2e:workbench` → 22 passed; each new behavior broken once (Save, Discard, Undo-clear, Reload, Retry, unlink label, Revert, countdown) and its spec failed (the countdown spec needed a stronger assert, fixed in round 3); real `tokens.json` untouched (owner's own Save test reverted by owner). Round 4 not yet built.
+- ROUND 4 built: `bash scripts/verify-task.sh` → PASS (typecheck ✓ lint ✓ unit 65/65 design-system 142/142 + workbench 61/61; e2e not run by script) ✓
+- Rule failure-kinds/labels → `saveState.test.ts` untouched, unit 65/65 pass ✓ (Not separately broken: builder cannot run browser specs; break-checks are Claude's per brief)
+- Claude e2e + break-checks + real tokens.json untouched → Not run (Claude's step per brief)
+- Decisions the spec didn't settle: failed toast holds Dismiss + Retry only (no duplicate Discard; bar keeps Discard when staged); changed toast keeps bar Discard + Save visible; isSaving keeps disabled Discard + Saving...; toast sits after `.shell` div (outside header) with top 12px; tooltip keeps existing colors/padding, only wrap + right-anchor changed. NONE affecting contracts.
+- Spec fact wrong: NONE.
+- Noticed but not touched: NONE.
+
+### Checkpoint (written by scripts/finish.sh)
+```
+ app/e2e/workbench/colors.spec.ts                   | 18 +++++++
+ app/e2e/workbench/save.spec.ts                     | 27 ++++++++++
+ docs/work/feat-ds-workbench-save-bar.md            | 19 ++++++--
+ tools/Design_System/src/routes/+layout.svelte      | 57 ++++++++++++++--------
+ .../src/routes/foundations/+page.svelte            |  9 ++--
+ 5 files changed, 103 insertions(+), 27 deletions(-)
+---
+VERIFY: PASS
+  ran:     typecheck ✓  lint ✓  unit 65/65 (4 files)  design-system 142/142 (11 files)  build not run (use --full)  (207 tests, 6s)
+  not run: e2e (12 specs; npm run test:e2e)
+pre-commit: OK
+```

@@ -200,26 +200,10 @@
 			{#if isSaving}
 				<button type="button" disabled>Discard</button>
 				<button type="button" disabled>Saving...</button>
-			{:else if status?.kind === "saved"}
-				<span role="status">{statusText}</span>
-				<button type="button" onclick={revert}>Revert</button>
-			{:else if status?.kind === "reverted"}
-				<span role="status">{statusText}</span>
-			{:else if status?.kind === "revert-failed"}
-				<span role="status">{statusText}</span>
-				<button type="button" onclick={dismiss}>Dismiss</button>
-			{:else if status?.kind === "discarded"}
-				<span role="status">{statusText}</span>
-				<button type="button" onclick={undoDiscarded}>Undo</button>
 			{:else if status?.kind === "failed"}
-				<span role="status">{statusText}</span>
-				<button type="button" onclick={dismiss}>Dismiss</button>
-				<button type="button" onclick={discard}>Discard</button>
-				<button type="button" onclick={save}>Retry save</button>
-			{:else if status?.kind === "changed"}
-				<span role="status">{statusText}</span>
-				<button type="button" onclick={() => (showChanges = true)}>Review changes</button>
-				<button type="button" onclick={reload}>Reload</button>
+				{#if changeCount > 0}
+					<button type="button" onclick={discard}>Discard</button>
+				{/if}
 			{:else if changeCount > 0}
 				<button type="button" onclick={discard}>Discard</button>
 				<button type="button" onclick={save}>Save</button>
@@ -289,6 +273,25 @@
 		<aside class="inspector">Inspector</aside>
 	</div>
 </div>
+
+{#if status}
+	<div class="toast" role="status">
+		<span>{statusText}</span>
+		{#if status.kind === "saved"}
+			<button type="button" onclick={revert}>Revert</button>
+		{:else if status.kind === "discarded"}
+			<button type="button" onclick={undoDiscarded}>Undo</button>
+		{:else if status.kind === "failed"}
+			<button type="button" onclick={dismiss}>Dismiss</button>
+			<button type="button" onclick={save}>Retry save</button>
+		{:else if status.kind === "revert-failed"}
+			<button type="button" onclick={dismiss}>Dismiss</button>
+		{:else if status.kind === "changed"}
+			<button type="button" onclick={() => (showChanges = true)}>Review changes</button>
+			<button type="button" onclick={reload}>Reload</button>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.shell {
@@ -412,5 +415,21 @@
 		margin-top: 16px;
 		font-size: 12px;
 		color: #666666;
+	}
+
+	.toast {
+		position: fixed;
+		top: 12px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background: #ffffff;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+		padding: 8px 12px;
 	}
 </style>

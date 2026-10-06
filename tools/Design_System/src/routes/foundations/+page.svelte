@@ -409,16 +409,19 @@
 	.tooltip {
 		display: none;
 		position: absolute;
-		left: 50%;
+		right: 0;
+		left: auto;
 		bottom: 100%;
-		transform: translateX(-50%);
+		transform: none;
 		margin-bottom: 6px;
 		background: #1a1a1a;
 		color: #ffffff;
 		font-size: 12px;
 		padding: 4px 8px;
 		border-radius: 4px;
-		white-space: nowrap;
+		white-space: normal;
+		width: max-content;
+		max-width: 240px;
 		z-index: 30;
 	}
 	.info:hover .tooltip,

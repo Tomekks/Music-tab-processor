@@ -124,3 +124,30 @@ test("staging accent shows Will unlink from main beside Reset", async ({ page })
   await stageColor(page, "color-accent", "red");
   await expect(page.getByText("Will unlink from main")).toBeVisible();
 });
+
+// Discard shows a fixed top-centre toast outside the bar without moving the bar.
+test("Discard toast is top-centre outside the bar and the bar does not move", async ({
+  page,
+}) => {
+  await stageColor(page, "color-accent", "red");
+  const bar = page.locator("header");
+  const count = page.getByRole("button", { name: /unsaved change/ });
+  const barBefore = await bar.boundingBox();
+  const countBefore = await count.boundingBox();
+  if (barBefore === null || countBefore === null) throw new Error("bar has no bounding box");
+  await page.getByRole("button", { name: "Discard", exact: true }).click();
+  const toast = page.getByRole("status");
+  await expect(toast).toBeVisible();
+  await expect(bar.getByRole("status")).toHaveCount(0);
+  const toastBox = await toast.boundingBox();
+  if (toastBox === null) throw new Error("toast has no bounding box");
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
+  const toastCentre = toastBox.x + toastBox.width / 2;
+  expect(Math.abs(toastCentre - viewportWidth / 2)).toBeLessThanOrEqual(4);
+  expect(toastBox.y).toBeLessThan(100);
+  const barAfter = await bar.boundingBox();
+  const countAfter = await count.boundingBox();
+  if (barAfter === null || countAfter === null) throw new Error("bar has no bounding box");
+  expect(Math.abs(barAfter.height - barBefore.height)).toBeLessThanOrEqual(1);
+  expect(Math.abs((countAfter?.y ?? 0) - countBefore.y)).toBeLessThanOrEqual(1);
+});
