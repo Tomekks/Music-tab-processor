@@ -27,7 +27,10 @@ Files touched: 5. Expected diff: ~220 lines. New tests: ~4 unit, ~5 browser.
 Triggers: none beyond one new dependency, already added by Claude (workbench-only, already used by Control Center). Review level: 1.
 
 ## Review
-(Level 1: filled by Claude before the build.)
+Level 1 (questions 1, 4, 6), 2026-10-05.
+- Q1 serves the story: toggles, canvas fill, no persistence and unchanged edits trace to the owner's request and the two chat answers.
+- Q4 simplest: no storage, no animation, hidden sidebars removed with `{#if}`; the only extra file is a pure column function so the grid can be unit-tested; nothing cuttable.
+- Q6: the unit test catches a wrong column string; only the browser specs catch a missing toggle, a sidebar that stays visible or a canvas that does not grow, so each is broken once after the build. Grid auto-placement with a removed first child is covered by spec (b)/(d).
 
 ## Steps
 - [ ] `layoutColumns.test.ts` first (fails before the code): `bodyColumns(navOpen, inspectorOpen)` returns the CSS `grid-template-columns` string: both open `"200px 1fr 320px"` (today's value), nav closed `"1fr 320px"`, inspector closed `"200px 1fr"`, both closed `"1fr"`.
@@ -51,7 +54,7 @@ Launch (Claude gives the free-port check, start and stop blocks when it is time)
 - [ ] Hide a sidebar, stage a color change, Save → nothing else moves or breaks; reload the page → both sidebars are back.
 
 ## Questions
-(none open)
+clear
 
 ## Report
 (Filled by the builder.)
