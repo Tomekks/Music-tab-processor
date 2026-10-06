@@ -22,4 +22,9 @@ echo "$OUT" | grep -q "^rules:" && { echo "FAIL rules line shown with no rules c
 echo r2 > AGENTS.md; git commit -qam "change rules"
 OUT="$(IDEAS_FILE="$T/ideas.md" bash scripts/start.sh "" 2>&1)"
 echo "$OUT" | grep -q "^rules:   1 commit" && echo "ok   rules line when AGENTS.md changed after the task" || { echo "FAIL rules line: $OUT"; fail=1; }
+# pending plans: a plan's "**Next task:**" line is shown under it
+git checkout -q -b scratch; git rm -q docs/work/t.md; git commit -qm "drop task"
+mkdir -p docs/plans/p1; printf '# P\n\n**Status (2026-10-05):** live\n\n**Next task:** 1g Save/Discard (brief in save-ui)\n' > docs/plans/p1/p1.md; git add -A >/dev/null; git commit -qm plan
+OUT="$(IDEAS_FILE="$T/ideas.md" bash scripts/start.sh "" 2>&1)"
+echo "$OUT" | grep -q "next task: 1g Save/Discard" && echo "ok   pending plan shows its Next task" || { echo "FAIL next task: $OUT"; fail=1; }
 exit $fail

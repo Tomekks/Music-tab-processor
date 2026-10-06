@@ -244,3 +244,21 @@ test("staged color survives a page change when opened at 127.0.0.1", async ({ pa
   await nav.getByRole("link", { name: "Foundations" }).click();
   await expect.poll(() => previewBg(page, "button", "Primary")).toBe("rgb(255, 0, 0)");
 });
+
+// The accent tooltip wraps and stays inside the canvas instead of running under the Inspector.
+test("accent tooltip stays fully inside the canvas at 1000px wide", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 720 });
+  await openFoundations(page);
+  const accentRow = page.locator(".color-row").filter({ hasText: "color-accent" });
+  const info = accentRow.getByTestId("tooltip").locator("xpath=ancestor::button[1]");
+  await info.hover();
+  const tip = accentRow.getByTestId("tooltip").filter({ visible: true });
+  await expect(tip).toBeVisible();
+  const tipBox = await tip.boundingBox();
+  const canvasBox = await page.locator("main.canvas").boundingBox();
+  if (tipBox === null || canvasBox === null) throw new Error("tooltip or canvas has no box");
+  expect(tipBox.x).toBeGreaterThanOrEqual(canvasBox.x - 1);
+  expect(tipBox.x + tipBox.width).toBeLessThanOrEqual(canvasBox.x + canvasBox.width + 1);
+  expect(tipBox.y).toBeGreaterThanOrEqual(canvasBox.y - 1);
+  expect(tipBox.y + tipBox.height).toBeLessThanOrEqual(canvasBox.y + canvasBox.height + 1);
+});

@@ -1,8 +1,8 @@
 # Task: Workbench save endpoint and staged-edit logic (1g)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-save-ui
-Next: merge via PR (ask owner: push?); then 1g-ui (`feat-ds-workbench-save-bar`) merges master and is refreshed.
+Next: none. Merged to master via PR #63 on 2026-10-05; 1g-ui (`feat-ds-workbench-save-bar`) continues.
 Written against: 416882f (master merged, includes 1g0)
 
 Split decided 2026-10-04: 1g is the server side and the staged-edit logic (this file); 1g-ui (`feat-ds-workbench-save-bar.md`) is the top-bar Save/Discard/status UI plus its browser specs. 1g-ui is built after this one.

@@ -3,6 +3,8 @@
 	import { page } from "$app/state";
 	import { COMPONENTS } from "$lib/registry.js";
 	import { stagedStore } from "$lib/staged.svelte.js";
+	import { invalidateAll } from "$app/navigation";
+	import { buildSaveBody, describeSaveFailure, discardedLabel, revertBody, savedLabel } from "$lib/saveState.js";
 	// @ts-ignore - untyped package helper (checkJs is off by owner decision)
 	import { cssVarNameForPath } from "../../../../app/packages/design-system/src/css-var-naming.mjs";
 
@@ -14,6 +16,152 @@
 		changeCount === 1 ? "1 unsaved change" : `${changeCount} unsaved changes`
 	);
 	let showChanges = $state(false);
+
+	type SaveStatus = { kind: "saved" | "discarded" | "failed" | "changed" | "reverted" | "revert-failed"; text: string };
+	let status: SaveStatus | null = $state(null);
+	let isSaving = $state(false);
+	let timer: ReturnType<typeof setTimeout> | null = null;
+	let countdown: ReturnType<typeof setInterval> | null = null;
+	let savedSeconds = $state(5);
+	let savedBefore: { path: string; was: string }[] | null = null;
+	let statusText = $derived.by(() => {
+		const current: SaveStatus | null = status;
+		return current === null ? "" : current.text;
+	});
+
+	function clearTimer() {
+		if (timer !== null) {
+			clearTimeout(timer);
+			timer = null;
+		}
+		if (countdown !== null) {
+			clearInterval(countdown);
+			countdown = null;
+		}
+	}
+
+	$effect(() => {
+		if ((status?.kind === "discarded" || status?.kind === "saved") && changeCount > 0) {
+			clearTimer();
+			status = null;
+		}
+	});
+
+	async function save() {
+		if (isSaving || changeCount === 0) return;
+		clearTimer();
+		status = null;
+		const before = Object.entries(stagedStore.staged).map(([path, entry]) => ({
+			path,
+			was: entry.was,
+		}));
+		isSaving = true;
+		try {
+			const response = await fetch("/api/save", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(buildSaveBody(stagedStore.staged, stagedStore.loadedVersion ?? "")),
+			});
+			let reply: { ok?: boolean; saved?: number; code?: string; error?: string } | null =
+				null;
+			try {
+				reply = await response.json();
+			} catch {
+				reply = null;
+			}
+			if (response.ok && reply?.ok === true) {
+				await invalidateAll();
+				savedBefore = before;
+				savedSeconds = 5;
+				status = { kind: "saved", text: savedLabel(savedSeconds) };
+				clearTimer();
+				countdown = setInterval(() => {
+					savedSeconds -= 1;
+					if (savedSeconds < 1) {
+						clearTimer();
+						status = null;
+					} else {
+						status = { kind: "saved", text: savedLabel(savedSeconds) };
+					}
+				}, 1000);
+			} else {
+				const failure = describeSaveFailure(reply?.code, reply?.error);
+				status = { kind: failure.kind, text: failure.message };
+			}
+		} catch {
+			const failure = describeSaveFailure(undefined, undefined);
+			status = { kind: failure.kind, text: failure.message };
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	async function revert() {
+		if (isSaving || savedBefore === null) return;
+		clearTimer();
+		status = null;
+		isSaving = true;
+		try {
+			const response = await fetch("/api/save", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(revertBody(savedBefore, stagedStore.loadedVersion ?? "")),
+			});
+			let reply: { ok?: boolean; code?: string; error?: string } | null = null;
+			try {
+				reply = await response.json();
+			} catch {
+				reply = null;
+			}
+			if (response.ok && reply?.ok === true) {
+				savedBefore = null;
+				await invalidateAll();
+				status = { kind: "reverted", text: "Reverted" };
+				clearTimer();
+				timer = setTimeout(() => {
+					status = null;
+					timer = null;
+				}, 5000);
+			} else {
+				const failure = describeSaveFailure(reply?.code, reply?.error);
+				status = { kind: "revert-failed", text: failure.message };
+			}
+		} catch {
+			const failure = describeSaveFailure(undefined, undefined);
+			status = { kind: "revert-failed", text: failure.message };
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	function discard() {
+		const count = changeCount;
+		if (count === 0 || isSaving) return;
+		clearTimer();
+		stagedStore.discard();
+		status = { kind: "discarded", text: discardedLabel(count) };
+		timer = setTimeout(() => {
+			status = null;
+			timer = null;
+		}, 5000);
+	}
+
+	function undoDiscarded() {
+		clearTimer();
+		stagedStore.undo();
+		status = null;
+	}
+
+	function dismiss() {
+		clearTimer();
+		status = null;
+	}
+
+	async function reload() {
+		await invalidateAll();
+		clearTimer();
+		status = null;
+	}
 
 	function changeVarName(path: string): string {
 		const cssVar = cssVarNameForPath(path) as string | null;
@@ -49,7 +197,17 @@
 			<button type="button" aria-expanded={showChanges} onclick={() => (showChanges = !showChanges)}>
 				{unsavedLabel}
 			</button>
-			<button disabled>Save</button>
+			{#if isSaving}
+				<button type="button" disabled>Discard</button>
+				<button type="button" disabled>Saving...</button>
+			{:else if status?.kind === "failed"}
+				{#if changeCount > 0}
+					<button type="button" onclick={discard}>Discard</button>
+				{/if}
+			{:else if changeCount > 0}
+				<button type="button" onclick={discard}>Discard</button>
+				<button type="button" onclick={save}>Save</button>
+			{/if}
 			{#if showChanges}
 				<div class="changes" data-testid="changes-panel">
 					{#if changeCount > 0}
@@ -115,6 +273,25 @@
 		<aside class="inspector">Inspector</aside>
 	</div>
 </div>
+
+{#if status}
+	<div class="toast" role="status">
+		<span>{statusText}</span>
+		{#if status.kind === "saved"}
+			<button type="button" onclick={revert}>Revert</button>
+		{:else if status.kind === "discarded"}
+			<button type="button" onclick={undoDiscarded}>Undo</button>
+		{:else if status.kind === "failed"}
+			<button type="button" onclick={dismiss}>Dismiss</button>
+			<button type="button" onclick={save}>Retry save</button>
+		{:else if status.kind === "revert-failed"}
+			<button type="button" onclick={dismiss}>Dismiss</button>
+		{:else if status.kind === "changed"}
+			<button type="button" onclick={() => (showChanges = true)}>Review changes</button>
+			<button type="button" onclick={reload}>Reload</button>
+		{/if}
+	</div>
+{/if}
 
 <style>
 	.shell {
@@ -238,5 +415,21 @@
 		margin-top: 16px;
 		font-size: 12px;
 		color: #666666;
+	}
+
+	.toast {
+		position: fixed;
+		top: 12px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 50;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background: #ffffff;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+		padding: 8px 12px;
 	}
 </style>

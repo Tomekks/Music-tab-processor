@@ -54,6 +54,10 @@
 	});
 
 	$effect(() => {
+		stagedStore.sync(data.tokens, data.version);
+	});
+
+	$effect(() => {
 		if (pickerFor === null) {
 			pickerSessionContinued = false;
 			pickerPos = null;
@@ -273,6 +277,9 @@
 									drafts[token.path] = token.value;
 								}}
 							>Reset</button>
+							{#if token.isAlias}
+								<span class="unlink">Will unlink from main</span>
+							{/if}
 						{/if}
 						<button
 							type="button"
@@ -380,6 +387,9 @@
 		cursor: pointer;
 		text-decoration: underline;
 	}
+	.unlink {
+		font-size: 12px;
+	}
 	.info {
 		position: relative;
 		display: inline-flex;
@@ -399,16 +409,19 @@
 	.tooltip {
 		display: none;
 		position: absolute;
-		left: 50%;
+		right: 0;
+		left: auto;
 		bottom: 100%;
-		transform: translateX(-50%);
+		transform: none;
 		margin-bottom: 6px;
 		background: #1a1a1a;
 		color: #ffffff;
 		font-size: 12px;
 		padding: 4px 8px;
 		border-radius: 4px;
-		white-space: nowrap;
+		white-space: normal;
+		width: max-content;
+		max-width: 240px;
 		z-index: 30;
 	}
 	.info:hover .tooltip,

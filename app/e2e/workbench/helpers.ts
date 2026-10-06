@@ -1,4 +1,6 @@
 import { expect, type FrameLocator, type Locator, type Page } from "@playwright/test";
+import { copyFileSync } from "node:fs";
+import path from "node:path";
 
 // Open the Foundations page like a person would, waiting for the live preview
 // and the first color field before any test touches the page.
@@ -31,6 +33,20 @@ export async function previewBg(
 ): Promise<string> {
   const target = previewFrame(page).getByRole(role, { name }).first();
   return target.evaluate((node) => getComputedStyle(node).backgroundColor);
+}
+
+// Throwaway brand copy the workbench server saves against (never the real tokens.json).
+export function brandCopyDir(): string {
+  const dir = process.env.WORKBENCH_BRAND_DIR;
+  if (!dir) throw new Error("WORKBENCH_BRAND_DIR is not set, refusing to touch the real file");
+  return dir;
+}
+
+// Restore the copy from the real brands/default/tokens.json before each test.
+export function resetBrandCopy(): void {
+  const dir = brandCopyDir();
+  const real = path.join(process.cwd(), "packages/design-system/brands/default/tokens.json");
+  copyFileSync(real, path.join(dir, "tokens.json"));
 }
 
 // Stage a typed color the way a person does: select all, type, commit with Enter.
