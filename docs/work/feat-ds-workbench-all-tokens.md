@@ -27,7 +27,10 @@ Files touched: 5. Expected diff: ~250 lines. New tests: ~6 unit, ~4 browser.
 Triggers: none (read-only; nothing is written). Review level: 1.
 
 ## Review
-(Level 1: filled by Claude before the build.)
+Level 1 (questions 1, 4, 6), 2026-10-05.
+- Q1 serves the story: group list, resolved values, descriptions and jump links trace to plan row 2a; dark value dropped from 2a because only color tokens have one (checked in `tokens.json`).
+- Q4 simplest: reuses `buildFieldDescriptors` and `SECTIONS`; plain-text rows, no tooltip or inputs; nothing cuttable.
+- Q6: unit tests catch a color leaking in or wrong order; only the browser specs catch a missing heading or a dead link, so each is broken once after the build.
 
 ## Steps
 - [ ] `otherTokens.test.ts` first (fails before the code), `node:test` like `colorTokens.test.ts`: (a) no color token and no `primitive`/`dark`/`component` path appears; (b) group order and headings as in the next step; (c) an alias value is resolved (`value`) while `rawValue` keeps the `{...}`; (d) missing `$description` gives `""`; (e) a group with no tokens is omitted; (f) space tokens come out ascending (`1`, `1_5`, `2`...).
@@ -51,7 +54,7 @@ Launch (Claude gives the free-port check and start and stop blocks when it is ti
 - [ ] Click each link in "On this page" → the page scrolls to that group; Colors and Preview still work, and editing a color still stages a change.
 
 ## Questions
-(none open)
+(none open; deepseek-v4.1-flash#max critique said "clear".)
 
 ## Report
 (Filled by the builder.)
