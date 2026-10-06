@@ -200,7 +200,16 @@
 
 <h1>Foundations</h1>
 
-<section>
+<nav aria-label="On this page" class="on-this-page">
+	On this page:
+	<a href="#group-preview">Preview</a>
+	<a href="#group-colors">Colors</a>
+	{#each data.groups as group (group.section)}
+		<a href="#group-{group.key}">{group.heading}</a>
+	{/each}
+</nav>
+
+<section id="group-preview">
 	<h2>Preview</h2>
 	<iframe
 		title="Preview"
@@ -212,7 +221,7 @@
 	></iframe>
 </section>
 
-<section>
+<section id="group-colors">
 	<h2>Colors</h2>
 	<div role="tablist" aria-label="Color sections" class="tabs">
 		{#each sections as section (section)}
@@ -332,6 +341,23 @@
 	{/if}
 </section>
 
+{#each data.groups as group (group.section)}
+	<section id="group-{group.key}">
+		<h2>{group.heading}</h2>
+		<div class="other-list">
+			{#each group.tokens as token (token.path)}
+				{@const varName = token.cssVar.startsWith("--") ? token.cssVar.slice(2) : token.cssVar}
+				{@const desc = token.description !== "" ? token.description : "No description yet"}
+				<div class="other-row">
+					<code>{varName}</code>
+					<span>{token.value}</span>
+					<span class={token.description !== "" ? "plain" : "dimmed"}>{desc}</span>
+				</div>
+			{/each}
+		</div>
+	</section>
+{/each}
+
 <style>
 	.color-list {
 		list-style: none;
@@ -440,5 +466,29 @@
 	}
 	.row-error {
 		grid-column: 1 / -1;
+	}
+	.on-this-page {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.other-list {
+		display: flex;
+		flex-direction: column;
+	}
+	.other-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+		gap: 12px;
+		align-items: center;
+		padding: 8px 0;
+		border-bottom: 1px solid #e0e0e0;
+	}
+	.other-list > .other-row:last-child {
+		border-bottom: none;
+	}
+	.dimmed {
+		color: #b0b0b0;
 	}
 </style>
