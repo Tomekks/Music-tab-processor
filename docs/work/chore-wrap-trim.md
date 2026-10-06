@@ -2,7 +2,7 @@
 
 Status: active
 Branch: docs/review-upgrade-plan
-Next: owner approves this brief; then edit `wrap.md`.
+Next: owner reads `wrap.md` diff; next time `/wrap` runs, check the new final block.
 Written against: d89668f
 Template: quick
 
@@ -37,3 +37,4 @@ Template: quick
 (none open)
 
 ## Report
+Done 2026-10-06. `wc -w wrap.md` 537 -> 535; Needs-you block count 1; Safe-to-close count 1; Never push present (line 27); diff touches only `wrap.md`. Decisions the spec didn't settle: NONE.
