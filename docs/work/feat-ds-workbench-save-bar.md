@@ -14,7 +14,16 @@ Decision 2026-10-05: on an edited alias row show "Will unlink from main" next to
 ## Scope
 Setup done by Claude before the build (the builder cannot edit config): `app/playwright.workbench.config.ts` copies `brands/default` to the OS temp folder and sets `WORKBENCH_BRAND_DIR`, only when that variable is not already set (workers inherit the parent's env), so the workbench server and specs see the same copy.
 
-**Modify only:** `tools/Design_System/src/lib/server/colorTokens.ts`, `.../colorTokens.test.ts`, `tools/Design_System/src/lib/saveState.ts`, `.../saveState.test.ts`, `tools/Design_System/src/routes/+layout.svelte`, `tools/Design_System/src/routes/foundations/+page.svelte`, `app/e2e/workbench/save.spec.ts`, `app/e2e/workbench/colors.spec.ts`, `app/e2e/workbench/helpers.ts`.
+**Modify only:**
+- `tools/Design_System/src/lib/server/colorTokens.ts`
+- `tools/Design_System/src/lib/server/colorTokens.test.ts`
+- `tools/Design_System/src/lib/saveState.ts`
+- `tools/Design_System/src/lib/saveState.test.ts`
+- `tools/Design_System/src/routes/+layout.svelte`
+- `tools/Design_System/src/routes/foundations/+page.svelte`
+- `app/e2e/workbench/save.spec.ts`
+- `app/e2e/workbench/colors.spec.ts`
+- `app/e2e/workbench/helpers.ts`
 
 **Do NOT touch:** `contracts/`, config, secrets, `package.json`, `docs/*`, anything not listed above; `app/` other than the two e2e files, the package layer, the endpoint and store from 1g (call them, do not change them).
 
