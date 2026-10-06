@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-all-tokens
-Next: owner checklist (launch blocks from Claude), then PR (ask first)
+Next: owner checklist passed 2026-10-05; PR next (ask first: Push to git?)
 Written against: 73c0657
 
 ## What changes for you
@@ -50,8 +50,8 @@ Level 1 (questions 1, 4, 6), 2026-10-05.
 
 ## Owner checklist
 Launch (Claude gives the free-port check and start and stop blocks when it is time).
-- [ ] Open Foundations: below Colors, six groups with their values and descriptions → they match what you expect from the design system (space 4 is 16px, hover opacity 8%).
-- [ ] Click each link in "On this page" → the page scrolls to that group; Colors and Preview still work, and editing a color still stages a change.
+- [x] Open Foundations: below Colors, six groups with their values and descriptions → they match what you expect from the design system (space 4 is 16px, hover opacity 8%).
+- [x] Click each link in "On this page" → the page scrolls to that group; Colors and Preview still work, and editing a color still stages a change.
 
 ## Questions
 (none open; deepseek-v4.1-flash#max critique said "clear".)
