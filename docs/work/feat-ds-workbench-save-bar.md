@@ -4,7 +4,7 @@
 
 Status: active
 Branch: feat/ds-workbench-save-bar
-Next: ROUND 4 built, verify-task PASS; ready for Claude e2e + break-check then owner checklist then PR (ask owner: push?).
+Next: Round 4 built and e2e-checked. Owner runs the checklist (note the toast now carries the status messages), then PR (ask owner: push?). Local only: nothing pushed.
 Written against: 1ad43a3 (round 4; rounds 1-3 committed)
 
 ## What changes for you
@@ -99,3 +99,4 @@ VERIFY: PASS
   not run: e2e (12 specs; npm run test:e2e)
 pre-commit: OK
 ```
+- Round 4 built by Muse#high (123 s, ~59k tok, $0.01), checkpoint 88b9c34, verify-task PASS. Claude e2e: `npm run test:e2e:workbench` → 24 passed. Break-checks: old tooltip CSS → tooltip spec failed; toast `position: static` → toast spec failed; both restored. Real `tokens.json` untouched. First delegate run stopped at the scope pre-flight (Modify-only list was unparseable); fixed in the task file.
