@@ -16,12 +16,14 @@ Catch bugs before the owner test with a cheap blind code reviewer, give the owne
 - One shared report shape for brief review and code review: found, lessons, **Folded in**, **Not folded in (and why)**. Brief review under `## Review`, code review under `## Code review`.
 - Rules cap becomes 900 words per `docs/rules/*.md` (was 70 lines); `check-rules.sh` counts words and fails when a script has no header comment on line 2. No script index document.
 - `process.md` is tightened in place (84 lines, 1,257 words today), no new file; split only if still over 900.
+- `/wrap` trim: end every wrap with one block "Needs you before you close" (each action its own bash block; if nothing, "Nothing needed. Safe to close."); keep sweep, commit, `Next:` lines, PR list; usage recording (step 10) stays but runs silently and is reported only if the call fails; compaction (step 9) becomes on request only, after checking nothing else reads the 60-line size.
 
 ## Tasks (in order)
 | Task | What | Level |
 |---|---|---|
 | A | `/review` ends with the shared report block (`.claude/commands/review.md`, `docs/rules/review.md`) | 1 |
 | C | Word cap + script-header check in `check-rules.sh`; tighten `process.md` under 900 words; replace the freeze rule with the clash/bloat check | 1 |
+| D | `/wrap` trim in `.claude/commands/wrap.md` (see decision above; word count before/after) | 1 |
 | B | Code-review script, scorecard table, `process.md`/`models.md` edits, planted-flaw test | 2 (shell) |
 
 ## Cautions
