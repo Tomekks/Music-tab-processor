@@ -1,8 +1,8 @@
 # Task: /wrap trim (review-upgrade task D)
 
-Status: active
+Status: done
 Branch: docs/review-upgrade-plan
-Next: owner reads `wrap.md` diff; next time `/wrap` runs, check the new final block.
+Next: none. Committed on `docs/review-upgrade-plan` (unpushed); ships with the plan PR.
 Written against: d89668f
 Template: quick
 

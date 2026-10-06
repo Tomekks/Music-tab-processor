@@ -2,7 +2,7 @@
 
 Status: active
 Branch: docs/review-upgrade-plan
-Next: owner approves "What changes for you"; then `/review` (Level 2, 8 answers); then Claude builds (script, test, docs edits, planted-flaw run).
+Next: owner approved the brief and its review; Claude builds (script, test, doc edits, planted-flaw run) in a fresh session. Branch `docs/review-upgrade-plan` holds A, C, D, B brief (16 commits ahead of master, nothing pushed). Open: delete `chore/planted-flaw` after the test.
 Written against: 2d00bb4
 
 ## What changes for you

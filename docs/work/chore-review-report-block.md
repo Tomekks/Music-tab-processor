@@ -1,8 +1,8 @@
 # Task: Shared report block in /review (review-upgrade task A)
 
-Status: active
+Status: done
 Branch: docs/review-upgrade-plan
-Next: owner checks the Report block, then merge with the plan PR.
+Next: none. Committed on `docs/review-upgrade-plan` (unpushed); ships with the plan PR.
 Written against: 8e5653c
 Template: quick
 

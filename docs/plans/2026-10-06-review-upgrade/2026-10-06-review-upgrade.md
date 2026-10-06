@@ -1,8 +1,8 @@
 # Review upgrade (code review step, shared report format, leaner process rules)
 
-**Status (2026-10-06):** Grill done (owner answers below). No task files yet.
+**Status (2026-10-06):** Tasks A, C, D done and committed on `docs/review-upgrade-plan` (not pushed). Task B brief written and Level 2 reviewed (`docs/work/feat-code-review-step.md`); not built.
 
-**Next task:** A (Level 1 report block in `/review`; no brief yet: write it in `docs/work/`).
+**Next task:** B (blind code review step; brief + Level 2 review done in `docs/work/feat-code-review-step.md`; build next, by Claude, in a fresh session).
 
 ## Goal
 Catch bugs before the owner test with a cheap blind code reviewer, give the owner one plain report shape for every review, and stop `process.md` from growing without limit.

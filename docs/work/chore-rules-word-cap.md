@@ -1,8 +1,8 @@
 # Task: Word cap, script-header check, shorter process.md (review-upgrade task C)
 
-Status: active
+Status: done
 Branch: docs/review-upgrade-plan
-Next: owner reads the cut list in the Report; then merge with the plan PR.
+Next: none. Committed on `docs/review-upgrade-plan` (unpushed); ships with the plan PR.
 Written against: 59810a1
 Template: quick
 
