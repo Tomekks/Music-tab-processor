@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-all-tokens
-Next: verify-task passed, ready for Claude browser specs and break-check, then owner checklist
+Next: owner checklist (launch blocks from Claude), then PR (ask first)
 Written against: 73c0657
 
 ## What changes for you
@@ -62,10 +62,10 @@ Launch (Claude gives the free-port check and start and stop blocks when it is ti
 - Rule group-order → swapped space/radius in GROUP_ORDER, test "group order and headings follow the spec" failed ✓
 - Rule alias-resolved-value → used rawValue for value, test "an alias value is resolved while rawValue keeps the braces" failed ✓
 - UI groups.spec.ts (a) headings + space-4 16px + hover 8% → Not run (browser specs are Claude's) ✗ Not run
-- UI groups.spec.ts (b) Space link brings heading into view → Not run (Claude's) ✗ Not run
-- UI groups.spec.ts (c) Colors hex + Preview visible → Not run (Claude's) ✗ Not run
-- UI groups.spec.ts (d) no inputs in new sections → Not run (Claude's) ✗ Not run
-- Claude: `lsof -i :3000 -i :5174` + `npm run test:e2e:workbench` + break-check + tokens.json clean → Not run (Claude's) ✗ Not run
+- UI groups.spec.ts (b) Space link brings heading into view → passes in Claude's run ✓ (a, b broken once and failed)
+- UI groups.spec.ts (c) Colors hex + Preview visible → passes in Claude's run ✓ (a, b broken once and failed)
+- UI groups.spec.ts (d) no inputs in new sections → passes in Claude's run ✓ (a, b broken once and failed)
+- Claude after build (2026-10-05): ports free; `npm run test:e2e:workbench` → 27 passed, 1 failed (`save.spec.ts:30`, first test of the run, 30 s timeout waiting for Save: cold start, passed on rerun 9/9); groups.spec.ts 4/4. Break-checks: dropped `semantic.layout` from GROUP_ORDER → spec (a) failed; link id changed to `#group-x…` → spec (b) failed; both restored, tree clean. tokens.json untouched.
 - Decisions the spec didn't settle: "On this page" built as `<nav aria-label="On this page">` with plain anchor links; new rows use `.other-row` 3-column grid with `.dimmed` for "No description yet" and description text built once via `{@const desc}` per the Svelte whitespace rule.
 - Spec fact that was wrong: NONE.
 - Noticed but not touched: NONE (verify-task printed the expected e2e-revisit reminder for workbench specs).
