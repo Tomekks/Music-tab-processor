@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Checks the lean rule files against the rule ledger and the size caps.
 #  1. every KEEP/MERGE ledger id is claimed in docs/rules/covers.txt or listed in ledger/exempt.md
-#  2. AGENTS.md <= 80 lines, each docs/rules/*.md <= 70 lines
+#  2. AGENTS.md <= 80 lines, each docs/rules/*.md <= 900 words
+#  3. every scripts/*.sh has a '#' comment on line 2
 # Exit 0 = clean. Read-only, no model.
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)" || exit 1
@@ -25,7 +26,14 @@ check_cap() { # file cap
   if [ "$n" -gt "$2" ]; then echo "TOO LONG: $1 is $n lines (cap $2)"; FAIL=1; fi
 }
 check_cap AGENTS.md 80
-for f in docs/rules/*.md; do check_cap "$f" 70; done
+check_words() { # file cap
+  n="$(wc -w < "$1" | tr -d ' ')"
+  if [ "$n" -gt "$2" ]; then echo "TOO LONG: $1 is $n words (cap $2)"; FAIL=1; fi
+}
+for f in docs/rules/*.md; do check_words "$f" 900; done
+for f in scripts/*.sh; do
+  sed -n 2p "$f" | grep -q '^#' || { echo "NO HEADER: $f"; FAIL=1; }
+done
 
 [ "$FAIL" -eq 0 ] && echo "check-rules: OK" || echo "check-rules: FAIL"
 exit "$FAIL"

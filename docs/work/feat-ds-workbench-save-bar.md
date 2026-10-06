@@ -1,9 +1,9 @@
 
 # Task: Workbench save bar and browser specs (1g-ui)
 
-Status: active
+Status: done
 Branch: feat/ds-workbench-save-bar
-Next: PR #64 open (verify and e2e-design-system green), waiting on owner to merge; owner checklist passed 2026-10-05. Worktree ../guitar_tab_processor-feat-ds-workbench-save-bar stays until merged. After merge: set Status done, remove worktree, pick the next plan row. (usage at wrap: 5h 24%, weekly 59%, ctx 10%; total: 30 marks, 17662s between first and last)
+Next: none. PR #64 merged (454adf7) and its worktree is gone. Follow-ups are in the plan (slice 2).
 
 ## What changes for you
 Top bar gets a working **Save** and **Discard** beside "N unsaved changes". Save writes staged color edits to `tokens.json` via the 1g endpoint and reloads; **Revert** writes the previous hex values back and says "Reverted" 5 s. Discard clears staged edits and says "Discarded N changes" with **Undo** 5 s. If the file changed on disk, Save stops, names `tokens.json`, writes nothing and offers **Review changes** and **Reload**. If read-only or the write fails, the message says nothing was written until **Dismiss** or a retry works; edits stay staged and **Retry save** replaces Save.

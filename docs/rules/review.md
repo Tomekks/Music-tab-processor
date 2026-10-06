@@ -16,4 +16,10 @@ file; `scripts/delegate.sh` refuses to start the builder until `## Review` holds
    (the deny list in `.opencode/agents/builder.md`)?
 
 Reviewers are read-only, flag only correctness or requirement gaps, never invent findings, and say "sound" in one
-line when it is. Verify a review's claims against the code before acting on them.
+line when it is. Verified claims get one line; list only what couldn't be confirmed. Verify a review's claims against the code before acting on them.
+
+## Code review
+Trial step after `verify` (`scripts/review-code.sh`). The reviewer gets the diff since `Written against:` plus the acceptance checks, never the builder log. Claude reads the diff itself and writes its bullets first, then opens the findings; this replaces the final-diff spot-check. The report goes under `## Code review` in the block below.
+
+## Report block
+Every review ends with the same four parts, in this order: **Found** (what the review turned up), **Lessons** (what it taught, 2 lines), **Folded in** (changes made because of it), **Not folded in (and why)**. Write "none" when a part is empty; Not folded in always gives a reason. Code review uses the same block under `## Code review`.
