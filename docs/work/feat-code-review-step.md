@@ -2,7 +2,7 @@
 
 Status: active
 Branch: docs/review-upgrade-plan
-Next: built and committed; planted flaw caught and `chore/planted-flaw` deleted. Owner: read the scorecard row, then decide on the PR for `docs/review-upgrade-plan` (nothing pushed). Then the trial runs on the next 5 tasks.
+Next: built and committed; planted flaw caught, `chore/planted-flaw` deleted, token bug fixed in both review scripts. Owner: read the scorecard row, then decide on the PR for `docs/review-upgrade-plan` (nothing pushed, ~20 commits ahead of master). Then the code-review trial runs on the next 5 tasks. Usage: 3 marks, 980s, builder +5256 tok (reviewer run), Claude 51 msgs this session.
 Written against: 2d00bb4
 
 ## What changes for you
