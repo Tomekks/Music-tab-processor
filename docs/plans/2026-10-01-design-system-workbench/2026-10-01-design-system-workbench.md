@@ -64,6 +64,8 @@ Before each slice's spec: a short research pass on raw primary sources (no summa
 
 ### Prior-art log
 
+- **Slice 2 (2026-10-05):** searched npm (svelte number/slider, token usage) and the `storybook-design-token` README (raw, UX-and-I repo). Found: no installable "where used" source (usage map is hand-built there); no better slider. Saved: not adding a dependency for a feature that only displays data we already scan. Miss: none yet.
+
 - **Slice 1 (2026-10-03):** searched Storybook pseudo-states addon (raw README) and Framer property controls. Found: the forced-state technique (class-copy of `:hover`/`:active` rules), adapted not installed. Nothing found for a standalone token editor previewing real React components. Spike PASSED: overrides in an iframe, forced Hover/Pressed, regenerated CSS reaches the page. Saved: guessing at the preview mechanism, plus two bugs found before any build (rule order, transition lag). Findings that change slice 1: primary Button hover/pressed mix from `--color-accent` not the component token; `buildActiveBrand()` only rebuilds the active brand. Details: `research/workbench-slice1-spike/NOTES.md`.
 
 ## Measurement (time and tokens, to compare with the old process; set 2026-10-03)
@@ -132,7 +134,7 @@ Trigger to revisit: a new Variant or Component had to be added in two frameworks
 
 **Story:** I open Foundations, see every token with what it is for and where it is used, change it with the right control (number, slider, dropdown, color), in light or dark, and Save. **Starting point (checked 2026-10-05):** 86 tokens in `default/tokens.json` (48 color, 22 dimension, 7 percentage, 5 number, 4 font family), 16 with a description; the workbench reads and edits color tokens only, light values only (the 12 `dark.semantic` tokens are untouched).
 
-**Prior art (do before 2a):** one pass on raw sources for a token "Used by" view and number/slider inspector controls; spec gets one line "found X" or "nothing found". Slice 1 already chose `colord` and the slider package.
+**Prior art (done 2026-10-05):** "Used by": nothing to adopt; `storybook-design-token` 5.0.0 only displays a usage map you build yourself with a scanning script (React/Storybook addon), so 2g builds the map from the alias graph plus the existing scan in `token-usage.test.mjs`. Controls: use what slice 1 chose (`svelte-awesome-slider`, native number input, `colord`); `svelte-range-slider-pips` 4.1.1 supports Svelte 5 but is multi-thumb, no gain.
 
 **Out of scope:** child brands (slice 4), Projects, Glossary, Cmd+K, the sidebar-width `px`/`%` unit switch (own spec, later), the Button hover quirk, hover-to-highlight in the preview.
 
