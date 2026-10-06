@@ -1,8 +1,8 @@
 # Task: Blind code review step (review-upgrade task B)
 
-Status: active
+Status: done
 Branch: docs/review-upgrade-plan
-Next: PR 68 open for `docs/review-upgrade-plan` (waiting on CI and the owner to merge). After merge: the code-review trial runs on the next 5 tasks, decide at 5 rows. Set Status to done after merge.
+Next: done and merged (PR 68). The code-review trial now runs on the next 5 tasks that get a scorecard row; decide at 5 rows.
 Written against: 2d00bb4
 
 ## What changes for you
