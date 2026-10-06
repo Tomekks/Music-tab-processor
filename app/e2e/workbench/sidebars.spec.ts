@@ -70,9 +70,10 @@ test("both closed fills the window with the canvas", async ({ page }) => {
 	const canvas = page.locator("main.canvas");
 	const box = await canvas.boundingBox();
 	if (box === null) throw new Error("canvas has no bounding box");
-	const viewportWidth = await page.evaluate(() => window.innerWidth);
-	expect(box.width).toBeGreaterThanOrEqual(viewportWidth - 2);
-	expect(Math.abs(box.x)).toBeLessThanOrEqual(1);
+	const shell = await page.locator(".shell").boundingBox();
+	if (shell === null) throw new Error("shell has no bounding box");
+	expect(box.width).toBeGreaterThanOrEqual(shell.width - 1);
+	expect(Math.abs(box.x - shell.x)).toBeLessThanOrEqual(1);
 });
 
 // Hiding and showing both sidebars keeps the staged edit.

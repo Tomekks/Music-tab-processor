@@ -2,7 +2,7 @@
 
 Status: active
 Branch: feat/ds-workbench-sidebar-toggles
-Next: builder done (verify-task PASS); Claude browser specs and break-check, then owner checklist
+Next: owner checklist, then PR (ask first)
 Written against: 60cbbad
 
 ## What changes for you
@@ -86,3 +86,8 @@ VERIFY: PASS
   not run: e2e (13 specs; npm run test:e2e)
 pre-commit: OK
 ```
+
+### Claude after the build (2026-10-05)
+- Ports free; `npm run test:e2e:workbench` → 30 passed (existing top-bar specs unchanged). First run: 1 failed, spec (d): my spec compared the canvas to the window width, but the page has the browser's default 8 px body margin (canvas 1264 of 1280, as before this task). Spec fixed to compare with the `.shell` box (width and left edge); the feature was correct.
+- Break-checks: `{#if navOpen}` made always true → 3 specs failed; Inspector label renamed → 5 failed; `bodyColumns` both-closed returning 3 columns → spec (d) failed. All restored.
+- Spec fact wrong (mine): "canvas at least viewport width, left edge x 0" ignores the body margin.
