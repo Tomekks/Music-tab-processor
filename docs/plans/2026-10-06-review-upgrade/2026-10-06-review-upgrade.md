@@ -1,8 +1,8 @@
 # Review upgrade (code review step, shared report format, leaner process rules)
 
-**Status (2026-10-06):** Tasks A, C, D done and committed on `docs/review-upgrade-plan` (not pushed). Task B brief written and Level 2 reviewed (`docs/work/feat-code-review-step.md`); not built.
+**Status (2026-10-06):** Tasks A, B, C, D all built and committed on `docs/review-upgrade-plan` (not pushed). B's planted-flaw run caught the flaw. Open: owner reads the scorecard row, PR decision, then the 5-row code-review trial.
 
-**Next task:** B (blind code review step; brief + Level 2 review done in `docs/work/feat-code-review-step.md`; build next, by Claude, in a fresh session).
+**Next task:** none to build. PR for the branch (ask first), then use `review-code.sh` on the next 5 tasks and decide at 5 rows.
 
 ## Goal
 Catch bugs before the owner test with a cheap blind code reviewer, give the owner one plain report shape for every review, and stop `process.md` from growing without limit.

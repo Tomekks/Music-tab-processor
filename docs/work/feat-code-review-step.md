@@ -2,7 +2,7 @@
 
 Status: active
 Branch: docs/review-upgrade-plan
-Next: built and committed (049072b); planted flaw caught (see scorecard). Owner: read the scorecard row, then say yes to deleting `chore/planted-flaw` (branch still exists, you are on `docs/review-upgrade-plan`). Nothing pushed.
+Next: built and committed; planted flaw caught and `chore/planted-flaw` deleted. Owner: read the scorecard row, then decide on the PR for `docs/review-upgrade-plan` (nothing pushed). Then the trial runs on the next 5 tasks.
 Written against: 2d00bb4
 
 ## What changes for you
@@ -77,7 +77,7 @@ Level 2, 2026-10-06. Answers first; report block after the comparison. Second op
 
 ## Owner checklist
 - [ ] Read the planted-flaw result in the scorecard → the table says caught or missed, with the line it flagged or the reason it did not
-- [ ] Run the two delete commands Claude gives you for `chore/planted-flaw` → the branch is gone and you are back on `docs/review-upgrade-plan`
+- [x] Run the two delete commands Claude gives you for `chore/planted-flaw` → the branch is gone and you are back on `docs/review-upgrade-plan`
 
 ## Questions
 (none open)
