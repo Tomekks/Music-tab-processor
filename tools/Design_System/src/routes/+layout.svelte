@@ -5,6 +5,10 @@
 	import { stagedStore } from "$lib/staged.svelte.js";
 	import { invalidateAll } from "$app/navigation";
 	import { buildSaveBody, describeSaveFailure, discardedLabel, revertBody, savedLabel } from "$lib/saveState.js";
+	import IconButton from "$lib/IconButton.svelte";
+	import { bodyColumns } from "$lib/layoutColumns.js";
+	import PanelLeft from "@lucide/svelte/icons/panel-left";
+	import SquareDashedMousePointer from "@lucide/svelte/icons/square-dashed-mouse-pointer";
 	// @ts-ignore - untyped package helper (checkJs is off by owner decision)
 	import { cssVarNameForPath } from "../../../../app/packages/design-system/src/css-var-naming.mjs";
 
@@ -16,6 +20,8 @@
 		changeCount === 1 ? "1 unsaved change" : `${changeCount} unsaved changes`
 	);
 	let showChanges = $state(false);
+	let navOpen = $state(true);
+	let inspectorOpen = $state(true);
 
 	type SaveStatus = { kind: "saved" | "discarded" | "failed" | "changed" | "reverted" | "revert-failed"; text: string };
 	let status: SaveStatus | null = $state(null);
@@ -194,6 +200,8 @@
 	<header class="topbar">
 		<span class="title">Design System</span>
 		<div class="controls">
+			<IconButton icon={PanelLeft} label="Navigation" pressed={navOpen} onclick={() => (navOpen = !navOpen)} />
+			<IconButton icon={SquareDashedMousePointer} label="Inspector" pressed={inspectorOpen} onclick={() => (inspectorOpen = !inspectorOpen)} />
 			<button type="button" aria-expanded={showChanges} onclick={() => (showChanges = !showChanges)}>
 				{unsavedLabel}
 			</button>
@@ -243,7 +251,8 @@
 			{/if}
 		</div>
 	</header>
-	<div class="body">
+	<div class="body" style="grid-template-columns: {bodyColumns(navOpen, inspectorOpen)};">
+		{#if navOpen}
 		<nav class="sidebar" aria-label="Components">
 			<span class="row">Glossary</span>
 			<a
@@ -267,10 +276,13 @@
 				</a>
 			{/each}
 		</nav>
+		{/if}
 		<main class="canvas">
 			{@render children()}
 		</main>
+		{#if inspectorOpen}
 		<aside class="inspector">Inspector</aside>
+		{/if}
 	</div>
 </div>
 
